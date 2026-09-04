@@ -20,5 +20,5 @@ public:
 	// I—¹ˆ—
 	virtual void Finalize() override;
 private:
-
+	int  mnFontHandle;
 };

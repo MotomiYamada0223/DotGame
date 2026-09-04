@@ -7,6 +7,7 @@
 #include "ObjectManager.h"
 #include "FontManager.h"
 #include "Scene.h"
+#include "Utility.h"
 
 /*
  @note リファレンス https://dxlib.xsrv.jp/dxfunc.html
@@ -29,7 +30,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 {
 	// ウインドウモードで起動  falseにすると全画面
 	ChangeWindowMode(true); 
-
+	SetBackgroundColor(50, 50, 50);
+	// サイズを合わせる
+	SetGraphMode(Utility::SCREEN_WIDTH, Utility::SCREEN_HEIGHT, 0);  // モニター解像度に合わせる
 
 	// DXライブラリ初期化
 	if(DxLib_Init() == -1)
@@ -41,7 +44,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	Master::mpSoundManager->Initialize();   // 全てのサウンドが読み込まれる（BGMやSE)
 	// シーンマネージャーの生成と初期化
 	Master::mpSceneManager->Initialize();
-	// 
 	Master::mpFontManager->Initialize();
 
 	// 描画先画面を裏画面に設定する
