@@ -15,7 +15,7 @@ void FontManager::Initialize()
 {
 	// Resourceにあるフォントを読み込んで使用できるようにするため
 	AddFontResourceEx(
-		"", // 読み込むフォントのパス
+		"Resource/Font/dotFont/x12y16pxMaruMonica.ttf", // 読み込むフォントのパス
 		FR_PRIVATE,
 		NULL
 	);
@@ -23,7 +23,7 @@ void FontManager::Initialize()
 
 	// 読み込んだフォントの作成
 	mnDotFont = CreateFontToHandle(
-		"",  // フォントの名前
+		"x12y16pxMaruMonica",  // フォントの名前
 		100, // フォントの大きさ
 		5
 	);

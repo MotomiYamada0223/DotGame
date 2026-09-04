@@ -9,7 +9,7 @@ bool Collision::CheckCircleToCircle(
     // 2“_ŠÔ‚Ì‹——£‚ğ‹‚ß‚é
     float dx = centerPosA.x - centerPosB.x;
     float dy = centerPosA.y - centerPosB.y;
-    float distance = sqrt(dx * dx + dy * dy);
+    float distance = (float)sqrt(dx * dx + dy * dy);
 
     // ”¼Œa‚Ì‡Œv‚æ‚è‚à‹——£‚ª’Z‚¯‚ê‚Î“–‚½‚Á‚Ä‚¢‚é
     if (distance < radiusA + radiusB)
@@ -28,7 +28,7 @@ bool Collision::CheckPointToCircle(
     // “_‚Æ‰~‚Ì’†S‚Æ‚Ì‹——£‚ğ‹‚ß‚é
     float dx = PointPos.x - centerPos.x;
     float dy = PointPos.y - centerPos.y;
-    float distance = sqrt(dx * dx + dy * dy);
+    float distance = (float)sqrt(dx * dx + dy * dy);
 
     // ‹——£‚ª”¼Œa‚æ‚è’Z‚¯‚ê‚Î“–‚½‚Á‚Ä‚¢‚é
     if (distance < radius)

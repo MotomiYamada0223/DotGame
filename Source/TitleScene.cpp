@@ -8,12 +8,6 @@
 TitleScene::TitleScene()
 	: Scene()     // 基底クラスのコンストラクタを呼び出しておく
 {
-	// 文字の大きさ関係
-	mnFontHandle = CreateFontToHandle(
-		NULL,
-		60, // すごく大きく
-		3
-	);
 }
 
 TitleScene::~TitleScene()
@@ -43,7 +37,7 @@ void TitleScene::Draw()
 {
 
 	DrawFormatStringToHandle(500, 500, GetColor(255, 255, 255),
-		Master::mpFontManager->GetDotFont(), "タイトル");
+		Master::mpFontManager->GetDotFont(), "タイトル　才能の原石");
 
 	// 基底クラスの更新処理を呼びだす
 	Scene::Draw();
