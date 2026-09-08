@@ -145,6 +145,7 @@
     <ClCompile Include="Source\Texture.cpp" />
     <ClCompile Include="Source\TextureAnimation.cpp" />
     <ClCompile Include="Source\TitleScene.cpp" />
+    <ClCompile Include="Source\TutorialTextManager.cpp" />
     <ClCompile Include="Source\WinResultScene.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -161,6 +162,7 @@
     <ClInclude Include="Source\Texture.h" />
     <ClInclude Include="Source\TextureAnimation.h" />
     <ClInclude Include="Source\TitleScene.h" />
+    <ClInclude Include="Source\TutorialTextManager.h" />
     <ClInclude Include="Source\Utility.h" />
     <ClInclude Include="Source\WinResultScene.h" />
   </ItemGroup>
