@@ -13,6 +13,7 @@ public: // enum, struct の定義
 	{
 		SCENE_NONE = 0,   // 定義なし
 		SCENE_TITLE,      // タイトル
+		SCENE_GAME,       // ゲーム
 	};
 
 
@@ -35,7 +36,6 @@ public: // メンバ関数の定義
 
 	// シーン遷移(切り替え)が必要な状態なら遷移処理をする
 	void ChangeSceneIfNeeded();
-
 	SCENE_TYPE GetCurrentSceneType() const { return mnSceneType; }
 	
 

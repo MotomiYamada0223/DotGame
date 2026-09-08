@@ -28,6 +28,11 @@ void TitleScene::Initialize()
 
 void TitleScene::Update()
 {
+	if (InputManager::CheckDownKey(KEY_INPUT_RETURN))
+	{
+		Master::mpSceneManager->SetNextScene(SceneManager::SCENE_TYPE::SCENE_GAME);
+	}
+
 	// 基底クラスの更新処理を呼びだす
 	Scene::Update();
 }
@@ -37,7 +42,7 @@ void TitleScene::Draw()
 {
 
 	DrawFormatStringToHandle(500, 500, GetColor(255, 255, 255),
-		Master::mpFontManager->GetDotFont(), "タイトル　才能の原石");
+		Master::mpFontManager->GetDotFont(), "タイトル　才能の原石\n Enterでゲームシーン");
 
 	// 基底クラスの更新処理を呼びだす
 	Scene::Draw();

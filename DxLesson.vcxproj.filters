@@ -60,6 +60,9 @@
     <ClCompile Include="Source\TitleScene.cpp">
       <Filter>ソース ファイル\Scene系</Filter>
     </ClCompile>
+    <ClCompile Include="Source\GameScene.cpp">
+      <Filter>ソース ファイル\Scene系</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Collision.h">
@@ -100,6 +103,9 @@
     </ClInclude>
     <ClInclude Include="Source\FontManager.h">
       <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\GameScene.h">
+      <Filter>ソース ファイル\Scene系</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

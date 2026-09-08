@@ -133,6 +133,7 @@
   <ItemGroup>
     <ClCompile Include="Source\Collision.cpp" />
     <ClCompile Include="Source\FontManager.cpp" />
+    <ClCompile Include="Source\GameScene.cpp" />
     <ClCompile Include="Source\InputManager.cpp" />
     <ClCompile Include="Source\Main.cpp" />
     <ClCompile Include="Source\Master.cpp" />
@@ -148,6 +149,7 @@
   <ItemGroup>
     <ClInclude Include="Source\Collision.h" />
     <ClInclude Include="Source\FontManager.h" />
+    <ClInclude Include="Source\GameScene.h" />
     <ClInclude Include="Source\InputManager.h" />
     <ClInclude Include="Source\Master.h" />
     <ClInclude Include="Source\Object2D.h" />
