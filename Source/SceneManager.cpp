@@ -1,8 +1,11 @@
 #include "SceneManager.h"
 #include "Scene.h"
+#include "Master.h"
+
+// 作成するシーンのインクルード
 #include "TitleScene.h"
 #include "GameScene.h"
-#include "Master.h"
+#include "WinResultScene.h"
 
 
 SceneManager::SceneManager()
@@ -76,6 +79,11 @@ void SceneManager::ChangeSceneIfNeeded()
 
 	case SCENE_TYPE::SCENE_GAME:
 		mpCurrentScene = new GameScene(); // ゲームシーンの作成
+		break;
+
+
+	case SCENE_TYPE::SCENE_WINRESULT:
+		mpCurrentScene = new WinResultScene(); // 勝利シーンの作成
 		break;
 	}
 

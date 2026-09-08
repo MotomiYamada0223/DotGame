@@ -145,6 +145,7 @@
     <ClCompile Include="Source\Texture.cpp" />
     <ClCompile Include="Source\TextureAnimation.cpp" />
     <ClCompile Include="Source\TitleScene.cpp" />
+    <ClCompile Include="Source\WinResultScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Collision.h" />
@@ -161,6 +162,7 @@
     <ClInclude Include="Source\TextureAnimation.h" />
     <ClInclude Include="Source\TitleScene.h" />
     <ClInclude Include="Source\Utility.h" />
+    <ClInclude Include="Source\WinResultScene.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

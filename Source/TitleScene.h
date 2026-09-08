@@ -19,5 +19,6 @@ public:
 	virtual void Draw() override;
 	// I—¹ˆ—
 	virtual void Finalize() override;
+
 private:
 };
