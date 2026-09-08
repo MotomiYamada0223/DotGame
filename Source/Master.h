@@ -3,6 +3,7 @@
 #include "SceneManager.h"
 #include "SoundManager.h"
 #include "FontManager.h"
+#include "ObjectManager.h"
 
 
 //
@@ -22,4 +23,5 @@ public:
 	static SoundManager* mpSoundManager;
 	static SceneManager* mpSceneManager;
 	static FontManager* mpFontManager;
+	static ObjectManager* mpObjectManager;
 };
