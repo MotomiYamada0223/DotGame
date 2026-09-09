@@ -2,10 +2,8 @@
 #include "Utility.h"
 #include "Master.h"
 #include "InputManager.h"
+#include "Player.h" 
 
-/// <summary>
-/// ゲーム中の演出をするクラス
-/// </summary>
 GameScene::GameScene()
 	:Scene()
 {
@@ -19,27 +17,28 @@ GameScene::~GameScene()
 
 void GameScene::Initialize()
 {
-
+	// プレイヤーの生成
+	new Player(VGet(Utility::SCREEN_WIDTH / 2.0f, Utility::SCREEN_HEIGHT / 2.0f, 0.0f));
 }
 
 void GameScene::Update()
 {
-	// Enterで勝利画面
+	// Enterでリザルト画面へ
 	if (InputManager::CheckDownKey(KEY_INPUT_RETURN))
 	{
 		Master::mpSceneManager->SetNextScene(SceneManager::SCENE_WINRESULT);
 	}
 
-	// 基底クラスのUpdateの呼び出し
+	// 基底クラスの更新処理を呼びだす
 	Scene::Update();
 }
 
 void GameScene::Draw()
 {
 	DrawFormatStringToHandle(500, 500, GetColor(255, 255, 255),
-		Master::mpFontManager->GetDotFont(), "ゲーム画面\n\nEnterでリザルド画面");
+		Master::mpFontManager->GetDotFont(), "ゲームシーン\n\n Enterでリザルトシーン");
 
-	// 基底クラスのDrawの呼び出し
+	// 基底クラスの更新処理を呼びだす
 	Scene::Draw();
 }
 
