@@ -1,5 +1,6 @@
 #pragma once
 #include "Scene.h"
+#include "TutorialTextManager.h"
 
 class GameScene : public Scene
 {
@@ -19,4 +20,7 @@ public:
 	// 終了処理
 	virtual void Finalize() override;
 private:
+	
+	// Tutorialマネージャーを呼び出すための処理
+	TutorialTextManager mTutorialText;
 };
