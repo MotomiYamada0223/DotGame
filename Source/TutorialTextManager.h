@@ -23,6 +23,6 @@ public:
 private:
 	StepLoader loader;
 
-	int mnCurrentID; // 現在のステップのID
-	float mfIdelTimer; // ステップが始まってからの経過時間
+	int mnCurrentID = 1; // 現在のステップのID
+	float mfIdelTimer = 0.0f; // ステップが始まってからの経過時間
 };

@@ -40,8 +40,17 @@ void StepLoader::LoadCSV(const std::string& path)
         // Name
         std::getline(ss, data.name, ',');
 
+
         // Text
         std::getline(ss, data.text, ',');
+        // テキストの中の\nを改行に変換する処理
+        size_t pos = 0;
+        while ((pos = data.text.find("\\n", pos)) != std::string::npos)
+        {
+            // posの位置から2文字分を\nに置き換えるという処理
+            data.text.replace(pos, 2, "\n");
+            pos += 1;
+        }
 
         // CompleteType
         std::getline(ss, data.completeType, ',');

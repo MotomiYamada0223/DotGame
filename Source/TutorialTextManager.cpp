@@ -65,10 +65,18 @@ void TutorialTextManager::Draw()
 	// 現在のステップを探す
 	auto itr = loader.steps.find(mnCurrentID);
 	if (itr == loader.steps.end()) { return; }
-
+	
+	unsigned int color = GetColor(255, 255, 255);
 	const StepData& step = itr->second;
-	DrawFormatStringToHandle(20, 20, GetColor(255, 255, 255), Master::mpFontManager->GetDotFont(),
+	// 表示時間を越していたら表示しない
+	if (mfIdelTimer >= step.completeValue) { return; }
+
+	
+	DrawFormatStringToHandle(50, 50, color, Master::mpFontManager->GetDotFont(),
 		"%s", step.text.c_str());
+
+	// デバッグ用の表示
+	DrawFormatString(0, 0, color, "ID: %d  表示時間: %f / %f", mnCurrentID, mfIdelTimer, step.completeValue);
 }
 
 
