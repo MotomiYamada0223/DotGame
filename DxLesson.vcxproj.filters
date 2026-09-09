@@ -19,6 +19,9 @@
     <Filter Include="ソース ファイル\Scene系">
       <UniqueIdentifier>{88c4395f-412d-4afa-8590-380052fef24d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\Text関係">
+      <UniqueIdentifier>{de72453d-964a-4bc1-9a97-d3b8512c2a28}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Collision.cpp">
@@ -60,6 +63,21 @@
     <ClCompile Include="Source\TitleScene.cpp">
       <Filter>ソース ファイル\Scene系</Filter>
     </ClCompile>
+    <ClCompile Include="Source\GameScene.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Player.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\WinResultScene.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\TutorialTextManager.cpp">
+      <Filter>ソース ファイル\Text関係</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\StepLoader.cpp">
+      <Filter>ソース ファイル\Text関係</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Collision.h">
@@ -100,6 +118,24 @@
     </ClInclude>
     <ClInclude Include="Source\FontManager.h">
       <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\GameScene.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Player.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\WinResultScene.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\StepLoader.h">
+      <Filter>ソース ファイル\Text関係</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\StepData.h">
+      <Filter>ソース ファイル\Text関係</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\TutorialTextManager.h">
+      <Filter>ソース ファイル\Text関係</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

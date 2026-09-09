@@ -24,5 +24,9 @@ private:
 	StepLoader loader;
 
 	int mnCurrentID = 1; // 現在のステップのID
+	int mnDisplayByteCount = 0; // 画面に表示する文字列のバイト数
+
 	float mfIdelTimer = 0.0f; // ステップが始まってからの経過時間
+	float mfCharSpeed = 0.05f; // 1文字を表示するのにかける時間
+	float mfCharTimer = 0.0f; // 1文字表示するまでの時間
 };
