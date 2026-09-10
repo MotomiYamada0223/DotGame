@@ -10,6 +10,7 @@ GameScene::GameScene()
 {
 	spawnTimer = 0;
 	mpPlayer = nullptr;
+	mbIsLoaded = false;
 }
 
 GameScene::~GameScene()
@@ -19,9 +20,12 @@ GameScene::~GameScene()
 
 void GameScene::Initialize()
 {
+	// CSVのファイル読み込み
+	// チュートリアルテキストとブロックマップのタイル
+	mTutorialText.Initialize("Resource/TutorialText/tutorialTextData.csv");
+	mBlockMap.Load("Resource/Map/MapFile.csv", "Resource/Map/image_Map.png");
+
 	// プレイヤーの生成
-	
-	//mpPlayer = new Player(VGet(Utility::SCREEN_WIDTH / 2.0f, Utility::SCREEN_HEIGHT / 2.0, 0.0f));
 	mpPlayer = new Player(VGet(Utility::SCREEN_WIDTH / 2.0f, 850, 0.0f));
 
 	// 敵の生成
@@ -33,14 +37,9 @@ void GameScene::Initialize()
 		new Enemy(VGet(-50.0f, mpPlayer->GetPosition().y, 0.0f));
 	}
 
-	// チュートリアルテキストの初期化
-	
-	// CSVのファイル読み込み
-	// チュートリアルテキストとブロックマップのタイル
-	mTutorialText.Initialize("Resource/TutorialText/tutorialTextData.csv");
-	mBlockMap.Load("Resource/Map/MapFile.csv", "Resource/Map/image_Map.png");
-
 	spawnTimer = 0;
+
+	mbIsLoaded = true;
 }
 
 void GameScene::Update()
@@ -62,14 +61,16 @@ void GameScene::Update()
 
 void GameScene::Draw()
 {
+	if (!mbIsLoaded) { return; }
+
 	// チュートリアルの描画 
-	
 	mTutorialText.Draw();
 
 	DrawFormatStringToHandle(500, 500, GetColor(255, 255, 255),
 		Master::mpFontManager->GetDotFont(), "ゲームシーン\n\n Enterでリザルトへ");
 
 	mBlockMap.Draw();
+	mpPlayer->DebugDraw(); // デバッグ表示するため
 
 	// クラスのDraw呼び出し
 	Scene::Draw();

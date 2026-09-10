@@ -25,7 +25,7 @@ private:
 
 	int spawnTimer; 
 	Player* mpPlayer; // プレイヤーの座標を参照するために保持
-
 	BlockMap mBlockMap;
 
+	bool mbIsLoaded = false; // マップがロードされたかどうかのフラグ
 };

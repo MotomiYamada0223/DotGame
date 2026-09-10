@@ -1,39 +1,49 @@
 #include "BlockMap.h"
+#include "Master.h"
 #include "Collision.h"
 #include <string>
+#include <algorithm>
+
+
 
 // ファイルを読み込むために必要なインクルード
 #include <fstream>
 #include <sstream>
 #include <iostream>
 
+namespace
+{
+	// チップIDが当たり判定を持つかどうかを判定する
+	bool IsSolidChip(int chipID)
+	{
+		return (chipID >= 1 && chipID <= 3);
+	}
+}
+
 BlockMap::BlockMap()
 	: mnTileGraph(-1)
 	, mnMapData()
+	, mbIsLoaded(false)
 {
-	// CSV読み込み前の初期値
-	// 全部のブロックを0(透過のもの)を指定しておく
-	for (int y = 0; y < MAX_MAP_HEIGHT; y++)
+	if (!mbIsLoaded)
 	{
-		for (int x = 0; x < MAX_MAP_WIDTH; x++)
-		{
-			mnMapData[y][x] = 0;
-		}
+		// CSV読み込み前の初期値
+		// マップデータを0で一括初期化するため
+		// fill... 指定した範囲のすべての要素を特定の値で埋められる
+		std::fill(&mnMapData[0][0], &mnMapData[0][0] + MAX_MAP_WIDTH * MAX_MAP_HEIGHT, 0);
 	}
 }
 
 BlockMap::~BlockMap()
 {
-	if (mnTileGraph != -1)
-	{
-		DeleteGraph(mnTileGraph);
-	}
 }
 
 
 // CSVのタイルセットファイルの読み込み
 bool BlockMap::Load(const char* csvPath, const char* texturePath)
 {
+	if (mbIsLoaded) { return true; }
+
 	std::ifstream file(csvPath);
 
 	if (!file.is_open())
@@ -66,19 +76,24 @@ bool BlockMap::Load(const char* csvPath, const char* texturePath)
 
 	file.close();
 
-	mnTileGraph = LoadGraph(texturePath);
+	// リソースマネージャー経由
+	mnTileGraph = Master::mpResourceManager->LoadGraphics(texturePath);
 
 	if (mnTileGraph == -1)
 	{
 		std::cout << "タイルセット画像が開けませんでした。"<< std::endl;
 		return false;
 	}
+	mbIsLoaded = true;
 	return true;
 }
 
 
 void BlockMap::Draw()
 {
+	// マップが読み込まれていない場合は描画しない
+	if (!mbIsLoaded) { return; }
+
 	for (int y = 0; y < MAX_MAP_HEIGHT; y++)
 	{
 		for (int x = 0; x < MAX_MAP_WIDTH; x++)
@@ -86,6 +101,9 @@ void BlockMap::Draw()
 			// 現在のチップID
 			int chipID = mnMapData[y][x];
 
+			// 0番は何も描画しない
+			if (chipID == 0) { continue; }
+			
 			// ====================================
 			// タイルセット内の位置を計算
 			//
@@ -119,7 +137,9 @@ void BlockMap::Draw()
 				TRUE
 			);
 
-			if (chipID >= 0 && chipID <= 10)
+
+			// 0から10まではデバッグ表示している
+			if (chipID >= 1 && chipID <= 10)
 			{
 				DrawBox(
 					x * CHIP_SIZE,
@@ -134,103 +154,57 @@ void BlockMap::Draw()
 	}
 }
 
-
-// マップとの当たり判定
-bool BlockMap::IsCollision(
-	float x,
-	float y,
-	float width,
-	float height)
-{
-	// プレイヤーが重なっている
-	// マップチップの範囲を計算
-	int left = static_cast<int>(x) / CHIP_SIZE;
-
-	int right = static_cast<int>(x + width - 1) / CHIP_SIZE;
-
-	int top =static_cast<int>(y) / CHIP_SIZE;
-
-	int bottom = static_cast<int>(y + height - 1) / CHIP_SIZE;
-
-
-	// プレイヤーが重なっている
-	// マップチップを調べる
-	for (int mapY = top; mapY <= bottom; mapY++)
-	{
-		for (int mapX = left; mapX <= right; mapX++)
-		{
-			int chipID = mnMapData[mapY][mapX];
-
-			// 1から3は当たり判定あり
-			if (chipID >= 1 && chipID <= 3)
-			{
-				return true;
-			}
-		}
-	}
-	return false;
-}
-
-
+// プレイヤーと当たっているブロックを探す
 // プレイヤーと当たっているブロックを探す
 bool BlockMap::CheckCollisionBlock(
 	float x,
 	float y,
 	float width,
 	float height,
-	int& blockX,
-	int& blockY)
+	int* blockX,
+	int* blockY)
 {
 	// プレイヤーの矩形
-	VECTOR playerPos =VGet(x,y,0.0f);
-	VECTOR playerSize =VGet(width,height,0.0f);
+	VECTOR playerPos = VGet(x, y, 0.0f);
+	VECTOR playerSize = VGet(width, height, 0.0f);
+
 	// プレイヤーが重なっているブロック範囲を計算
-	int left =static_cast<int>(x) / CHIP_SIZE;
-	int right =static_cast<int>(x + width - 1) / CHIP_SIZE;
-	int top =static_cast<int>(y) / CHIP_SIZE;
-	int bottom =static_cast<int>(y + height - 1) / CHIP_SIZE;
+	// ワールド座標をマップの配列インデックスに変換するため
+	int left = static_cast<int>(x) / CHIP_SIZE;
+	int right = static_cast<int>(x + width - 1) / CHIP_SIZE;
+	int top = static_cast<int>(y) / CHIP_SIZE;
+	int bottom = static_cast<int>(y + height - 1) / CHIP_SIZE;
+
 	// マップ範囲を調整
-	if (left < 0)
-	{
-		left = 0;
-	}
-	if (right >= MAX_MAP_WIDTH)
-	{
-		right = MAX_MAP_WIDTH - 1;
-	}
-	if (top < 0)
-	{
-		top = 0;
-	}
-	if (bottom >= MAX_MAP_HEIGHT)
-	{
-		bottom = MAX_MAP_HEIGHT - 1;
-	}
+	if (left < 0) {left = 0;}
+	if (right >= MAX_MAP_WIDTH) {right = MAX_MAP_WIDTH - 1;}
+	if (top < 0) {top = 0;}
+	if (bottom >= MAX_MAP_HEIGHT) {bottom = MAX_MAP_HEIGHT - 1;}
+
+
 	// 周囲のブロックを1個ずつ調べる
+	// マップ全体を毎フレーム調べると重いので、プレイヤーが実際に重なっている可能性のある近傍のチップだけを効率よく走査するため
 	for (int mapY = top; mapY <= bottom; mapY++)
 	{
 		for (int mapX = left; mapX <= right; mapX++)
 		{
 			int chipID = mnMapData[mapY][mapX];
-			// 1～3だけ当たり判定あり
-			if (chipID < 1 || chipID>3)
-			{
-				continue;
-			}
-			// ブロックの矩形
-			VECTOR blockPos =
-				VGet(
-					mapX * CHIP_SIZE,
-					mapY * CHIP_SIZE,
-					0.0f
-				);
 
-			VECTOR blockSize =
-			VGet(
-				(float)CHIP_SIZE,
-				(float)CHIP_SIZE,
+			if (!IsSolidChip(chipID)) { continue; }
+
+			// ブロックの矩形
+			VECTOR blockPos = VGet(
+				static_cast<float>(mapX * CHIP_SIZE),
+				static_cast<float>(mapY * CHIP_SIZE),
 				0.0f
 			);
+
+			VECTOR blockSize = VGet(
+				static_cast<float>(CHIP_SIZE),
+				static_cast<float>(CHIP_SIZE),
+				0.0f
+			);
+
 			// プレイヤーとブロックの当たり判定
 			if (Collision::CheckRectToRect(
 				playerPos,
@@ -238,11 +212,18 @@ bool BlockMap::CheckCollisionBlock(
 				blockPos,
 				blockSize))
 			{
-				blockX = mapX;
-				blockY = mapY;
+				// 格納先が指定されている場合のみブロック座標を代入する
+				if (blockX != nullptr)
+				{
+					*blockX = mapX;
+				}
+				if (blockY != nullptr)
+				{
+					*blockY = mapY;
+				}
 				return true;
 			}
 		}
-	}				   
+	}
 	return false;
 }

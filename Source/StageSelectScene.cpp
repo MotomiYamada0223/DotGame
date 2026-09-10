@@ -1,4 +1,4 @@
-#include "StageSelectScene.h"
+﻿#include "StageSelectScene.h"
 #include "DxLib.h"
 #include "Utility.h"
 #include "InputManager.h"

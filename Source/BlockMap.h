@@ -25,31 +25,24 @@ public:
 	// マップの描画
 	void Draw();
 
-	// プレイヤーの指定した四角がマップに当たっているかの処理をする関数
-	bool IsCollision(
-		float x,
-		float y,
-		float width,
-		float height
-	);
-	
-	// プレイヤーの指定した四角がマップに当たっているかの処理をする関数
+	// プレイヤーと当たっているブロックを探す処理（位置が不要な場合は省略可能になっている）
 	bool CheckCollisionBlock(
 		float x,
 		float y,
 		float width,
 		float height,
-		int& blockX,
-		int& blockY
+		int* blockX = nullptr,
+		int* blockY = nullptr
 	);
-
 
 private:
 	// タイルセットの画像
 	int mnTileGraph;
-
 	// マップデータ
 	int mnMapData[MAX_MAP_HEIGHT][MAX_MAP_WIDTH];
+
+	// マップを読み込んだか
+	bool mbIsLoaded;
 };
 
 

@@ -10,7 +10,6 @@
 
 Player::Player(VECTOR initPos) 
 	// TextureAnimationは使わず一枚絵としてロード
-	
 	: Object2D("Resource/Image/BattlePlayer111.png", initPos) 
 {
 	SetTag(Object2D::BattlePlayer2D);
@@ -38,40 +37,46 @@ void Player::PlayerMove(BlockMap& blockMap)
 {
 	bool moved = false;
 
-	// 左移動 A
+
+	// 左右移動の共通化（Aキーは-1, Dキーは1）
+	float moveDirection = 0.0f;
 	if (CheckHitKey(KEY_INPUT_A) == 1)
 	{
-		float nextX = mvPosition.x - moveSpeed;
-		float playerLeft = nextX - playerWidth / 2.0f;
-		float playerTop = mvPosition.y - playerHeight / 2.0f;
-
-		if (!blockMap.IsCollision(playerLeft, playerTop, playerWidth, playerHeight))
-		{
-			mvPosition.x = nextX;
-			isFacingRight = false;
-
-			// 実際に移動した時だけtrueにする
-			moved = true;
-		}
+		moveDirection = -1.0f;
+		isFacingRight = false;
 	}
-
-	// 右移動 D
-	if (CheckHitKey(KEY_INPUT_D) == 1)
+	else if (CheckHitKey(KEY_INPUT_D) == 1)
 	{
-		float nextX = mvPosition.x + moveSpeed;
+		moveDirection = 1.0f;
+		isFacingRight = true;
+	}
+
+	// どちらかのキーが押されている場合
+	if (moveDirection != 0.0f)
+	{
+		float nextX = mvPosition.x + (moveSpeed * moveDirection);
 		float playerLeft = nextX - playerWidth / 2.0f;
 		float playerTop = mvPosition.y - playerHeight / 2.0f;
 
-		if (!blockMap.IsCollision(playerLeft, playerTop, playerWidth, playerHeight))
+		if (!blockMap.CheckCollisionBlock(playerLeft, playerTop, playerWidth, playerHeight))
 		{
 			mvPosition.x = nextX;
-			isFacingRight = true;
-
-			// 実際に移動した時だけtrueにする
 			moved = true;
 		}
 	}
 
+	// キャラクターの物理処理や当たり判定クラスの呼び出し
+	mCharacterPhysics.UpdateMoveAndCollision(
+		mvPosition,
+		velocityY,
+		isGrounded,
+		isJumping,
+		blockMap,
+		playerWidth,
+		playerHeight,
+		gravity,
+		moveSpeed
+	);
 
 	// ジャンプ開始 Space
 	if (CheckHitKey(KEY_INPUT_SPACE) == 1 &&
@@ -81,140 +86,6 @@ void Player::PlayerMove(BlockMap& blockMap)
 		isGrounded = false;
 		velocityY = jumpPower;
 	}
-
-
-	// ========================================
-	// 縦方向の物理処理
-	// ========================================
-
-	// 重力
-	velocityY += gravity;
-
-	// 次のY座標
-	float nextY = mvPosition.y + velocityY;
-
-	// 現在のプレイヤー上下
-	float oldTop =
-		mvPosition.y - playerHeight / 2.0f;
-
-	float oldBottom =
-		mvPosition.y + playerHeight / 2.0f;
-
-	// 次のプレイヤー矩形
-	float playerLeft =
-		mvPosition.x - playerWidth / 2.0f;
-
-	float playerTop =
-		nextY - playerHeight / 2.0f;
-
-	// 衝突したブロック
-	int blockX = -1;
-	int blockY = -1;
-
-	bool hitBlock =
-		blockMap.CheckCollisionBlock(
-			playerLeft,
-			playerTop,
-			playerWidth,
-			playerHeight,
-			blockX,
-			blockY
-		);
-
-	// ========================================
-	// ブロックに衝突した
-	// ========================================
-	if (hitBlock)
-	{
-		float blockLeft =
-			blockX * CHIP_SIZE;
-
-		float blockTop =
-			blockY * CHIP_SIZE;
-
-		float blockRight =
-			blockLeft + CHIP_SIZE;
-
-		float blockBottom =
-			blockTop + CHIP_SIZE;
-
-		// ----------------------------
-		// 落下中
-		// ----------------------------
-		if (velocityY > 0.0f)
-		{
-			// 次のフレームの足元座標
-			float nextBottom = nextY + playerHeight / 2.0f;
-
-			// 落下してきて、足元がブロックの上部を通過・または接した場合
-			// （移動前の足元がブロックより上にあった、あるいは十分に近かった場合）
-			if (oldBottom <= blockTop || nextBottom >= blockTop)
-			{
-				mvPosition.y =
-					blockTop - playerHeight / 2.0f;
-
-				velocityY = 0.0f;
-
-				isGrounded = true;
-				isJumping = false;
-
-			}
-			else
-			{
-				// 横から当たった等の場合
-				mvPosition.y = nextY;
-
-				isGrounded = false;
-				isJumping = true;
-
-			}
-		}
-		// ----------------------------
-		// 上昇中
-		// ----------------------------
-		else if (velocityY < 0.0f)
-		{
-			// ブロックの下面に頭が当たった
-			if (oldTop >= blockBottom)
-			{
-				mvPosition.y =
-					blockBottom + playerHeight / 2.0f;
-
-				velocityY = 0.0f;
-
-				isGrounded = false;
-				isJumping = true;
-
-			}
-			else
-			{
-				// まだブロックに阻まれていないので上昇
-				mvPosition.y = nextY;
-
-				isGrounded = false;
-				isJumping = true;
-
-			}
-		}
-		// ----------------------------
-		// velocityY == 0
-		// ----------------------------
-		else
-		{
-			mvPosition.y = nextY;
-		}
-	}
-	// ========================================
-	// ブロックに当たっていない
-	// ========================================
-	else
-	{
-		mvPosition.y = nextY;
-
-		isGrounded = false;
-		isJumping = true;
-	}
-
 
 	// 攻撃 F
 	if (CheckHitKey(KEY_INPUT_F) == 1 &&
@@ -391,6 +262,40 @@ void Player::Draw()
 		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 128);
 		DrawBox(rectLeft, rectTop, rectRight, rectBottom, GetColor(255, 50, 50), TRUE);
 		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+	}
+}
+
+
+
+// デバッグ表示をしている関数
+// GameSceneで呼び出している
+void Player::DebugDraw()
+{
+	// レイヤー自身の当たり判定のデバッグ表示（青色）
+	int playerLeft = static_cast<int>(mvPosition.x - playerWidth / 2.0f);
+	int playerTop = static_cast<int>(mvPosition.y - playerHeight / 2.0f);
+	int playerRight = static_cast<int>(mvPosition.x + playerWidth / 2.0f);
+	int playerBottom = static_cast<int>(mvPosition.y + playerHeight / 2.0f);
+	DrawBox(playerLeft, playerTop, playerRight, playerBottom, GetColor(0, 0, 255), FALSE);
+
+
+	// シーン上のすべての敵の当たり判定をデバッグ表示（黄緑色）
+	ObjectManager* objManager = Master::mpSceneManager->GetCurrentScene()->GetObjectManager();
+	if (objManager != nullptr)
+	{
+		std::vector<Object2D*> enemyList = objManager->GetObject2DListByTag(Object2D::Enemy2D);
+		for (Object2D* obj : enemyList)
+		{
+			Enemy* enemy = dynamic_cast<Enemy*>(obj);
+			if (!enemy) continue;
+
+			int eneLeft = static_cast<int>(enemy->GetPosition().x - enemy->GetSizeX() / 2.0f);
+			int eneTop = static_cast<int>(enemy->GetPosition().y - enemy->GetSizeY() / 2.0f);
+			int eneRight = static_cast<int>(eneLeft + enemy->GetSizeX());
+			int eneBottom = static_cast<int>(eneTop + enemy->GetSizeY());
+
+			DrawBox(eneLeft, eneTop, eneRight, eneBottom, GetColor(0, 255, 0), FALSE);
+		}
 	}
 
 	// ブロックマップとの当たり判定デバッグ表示
