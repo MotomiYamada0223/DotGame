@@ -26,7 +26,7 @@ public:
 	void Draw();
 
 	// プレイヤーの指定した四角がマップに当たっているかの処理をする関数
-	bool IsCollision()
+	bool IsCollision();
 };
 
 
