@@ -33,7 +33,6 @@ public:
 		float height
 	);
 
-
 private:
 	// タイルセットの画像
 	int mnTileGraph;

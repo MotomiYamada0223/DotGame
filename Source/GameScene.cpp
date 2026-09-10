@@ -22,7 +22,7 @@ void GameScene::Initialize()
 	// プレイヤーの生成
 	
 	//mpPlayer = new Player(VGet(Utility::SCREEN_WIDTH / 2.0f, Utility::SCREEN_HEIGHT / 2.0, 0.0f));
-	mpPlayer = new Player(VGet(Utility::SCREEN_WIDTH / 2.0f, 800, 0.0f));
+	mpPlayer = new Player(VGet(Utility::SCREEN_WIDTH / 2.0f, 850, 0.0f));
 
 	// 敵の生成
 
