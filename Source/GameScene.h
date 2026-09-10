@@ -27,5 +27,5 @@ private:
 	Player* mpPlayer; // プレイヤーの座標を参照するために保持
 
 	BlockMap mBlockMap;
-	
+
 };
