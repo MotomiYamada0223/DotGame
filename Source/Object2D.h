@@ -29,11 +29,6 @@ public:    // enum, struct, 定数の定義
 		FrontMap  = 2201,    // マップ
 		BattlePlayer2D = 2300,  // プレイヤー
 		Enemy2D = 2350,         // 敵
-		HomingEnemy2D = 2400,   // パックンみたいな敵
-		FlyEnemy2D = 2450,      // 飛んでる敵
-		Coin2D = 2500,          // コイン
-		Item2D = 2550,          // 回復アイテム
-		Goal2D = 2600,          // ゴールポイント
 
 
 		PlayerBullet2D = 3000,      // プレイヤーの弾
