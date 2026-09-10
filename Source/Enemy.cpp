@@ -1,4 +1,4 @@
-#include "Enemy.h"
+﻿#include "Enemy.h"
 #include "DxLib.h"
 #include "Texture.h"
 
