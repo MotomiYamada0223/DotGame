@@ -24,103 +24,161 @@ Player::Player(VECTOR initPos)
 
 	mCurrentFrame = 0;
 	mFrameTimer = 0;
+
+  // プレイヤー当たり判定サイズ
+	playerWidth = 128.0f;
+	playerHeight = 256.0f;
 }
 
 Player::~Player()
 {
 }
 
-void Player::Update()
+void Player::PlayerMove(BlockMap& blockMap)
 {
 	bool moved = false;
 
-	// 左右移動 (A, D)
-	
+	// 左移動 A
 	if (CheckHitKey(KEY_INPUT_A) == 1)
 	{
-		mvPosition.x -= moveSpeed;
-		isFacingRight = false;
-		moved = true;
+		float nextX =
+			mvPosition.x - moveSpeed;
+
+		// プレイヤーの左上座標
+		float playerLeft =
+			nextX - playerWidth / 2.0f;
+		float playerTop =
+			mvPosition.y - playerHeight / 2.0f;
+
+		// 通れるかの処理
+		if (!blockMap.IsCollision(
+			playerLeft,
+			playerTop,
+			playerWidth,
+			playerHeight))
+		{
+			// 当たっていなければ移動
+			mvPosition.x = nextX;
+
+			isFacingRight = false;
+
+			moved = true;
+		}
 	}
+
+
+	// 右移動 D
 	if (CheckHitKey(KEY_INPUT_D) == 1)
 	{
-		mvPosition.x += moveSpeed;
-		isFacingRight = true;
-		moved = true;
+		float nextX =
+			mvPosition.x + moveSpeed;
+
+		// プレイヤーの左上座標
+		float playerLeft =
+			nextX - playerWidth / 2.0f;
+
+		float playerTop =
+			mvPosition.y - playerHeight / 2.0f;
+
+		// 通れるかの処理
+		if (!blockMap.IsCollision(
+			playerLeft,
+			playerTop,
+			playerWidth,
+			playerHeight))
+		{
+			// 当たっていなければ移動
+			mvPosition.x = nextX;
+
+			isFacingRight = true;
+
+			moved = true;
+		}
 	}
 
-	// ジャンプ (Space)
-	
-	if (CheckHitKey(KEY_INPUT_SPACE) == 1 && !isJumping)
+
+	// ジャンプ開始 Space
+	if (CheckHitKey(KEY_INPUT_SPACE) == 1 &&
+		!isJumping)
 	{
 		isJumping = true;
+
 		velocityY = jumpPower;
+
 		moved = true;
 	}
 
-	// ジャンプ中の処理
-	
+
+	// ジャンプ中
 	if (isJumping)
 	{
 		velocityY += gravity;
 		mvPosition.y += velocityY;
 
-		// 着地判定
-		
 		if (mvPosition.y >= groundY)
 		{
 			mvPosition.y = groundY;
+
 			isJumping = false;
+
 			velocityY = 0.0f;
 		}
 		moved = true;
 	}
 
-	// 攻撃 (F)
-	
-	if (CheckHitKey(KEY_INPUT_F) == 1 && !isAttacking)
+
+	// 攻撃 F
+	if (CheckHitKey(KEY_INPUT_F) == 1 &&
+		!isAttacking)
 	{
 		isAttacking = true;
+
 		attackTimer = attackDuration;
 	}
 
-	// 攻撃エフェクトの更新
-	
+
+	// 攻撃エフェクト更新
 	if (isAttacking)
 	{
 		attackTimer--;
+
 		if (attackTimer <= 0)
 		{
 			isAttacking = false;
 		}
 	}
 
+
 	// アニメーション更新
-	
 	if (moved)
 	{
 		mFrameTimer++;
+
 		if (mFrameTimer >= FRAME_INTERVAL)
 		{
 			mFrameTimer = 0;
-			mCurrentFrame = (mCurrentFrame + 1) % TOTAL_FRAMES;
+
+			mCurrentFrame =
+				(mCurrentFrame + 1) % TOTAL_FRAMES;
 		}
 	}
 	else
 	{
 		mCurrentFrame = 0;
+
 		mFrameTimer = 0;
 	}
+}
 
+void Player::Update()
+{
 	// --- 当たり判定処理 ---
-	
 	isHitDamage = false;
 
 	ObjectManager* objManager = Master::mpSceneManager->GetCurrentScene()->GetObjectManager();
 	std::vector<Object2D*> enemyList = objManager->GetObject2DListByTag(Object2D::Enemy2D);
 
 	// 自身の矩形
-	
 	VECTOR myPos = VGet(mvPosition.x - FRAME_WIDTH / 2.0f, mvPosition.y - FRAME_HEIGHT / 2.0f, 0.0f);
 	VECTOR mySize = VGet((float)FRAME_WIDTH, (float)FRAME_HEIGHT, 0.0f);
 
@@ -156,19 +214,16 @@ void Player::Update()
 		if (!enemy) continue;
 
 		// 敵の矩形
-		
 		VECTOR enePos = VGet(enemy->GetPosition().x - enemy->GetSizeX() / 2.0f, enemy->GetPosition().y - enemy->GetSizeY() / 2.0f, 0.0f);
 		VECTOR eneSize = VGet((float)enemy->GetSizeX(), (float)enemy->GetSizeY(), 0.0f);
 
 		// 1. プレイヤー自身と敵の衝突判定 (ダメージで赤くする)
-		
 		if (Collision::CheckRectToRect(myPos, mySize, enePos, eneSize))
 		{
 			isHitDamage = true; 
 		}
 
 		// 2. 攻撃判定と敵の衝突判定 (敵を赤く光らせる)
-		
 		if (hasAttackRect)
 		{
 			if (Collision::CheckRectToRect(atkPos, atkSize, enePos, eneSize))
@@ -260,4 +315,37 @@ void Player::Draw()
 		DrawBox(rectLeft, rectTop, rectRight, rectBottom, GetColor(255, 50, 50), TRUE);
 		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 	}
+
+
+
+
+
+	// ブロックマップとの当たり判定デバッグ表示
+	int left =
+		static_cast<int>(
+			mvPosition.x - playerWidth / 2.0f
+			);
+
+	int top =
+		static_cast<int>(
+			mvPosition.y - playerHeight / 2.0f
+			);
+
+	int right =
+		static_cast<int>(
+			mvPosition.x + playerWidth / 2.0f
+			);
+
+	int bottom =
+		static_cast<int>(
+			mvPosition.y + playerHeight / 2.0f
+			);
+	DrawBox(
+		left,
+		top,
+		right,
+		bottom,
+		GetColor(255, 0, 0),
+		FALSE
+	);
 }

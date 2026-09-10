@@ -3,15 +3,15 @@
 // CSVを読み込んでブロックマップを生成するクラス
 
 // 1ブロックのサイズ 64
-const int CHIP_SIZZE = 64;
+const int CHIP_SIZE = 64;
 
 // マップの横縦の最大チップ数
-const int MAX_MAP_WIDTH = 40;
-const int MAX_MAP_HEIGTHT = 20;
+const int MAX_MAP_WIDTH = 30;
+const int MAX_MAP_HEIGHT = 17;
 
 // タイルセットの設定
-// 画像にチップが何個並んでいるか
-const int TILESET_COLUMNS = 5;
+// 画像にチップが横方向に何個並んでいるか
+const int TILESET_COLUMNS = 8;
 
 class BlockMap
 {
@@ -26,7 +26,20 @@ public:
 	void Draw();
 
 	// プレイヤーの指定した四角がマップに当たっているかの処理をする関数
-	bool IsCollision();
+	bool IsCollision(
+		float x,
+		float y,
+		float width,
+		float height
+	);
+
+
+private:
+	// タイルセットの画像
+	int mnTileGraph;
+
+	// マップデータ
+	int mnMapData[MAX_MAP_HEIGHT][MAX_MAP_WIDTH];
 };
 
 

@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "Scene.h"
 #include "TutorialTextManager.h"
+#include"BlockMap.h"
 
 // 前方宣言
 class Player;
@@ -24,5 +25,7 @@ private:
 
 	int spawnTimer; 
 	Player* mpPlayer; // プレイヤーの座標を参照するために保持
+
+	BlockMap mBlockMap;
 	
 };
