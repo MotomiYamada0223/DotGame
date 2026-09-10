@@ -1,6 +1,9 @@
-#pragma once
+ï»¿#pragma once
 #include "Scene.h"
 #include "TutorialTextManager.h"
+
+// å‰æ–¹å®£è¨€
+class Player;
 
 class GameScene : public Scene
 {
@@ -11,16 +14,15 @@ public:
 
 	virtual ~GameScene();
 
-	// ‰Šú‰»
 	virtual void Initialize() override;
-	// XV
 	virtual void Update() override;
-	// •`‰æ
 	virtual void Draw() override;
-	// I—¹ˆ—
 	virtual void Finalize() override;
+
 private:
-	
-	// Tutorialƒ}ƒl[ƒWƒƒ[‚ğŒÄ‚Ño‚·‚½‚ß‚Ìˆ—
 	TutorialTextManager mTutorialText;
+
+	int spawnTimer; 
+	Player* mpPlayer; // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®åº§æ¨™ã‚’å‚ç…§ã™ã‚‹ãŸã‚ã«ä¿æŒ
+	
 };

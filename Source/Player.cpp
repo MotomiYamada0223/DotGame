@@ -1,6 +1,12 @@
 ﻿#include "Player.h"
 #include "DxLib.h"
 #include "Texture.h"
+#include "Master.h"
+#include "SceneManager.h"
+#include "Scene.h"
+#include "ObjectManager.h"
+#include "Enemy.h"
+#include "Collision.h"
 
 Player::Player(VECTOR initPos) 
 	// TextureAnimationは使わず一枚絵としてロード
@@ -14,6 +20,7 @@ Player::Player(VECTOR initPos)
 	isFacingRight = true;
 	isAttacking = false;
 	attackTimer = 0;
+	isHitDamage = false;
 
 	mCurrentFrame = 0;
 	mFrameTimer = 0;
@@ -105,6 +112,72 @@ void Player::Update()
 		mFrameTimer = 0;
 	}
 
+	// --- 当たり判定処理 ---
+	
+	isHitDamage = false;
+
+	ObjectManager* objManager = Master::mpSceneManager->GetCurrentScene()->GetObjectManager();
+	std::vector<Object2D*> enemyList = objManager->GetObject2DListByTag(Object2D::Enemy2D);
+
+	// 自身の矩形
+	
+	VECTOR myPos = VGet(mvPosition.x - FRAME_WIDTH / 2.0f, mvPosition.y - FRAME_HEIGHT / 2.0f, 0.0f);
+	VECTOR mySize = VGet((float)FRAME_WIDTH, (float)FRAME_HEIGHT, 0.0f);
+
+	VECTOR atkPos = VGet(0, 0, 0);
+	VECTOR atkSize = VGet(0, 0, 0);
+	bool hasAttackRect = false;
+
+	if (isAttacking)
+	{
+		hasAttackRect = true;
+		int attackWidth = 60;
+		int attackHeight = 40;
+		int halfSizeX = FRAME_WIDTH / 2;
+		float atkLeft;
+
+		if (isFacingRight)
+		{
+			atkLeft = mvPosition.x + halfSizeX;
+		}
+		else
+		{
+			atkLeft = mvPosition.x - halfSizeX - attackWidth;
+		}
+		float atkTop = mvPosition.y - attackHeight / 2.0f;
+
+		atkPos = VGet(atkLeft, atkTop, 0.0f);
+		atkSize = VGet((float)attackWidth, (float)attackHeight, 0.0f);
+	}
+
+	for (Object2D* obj : enemyList)
+	{
+		Enemy* enemy = dynamic_cast<Enemy*>(obj);
+		if (!enemy) continue;
+
+		// 敵の矩形
+		
+		VECTOR enePos = VGet(enemy->GetPosition().x - enemy->GetSizeX() / 2.0f, enemy->GetPosition().y - enemy->GetSizeY() / 2.0f, 0.0f);
+		VECTOR eneSize = VGet((float)enemy->GetSizeX(), (float)enemy->GetSizeY(), 0.0f);
+
+		// 1. プレイヤー自身と敵の衝突判定 (ダメージで赤くする)
+		
+		if (Collision::CheckRectToRect(myPos, mySize, enePos, eneSize))
+		{
+			isHitDamage = true; 
+		}
+
+		// 2. 攻撃判定と敵の衝突判定 (敵を赤く光らせる)
+		
+		if (hasAttackRect)
+		{
+			if (Collision::CheckRectToRect(atkPos, atkSize, enePos, eneSize))
+			{
+				enemy->OnDamaged();
+			}
+		}
+	}
+
 	Object2D::Update();
 }
 
@@ -126,6 +199,13 @@ void Player::Draw()
 		else if (CheckHitKey(KEY_INPUT_D)) srcY = 768;
 		else if (!isFacingRight) srcY = 512; 
 
+		// ダメージ中なら赤く変色させる
+		
+		if (isHitDamage)
+		{
+			SetDrawBright(255, 100, 100); 
+		}
+
 		// 指定の場所だけ描画する
 		
 		DrawRectGraph(
@@ -138,6 +218,13 @@ void Player::Draw()
 			mpTexture->GetHandle(),
 			true
 		);
+
+		// 色を元に戻す
+		
+		if (isHitDamage)
+		{
+			SetDrawBright(255, 255, 255);
+		}
 	}
 	else
 	{

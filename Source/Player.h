@@ -30,6 +30,10 @@ private:
 	int attackTimer;
 	const int attackDuration = 15; 
 
+	// 被ダメージ（衝突）フラグ
+	
+	bool isHitDamage;
+
 	// アニメーション関連
 	
 	int mCurrentFrame;
