@@ -132,6 +132,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Source\Collision.cpp" />
+    <ClCompile Include="Source\Enemy.cpp" />
     <ClCompile Include="Source\FontManager.cpp" />
     <ClCompile Include="Source\GameScene.cpp" />
     <ClCompile Include="Source\InputManager.cpp" />
@@ -152,6 +153,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Collision.h" />
+    <ClInclude Include="Source\Enemy.h" />
     <ClInclude Include="Source\FontManager.h" />
     <ClInclude Include="Source\GameScene.h" />
     <ClInclude Include="Source\InputManager.h" />

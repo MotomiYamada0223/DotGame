@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "Object2D.h"
 
 class Player : public Object2D
@@ -29,6 +29,10 @@ private:
 	bool isAttacking;
 	int attackTimer;
 	const int attackDuration = 15; 
+
+	// 被ダメージ（衝突）フラグ
+	
+	bool isHitDamage;
 
 	// アニメーション関連
 	
