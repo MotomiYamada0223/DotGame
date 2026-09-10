@@ -146,6 +146,7 @@
     <ClCompile Include="Source\Scene.cpp" />
     <ClCompile Include="Source\SceneManager.cpp" />
     <ClCompile Include="Source\SoundManager.cpp" />
+    <ClCompile Include="Source\StageSelectScene.cpp" />
     <ClCompile Include="Source\StepLoader.cpp" />
     <ClCompile Include="Source\Texture.cpp" />
     <ClCompile Include="Source\TextureAnimation.cpp" />
@@ -168,6 +169,7 @@
     <ClInclude Include="Source\Scene.h" />
     <ClInclude Include="Source\SceneManager.h" />
     <ClInclude Include="Source\SoundManager.h" />
+    <ClInclude Include="Source\StageSelectScene.h" />
     <ClInclude Include="Source\StepData.h" />
     <ClInclude Include="Source\StepLoader.h" />
     <ClInclude Include="Source\Texture.h" />

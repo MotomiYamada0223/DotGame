@@ -4,6 +4,7 @@
 
 // 作成するシーンのインクルード
 #include "TitleScene.h"
+#include "StageSelectScene.h"
 #include "GameScene.h"
 #include "WinResultScene.h"
 
@@ -75,6 +76,10 @@ void SceneManager::ChangeSceneIfNeeded()
 	{
 	case SCENE_TYPE::SCENE_TITLE:
 		mpCurrentScene = new TitleScene(); // タイトルシーンの生成
+		break;
+
+	case SCENE_TYPE::SCENE_STAGESELECT:
+		mpCurrentScene = new StageSelectScene();
 		break;
 
 	case SCENE_TYPE::SCENE_GAME:

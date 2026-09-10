@@ -12,7 +12,8 @@ public: // enum, struct の定義
 	enum SCENE_TYPE
 	{
 		SCENE_NONE = 0,   // 定義なし
-		SCENE_TITLE,      // タイトル
+		SCENE_TITLE,
+		SCENE_STAGESELECT,      // タイトル
 		SCENE_GAME,       // ゲーム
 
 		SCENE_WINRESULT, // 勝利シーン

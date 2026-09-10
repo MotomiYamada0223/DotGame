@@ -1,12 +1,12 @@
-ï»¿#include "TitleScene.h"
-#include "Utility.h" // å‘¼ã³å‡ºã™ã¨ã€SCREEN_WIDTHã¨ã‹ã‚’ä½¿ãˆã‚‹
+#include "TitleScene.h"
+#include "Utility.h" // ŒÄ‚Ño‚·‚ÆASCREEN_WIDTH‚Æ‚©‚ðŽg‚¦‚é
 #include "DxLib.h"
 #include "Master.h"
 #include "inputManager.h"
 
 
 TitleScene::TitleScene()
-	: Scene()     // åŸºåº•ã‚¯ãƒ©ã‚¹ã®ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ã‚’å‘¼ã³å‡ºã—ã¦ãŠã
+	: Scene()     // Šî’êƒNƒ‰ƒX‚ÌƒRƒ“ƒXƒgƒ‰ƒNƒ^‚ðŒÄ‚Ño‚µ‚Ä‚¨‚­
 {
 }
 
@@ -17,24 +17,24 @@ TitleScene::~TitleScene()
 
 void TitleScene::Initialize()
 {
-	// ã‚¿ã‚¤ãƒˆãƒ«ãƒ­ã‚´ã®ã‚¯ãƒ©ã‚¹ã®ä½œæˆ
-	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ç”Ÿæˆ ãªã©ã‚’ã“ã“ã§è¡Œã†
-	// ã‚¿ã‚¤ãƒˆãƒ«ç”»é¢ã§å¿…è¦ãªã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’ã“ã“ã§ç”Ÿæˆã™ã‚‹
+	// ƒ^ƒCƒgƒ‹ƒƒS‚ÌƒNƒ‰ƒX‚Ìì¬
+	// ƒvƒŒƒCƒ„[‚Ì¶¬ ‚È‚Ç‚ð‚±‚±‚Ås‚¤
+	// ƒ^ƒCƒgƒ‹‰æ–Ê‚Å•K—v‚ÈƒIƒuƒWƒFƒNƒg‚ð‚±‚±‚Å¶¬‚·‚é
 
-	// BGMå†ç”Ÿ
+	// BGMÄ¶
 	//Master::mpSoundManager->PlayBGM(SoundManager::BGM_TITLE);
 }
 
 
 void TitleScene::Update()
 {
-	// Enterã§ã‚²ãƒ¼ãƒ ç”»é¢ã¸
+	// Enter‚ÅƒQ[ƒ€‰æ–Ê‚Ö
 	if (InputManager::CheckDownKey(KEY_INPUT_RETURN))
 	{
-		Master::mpSceneManager->SetNextScene(SceneManager::SCENE_TYPE::SCENE_GAME);
+		Master::mpSceneManager->SetNextScene(SceneManager::SCENE_TYPE::SCENE_STAGESELECT);
 	}
 
-	// åŸºåº•ã‚¯ãƒ©ã‚¹ã®æ›´æ–°å‡¦ç†ã‚’å‘¼ã³ã ã™
+	// Šî’êƒNƒ‰ƒX‚ÌXVˆ—‚ðŒÄ‚Ñ‚¾‚·
 	Scene::Update();
 }
 
@@ -43,15 +43,15 @@ void TitleScene::Draw()
 {
 
 	DrawFormatStringToHandle(500, 500, GetColor(255, 255, 255),
-		Master::mpFontManager->GetDotFont(), "ã‚¿ã‚¤ãƒˆãƒ«ã€€æ‰èƒ½ã®åŽŸçŸ³\n\n Enterã§ã‚²ãƒ¼ãƒ ã‚·ãƒ¼ãƒ³");
+		Master::mpFontManager->GetDotFont(), "ƒ^ƒCƒgƒ‹@Ë”\‚ÌŒ´Î\n\n Enter‚ÅƒQ[ƒ€ƒV[ƒ“");
 
-	// åŸºåº•ã‚¯ãƒ©ã‚¹ã®æ›´æ–°å‡¦ç†ã‚’å‘¼ã³ã ã™
+	// Šî’êƒNƒ‰ƒX‚ÌXVˆ—‚ðŒÄ‚Ñ‚¾‚·
 	Scene::Draw();
 }
 
 
 void TitleScene::Finalize()
 {
-	// BGMåœæ­¢
+	// BGM’âŽ~
 	//Master::mpSoundManager->StopBGM();
 }
