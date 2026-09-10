@@ -25,9 +25,9 @@ private:
 	// ジャンプ関連
 	bool isJumping;
 	float velocityY;
-	const float gravity = 0.3f; // 元0.5
-	const float jumpPower = -22.0f; // 元12
-	float groundY; 
+	const float gravity = 0.5f; // 元0.5
+	const float jumpPower = -18.0f; // 元12
+	bool isGrounded; // 地面に接地しているかどうか
 
 	// 移動関連
 	const float moveSpeed = 5.0f;

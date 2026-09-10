@@ -1,4 +1,5 @@
 #include "BlockMap.h"
+#include "Collision.h"
 #include <string>
 
 // ファイルを読み込むために必要なインクルード
@@ -47,24 +48,19 @@ bool BlockMap::Load(const char* csvPath, const char* texturePath)
 	std::string line;
 
 	int y = 0;
-
 	while (std::getline(file, line) &&
 		y < MAX_MAP_HEIGHT)
 	{
 		std::stringstream ss(line);
-
 		std::string value;
-
 		int x = 0;
 
 		while (std::getline(ss, value, ',') &&
 			x < MAX_MAP_WIDTH)
 		{
 			mnMapData[y][x] = std::stoi(value);
-
 			x++;
 		}
-
 		y++;
 	}
 
@@ -74,13 +70,9 @@ bool BlockMap::Load(const char* csvPath, const char* texturePath)
 
 	if (mnTileGraph == -1)
 	{
-		std::cout
-			<< "タイルセット画像が開けませんでした。"
-			<< std::endl;
-
+		std::cout << "タイルセット画像が開けませんでした。"<< std::endl;
 		return false;
 	}
-
 	return true;
 }
 
@@ -152,21 +144,13 @@ bool BlockMap::IsCollision(
 {
 	// プレイヤーが重なっている
 	// マップチップの範囲を計算
-	int left =
-		static_cast<int>(x) / CHIP_SIZE;
+	int left = static_cast<int>(x) / CHIP_SIZE;
 
-	int right =
-		static_cast<int>(
-			x + width - 1
-			) / CHIP_SIZE;
+	int right = static_cast<int>(x + width - 1) / CHIP_SIZE;
 
-	int top =
-		static_cast<int>(y) / CHIP_SIZE;
+	int top =static_cast<int>(y) / CHIP_SIZE;
 
-	int bottom =
-		static_cast<int>(
-			y + height - 1
-			) / CHIP_SIZE;
+	int bottom = static_cast<int>(y + height - 1) / CHIP_SIZE;
 
 
 	// プレイヤーが重なっている
@@ -184,5 +168,81 @@ bool BlockMap::IsCollision(
 			}
 		}
 	}
+	return false;
+}
+
+
+// プレイヤーと当たっているブロックを探す
+bool BlockMap::CheckCollisionBlock(
+	float x,
+	float y,
+	float width,
+	float height,
+	int& blockX,
+	int& blockY)
+{
+	// プレイヤーの矩形
+	VECTOR playerPos =VGet(x,y,0.0f);
+	VECTOR playerSize =VGet(width,height,0.0f);
+	// プレイヤーが重なっているブロック範囲を計算
+	int left =static_cast<int>(x) / CHIP_SIZE;
+	int right =static_cast<int>(x + width - 1) / CHIP_SIZE;
+	int top =static_cast<int>(y) / CHIP_SIZE;
+	int bottom =static_cast<int>(y + height - 1) / CHIP_SIZE;
+	// マップ範囲を調整
+	if (left < 0)
+	{
+		left = 0;
+	}
+	if (right >= MAX_MAP_WIDTH)
+	{
+		right = MAX_MAP_WIDTH - 1;
+	}
+	if (top < 0)
+	{
+		top = 0;
+	}
+	if (bottom >= MAX_MAP_HEIGHT)
+	{
+		bottom = MAX_MAP_HEIGHT - 1;
+	}
+	// 周囲のブロックを1個ずつ調べる
+	for (int mapY = top; mapY <= bottom; mapY++)
+	{
+		for (int mapX = left; mapX <= right; mapX++)
+		{
+			int chipID = mnMapData[mapY][mapX];
+			// 1～3だけ当たり判定あり
+			if (chipID < 1 || chipID>3)
+			{
+				continue;
+			}
+			// ブロックの矩形
+			VECTOR blockPos =
+				VGet(
+					mapX * CHIP_SIZE,
+					mapY * CHIP_SIZE,
+					0.0f
+				);
+
+			VECTOR blockSize =
+			VGet(
+				(float)CHIP_SIZE,
+				(float)CHIP_SIZE,
+				0.0f
+			);
+			// プレイヤーとブロックの当たり判定
+			if (Collision::CheckRectToRect(
+				playerPos,
+				playerSize,
+				blockPos,
+				blockSize))
+			{
+				blockX = mapX;
+				blockY = mapY;
+				return true;
+			}
+		}
+	}				   
 	return false;
 }

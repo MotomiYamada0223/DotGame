@@ -32,6 +32,17 @@ public:
 		float width,
 		float height
 	);
+	
+	// プレイヤーの指定した四角がマップに当たっているかの処理をする関数
+	bool CheckCollisionBlock(
+		float x,
+		float y,
+		float width,
+		float height,
+		int& blockX,
+		int& blockY
+	);
+
 
 private:
 	// タイルセットの画像
