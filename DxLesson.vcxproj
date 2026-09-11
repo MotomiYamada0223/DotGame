@@ -143,11 +143,8 @@
     <ClCompile Include="Source\Object2D.cpp" />
     <ClCompile Include="Source\ObjectManager.cpp" />
     <ClCompile Include="Source\Player.cpp" />
-<<<<<<< HEAD
     <ClCompile Include="Source\ResourceManager.cpp" />
-=======
     <ClCompile Include="Source\Saint.cpp" />
->>>>>>> main
     <ClCompile Include="Source\Scene.cpp" />
     <ClCompile Include="Source\SceneManager.cpp" />
     <ClCompile Include="Source\SoundManager.cpp" />
@@ -170,12 +167,9 @@
     <ClInclude Include="Source\Object2D.h" />
     <ClInclude Include="Source\ObjectManager.h" />
     <ClInclude Include="Source\Player.h" />
-<<<<<<< HEAD
     <ClInclude Include="Source\CharacterPhysics.h" />
     <ClInclude Include="Source\ResourceManager.h" />
-=======
     <ClInclude Include="Source\Saint.h" />
->>>>>>> main
     <ClInclude Include="Source\Scene.h" />
     <ClInclude Include="Source\SceneManager.h" />
     <ClInclude Include="Source\SoundManager.h" />
