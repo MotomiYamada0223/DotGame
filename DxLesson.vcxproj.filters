@@ -84,6 +84,7 @@
     <ClCompile Include="Source\StageSelectScene.cpp">
       <Filter>ソース ファイル\Scene系</Filter>
     </ClCompile>
+<<<<<<< HEAD
     <ClCompile Include="Source\BlockMap.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -91,6 +92,9 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Source\CharacterPhysics.cpp">
+=======
+    <ClCompile Include="Source\Saint.cpp">
+>>>>>>> main
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -158,6 +162,7 @@
     <ClInclude Include="Source\StageSelectScene.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+<<<<<<< HEAD
     <ClInclude Include="Source\BlockMap.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -167,5 +172,10 @@
     <ClInclude Include="Source\CharacterPhysics.h">
       <Filter>ソース ファイル</Filter>
     </ClInclude>
+=======
+    <ClInclude Include="Source\Saint.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+>>>>>>> main
   </ItemGroup>
 </Project>
