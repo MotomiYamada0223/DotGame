@@ -17,6 +17,8 @@
 SceneManager* Master::mpSceneManager = new SceneManager();
 SoundManager* Master::mpSoundManager = new SoundManager();
 FontManager* Master::mpFontManager = new FontManager();
+ResourceManager* Master::mpResourceManager = new ResourceManager();
+
 
 /**
 * @fn WinMain
@@ -98,6 +100,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	Master::mpFontManager->Finalize();
 	delete Master::mpFontManager;
 
+	// リソースマネージャーの削除
+	delete Master::mpResourceManager;
 
 	// DXライブラリ使用の終了
 	DxLib_End();

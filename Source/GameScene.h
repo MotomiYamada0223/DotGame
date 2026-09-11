@@ -1,5 +1,10 @@
-#pragma once
+﻿#pragma once
 #include "Scene.h"
+#include "TutorialTextManager.h"
+#include"BlockMap.h"
+
+// 前方宣言
+class Player;
 
 class GameScene : public Scene
 {
@@ -10,13 +15,17 @@ public:
 
 	virtual ~GameScene();
 
-	// ������
 	virtual void Initialize() override;
-	// �X�V
 	virtual void Update() override;
-	// �`��
 	virtual void Draw() override;
-	// �I������
 	virtual void Finalize() override;
+
 private:
+	TutorialTextManager mTutorialText;
+
+	int spawnTimer; 
+	Player* mpPlayer; // プレイヤーの座標を参照するために保持
+	BlockMap mBlockMap;
+
+	bool mbIsLoaded = false; // マップがロードされたかどうかのフラグ
 };

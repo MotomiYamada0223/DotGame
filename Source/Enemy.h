@@ -1,21 +1,25 @@
 #pragma once
-
-#include "DxLib.h"
 #include "Object2D.h"
 
 class Enemy : public Object2D
 {
 public:
 	Enemy(VECTOR initPos);
-	~Enemy();
+	virtual ~Enemy();
 
-	void Update() override;
-	void Draw() override;
+	virtual void Update() override;
+	virtual void Draw() override;
+
+	// 攻撃を受けた際に呼ばれる処理
+	
+	void OnDamaged();
 
 private:
-	const float MoveSpeed = 2.0f;
-	static constexpr float SearchRange = 500.0f;
-
+	float moveSpeed;
+	bool isDamaged; // ダメージを受けて赤くなっているか
+	
+	int damageTimer; // 赤くするフレーム時間
+	
 	VECTOR mvPlayerDirection;
 	int mnCurrentFrame;
 	int mnFrameTimer;
