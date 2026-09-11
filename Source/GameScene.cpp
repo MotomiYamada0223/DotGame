@@ -3,6 +3,7 @@
 #include "Master.h"
 #include "InputManager.h"
 #include "Player.h" 
+#include "Enemy.h"
 
 GameScene::GameScene()
 	:Scene()
@@ -19,6 +20,8 @@ void GameScene::Initialize()
 {
 	// ÉvÉåÉCÉÑÅ[ÇÃê∂ê¨
 	new Player(VGet(Utility::SCREEN_WIDTH / 2.0f, Utility::SCREEN_HEIGHT / 2.0f, 0.0f));
+
+	new Enemy(VGet(Utility::SCREEN_WIDTH / 2.0f + 50.0f, Utility::SCREEN_HEIGHT / 2.0f, 0.0f));
 }
 
 void GameScene::Update()

@@ -17,6 +17,8 @@
     <ClCompile Include="Source\TextureAnimation.cpp" />
     <ClCompile Include="Source\TitleScene.cpp" />
     <ClCompile Include="Source\WinResultScene.cpp" />
+    <ClCompile Include="Source\TutorialTextManager.cpp" />
+    <ClCompile Include="Source\Enemy.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Collision.h" />
@@ -35,5 +37,7 @@
     <ClInclude Include="Source\TitleScene.h" />
     <ClInclude Include="Source\Utility.h" />
     <ClInclude Include="Source\WinResultScene.h" />
+    <ClInclude Include="Source\TutorialTextManager.h" />
+    <ClInclude Include="Source\Enemy.h" />
   </ItemGroup>
 </Project>
