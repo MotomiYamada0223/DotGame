@@ -22,8 +22,8 @@ private:
 
 	int mnCurrentFrame;
 	int mnFrameTimer;
-	static const int FRAME_WIDTH = 256;
+	static const int FRAME_WIDTH = 300;
 	static const int FRAME_HEIGHT = 256;
 	static const int TOTAL_FRAMES = 4;
-	static const int FRAME_INTERVAL = 9;
+	static const int FRAME_INTERVAL = 13;
 };

@@ -51,7 +51,7 @@ void Enemy::Draw()
 	{
 		const int srcX = mnCurrentFrame * FRAME_WIDTH;
 
-		int srcY = 335;
+		int srcY = 293;
 
 		if (isDamaged)
 		{
