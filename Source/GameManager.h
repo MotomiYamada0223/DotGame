@@ -1,30 +1,34 @@
-﻿//#pragma once
-//
-//#include <memory>
-//
-//#include "SceneManager.h"
-//#include "SoundManager.h"
-//#include "ResourceManager.h"
-//#include "FontManager.h"
-//#include "ResourceManager.h"
-//
-//// ゲームで使用するManager関係をまとめた
-//// Masterで呼びやすくするため
-//
-//class GameManager
-//{
-//public:
-//
-//	GameManager();
-//	~GameManager();
-//
-//	void Initialize();
-//	void Update();
-//	void Finalize();
-//
-//	SceneManager* GetSceneManager();
-//	SoundManager* GetSoundManager();
-//	ResourceManager* GetResourceManager();
-//	AnimationManager* GetAnimationManager();
-//	FontManager* GetFontManager();
-//};
+﻿#pragma once
+
+#include <memory>
+
+#include "SceneManager.h"
+#include "SoundManager.h"
+#include "ResourceManager.h"
+#include "FontManager.h"
+
+// ゲームで使用するManagerをまとめて管理するクラス
+// Masterで呼ぶことによって全て使えるようにかつ、コードがすっきりする。 大谷
+class GameManager
+{
+public:
+
+	GameManager();
+	~GameManager();
+
+	void Initialize();
+	void Update();
+	void Finalize();
+
+	SceneManager* GetSceneManager();
+	SoundManager* GetSoundManager();
+	ResourceManager* GetResourceManager();
+	FontManager* GetFontManager();
+
+private:
+
+	std::unique_ptr<SceneManager> mpSceneManager;
+	std::unique_ptr<SoundManager> mpSoundManager;
+	std::unique_ptr<ResourceManager> mpResourceManager;
+	std::unique_ptr<FontManager> mpFontManager;
+};

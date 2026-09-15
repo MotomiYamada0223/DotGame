@@ -77,7 +77,7 @@ bool BlockMap::Load(const std::string& csvPath, const std::string& texturePath)
 	file.close();
 
 	// リソースマネージャー経由
-	mnTileGraph = Master::mpResourceManager->LoadGraphics(texturePath);
+	mnTileGraph = Master::mpGameManager->GetResourceManager()->LoadGraphics(texturePath);
 
 	if (mnTileGraph == -1)
 	{

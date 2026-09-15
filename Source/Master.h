@@ -1,10 +1,7 @@
 #pragma once
 
-#include "SceneManager.h"
-#include "SoundManager.h"
-#include "FontManager.h"
 #include "ObjectManager.h"
-#include "ResourceManager.h"
+#include "GameManager.h"
 
 
 //
@@ -21,11 +18,7 @@ class Master
 {
 public:
 
-	static SoundManager* mpSoundManager;
-	static SceneManager* mpSceneManager;
-	static FontManager* mpFontManager;
 	static ObjectManager* mpObjectManager;
-	static ResourceManager* mpResourceManager;
-
+	static GameManager* mpGameManager; // ゲームマネージャーのポインタ
 
 };

@@ -153,7 +153,7 @@ void StageSelectScene::Update()
 	
 	if (InputManager::CheckDownKey(KEY_INPUT_RETURN))
 	{
-		Master::mpSceneManager->SetNextScene(SceneManager::SCENE_GAME);
+		Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_GAME);
 	}
 
 	Scene::Update();
@@ -181,7 +181,7 @@ void StageSelectScene::Draw()
 	SetFontSize(oldFontSize);
 
 	DrawFormatStringToHandle(50, 60, GetColor(255, 255, 255),
-		Master::mpFontManager->GetDotFont(), "Stage Select Scene\nPress Enter to Game");
+		Master::mpGameManager->GetFontManager()->GetDotFont(), "Stage Select Scene\nPress Enter to Game");
 
 	Scene::Draw();
 }

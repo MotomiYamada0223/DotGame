@@ -14,10 +14,7 @@
 */
 
 // Master クラスの静的メンバ変数定義
-SceneManager* Master::mpSceneManager = new SceneManager();
-SoundManager* Master::mpSoundManager = new SoundManager();
-FontManager* Master::mpFontManager = new FontManager();
-ResourceManager* Master::mpResourceManager = new ResourceManager();
+GameManager* Master::mpGameManager = new GameManager();
 
 
 /**
@@ -42,11 +39,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		return -1;
 	}
 
-	// サウンドマネージャーの初期化 （シーンより先にやらないと流れないので注意）
-	Master::mpSoundManager->Initialize();   // 全てのサウンドが読み込まれる（BGMやSE)
-	// シーンマネージャーの生成と初期化
-	Master::mpSceneManager->Initialize();
-	Master::mpFontManager->Initialize();
+	// Manager関係の初期化
+	Master::mpGameManager->Initialize();
 
 	// 描画先画面を裏画面に設定する
 	SetDrawScreen(DX_SCREEN_BACK);
@@ -64,11 +58,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 		int time = GetNowCount();
 
-		// 更新
-		Master::mpSceneManager->Update();
+		// Managerクラスの更新
+		Master::mpGameManager->Update();
 
-		// 描画
-		Master::mpSceneManager->Draw();
+
+		// SceneManagerの描画
+		Master::mpGameManager->GetSceneManager()->Draw();
 
 
 		// 裏画面の内容を表画面に映す
@@ -82,26 +77,21 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		}
 
 		// 削除する必要のあるオブジェクトがあれば削除する
-		Master::mpSceneManager->GetCurrentScene()->GetObjectManager()->DeleteAll2DIfNeeded();
+		Master::mpGameManager->GetSceneManager()
+			->GetCurrentScene()
+			->GetObjectManager()
+			->DeleteAll2DIfNeeded();
+
+
 		// ループする直前にシーン遷移チェックをいれておく
-		Master::mpSceneManager->ChangeSceneIfNeeded();
-		
+		Master::mpGameManager->GetSceneManager()->ChangeSceneIfNeeded();
 	}
 
 	// 終了処理
-	Master::mpSceneManager->Finalize();
-	delete Master::mpSceneManager; // いらなくなるのでdelete する
+	// Manager関係の終了処理
+	Master::mpGameManager->Finalize();
+	delete Master::mpGameManager;
 
-	// サウンドの終了処理
-	Master::mpSoundManager->Finalize();
-	delete Master::mpSoundManager;
-
-	// フォントの終了処理
-	Master::mpFontManager->Finalize();
-	delete Master::mpFontManager;
-
-	// リソースマネージャーの削除
-	delete Master::mpResourceManager;
 
 	// DXライブラリ使用の終了
 	DxLib_End();

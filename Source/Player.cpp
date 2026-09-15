@@ -135,7 +135,7 @@ void Player::Update()
 	// --- 当たり判定処理 ---
 	isHitDamage = false;
 
-	ObjectManager* objManager = Master::mpSceneManager->GetCurrentScene()->GetObjectManager();
+	ObjectManager* objManager = Master::mpGameManager->GetSceneManager()->GetCurrentScene()->GetObjectManager();
 	std::vector<Object2D*> enemyList = objManager->GetObject2DListByTag(Object2D::Enemy2D);
 
 	// 自身の矩形
@@ -282,7 +282,7 @@ void Player::DebugDraw()
 
 
 	// シーン上のすべての敵の当たり判定をデバッグ表示（黄緑色）
-	ObjectManager* objManager = Master::mpSceneManager->GetCurrentScene()->GetObjectManager();
+	ObjectManager* objManager = Master::mpGameManager->GetSceneManager()->GetCurrentScene()->GetObjectManager();
 	if (objManager != nullptr)
 	{
 		std::vector<Object2D*> enemyList = objManager->GetObject2DListByTag(Object2D::Enemy2D);

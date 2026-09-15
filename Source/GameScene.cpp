@@ -55,7 +55,7 @@ void GameScene::Update()
 	// Enterでリザルト画面へ
 	if (InputManager::CheckDownKey(KEY_INPUT_RETURN))
 	{
-		Master::mpSceneManager->SetNextScene(SceneManager::SCENE_WINRESULT);
+		Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_WINRESULT);
 	}	
 
 	mpPlayer->PlayerMove(mBlockMap);
@@ -69,7 +69,7 @@ void GameScene::Draw()
 	if (!mbIsLoaded) { return; }
 
 	DrawFormatStringToHandle(500, 500, GetColor(255, 255, 255),
-		Master::mpFontManager->GetDotFont(), "ゲームシーン\n\n Enterでリザルトへ");
+		Master::mpGameManager->GetFontManager()->GetDotFont(), "ゲームシーン\n\n Enterでリザルトへ");
 
 	mBlockMap.Draw();
 	mpPlayer->DebugDraw(); // デバッグ表示するため

@@ -13,7 +13,7 @@ Object2D::Object2D(std::string filename, VECTOR initPos)
 	, mpTextureAnimation(nullptr)
 {
 	// 現在シーンのオブジェクトマネージジャーに自身 (this) を追加する
-	Master::mpSceneManager->GetCurrentScene()->GetObjectManager()->AddObject(this);
+	Master::mpGameManager->GetSceneManager()->GetCurrentScene()->GetObjectManager()->AddObject(this);
 
 	// 画像生成
 	mpTexture = new Texture(filename, initPos, true);
@@ -29,7 +29,7 @@ Object2D::Object2D(VECTOR initPos, std::string filename, int allNum, int numX, i
 	,mpTexture(nullptr)  // テクスチャーアニメーションの場合は画像一味表示の法は使用しない
 {
 	// 現在のシーンの ObjectManager に自身（）this を追加
-	Master::mpSceneManager->GetCurrentScene()->GetObjectManager()->AddObject(this);
+	Master::mpGameManager->GetSceneManager()->GetCurrentScene()->GetObjectManager()->AddObject(this);
 
 	// テクスチャアニメーション作成
 	mpTextureAnimation = new TextureAnimation(initPos, filename, allNum, numX, numY, interval);
@@ -43,7 +43,7 @@ Object2D::Object2D(const VECTOR initPos)
 	,mpTexture(nullptr)  // テクスチャーアニメーションの場合は画像一味表示の法は使用しない
 {
 	// 現在のシーンの ObjectManager に自身（）this を追加
-	Master::mpSceneManager->GetCurrentScene()->GetObjectManager()->AddObject(this);
+	Master::mpGameManager->GetSceneManager()->GetCurrentScene()->GetObjectManager()->AddObject(this);
 }
 
 // デストラクタ
