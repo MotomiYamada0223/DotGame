@@ -29,7 +29,7 @@ Player::Player(VECTOR initPos)
 	// Width...幅
 	// Height...足元の位置
 	playerWidth = 32.0f;
-	playerHeight = 100.0f;
+	playerHeight = 80.0f;
 }
 
 Player::~Player()

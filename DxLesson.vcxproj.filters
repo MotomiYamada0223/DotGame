@@ -149,15 +149,6 @@
     <ClInclude Include="Source\WinResultScene.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\StepLoader.h">
-      <Filter>ソース ファイル\Text関係</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\StepData.h">
-      <Filter>ソース ファイル\Text関係</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\TutorialTextManager.h">
-      <Filter>ソース ファイル\Text関係</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Enemy.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -170,17 +161,26 @@
     <ClInclude Include="Source\ResourceManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\CharacterPhysics.h">
-      <Filter>ソース ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Saint.h">
       <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\GameConstants.h">
+      <Filter>ソース ファイル\Manager系</Filter>
     </ClInclude>
     <ClInclude Include="Source\GameManager.h">
       <Filter>ソース ファイル\Manager系</Filter>
     </ClInclude>
-    <ClInclude Include="Source\GameConstants.h">
-      <Filter>ソース ファイル\Manager系</Filter>
+    <ClInclude Include="Source\StepData.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\StepLoader.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\TutorialTextManager.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\CharacterPhysics.h">
+      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

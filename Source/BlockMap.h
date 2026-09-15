@@ -14,6 +14,9 @@ const int MAX_MAP_HEIGHT = 17;
 // 画像にチップが横方向に何個並んでいるか
 const int TILESET_COLUMNS = 8;
 
+// 画像にあるブロックの種類の最大
+const int MAX_BLOCK_COUNT = 64;
+
 class BlockMap
 {
 public:

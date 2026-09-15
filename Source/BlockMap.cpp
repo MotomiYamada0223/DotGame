@@ -16,7 +16,7 @@ namespace
 	// チップIDが当たり判定を持つかどうかを判定する
 	bool IsSolidChip(int chipID)
 	{
-		return (chipID >= 1 && chipID <= 3);
+		return (chipID >= 1 && chipID <= MAX_BLOCK_COUNT);
 	}
 }
 
@@ -139,17 +139,20 @@ void BlockMap::Draw()
 			);
 
 
-			// 0から10まではデバッグ表示している
-			if (chipID >= 1 && chipID <= 10)
+
+
+
+			// デバッグ表示
+			if (IsSolidChip)
 			{
-				DrawBox(
+				/*DrawBox(
 					x * CHIP_SIZE,
 					y * CHIP_SIZE,
 					(x + 1) * CHIP_SIZE,
 					(y + 1) * CHIP_SIZE,
 					GetColor(0, 255, 0),
 					FALSE
-				);
+				);*/
 			}
 		}
 	}
