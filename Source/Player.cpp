@@ -14,13 +14,19 @@ Player::Player(VECTOR initPos)
 	: Object2D(CharacterGraphPath::PlayerAnimation, initPos)
 {
 	SetTag(Object2D::BattlePlayer2D);
-	isJumping = false;
+	mbIsJumping = false;
 	isGrounded = true;
 	velocityY = 0.0f;
 	isFacingRight = true;
 	isAttacking = false;
 	attackTimer = 0;
 	isHitDamage = false;
+	isDead = false;
+	deadTimer = 0;
+	alpha = 255.0f;
+	mSpawnPos = initPos;
+	mDeadState = 0;
+	mpBlockMap = nullptr;
 
 	mCurrentFrame = 0;
 	mFrameTimer = 0;
@@ -28,8 +34,8 @@ Player::Player(VECTOR initPos)
     // プレイヤー当たり判定サイズ
 	// Width...幅
 	// Height...足元の位置
-	playerWidth = 32.0f;
-	playerHeight = 100.0f;
+	mfPlayerWidth = 32.0f;
+	mfPlayerHeight = 100.0f;
 }
 
 Player::~Player()
@@ -38,6 +44,11 @@ Player::~Player()
 
 void Player::PlayerMove(BlockMap& blockMap)
 {
+	mpBlockMap = &blockMap;
+
+	// 死亡時は操作を受け付けない
+	if (isDead) return;
+
 	bool moved = false;
 
 	// 左右移動の共通化（Aキーは-1, Dキーは1）
@@ -57,10 +68,10 @@ void Player::PlayerMove(BlockMap& blockMap)
 	if (moveDirection != 0.0f)
 	{
 		float nextX = mvPosition.x + (moveSpeed * moveDirection);
-		float playerLeft = nextX - playerWidth / 2.0f;
-		float playerTop = mvPosition.y - playerHeight / 2.0f;
+		float playerLeft = nextX - mfPlayerWidth / 2.0f;
+		float playerTop = mvPosition.y - mfPlayerHeight / 2.0f;
 
-		if (!blockMap.CheckCollisionBlock(playerLeft, playerTop, playerWidth, playerHeight))
+		if (!blockMap.CheckCollisionBlock(playerLeft, playerTop, mfPlayerWidth, mfPlayerHeight))
 		{
 			mvPosition.x = nextX;
 			moved = true;
@@ -72,10 +83,10 @@ void Player::PlayerMove(BlockMap& blockMap)
 		mvPosition,
 		velocityY,
 		isGrounded,
-		isJumping,
+		mbIsJumping,
 		blockMap,
-		playerWidth,
-		playerHeight,
+		mfPlayerWidth,
+		mfPlayerHeight,
 		gravity,
 		moveSpeed
 	);
@@ -84,7 +95,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 	if (CheckHitKey(KEY_INPUT_SPACE) == 1 &&
 		isGrounded)
 	{
-		isJumping = true;
+		mbIsJumping = true;
 		isGrounded = false;
 		velocityY = jumpPower;
 	}
@@ -132,6 +143,13 @@ void Player::PlayerMove(BlockMap& blockMap)
 
 void Player::Update()
 {
+	if (isDead)
+	{
+		DeadProcess();
+		Object2D::Update();
+		return;
+	}
+
 	// --- 当たり判定処理 ---
 	isHitDamage = false;
 
@@ -193,11 +211,78 @@ void Player::Update()
 		}
 	}
 
+	if (CheckHitKey(KEY_INPUT_K) == 1 && !isDead)
+	{
+		isDead = true;
+		mDeadState = 1; // SCATTER
+		deadTimer = 0;
+		mFragments.clear();
+
+		int fragSize = 16;
+		int srcBaseY = isFacingRight ? 384 : 256;
+		
+		for (int y = 0; y < FRAME_HEIGHT; y += fragSize)
+		{
+			for (int x = 0; x < FRAME_WIDTH; x += fragSize)
+			{
+				PlayerFragment frag;
+				frag.pos.x = mvPosition.x - (FRAME_WIDTH / 2.0f) + (float)x;
+				frag.pos.y = mvPosition.y - (FRAME_HEIGHT / 2.0f) + (float)y;
+				frag.srcX = x;
+				frag.srcY = srcBaseY + y;
+				frag.width = fragSize;
+				frag.height = fragSize;
+				
+				frag.vel.x = ((float)GetRand(100) / 100.0f * 10.0f) - 5.0f;
+				frag.vel.y = ((float)GetRand(100) / 100.0f * -15.0f) - 5.0f;
+				
+				mFragments.push_back(frag);
+			}
+		}
+	}
+
 	Object2D::Update();
 }
 
+
 void Player::Draw()
 {
+	if (isDead)
+	{
+		SetDrawBright(255, 255, 255); // 色をリセット
+		for (const auto& frag : mFragments)
+		{
+			if (mpTexture != nullptr)
+			{
+				DrawRectGraph(
+					static_cast<int>(frag.pos.x),
+					static_cast<int>(frag.pos.y),
+					frag.srcX + (mCurrentFrame * FRAME_WIDTH),
+					frag.srcY,
+					frag.width,
+					frag.height,
+					mpTexture->GetHandle(),
+					true
+				);
+			}
+			else
+			{
+				// テクスチャが無い場合の保険
+				DrawBox(
+					static_cast<int>(frag.pos.x),
+					static_cast<int>(frag.pos.y),
+					static_cast<int>(frag.pos.x + frag.width),
+					static_cast<int>(frag.pos.y + frag.height),
+					GetColor(255, 0, 0),
+					TRUE
+				);
+			}
+		}
+		return;
+	}
+
+
+
 	if (mpTexture != nullptr)
 	{
 		const int srcX = mCurrentFrame * FRAME_WIDTH;
@@ -265,6 +350,8 @@ void Player::Draw()
 		DrawBox(rectLeft, rectTop, rectRight, rectBottom, GetColor(255, 50, 50), TRUE);
 		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 	}
+
+
 }
 
 
@@ -274,10 +361,10 @@ void Player::Draw()
 void Player::DebugDraw()
 {
 	// レイヤー自身の当たり判定のデバッグ表示（青色）
-	int playerLeft = static_cast<int>(mvPosition.x - playerWidth / 2.0f);
-	int playerTop = static_cast<int>(mvPosition.y - playerHeight / 2.0f);
-	int playerRight = static_cast<int>(mvPosition.x + playerWidth / 2.0f);
-	int playerBottom = static_cast<int>(mvPosition.y + playerHeight / 2.0f);
+	int playerLeft = static_cast<int>(mvPosition.x - mfPlayerWidth / 2.0f);
+	int playerTop = static_cast<int>(mvPosition.y - mfPlayerHeight / 2.0f);
+	int playerRight = static_cast<int>(mvPosition.x + mfPlayerWidth / 2.0f);
+	int playerBottom = static_cast<int>(mvPosition.y + mfPlayerHeight / 2.0f);
 	DrawBox(playerLeft, playerTop, playerRight, playerBottom, GetColor(0, 0, 255), FALSE);
 
 
@@ -301,9 +388,85 @@ void Player::DebugDraw()
 	}
 
 	// ブロックマップとの当たり判定デバッグ表示
-	int left = static_cast<int>(mvPosition.x - playerWidth / 2.0f);
-	int top = static_cast<int>(mvPosition.y - playerHeight / 2.0f);
-	int right = static_cast<int>(mvPosition.x + playerWidth / 2.0f);
-	int bottom = static_cast<int>(mvPosition.y + playerHeight / 2.0f);
+	int left = static_cast<int>(mvPosition.x - mfPlayerWidth / 2.0f);
+	int top = static_cast<int>(mvPosition.y - mfPlayerHeight / 2.0f);
+	int right = static_cast<int>(mvPosition.x + mfPlayerWidth / 2.0f);
+	int bottom = static_cast<int>(mvPosition.y + mfPlayerHeight / 2.0f);
 	DrawBox(left, top, right, bottom, GetColor(255, 0, 0), FALSE);
+}
+
+void Player::DeadProcess()
+{
+	deadTimer++;
+
+	if (mDeadState == 1) // 飛び散り
+	{
+		for (auto& frag : mFragments)
+		{
+			frag.vel.y += gravity;
+
+			frag.pos.x += frag.vel.x;
+			if (mpBlockMap && mpBlockMap->CheckCollisionBlock(frag.pos.x, frag.pos.y, static_cast<float>(frag.width), static_cast<float>(frag.height)))
+			{
+				frag.pos.x -= frag.vel.x;
+				frag.vel.x *= -0.6f;
+			}
+
+			frag.pos.y += frag.vel.y;
+			if (mpBlockMap && mpBlockMap->CheckCollisionBlock(frag.pos.x, frag.pos.y, static_cast<float>(frag.width), static_cast<float>(frag.height)))
+			{
+				frag.pos.y -= frag.vel.y;
+				frag.vel.y *= -0.4f;
+				frag.vel.x *= 0.9f; // 摩擦
+			}
+		}
+
+		if (deadTimer > 150) // 2.5秒経過
+		{
+			mDeadState = 2; // 戻り
+			deadTimer = 0;
+			for (auto& frag : mFragments)
+			{
+				frag.vel.y = -5.0f - ((float)GetRand(50) / 10.0f);
+				frag.vel.x = ((float)GetRand(100) / 100.0f * 4.0f) - 2.0f;
+			}
+		}
+	}
+	else if (mDeadState == 2) // 戻り
+	{
+		bool allReturned = true;
+
+		for (auto& frag : mFragments)
+		{
+			float targetX = mSpawnPos.x - (FRAME_WIDTH / 2.0f) + frag.srcX;
+			float targetY = mSpawnPos.y - (FRAME_HEIGHT / 2.0f) + (frag.srcY % FRAME_HEIGHT);
+
+			float dx = targetX - frag.pos.x;
+			float dy = targetY - frag.pos.y;
+			float dist = sqrtf(dx * dx + dy * dy);
+
+			if (dist > 2.0f)
+			{
+				frag.pos.x += dx * 0.05f;
+				frag.pos.y += dy * 0.05f;
+				allReturned = false;
+			}
+			else
+			{
+				frag.pos.x = targetX;
+				frag.pos.y = targetY;
+			}
+		}
+
+		// 全て集まったか、タイムアウト（5秒）で強制復活
+		if ((allReturned && deadTimer > 60) || deadTimer > 300) 
+		{
+			mvPosition = mSpawnPos;
+			isDead = false;
+			mDeadState = 0;
+			deadTimer = 0;
+			isFacingRight = true;
+			mFragments.clear();
+		}
+	}
 }

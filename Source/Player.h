@@ -1,5 +1,7 @@
 ﻿#pragma once
 #include "Object2D.h"
+#include <vector>
+#include <math.h>
 #include "BlockMap.h"
 #include "CharacterPhysics.h" // ジャンプとかの当たり判定をしてくれる処理
 
@@ -22,13 +24,13 @@ private:
 
 private:
 	// プレイヤーの当たり判定サイズ
-	float playerWidth;
-	float playerHeight;
+	float mfPlayerWidth;
+	float mfPlayerHeight;
 
 	// ジャンプ関連
-	bool isJumping;
+	bool mbIsJumping;
 	float velocityY;
-	const float gravity = 0.5f; // 元0.5
+	const float gravity = 0.3f; // 元0.5
 	const float jumpPower = -20.0f; // 元12
 	bool isGrounded; // 地面に接地しているかどうか
 
@@ -51,4 +53,25 @@ private:
 	static const int FRAME_HEIGHT = 256 / 2; 
 	static const int TOTAL_FRAMES = 4; 
 	static const int FRAME_INTERVAL = 8; 
+
+	// 死亡処理関連
+	struct PlayerFragment
+	{
+		VECTOR pos;
+		VECTOR vel;
+		int srcX, srcY;
+		int width, height;
+	};
+
+	std::vector<PlayerFragment> mFragments;
+	VECTOR mSpawnPos;
+	int mDeadState;
+	BlockMap* mpBlockMap;
+
+	bool isDead;
+	int deadTimer;
+	float alpha;
+
+	void DeadProcess();
 };
+
