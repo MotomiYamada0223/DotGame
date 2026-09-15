@@ -1,9 +1,10 @@
 ﻿#include "Enemy.h"
 #include "DxLib.h"
 #include "Texture.h"
+#include "GameConstants.h"
 
 Enemy::Enemy(VECTOR initPos)
-	: Object2D("Resource/Image/SampleSkeleton.png", initPos) 
+	: Object2D(CharacterGraphPath::Skeleton, initPos)
 {
 	SetTag(Object2D::Enemy2D);
 

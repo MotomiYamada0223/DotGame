@@ -40,7 +40,7 @@ BlockMap::~BlockMap()
 
 
 // CSVのタイルセットファイルの読み込み
-bool BlockMap::Load(const char* csvPath, const char* texturePath)
+bool BlockMap::Load(const std::string& csvPath, const std::string& texturePath)
 {
 	if (mbIsLoaded) { return true; }
 
@@ -85,6 +85,7 @@ bool BlockMap::Load(const char* csvPath, const char* texturePath)
 		return false;
 	}
 	mbIsLoaded = true;
+
 	return true;
 }
 

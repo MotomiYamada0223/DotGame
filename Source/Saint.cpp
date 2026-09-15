@@ -7,9 +7,9 @@ Saint::Saint(VECTOR initPos)
 {
 	SetTag(Object2D::Tag::FrontMap);
 
-	graphHandles[0] = LoadGraph("Resource/Image/saint_close1.png"); // 目と口を閉じたやつ（瞬き）
-	graphHandles[1] = LoadGraph("Resource/Image/saint_close2.png"); // 目を開けて口を閉じたやつ
-	graphHandles[2] = LoadGraph("Resource/Image/saint_open2.png"); // 両方空いてるやつ
+	graphHandles[0] = LoadGraph(CharacterGraphPath::SaintClosed.c_str()); // 目と口を閉じたやつ（瞬き）
+	graphHandles[1] = LoadGraph(CharacterGraphPath::SaintClosedAndOpen.c_str()); // 目を開けて口を閉じたやつ
+	graphHandles[2] = LoadGraph(CharacterGraphPath::SaintOpen.c_str()); // 両方空いてるやつ
 
 	currentState = 1; // 初期状態
 	

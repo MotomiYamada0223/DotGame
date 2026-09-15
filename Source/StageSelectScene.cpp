@@ -5,6 +5,7 @@
 #include "Master.h"
 #include "SceneManager.h"
 #include <math.h> // sqrtfを使用するため追加
+#include "GameConstants.h"
 
 StageSelectScene::StageSelectScene()
 	: Scene()
@@ -27,11 +28,10 @@ StageSelectScene::~StageSelectScene()
 void StageSelectScene::Initialize()
 {
 	// 背景画像の読み込み
-	
-	mapGraphHandle = LoadGraph("Resource/Image/SampleStageMap.png");
+	mapGraphHandle = LoadGraph(BackGroundGraphPath::SelectStageMap.c_str());
 
 	// プレイヤーのスケルトンの画像の読み込みと初期位置の設定	
-	playerGraphHandle = LoadGraph("Resource/Image/SampleSkeleton.png");
+	playerGraphHandle = LoadGraph(CharacterGraphPath::Skeleton.c_str());
 	
 	// 初期座標	
 	playerX = -40.0f;

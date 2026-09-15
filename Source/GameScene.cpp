@@ -5,6 +5,7 @@
 #include "Player.h" 
 #include "Enemy.h" 
 #include "Saint.h"
+#include "GameConstants.h"
 
 GameScene::GameScene()
 	:Scene()
@@ -23,14 +24,13 @@ void GameScene::Initialize()
 {
 	// CSVのファイル読み込み
 	// チュートリアルテキストとブロックマップのタイル
-	mTutorialText.Initialize("Resource/TutorialText/tutorialTextData.csv");
-	mBlockMap.Load("Resource/Map/MapFile.csv", "Resource/Map/image_Map.png");
+	mTutorialText.Initialize(CsvPath::TutorialText);
+	mBlockMap.Load(CsvPath::BlockMapFile, BlockMapGraphPath::BlockMap);
 
 	// プレイヤーの生成
 	mpPlayer = new Player(VGet(Utility::SCREEN_WIDTH / 2.0f, 850, 0.0f));
 
 	// Saint（しゃべるキャラクター）を画面上部に配置
-	
 	new Saint(VGet(Utility::SCREEN_WIDTH / 2.0f, 150.0f, 0.0f));
 
 	// 敵の生成
@@ -68,9 +68,6 @@ void GameScene::Draw()
 {
 	if (!mbIsLoaded) { return; }
 
-	// チュートリアルの描画 
-	mTutorialText.Draw();
-
 	DrawFormatStringToHandle(500, 500, GetColor(255, 255, 255),
 		Master::mpFontManager->GetDotFont(), "ゲームシーン\n\n Enterでリザルトへ");
 
@@ -79,6 +76,9 @@ void GameScene::Draw()
 
 	// クラスのDraw呼び出し
 	Scene::Draw();
+
+	// チュートリアルの描画 
+	mTutorialText.Draw();
 }
 
 void GameScene::Finalize()

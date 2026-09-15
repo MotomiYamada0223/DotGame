@@ -7,10 +7,11 @@
 #include "ObjectManager.h"
 #include "Enemy.h"
 #include "Collision.h"
+#include "GameConstants.h"
 
 Player::Player(VECTOR initPos) 
 	// TextureAnimationは使わず一枚絵としてロード
-	: Object2D("Resource/Image/BattlePlayer111.png", initPos) 
+	: Object2D(CharacterGraphPath::PlayerAnimation, initPos)
 {
 	SetTag(Object2D::BattlePlayer2D);
 	isJumping = false;
@@ -27,8 +28,8 @@ Player::Player(VECTOR initPos)
     // プレイヤー当たり判定サイズ
 	// Width...幅
 	// Height...足元の位置
-	playerWidth = 64.0f;
-	playerHeight = 256.0f;
+	playerWidth = 32.0f;
+	playerHeight = 100.0f;
 }
 
 Player::~Player()
@@ -202,11 +203,11 @@ void Player::Draw()
 		const int srcX = mCurrentFrame * FRAME_WIDTH;
 
 		// 向きに応じた基本の Y 座標を設定する
-		int srcY = 768; // 右向きの画像座標
+		int srcY = 384; // 右向きの画像座標
 
 		if (!isFacingRight)
 		{
-			srcY = 512; // 左向きの画像座標
+			srcY = 256; // 左向きの画像座標
 		}
 
 		// ダメージ中なら赤く変色させる

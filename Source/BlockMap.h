@@ -1,5 +1,6 @@
 #pragma once
 #include "DxLib.h"
+#include <string>
 // CSVを読み込んでブロックマップを生成するクラス
 
 // 1ブロックのサイズ 64
@@ -20,7 +21,7 @@ public:
 	~BlockMap();
 
 	// CSVファイルと画像をセットで読み込む関数
-	bool Load(const char* csvPath, const char* texturePath);
+	bool Load(const std::string& csvPath, const std::string& texturePath);
 
 	// マップの描画
 	void Draw();
