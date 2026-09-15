@@ -24,8 +24,10 @@ Player::Player(VECTOR initPos)
 	mCurrentFrame = 0;
 	mFrameTimer = 0;
 
-  // プレイヤー当たり判定サイズ
-	playerWidth = 128.0f;
+    // プレイヤー当たり判定サイズ
+	// Width...幅
+	// Height...足元の位置
+	playerWidth = 64.0f;
 	playerHeight = 256.0f;
 }
 
@@ -36,7 +38,6 @@ Player::~Player()
 void Player::PlayerMove(BlockMap& blockMap)
 {
 	bool moved = false;
-
 
 	// 左右移動の共通化（Aキーは-1, Dキーは1）
 	float moveDirection = 0.0f;

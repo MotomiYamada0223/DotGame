@@ -155,7 +155,6 @@ void BlockMap::Draw()
 }
 
 // プレイヤーと当たっているブロックを探す
-// プレイヤーと当たっているブロックを探す
 bool BlockMap::CheckCollisionBlock(
 	float x,
 	float y,
@@ -183,7 +182,7 @@ bool BlockMap::CheckCollisionBlock(
 
 
 	// 周囲のブロックを1個ずつ調べる
-	// マップ全体を毎フレーム調べると重いので、プレイヤーが実際に重なっている可能性のある近傍のチップだけを効率よく走査するため
+	// マップ全体を毎フレーム調べると重いので、プレイヤーが実際に重なっている可能性のある近傍のチップだけを効率よく探すため
 	for (int mapY = top; mapY <= bottom; mapY++)
 	{
 		for (int mapX = left; mapX <= right; mapX++)
