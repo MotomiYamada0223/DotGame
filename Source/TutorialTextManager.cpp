@@ -1,5 +1,6 @@
 ﻿#include "TutorialTextManager.h"
 #include "Master.h"
+#include "GameConstants.h"
 
 // Shift-JISの文字コードから文字のバイト数を判別する処理
 //1文字が2バイトで構成されているので2バイト文字だと分かったら一気に進めるため
@@ -109,7 +110,7 @@ void TutorialTextManager::Draw()
 	auto itr = loader.steps.find(mnCurrentID);
 	if (itr == loader.steps.end()) { return; }
 	
-	unsigned int color = GetColor(255, 255, 255);
+	unsigned int color = ColorOption::White;
 	const StepData& step = itr->second;
 	// 表示時間を越していたら表示しない
 	if (mfIdelTimer >= step.completeValue) { return; }
