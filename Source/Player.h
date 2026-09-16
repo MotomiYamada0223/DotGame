@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "Object2D.h"
 #include <vector>
 #include <math.h>
@@ -23,6 +23,13 @@ private:
 	CharacterPhysics mCharacterPhysics; // 物理計算用のインスタンス
 
 private:
+	// 簡易的なステータス構造体
+	struct PlayerStatus
+	{
+		int hp;
+	};
+	PlayerStatus mStatus;
+
 	// プレイヤーの当たり判定サイズ
 	float mfPlayerWidth;
 	float mfPlayerHeight;
