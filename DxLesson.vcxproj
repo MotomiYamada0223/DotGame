@@ -131,6 +131,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\BlockAction.cpp" />
     <ClCompile Include="Source\BlockMap.cpp" />
     <ClCompile Include="Source\CharacterPhysics.cpp" />
     <ClCompile Include="Source\Collision.cpp" />
@@ -159,6 +160,7 @@
     <ClCompile Include="Source\WinResultScene.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\BlockAction.h" />
     <ClInclude Include="Source\BlockMap.h" />
     <ClInclude Include="Source\Collision.h" />
     <ClInclude Include="Source\Damage.h" />

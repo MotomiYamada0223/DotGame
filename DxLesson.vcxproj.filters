@@ -105,6 +105,9 @@
     <ClCompile Include="Source\CharacterPhysics.cpp">
       <Filter>ソース ファイル\Manager系\Map関係</Filter>
     </ClCompile>
+    <ClCompile Include="Source\BlockAction.cpp">
+      <Filter>ソース ファイル\Manager系\Map関係</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Collision.h">
@@ -190,6 +193,9 @@
     </ClInclude>
     <ClInclude Include="Source\Damage.h">
       <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\BlockAction.h">
+      <Filter>ソース ファイル\Manager系\Map関係</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

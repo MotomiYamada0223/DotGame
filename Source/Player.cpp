@@ -9,10 +9,11 @@
 #include "Collision.h"
 #include "GameConstants.h"
 #include "Damage.h"
+#include "BlockAction.h"
 
 
-Player::Player(VECTOR initPos) 
-	// TextureAnimationは使わず一枚絵としてロード
+Player::Player(VECTOR initPos)
+// TextureAnimationは使わず一枚絵としてロード
 	: Object2D(CharacterGraphPath::PlayerAnimation, initPos)
 {
 	SetTag(Object2D::Player2D);
@@ -34,7 +35,7 @@ Player::Player(VECTOR initPos)
 	mCurrentFrame = 0;
 	mFrameTimer = 0;
 
-    // プレイヤー当たり判定サイズ
+	// プレイヤー当たり判定サイズ
 	// Width...幅
 	// Height...足元の位置
 	mfPlayerWidth = PlayerConstants::PlayerCollisionWidth;
@@ -67,19 +68,26 @@ void Player::PlayerMove(BlockMap& blockMap)
 		isFacingRight = true;
 	}
 
+
 	// キャラクターの物理処理
-	mCharacterPhysics.UpdateMoveAndCollision(
-		mvPosition,
-		velocityY,
-		isGrounded,
-		mbIsJumping,
-		blockMap,
-		mfPlayerWidth,
-		mfPlayerHeight,
-		gravity,
-		moveSpeed,
-		moveDirection
-	);
+	BlockMap::CollisionType collisionType =
+		mCharacterPhysics.UpdateMoveAndCollision(
+			mvPosition,
+			velocityY,
+			isGrounded,
+			mbIsJumping,
+			blockMap,
+			mfPlayerWidth,
+			mfPlayerHeight,
+			gravity,
+			moveSpeed,
+			moveDirection
+		);
+	// 特殊地形の処理
+	mBlockAction.SetCollisionType(collisionType);
+	mBlockAction.ExecuteDeath(mStatus.hp);
+	mBlockAction.ExecuteGoal();
+
 
 
 	// ジャンプ開始
@@ -191,7 +199,7 @@ void Player::Update()
 		// 1. プレイヤー自身と敵の衝突判定 (ダメージで赤くする)
 		if (Collision::CheckRectToRect(myPos, mySize, enePos, eneSize))
 		{
-			isHitDamage = true; 
+			isHitDamage = true;
 		}
 
 		// 2. 攻撃判定と敵の衝突判定 (敵を赤く光らせる)
@@ -213,7 +221,7 @@ void Player::Update()
 
 		int fragSize = 16;
 		int srcBaseY = isFacingRight ? 384 : 256;
-		
+
 		for (int y = 0; y < FRAME_HEIGHT; y += fragSize)
 		{
 			for (int x = 0; x < FRAME_WIDTH; x += fragSize)
@@ -225,10 +233,10 @@ void Player::Update()
 				frag.srcY = srcBaseY + y;
 				frag.width = fragSize;
 				frag.height = fragSize;
-				
+
 				frag.vel.x = ((float)GetRand(100) / 100.0f * 10.0f) - 5.0f;
 				frag.vel.y = ((float)GetRand(100) / 100.0f * -15.0f) - 5.0f;
-				
+
 				mFragments.push_back(frag);
 			}
 		}
@@ -468,7 +476,7 @@ void Player::DeadProcess()
 		}
 
 		// 全て集まったか、タイムアウト（5秒）で強制復活
-		if ((allReturned && deadTimer > 60) || deadTimer > 300) 
+		if ((allReturned && deadTimer > 60) || deadTimer > 300)
 		{
 			mvPosition = mSpawnPos;
 			isDead = false;
@@ -479,4 +487,4 @@ void Player::DeadProcess()
 			GetStatus().hp = PlayerConstants::MaxHp; // 最大HPで復活
 		}
 	}
-	}
+}

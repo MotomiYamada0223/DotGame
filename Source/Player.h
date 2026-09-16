@@ -4,6 +4,7 @@
 #include <math.h>
 #include "BlockMap.h"
 #include "CharacterPhysics.h" // ジャンプとかの当たり判定をしてくれる処理
+#include "BlockAction.h"
 
 class Player : public Object2D
 {
@@ -81,6 +82,7 @@ private:
 	VECTOR mSpawnPos;
 	int mDeadState;
 	BlockMap* mpBlockMap;
+	BlockAction mBlockAction;
 
 	bool isDead;
 	int deadTimer;

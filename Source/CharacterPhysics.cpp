@@ -1,28 +1,25 @@
-﻿#include "CharacterPhysics.h"
+#include "CharacterPhysics.h"
 
+namespace
+{
+	// 壁判定時に床や天井のブロックを誤検出しないように上下を縮めるマージン
+	const float WallCheckMargin = 20.0f;
 
+	// 壁や床、天井の判定を行う際の厚み（1ピクセル）
+	const float CollisionThickness = 1.0f;
+}
+
+// クラスの初期化を行う
 CharacterPhysics::CharacterPhysics()
 {
 }
 
-
+// クラスの終了処理を行う
 CharacterPhysics::~CharacterPhysics()
 {
 }
 
-
-// ============================================================
-// 矩形とマップタイルのピクセル単位当たり判定
-// ============================================================
-//
-// 指定した矩形の中にあるCollisionTypeを調べる。
-// Noneなら何もない。
-// Block / Death / Goal などがあれば、そのタイプを返す。
-//
-// blockX / blockYには、最初に見つかった衝突ピクセルの座標を入れる。
-//
-// ============================================================
-
+// 矩形領域とマップタイルが接触しているかを判定し、接触したタイル種別と座標を返す
 BlockMap::CollisionType CharacterPhysics::CheckCollision(
 	const BlockMap& blockMap,
 	float x,
@@ -32,112 +29,40 @@ BlockMap::CollisionType CharacterPhysics::CheckCollision(
 	int* blockX,
 	int* blockY) const
 {
-	int left =
-		static_cast<int>(x);
+	// 浮動小数点的な座標をタイル単位の整数ピクセルに変換する
+	int left = static_cast<int>(x);
+	int right = static_cast<int>(x + width - 1.0f);
+	int top = static_cast<int>(y);
+	int bottom = static_cast<int>(y + height - 1.0f);
 
-	int right =
-		static_cast<int>(
-			x + width - 1.0f
-			);
-
-	int top =
-		static_cast<int>(y);
-
-	int bottom =
-		static_cast<int>(
-			y + height - 1.0f
-			);
-
-
-	// --------------------------------------------------------
 	// 指定した矩形内を1ピクセルずつ調べる
-	// --------------------------------------------------------
-
-	for (int pixelY = top;
-		pixelY <= bottom;
-		pixelY++)
+	for (int pixelY = top; pixelY <= bottom; pixelY++)
 	{
-		for (int pixelX = left;
-			pixelX <= right;
-			pixelX++)
+		for (int pixelX = left; pixelX <= right; pixelX++)
 		{
-			BlockMap::CollisionType type =
-				blockMap.GetCollisionType(
-					pixelX,
-					pixelY
-				);
-
-
-			// ------------------------------------------------
-			// 何もないなら次のピクセルへ
-			// ------------------------------------------------
-
-			if (type ==
-				BlockMap::CollisionType::None)
+			// 指定ピクセルの衝突タイプを取得する
+			BlockMap::CollisionType type = blockMap.GetCollisionType(pixelX, pixelY);
+			if (type == BlockMap::CollisionType::None)
 			{
 				continue;
 			}
 
-
-			// ------------------------------------------------
-			// 衝突したピクセル座標を保存
-			// ------------------------------------------------
-
+			// 衝突したピクセル座標を保存する
 			if (blockX != nullptr)
 			{
 				*blockX = pixelX;
 			}
-
 			if (blockY != nullptr)
 			{
 				*blockY = pixelY;
 			}
-
-
-			// ------------------------------------------------
-			// CollisionTypeを返す
-			// ------------------------------------------------
-
 			return type;
 		}
 	}
-
-
-	// --------------------------------------------------------
-	// 何もなかった
-	// --------------------------------------------------------
-
 	return BlockMap::CollisionType::None;
 }
 
-
-// ============================================================
-// 移動 + 重力 + マップタイルとの当たり判定
-// ============================================================
-//
-// X方向とY方向を分けて処理する。
-//
-//
-// X方向
-// ・左移動 → 左端1pxを壁判定
-// ・右移動 → 右端1pxを壁判定
-//
-//
-// Y方向
-// ・落下 → 足元1pxを床判定
-// ・上昇 → 頭1pxを天井判定
-//
-//
-//
-// 戻り値
-// ・None  → 特殊地形なし
-// ・Death → Deathに触れた
-// ・Goal  → Goalに触れた
-//
-// Blockは物理的に止めるだけなので、戻り値にはしない。
-//
-// ============================================================
-
+// キャラクターの移動、重力処理、およびマップタイルとの当たり判定を解決する
 BlockMap::CollisionType CharacterPhysics::UpdateMoveAndCollision(
 	VECTOR& position,
 	float& velocityY,
@@ -150,668 +75,224 @@ BlockMap::CollisionType CharacterPhysics::UpdateMoveAndCollision(
 	float moveSpeed,
 	float moveDirection)
 {
-	// ========================================================
 	// 特殊地形の検出結果
-	// ========================================================
-
-	BlockMap::CollisionType detectedSpecialType =
-		BlockMap::CollisionType::None;
-
-
-	// ========================================================
+	BlockMap::CollisionType detectedSpecialType = BlockMap::CollisionType::None;
 	// デバッグ用
-	// ========================================================
-
 	bool isHittingWall = false;
 
+	// 入力された移動方向と速度から次のX座標を算出する
+	float nextX = position.x + (moveSpeed * moveDirection);
 
-	// ========================================================
-	// 1. X方向の移動と壁判定
-	// ========================================================
-
-	float nextX =
-		position.x +
-		(moveSpeed * moveDirection);
-
-
-	// --------------------------------------------------------
-	// 左に移動
-	// --------------------------------------------------------
-
-	if (moveDirection < 0.0f)
+	// 左右の移動判定を共通化するため、チェック対象のX座標を決定する
+	if (moveDirection != 0.0f)
 	{
-		// ----------------------------------------------------
-		// 次の左端
-		// ----------------------------------------------------
-
-		float nextLeft =
-			nextX -
-			width / 2.0f;
-
-
-		// ----------------------------------------------------
-		// プレイヤーの上端
-		// ----------------------------------------------------
-
-		float playerTop =
-			position.y -
-			height / 2.0f;
-
-
-		// ----------------------------------------------------
-		// 左端1pxだけを調べる
-		// ----------------------------------------------------
+		float wallCheckX = (moveDirection < 0.0f) ? (nextX - width / 2.0f) : (nextX + width / 2.0f);
+		float wallCheckTop = position.y - height / 2.0f + WallCheckMargin;
+		float wallCheckHeight = height - WallCheckMargin * 2.0f;
 
 		int wallX = -1;
 		int wallY = -1;
 
+		BlockMap::CollisionType wallType = CheckCollision(
+			blockMap,
+			wallCheckX,
+			wallCheckTop,
+			CollisionThickness,
+			wallCheckHeight,
+			&wallX,
+			&wallY
+		);
 
-		BlockMap::CollisionType wallType =
-			CheckCollision(
-				blockMap,
-				nextLeft,
-				playerTop,
-				1.0f,
-				height,
-				&wallX,
-				&wallY
-			);
-
-
-		// ----------------------------------------------------
 		// Blockなら壁なので移動しない
-		// ----------------------------------------------------
-
-		if (wallType ==
-			BlockMap::CollisionType::Block)
+		if (wallType == BlockMap::CollisionType::Block)
 		{
 			isHittingWall = true;
 		}
 		else
 		{
-			// ------------------------------------------------
-			// Blockではないので移動
-			// ------------------------------------------------
-
 			position.x = nextX;
 
-
-			// ------------------------------------------------
-			// Death / Goalなら記録
-			// ------------------------------------------------
-
-			if (wallType !=
-				BlockMap::CollisionType::None)
+			if (wallType != BlockMap::CollisionType::None)
 			{
 				detectedSpecialType = wallType;
 			}
 		}
 	}
 
-
-	// --------------------------------------------------------
-	// 右に移動
-	// --------------------------------------------------------
-
-	else if (moveDirection > 0.0f)
-	{
-		// ----------------------------------------------------
-		// 次の右端
-		// ----------------------------------------------------
-
-		float nextRight =
-			nextX +
-			width / 2.0f;
-
-
-		// ----------------------------------------------------
-		// プレイヤーの上端
-		// ----------------------------------------------------
-
-		float playerTop =
-			position.y -
-			height / 2.0f;
-
-
-		// ----------------------------------------------------
-		// 右端1pxだけを調べる
-		// ----------------------------------------------------
-
-		int wallX = -1;
-		int wallY = -1;
-
-
-		BlockMap::CollisionType wallType =
-			CheckCollision(
-				blockMap,
-				nextRight,
-				playerTop,
-				1.0f,
-				height,
-				&wallX,
-				&wallY
-			);
-
-
-		// ----------------------------------------------------
-		// Blockなら壁なので移動しない
-		// ----------------------------------------------------
-
-		if (wallType ==
-			BlockMap::CollisionType::Block)
-		{
-			isHittingWall = true;
-		}
-		else
-		{
-			// ------------------------------------------------
-			// Blockではないので移動
-			// ------------------------------------------------
-
-			position.x = nextX;
-
-
-			// ------------------------------------------------
-			// Death / Goalなら記録
-			// ------------------------------------------------
-
-			if (wallType !=
-				BlockMap::CollisionType::None)
-			{
-				detectedSpecialType = wallType;
-			}
-		}
-	}
-
-
-	// ========================================================
-	// 2. 重力
-	// ========================================================
-
+	// 垂直速度に重力を加算する
 	velocityY += gravity;
 
+	// 重力反映後の次のY座標を算出する
+	float nextY = position.y + velocityY;
 
-	// ========================================================
-	// 3. 次のY座標
-	// ========================================================
+	// プレイヤーの矩形情報を算出する
+	float playerLeft = position.x - width / 2.0f;
+	float oldBottom = position.y + height / 2.0f;
+	float nextTop = nextY - height / 2.0f;
+	float nextBottom = nextY + height / 2.0f;
 
-	float nextY =
-		position.y +
-		velocityY;
-
-
-	// ========================================================
-	// 4. プレイヤーの左右
-	// ========================================================
-
-	float playerLeft =
-		position.x -
-		width / 2.0f;
-
-
-	// ========================================================
-	// 5. 現在のプレイヤーの上下
-	// ========================================================
-
-	float oldTop =
-		position.y -
-		height / 2.0f;
-
-	float oldBottom =
-		position.y +
-		height / 2.0f;
-
-
-	// ========================================================
-	// 6. 次のプレイヤーの上下
-	// ========================================================
-
-	float nextTop =
-		nextY -
-		height / 2.0f;
-
-	float nextBottom =
-		nextY +
-		height / 2.0f;
-
-
-	// ========================================================
-	// 接地状態を一旦解除
-	// ========================================================
-
+	// 接地状態を一旦解除する
 	isGrounded = false;
 
-
-	// ========================================================
-	// 7. 床判定用の矩形
-	// ========================================================
-	//
-	// プレイヤーの足元1pxだけを見る。
-	//
-	//       Player
-	//      ┌───────┐
-	//      │       │
-	//      │       │
-	//      └───────┘
-	//      █████████ ← ここだけ調べる
-	//
-	// ========================================================
-
-	float floorCheckLeft =
-		playerLeft;
-
-	float floorCheckTop =
-		nextBottom;
-
-	float floorCheckWidth =
-		width;
-
-	float floorCheckHeight =
-		1.0f;
-
-
-	// ========================================================
-	// 8. 天井判定用の矩形
-	// ========================================================
-
-	float ceilingCheckLeft =
-		playerLeft;
-
-	float ceilingCheckTop =
-		nextTop;
-
-	float ceilingCheckWidth =
-		width;
-
-	float ceilingCheckHeight =
-		1.0f;
-
-
-	// ========================================================
-	// 9. 落下中
-	// ========================================================
-
+	// 落下中の処理
 	if (velocityY > 0.0f)
 	{
 		int collisionX = -1;
 		int collisionY = -1;
 
+		BlockMap::CollisionType floorType = CheckCollision(
+			blockMap,
+			playerLeft,
+			nextBottom,
+			width,
+			CollisionThickness,
+			&collisionX,
+			&collisionY
+		);
 
-		BlockMap::CollisionType floorType =
-			CheckCollision(
-				blockMap,
-				floorCheckLeft,
-				floorCheckTop,
-				floorCheckWidth,
-				floorCheckHeight,
-				&collisionX,
-				&collisionY
-			);
-
-
-		// ----------------------------------------------------
-		// 何かに触れた
-		// ----------------------------------------------------
-
-		if (floorType !=
-			BlockMap::CollisionType::None)
+		if (floorType != BlockMap::CollisionType::None)
 		{
-			// =================================================
-			// Block
-			// =================================================
-
-			if (floorType ==
-				BlockMap::CollisionType::Block)
+			if (floorType == BlockMap::CollisionType::Block)
 			{
-				float floorY =
-					static_cast<float>(
-						collisionY
-						);
+				float floorY = static_cast<float>(collisionY);
 
-
-				// ------------------------------------------------
-				// Blockの上面に乗った
-				// ------------------------------------------------
-
-				if (oldBottom <= floorY ||
-					nextBottom >= floorY)
+				// Blockの上面に乗ったかどうかの判定
+				if (oldBottom <= floorY || nextBottom >= floorY)
 				{
-					// --------------------------------------------
-					// プレイヤーの足を
-					// Blockの上面に合わせる
-					// --------------------------------------------
-
-					position.y =
-						floorY -
-						height / 2.0f;
-
-
-					// --------------------------------------------
-					// 落下停止
-					// --------------------------------------------
-
+					// プレイヤーの足をBlockの上面に合わせる
+					position.y = floorY - height / 2.0f;
 					velocityY = 0.0f;
-
-
-					// --------------------------------------------
-					// 地面に立っている
-					// --------------------------------------------
-
 					isGrounded = true;
 					isJumping = false;
 				}
 				else
 				{
-					// --------------------------------------------
-					// まだ床に到達していない
-					// --------------------------------------------
-
 					position.y = nextY;
-
 					isGrounded = false;
 					isJumping = true;
 				}
 			}
-
-
-			// =================================================
-			// Death / Goal
-			// =================================================
-
 			else
 			{
-				detectedSpecialType =
-					floorType;
-
-
-				// ------------------------------------------------
-				// Death / Goalは物理的には止めない
-				// ------------------------------------------------
-
+				detectedSpecialType = floorType;
 				position.y = nextY;
-
 				isGrounded = false;
 				isJumping = true;
 			}
 		}
-
-
-		// ----------------------------------------------------
-		// 何もない
-		// ----------------------------------------------------
-
 		else
 		{
 			position.y = nextY;
-
 			isGrounded = false;
 			isJumping = true;
 		}
 	}
-
-
-	// ========================================================
-	// 10. 上昇中
-	// ========================================================
-
+	// 上昇中の処理
 	else if (velocityY < 0.0f)
 	{
 		int collisionX = -1;
 		int collisionY = -1;
 
+		BlockMap::CollisionType ceilingType = CheckCollision(
+			blockMap,
+			playerLeft,
+			nextTop,
+			width,
+			CollisionThickness,
+			&collisionX,
+			&collisionY
+		);
 
-		BlockMap::CollisionType ceilingType =
-			CheckCollision(
-				blockMap,
-				ceilingCheckLeft,
-				ceilingCheckTop,
-				ceilingCheckWidth,
-				ceilingCheckHeight,
-				&collisionX,
-				&collisionY
-			);
-
-
-		// ----------------------------------------------------
-		// 何かに触れた
-		// ----------------------------------------------------
-
-		if (ceilingType !=
-			BlockMap::CollisionType::None)
+		if (ceilingType != BlockMap::CollisionType::None)
 		{
-			// =================================================
-			// Block
-			// =================================================
-
-			if (ceilingType ==
-				BlockMap::CollisionType::Block)
+			if (ceilingType == BlockMap::CollisionType::Block)
 			{
-				float ceilingY =
-					static_cast<float>(
-						collisionY
-						);
+				float ceilingY = static_cast<float>(collisionY);
 
-
-				// ------------------------------------------------
-				// プレイヤーの頭を
-				// Blockの下に配置
-				// ------------------------------------------------
-
-				position.y =
-					ceilingY +
-					1.0f +
-					height / 2.0f;
-
-
-				// ------------------------------------------------
-				// 上昇停止
-				// ------------------------------------------------
-
+				// プレイヤーの頭をBlockの下に配置してすり抜けを防止する
+				position.y = ceilingY + CollisionThickness + height / 2.0f;
 				velocityY = 0.0f;
 			}
-
-
-			// =================================================
-			// Death / Goal
-			// =================================================
-
 			else
 			{
-				detectedSpecialType =
-					ceilingType;
-
-
+				detectedSpecialType = ceilingType;
 				position.y = nextY;
 			}
-
 
 			isGrounded = false;
 			isJumping = true;
 		}
-
-
-		// ----------------------------------------------------
-		// 何もない
-		// ----------------------------------------------------
-
 		else
 		{
 			position.y = nextY;
-
 			isGrounded = false;
 			isJumping = true;
 		}
 	}
-
-
-	// ========================================================
-	// 11. 垂直速度が0
-	// ========================================================
-
+	// 垂直速度が0の場合
 	else
 	{
 		position.y = nextY;
 	}
 
-
-	// ========================================================
-	// デバッグ描画
-	// ========================================================
-	//
-	// 黄色  → 壁判定
-	// 水色  → 床判定
-	// ピンク → 天井判定
-	//
-	// ========================================================
-
-
-	// --------------------------------------------------------
 	// 壁判定の描画
-	// --------------------------------------------------------
-
-	if (moveDirection < 0.0f)
+	if (moveDirection != 0.0f)
 	{
-		// 左壁
-
-		float debugLeft =
-			nextX -
-			width / 2.0f;
-
-
-		float debugTop =
-			position.y -
-			height / 2.0f;
-
+		float debugX = (moveDirection < 0.0f) ? (nextX - width / 2.0f) : (nextX + width / 2.0f);
+		float debugTop = position.y - height / 2.0f;
 
 		DrawBox(
-			static_cast<int>(debugLeft),
+			static_cast<int>(debugX),
 			static_cast<int>(debugTop),
-			static_cast<int>(debugLeft + 1.0f),
-			static_cast<int>(debugTop + height),
-			GetColor(255, 255, 0),
-			FALSE
-		);
-	}
-	else if (moveDirection > 0.0f)
-	{
-		// 右壁
-
-		float debugRight =
-			nextX +
-			width / 2.0f;
-
-
-		float debugTop =
-			position.y -
-			height / 2.0f;
-
-
-		DrawBox(
-			static_cast<int>(debugRight),
-			static_cast<int>(debugTop),
-			static_cast<int>(debugRight + 1.0f),
+			static_cast<int>(debugX + CollisionThickness),
 			static_cast<int>(debugTop + height),
 			GetColor(255, 255, 0),
 			FALSE
 		);
 	}
 
-
-	// --------------------------------------------------------
 	// 床判定の描画
-	// --------------------------------------------------------
-
 	if (velocityY > 0.0f)
 	{
 		DrawBox(
-			static_cast<int>(floorCheckLeft),
-			static_cast<int>(floorCheckTop),
-			static_cast<int>(
-				floorCheckLeft +
-				floorCheckWidth
-				),
-			static_cast<int>(
-				floorCheckTop +
-				floorCheckHeight
-				),
+			static_cast<int>(playerLeft),
+			static_cast<int>(nextBottom),
+			static_cast<int>(playerLeft + width),
+			static_cast<int>(nextBottom + CollisionThickness),
 			GetColor(0, 255, 255),
 			FALSE
 		);
 	}
 
-
-	// --------------------------------------------------------
 	// 天井判定の描画
-	// --------------------------------------------------------
-
 	if (velocityY < 0.0f)
 	{
 		DrawBox(
-			static_cast<int>(ceilingCheckLeft),
-			static_cast<int>(ceilingCheckTop),
-			static_cast<int>(
-				ceilingCheckLeft +
-				ceilingCheckWidth
-				),
-			static_cast<int>(
-				ceilingCheckTop +
-				ceilingCheckHeight
-				),
+			static_cast<int>(playerLeft),
+			static_cast<int>(nextTop),
+			static_cast<int>(playerLeft + width),
+			static_cast<int>(nextTop + CollisionThickness),
 			GetColor(255, 0, 255),
 			FALSE
 		);
 	}
 
-
-	// --------------------------------------------------------
-	// 接地デバッグ
-	// --------------------------------------------------------
-
+	// 接地状態のデバッグ描画
 	if (isGrounded)
 	{
-		DrawFormatString(
-			0,
-			40,
-			GetColor(255, 255, 255),
-			"Grounded: ON"
-		);
+		DrawFormatString(0, 40, GetColor(255, 255, 255), "Grounded: ON");
 	}
 
-
-	// --------------------------------------------------------
-	// 壁デバッグ
-	// --------------------------------------------------------
-
+	// 壁接触状態のデバッグ描画
 	if (isHittingWall)
 	{
-		DrawFormatString(
-			0,
-			60,
-			GetColor(255, 255, 0),
-			"Wall: ON"
-		);
+		DrawFormatString(0, 60, GetColor(255, 255, 0), "Wall: ON");
 	}
-
-
-	// ========================================================
-	// 特殊地形の結果を返す
-	// ========================================================
 
 	return detectedSpecialType;
 }
 
-
-// ============================================================
-// 指定した矩形が何らかのCollisionTypeに触れているか
-// ============================================================
-//
-// 注意：
-// この関数はBlockだけではなく、Death / Goalにもtrueを返す。
-// 「Blockだけ」を調べたい場合は、CheckCollision()の結果を
-// CollisionType::Blockと比較する。
-//
-// ============================================================
-
+// 指定した矩形が何らかの地形に接触しているかどうかを判定する
 bool CharacterPhysics::IsBlockCollision(
 	const BlockMap& blockMap,
 	float x,
@@ -819,18 +300,13 @@ bool CharacterPhysics::IsBlockCollision(
 	float width,
 	float height) const
 {
-	BlockMap::CollisionType type =
-		CheckCollision(
-			blockMap,
-			x,
-			y,
-			width,
-			height
-		);
+	BlockMap::CollisionType type = CheckCollision(
+		blockMap,
+		x,
+		y,
+		width,
+		height
+	);
 
-
-	return (
-		type !=
-		BlockMap::CollisionType::None
-		);
+	return (type != BlockMap::CollisionType::None);
 }
