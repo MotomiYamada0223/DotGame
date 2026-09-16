@@ -208,6 +208,12 @@ bool BlockMap::CheckCollisionBlock(
 				blockPos,
 				blockSize))
 			{
+				if (chipID <= BlockCollision::MinDamageBlock &&
+					chipID >= BlockCollision::MaxDamageBlock)
+				{
+
+				}
+
 				// 格納先が指定されている場合のみブロック座標を代入する
 				if (blockX != nullptr)
 				{

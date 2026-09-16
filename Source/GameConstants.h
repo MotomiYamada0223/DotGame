@@ -55,6 +55,13 @@ namespace BlockMapGraphPath
 	static const std::string BlockMap = "Resource/Map/image_Map.png"; // ブロックマップの画像
 }
 
+// ブロックマップの当たり判定の設定
+namespace BlockCollision
+{
+	static const int MinDamageBlock = 13; // ダメージ判定があるブロックの最小値
+	static const int MaxDamageBlock = 15; // ダメージ判定があるブロックの最大値
+}
+
 // 読み込むCSVパス
 namespace CsvPath
 {
@@ -62,6 +69,7 @@ namespace CsvPath
 	static const std::string TutorialText = "Resource/TutorialText/tutorialTextData.csv"; // チュートリアルテキストのCSV
 }
 
+// よく使う色
 namespace ColorOption
 {
 	static const int White = GetColor(240, 240, 240);
