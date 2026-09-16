@@ -34,8 +34,8 @@ Player::Player(VECTOR initPos)
     // プレイヤー当たり判定サイズ
 	// Width...幅
 	// Height...足元の位置
-	playerWidth = PlayerConstants::PlayerCollisionWidth;
-	playerHeight = PlayerConstants::PlayerCollisionHeight;
+	mfPlayerWidth = PlayerConstants::PlayerCollisionWidth;
+	mfPlayerHeight = PlayerConstants::PlayerCollisionHeight;
 }
 
 Player::~Player()
