@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "Object2D.h"
 #include <vector>
 #include <math.h>
@@ -19,16 +19,21 @@ public:
 	// Mapを受け取って位置を更新する処理
 	void PlayerMove(BlockMap& blockMap);
 
-private:
-	CharacterPhysics mCharacterPhysics; // 物理計算用のインスタンス
 
-private:
 	// 簡易的なステータス構造体
 	struct PlayerStatus
 	{
 		int hp;
 	};
 	PlayerStatus mStatus;
+
+	PlayerStatus& GetStatus() { return mStatus; }
+	const PlayerStatus& GetStatus() const { return mStatus; }
+
+
+
+private:
+	CharacterPhysics mCharacterPhysics; // 物理計算用のインスタンス
 
 	// プレイヤーの当たり判定サイズ
 	float mfPlayerWidth;

@@ -27,7 +27,7 @@ public:    // enum, struct, 定数の定義
 		// Gameシーンでつかわれるタグ（2000～）
 		BattleMap2D  = 2200,    // マップ
 		FrontMap  = 2201,    // マップ
-		BattlePlayer2D = 2300,  // プレイヤー
+		Player2D = 2300,  // プレイヤー
 		Enemy2D = 2350,         // 敵
 
 

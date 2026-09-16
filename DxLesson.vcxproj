@@ -134,6 +134,7 @@
     <ClCompile Include="Source\BlockMap.cpp" />
     <ClCompile Include="Source\CharacterPhysics.cpp" />
     <ClCompile Include="Source\Collision.cpp" />
+    <ClCompile Include="Source\Damage.cpp" />
     <ClCompile Include="Source\Enemy.cpp" />
     <ClCompile Include="Source\FontManager.cpp" />
     <ClCompile Include="Source\GameManager.cpp" />
@@ -160,6 +161,7 @@
   <ItemGroup>
     <ClInclude Include="Source\BlockMap.h" />
     <ClInclude Include="Source\Collision.h" />
+    <ClInclude Include="Source\Damage.h" />
     <ClInclude Include="Source\Enemy.h" />
     <ClInclude Include="Source\FontManager.h" />
     <ClInclude Include="Source\GameConstants.h" />

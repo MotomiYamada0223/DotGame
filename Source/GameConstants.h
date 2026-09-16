@@ -75,3 +75,10 @@ namespace ColorOption
 	static const int White = GetColor(240, 240, 240);
 	static const int Black = GetColor(0, 0, 0);
 }
+
+// ダメージの定義
+namespace SetDamage
+{
+	static const int SpikeBlock = 3; // 針と当たったら1ダメージ
+	static const int EnemyAttack = 1; // 敵と当たったら1ダメージ
+}

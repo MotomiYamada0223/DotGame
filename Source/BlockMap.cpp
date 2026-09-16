@@ -4,7 +4,9 @@
 #include "Utility.h"
 #include <string>
 #include <algorithm>
-
+#include "Damage.h"
+#include "Scene.h"
+#include "Player.h"
 
 
 // ファイルを読み込むために必要なインクルード
@@ -212,6 +214,12 @@ bool BlockMap::CheckCollisionBlock(
 					chipID <= BlockCollision::MaxDamageBlock)
 				{
 					DrawFormatString(600, 600, GetColor(255, 255, 255), "針にあたった");
+
+					auto getPlayer = Master::mpGameManager->GetSceneManager()->GetCurrentScene()
+						->GetObjectManager()->GetObject2DByTag(Object2D::Player2D);
+
+					Player* player = dynamic_cast<Player*>(getPlayer);
+					Damage::ApplyDamage(player->GetStatus().hp, SetDamage::SpikeBlock);
 				}
 
 				// 格納先が指定されている場合のみブロック座標を代入する
