@@ -1,4 +1,4 @@
-#include "Player.h"
+﻿#include "Player.h"
 #include "DxLib.h"
 #include "Texture.h"
 #include "Master.h"
@@ -27,7 +27,11 @@ Player::Player(VECTOR initPos)
 	mSpawnPos = initPos;
 	mDeadState = 0;
 	mpBlockMap = nullptr;
-	mStatus.hp = 3;
+	mHeartFullGraph = LoadGraph(CharacterGraphPath::HeartFull.c_str());
+	mHeartHalfGraph = LoadGraph(CharacterGraphPath::HeartHalf.c_str());
+	mHeartEmptyGraph = LoadGraph(CharacterGraphPath::HeartEmpty.c_str());
+
+	UpdateStatusByProgress(GameProgress::Tutorial1);
 
 	mCurrentFrame = 0;
 	mFrameTimer = 0;
@@ -41,6 +45,52 @@ Player::Player(VECTOR initPos)
 
 Player::~Player()
 {
+	DeleteGraph(mHeartFullGraph);
+	DeleteGraph(mHeartHalfGraph);
+	DeleteGraph(mHeartEmptyGraph);
+}
+
+void Player::UpdateStatusByProgress(GameProgress progress)
+{
+	switch (progress)
+	{
+	case GameProgress::Tutorial1:
+		mMaxHp = 15; mHp = 15;
+		mAttack = 5; mDefense = 5; mMagic = 5;
+		mIsBlinkWallDeathImmune = false;
+		break;
+	case GameProgress::PostTutorial1:
+	case GameProgress::Tutorial2:
+		mMaxHp = 30; mHp = 30;
+		mAttack = 15; mDefense = 15; mMagic = 15;
+		mIsBlinkWallDeathImmune = true;
+		break;
+	case GameProgress::PostTutorial2:
+	case GameProgress::Tutorial3:
+		mMaxHp = 90; mHp = 90;
+		mAttack = 45; mDefense = 45; mMagic = 45;
+		mIsBlinkWallDeathImmune = true;
+		mAttackReachLevel = 1;
+		mIsAttackFlashy = true;
+		mBlinkCooldownLevel = 1;
+		mIsPoisonImmune = true;
+		mIsPetrificationImmune = true;
+		break;
+	case GameProgress::PostTutorial3:
+	case GameProgress::BossTree:
+	case GameProgress::BossSnake:
+	case GameProgress::BossDragon:
+		mMaxHp = 450; mHp = 450;
+		mAttack = 250; mDefense = 250; mMagic = 250;
+		mIsBlinkWallDeathImmune = true;
+		mAttackReachLevel = 2;
+		mIsAttackFlashy = true;
+		mBlinkCooldownLevel = 1;
+		mIsPoisonImmune = true;
+		mIsPetrificationImmune = true;
+		mIsFireImmune = true;
+		break;
+	}
 }
 
 void Player::PlayerMove(BlockMap& blockMap)
