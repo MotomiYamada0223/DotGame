@@ -8,6 +8,13 @@ class BlockMap
 {
 public:
 
+	enum class CollisionType
+	{
+		None = 0,   // 当たり判定なし
+		Block,  // 当たり判定あり
+	};
+
+
     BlockMap();
     ~BlockMap();
 
@@ -17,11 +24,9 @@ public:
         const std::string& collisionPath
     );
 
-    // 背景画像を描画する
     void Draw();
 
     // プレイヤーと当たり判定画像が重なっているか
-    //
     // blockX : 衝突した赤ピクセルのX座標
     // blockY : 衝突した赤ピクセルのY座標
     bool CheckCollisionBlock(
@@ -33,29 +38,28 @@ public:
         int* blockY = nullptr
     );
 
+	// 場所の種類を取得する
+	CollisionType GetCollisionType(int x, int y) const;
+
 private:
-
-    // 背景画像
-    int mnBackgroundGraph;
-
-    // 当たり判定画像のSoftImage
-    int mnCollisionSoftImage;
+    int mnBackgroundGraph;   // 背景画像
+    int mnCollisionSoftImage; // 当たり判定画像 (描画はしない)
 
     // 当たり判定画像のサイズ
     int mnCollisionWidth;
     int mnCollisionHeight;
 
     // 赤い場所ならtrue
-    std::vector<bool> mbCollisionData;
+    std::vector<CollisionType> mbCollisionData;
 
-    // 読み込み済みか
+    // 読み込み済みかのフラグ
     bool mbIsLoaded;
 
-private:
 
     // 指定座標が当たり判定か
     bool IsCollisionPixel(int x, int y) const;
 
     // 配列のインデックスを取得
-    int GetCollisionIndex(int x, int y) const;
+    // 2次元座標を1次元配列の番号に変換する。
+    int GetCollisionIndex(int x, int y) const { return  y * mnCollisionWidth + x; }
 };

@@ -22,6 +22,9 @@
     <Filter Include="ソース ファイル\Text関係">
       <UniqueIdentifier>{de72453d-964a-4bc1-9a97-d3b8512c2a28}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\Manager系\Map関係">
+      <UniqueIdentifier>{571b8c62-aa7d-4336-9f42-5e50d9ce1513}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Collision.cpp">
@@ -84,13 +87,7 @@
     <ClCompile Include="Source\StageSelectScene.cpp">
       <Filter>ソース ファイル\Scene系</Filter>
     </ClCompile>
-    <ClCompile Include="Source\BlockMap.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="Source\ResourceManager.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\CharacterPhysics.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Source\Saint.cpp">
@@ -101,6 +98,12 @@
     </ClCompile>
     <ClCompile Include="Source\Damage.cpp">
       <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\BlockMap.cpp">
+      <Filter>ソース ファイル\Manager系\Map関係</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\CharacterPhysics.cpp">
+      <Filter>ソース ファイル\Manager系\Map関係</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
