@@ -1,4 +1,4 @@
-﻿#include "Player.h"
+#include "Player.h"
 #include "DxLib.h"
 #include "Texture.h"
 #include "Master.h"
@@ -27,6 +27,7 @@ Player::Player(VECTOR initPos)
 	mSpawnPos = initPos;
 	mDeadState = 0;
 	mpBlockMap = nullptr;
+	mStatus.hp = 3;
 
 	mCurrentFrame = 0;
 	mFrameTimer = 0;
