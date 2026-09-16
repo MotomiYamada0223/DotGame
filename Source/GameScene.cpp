@@ -25,10 +25,16 @@ void GameScene::Initialize()
 	// CSVのファイル読み込み
 	// チュートリアルテキストとブロックマップのタイル
 	mTutorialText.Initialize(CsvPath::TutorialText);
-	mBlockMap.Load(CsvPath::BlockMapFile, BlockMapGraphPath::BlockMap);
+
+	// 背景画像と当たり判定画像を読み込む
+	mBlockMap.Load(
+		BlockMapGraphPath::Background,
+		BlockMapGraphPath::Collision
+	);
+
 
 	// プレイヤーの生成
-	mpPlayer = new Player(VGet(ScreenSize::CenterX - 600, 800, 0.0f));
+	mpPlayer = new Player(VGet(ScreenSize::CenterX - 600, 600, 0.0f));
 
 	// Saint（しゃべるキャラクター）を画面上部に配置
 	new Saint(VGet(Utility::SCREEN_WIDTH / 2.0f, 150.0f, 0.0f));

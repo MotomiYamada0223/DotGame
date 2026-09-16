@@ -1,239 +1,371 @@
 #include "BlockMap.h"
 #include "Master.h"
-#include "Collision.h"
-#include "Utility.h"
-#include <string>
-#include <algorithm>
-#include "Damage.h"
-#include "Scene.h"
-#include "Player.h"
 
-
-// ファイルを読み込むために必要なインクルード
-#include <fstream>
-#include <sstream>
 #include <iostream>
+
 
 namespace
 {
-	// チップIDが当たり判定を持つかどうかを判定する
-	bool IsSolidChip(int chipID)
-	{
-		return (chipID >= 1 && chipID <= MAX_BLOCK_COUNT);
-	}
+    // 当たり判定として扱う色
+    constexpr int COLLISION_R = 255;
+    constexpr int COLLISION_G = 0;
+    constexpr int COLLISION_B = 0;
 }
 
+
+// ============================================================
+// コンストラクタ
+// ============================================================
+
 BlockMap::BlockMap()
-	: mnTileGraph(-1)
-	, mnMapData()
-	, mbIsLoaded(false)
+    : mnBackgroundGraph(-1)
+    , mnCollisionSoftImage(-1)
+    , mnCollisionWidth(0)
+    , mnCollisionHeight(0)
+    , mbCollisionData()
+    , mbIsLoaded(false)
 {
-	if (!mbIsLoaded)
-	{
-		// CSV読み込み前の初期値
-		// マップデータを0で一括初期化するため
-		// fill... 指定した範囲のすべての要素を特定の値で埋められる
-		std::fill(&mnMapData[0][0], &mnMapData[0][0] + MAX_MAP_WIDTH * MAX_MAP_HEIGHT, 0);
-	}
 }
+
+
+// ============================================================
+// デストラクタ
+// ============================================================
 
 BlockMap::~BlockMap()
 {
 }
 
 
-// CSVのタイルセットファイルの読み込み
-bool BlockMap::Load(const std::string& csvPath, const std::string& texturePath)
+// ============================================================
+// マップ読み込み
+// ============================================================
+
+bool BlockMap::Load(
+    const std::string& backgroundPath,
+    const std::string& collisionPath)
 {
-	if (mbIsLoaded) { return true; }
+    if (mbIsLoaded)
+    {
+        return true;
+    }
 
-	std::ifstream file(csvPath);
 
-	if (!file.is_open())
-	{
-		std::cout
-			<< "マップのCSVファイルが開けませんでした。"
-			<< std::endl;
+    // ========================================================
+    // 背景画像を読み込む
+    // ========================================================
 
-		return false;
-	}
+    mnBackgroundGraph =
+        Master::mpGameManager
+        ->GetResourceManager()
+        ->LoadGraphics(backgroundPath);
 
-	std::string line;
+    if (mnBackgroundGraph == -1)
+    {
+        std::cout
+            << "背景画像が開けませんでした。"
+            << std::endl;
 
-	int y = 0;
-	while (std::getline(file, line) &&
-		y < MAX_MAP_HEIGHT)
-	{
-		std::stringstream ss(line);
-		std::string value;
-		int x = 0;
+        return false;
+    }
 
-		while (std::getline(ss, value, ',') &&
-			x < MAX_MAP_WIDTH)
-		{
-			mnMapData[y][x] = std::stoi(value);
-			x++;
-		}
-		y++;
-	}
 
-	file.close();
+    // ========================================================
+    // 当たり判定画像をSoftImageとして読み込む
+    // ========================================================
 
-	// リソースマネージャー経由
-	mnTileGraph = Master::mpGameManager->GetResourceManager()->LoadGraphics(texturePath);
+    mnCollisionSoftImage =
+        LoadSoftImage(collisionPath.c_str());
 
-	if (mnTileGraph == -1)
-	{
-		std::cout << "タイルセット画像が開けませんでした。"<< std::endl;
-		return false;
-	}
-	mbIsLoaded = true;
+    if (mnCollisionSoftImage == -1)
+    {
+        std::cout
+            << "当たり判定画像が開けませんでした。"
+            << std::endl;
 
-	return true;
+        return false;
+    }
+
+
+    // ========================================================
+    // 当たり判定画像のサイズを取得
+    // ========================================================
+
+    GetSoftImageSize(
+        mnCollisionSoftImage,
+        &mnCollisionWidth,
+        &mnCollisionHeight
+    );
+
+
+    // ========================================================
+    // 背景画像とサイズが同じか確認
+    // ========================================================
+
+    // ※ 必要なら後で背景画像のサイズチェックも追加できる
+
+
+    // ========================================================
+    // 当たり判定データを確保
+    // ========================================================
+
+    mbCollisionData.resize(
+        mnCollisionWidth * mnCollisionHeight,
+        false
+    );
+
+
+    // ========================================================
+    // 当たり判定画像を調べる
+    // ========================================================
+
+    for (int y = 0;
+        y < mnCollisionHeight;
+        y++)
+    {
+        for (int x = 0;
+            x < mnCollisionWidth;
+            x++)
+        {
+            int r = 0;
+            int g = 0;
+            int b = 0;
+            int a = 0;
+
+
+            // --------------------------------------------
+            // ピクセルのRGBAを取得
+            // --------------------------------------------
+
+            int result =
+                GetPixelSoftImage(
+                    mnCollisionSoftImage,
+                    x,
+                    y,
+                    &r,
+                    &g,
+                    &b,
+                    &a
+                );
+
+
+            if (result != 0)
+            {
+                continue;
+            }
+
+
+            // =================================================
+            // 透明なら通れる
+            // =================================================
+
+            if (a == 0)
+            {
+                mbCollisionData[
+                    GetCollisionIndex(x, y)
+                ] = false;
+
+                continue;
+            }
+
+
+            // =================================================
+            // 赤色なら当たり判定あり
+            // =================================================
+
+            if (r == COLLISION_R &&
+                g == COLLISION_G &&
+                b == COLLISION_B)
+            {
+                mbCollisionData[
+                    GetCollisionIndex(x, y)
+                ] = true;
+            }
+        }
+    }
+
+
+    // ========================================================
+    // SoftImageはもう必要ない
+    // ========================================================
+
+    DeleteSoftImage(mnCollisionSoftImage);
+
+    mnCollisionSoftImage = -1;
+
+
+    // ========================================================
+    // 読み込み完了
+    // ========================================================
+
+    mbIsLoaded = true;
+
+    return true;
 }
+
+
+// ============================================================
+// 背景描画
+// ============================================================
 
 void BlockMap::Draw()
 {
-	// マップが読み込まれていない場合は描画しない
-	if (!mbIsLoaded) { return; }
-
-	// 画面サイズから、描画するタイルの最大インデックスを計算する
-	int right = Utility::SCREEN_WIDTH / CHIP_SIZE;
-	int bottom = Utility::SCREEN_HEIGHT / CHIP_SIZE;
-
-	// マップの端を超えないように調整する
-	if (right >= MAX_MAP_WIDTH) { right = MAX_MAP_WIDTH - 1; }
-	if (bottom >= MAX_MAP_HEIGHT) { bottom = MAX_MAP_HEIGHT - 1; }
-
-	// 画面内に収まる範囲だけでループを回す
-	for (int y = 0; y <= bottom; y++)
-	{
-		for (int x = 0; x <= right; x++)
-		{
-			// 現在のチップID
-			int chipID = mnMapData[y][x];
-
-			// 0番は何も描画しない
-			if (chipID == 0) { continue; }
-
-			int tileX = chipID % TILESET_COLUMNS;
-			int tileY = chipID / TILESET_COLUMNS;
-
-			int srcX = tileX * CHIP_SIZE;
-			int srcY = tileY * CHIP_SIZE;
-
-			// マップ上に描画
-			DrawRectGraph(
-				x * CHIP_SIZE,
-				y * CHIP_SIZE,
-				srcX,
-				srcY,
-				CHIP_SIZE,
-				CHIP_SIZE,
-				mnTileGraph,
-				TRUE
-			);
+    if (!mbIsLoaded)
+    {
+        return;
+    }
 
 
-			//// デバッグ表示
-			//if (IsSolidChip)
-			//{
-			//	DrawBox(
-			//		x * CHIP_SIZE,
-			//		y * CHIP_SIZE,
-			//		(x + 1) * CHIP_SIZE,
-			//		(y + 1) * CHIP_SIZE,
-			//		GetColor(0, 255, 0),
-			//		FALSE
-			//	);
-			//}
-		}
-	}
+    // 背景画像だけ描画
+    DrawGraph(
+        0,
+        0,
+        mnBackgroundGraph,
+        TRUE
+    );
 }
 
 
+// ============================================================
+// 配列インデックス取得
+// ============================================================
 
-// プレイヤーと当たっているブロックを探す
-bool BlockMap::CheckCollisionBlock(
-	float x,
-	float y,
-	float width,
-	float height,
-	int* blockX,
-	int* blockY)
+int BlockMap::GetCollisionIndex(
+    int x,
+    int y) const
 {
-	// プレイヤーの矩形
-	VECTOR playerPos = VGet(x, y, 0.0f);
-	VECTOR playerSize = VGet(width, height, 0.0f);
-
-	// プレイヤーが重なっているブロック範囲を計算
-	// ワールド座標をマップの配列インデックスに変換するため
-	int left = static_cast<int>(x) / CHIP_SIZE;
-	int right = static_cast<int>(x + width - 1) / CHIP_SIZE;
-	int top = static_cast<int>(y) / CHIP_SIZE;
-	int bottom = static_cast<int>(y + height - 1) / CHIP_SIZE;
-
-	// マップ範囲を調整
-	if (left < 0) {left = 0;}
-	if (right >= MAX_MAP_WIDTH) {right = MAX_MAP_WIDTH - 1;}
-	if (top < 0) {top = 0;}
-	if (bottom >= MAX_MAP_HEIGHT) {bottom = MAX_MAP_HEIGHT - 1;}
+    return y * mnCollisionWidth + x;
+}
 
 
-	// 周囲のブロックを1個ずつ調べる
-	// マップ全体を毎フレーム調べると重いので、プレイヤーが実際に重なっている可能性のある近傍のチップだけを効率よく探すため
-	for (int mapY = top; mapY <= bottom; mapY++)
-	{
-		for (int mapX = left; mapX <= right; mapX++)
-		{
-			int chipID = mnMapData[mapY][mapX];
+// ============================================================
+// 指定座標が当たり判定か
+// ============================================================
 
-			if (!IsSolidChip(chipID)) { continue; }
+bool BlockMap::IsCollisionPixel(
+    int x,
+    int y) const
+{
+    // マップ外
+    if (x < 0 ||
+        x >= mnCollisionWidth ||
+        y < 0 ||
+        y >= mnCollisionHeight)
+    {
+        return false;
+    }
 
-			// ブロックの矩形
-			VECTOR blockPos = VGet(
-				static_cast<float>(mapX * CHIP_SIZE),
-				static_cast<float>(mapY * CHIP_SIZE),
-				0.0f
-			);
 
-			VECTOR blockSize = VGet(
-				static_cast<float>(CHIP_SIZE),
-				static_cast<float>(CHIP_SIZE),
-				0.0f
-			);
+    return mbCollisionData[
+        GetCollisionIndex(x, y)
+    ];
+}
 
-			// プレイヤーとブロックの当たり判定
-			if (Collision::CheckRectToRect(
-				playerPos,
-				playerSize,
-				blockPos,
-				blockSize))
-			{
-				if (chipID >= BlockCollision::MinDamageBlock &&
-					chipID <= BlockCollision::MaxDamageBlock)
-				{
-					DrawFormatString(600, 600, GetColor(255, 255, 255), "針にあたった");
 
-					auto getPlayer = Master::mpGameManager->GetSceneManager()->GetCurrentScene()
-						->GetObjectManager()->GetObject2DByTag(Object2D::Player2D);
+// ============================================================
+// プレイヤーとの当たり判定
+// ============================================================
 
-					Player* player = dynamic_cast<Player*>(getPlayer);
-					Damage::ApplyDamage(player->GetStatus().hp, SetDamage::SpikeBlock);
-				}
+bool BlockMap::CheckCollisionBlock(
+    float x,
+    float y,
+    float width,
+    float height,
+    int* blockX,
+    int* blockY)
+{
+    if (!mbIsLoaded)
+    {
+        return false;
+    }
 
-				// 格納先が指定されている場合のみブロック座標を代入する
-				if (blockX != nullptr)
-				{
-					*blockX = mapX;
-				}
-				if (blockY != nullptr)
-				{
-					*blockY = mapY;
-				}
-				return true;
-			}
-		}
-	}
-	return false;
+
+    // ========================================================
+    // プレイヤーの矩形
+    // ========================================================
+
+    int left =
+        static_cast<int>(x);
+
+    int right =
+        static_cast<int>(
+            x + width - 1.0f
+            );
+
+    int top =
+        static_cast<int>(y);
+
+    int bottom =
+        static_cast<int>(
+            y + height - 1.0f
+            );
+
+
+    // ========================================================
+    // マップ範囲内に制限
+    // ========================================================
+
+    if (left < 0)
+    {
+        left = 0;
+    }
+
+    if (right >= mnCollisionWidth)
+    {
+        right = mnCollisionWidth - 1;
+    }
+
+    if (top < 0)
+    {
+        top = 0;
+    }
+
+    if (bottom >= mnCollisionHeight)
+    {
+        bottom = mnCollisionHeight - 1;
+    }
+
+
+    // ========================================================
+    // プレイヤー矩形内のピクセルを調べる
+    // ========================================================
+
+    for (int pixelY = top;
+        pixelY <= bottom;
+        pixelY++)
+    {
+        for (int pixelX = left;
+            pixelX <= right;
+            pixelX++)
+        {
+            // 赤い当たり判定ではない
+            if (!IsCollisionPixel(
+                pixelX,
+                pixelY))
+            {
+                continue;
+            }
+
+
+            // =================================================
+            // 赤いピクセルを発見
+            // =================================================
+
+            if (blockX != nullptr)
+            {
+                *blockX = pixelX;
+            }
+
+            if (blockY != nullptr)
+            {
+                *blockY = pixelY;
+            }
+
+
+            return true;
+        }
+    }
+
+
+    return false;
 }

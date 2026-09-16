@@ -55,6 +55,9 @@ namespace BackGroundGraphPath
 namespace BlockMapGraphPath
 {
 	static const std::string BlockMap = "Resource/Map/image_Map.png"; // ブロックマップの画像
+
+	static const char* Background = "Resource/Map/Background.png";
+	static const char* Collision = "Resource/Map/Collision.png";
 }
 
 // ブロックマップの当たり判定の設定
