@@ -4,7 +4,9 @@
 #include "Utility.h"
 #include <string>
 #include <algorithm>
-
+#include "Damage.h"
+#include "Scene.h"
+#include "Player.h"
 
 
 // ファイルを読み込むために必要なインクルード
@@ -133,18 +135,18 @@ void BlockMap::Draw()
 			);
 
 
-			// デバッグ表示
-			if (IsSolidChip)
-			{
-				DrawBox(
-					x * CHIP_SIZE,
-					y * CHIP_SIZE,
-					(x + 1) * CHIP_SIZE,
-					(y + 1) * CHIP_SIZE,
-					GetColor(0, 255, 0),
-					FALSE
-				);
-			}
+			//// デバッグ表示
+			//if (IsSolidChip)
+			//{
+			//	DrawBox(
+			//		x * CHIP_SIZE,
+			//		y * CHIP_SIZE,
+			//		(x + 1) * CHIP_SIZE,
+			//		(y + 1) * CHIP_SIZE,
+			//		GetColor(0, 255, 0),
+			//		FALSE
+			//	);
+			//}
 		}
 	}
 }
@@ -208,6 +210,18 @@ bool BlockMap::CheckCollisionBlock(
 				blockPos,
 				blockSize))
 			{
+				if (chipID >= BlockCollision::MinDamageBlock &&
+					chipID <= BlockCollision::MaxDamageBlock)
+				{
+					DrawFormatString(600, 600, GetColor(255, 255, 255), "針にあたった");
+
+					auto getPlayer = Master::mpGameManager->GetSceneManager()->GetCurrentScene()
+						->GetObjectManager()->GetObject2DByTag(Object2D::Player2D);
+
+					Player* player = dynamic_cast<Player*>(getPlayer);
+					Damage::ApplyDamage(player->GetStatus().hp, SetDamage::SpikeBlock);
+				}
+
 				// 格納先が指定されている場合のみブロック座標を代入する
 				if (blockX != nullptr)
 				{

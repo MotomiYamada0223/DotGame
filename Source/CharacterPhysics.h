@@ -24,4 +24,5 @@ public:
 		float gravity,      // 重力
 		float moveSpeed     // 移動スピード
 	);
+
 };

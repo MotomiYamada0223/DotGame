@@ -8,12 +8,14 @@
 #include "Enemy.h"
 #include "Collision.h"
 #include "GameConstants.h"
+#include "Damage.h"
+
 
 Player::Player(VECTOR initPos) 
 	// TextureAnimationは使わず一枚絵としてロード
 	: Object2D(CharacterGraphPath::PlayerAnimation, initPos)
 {
-	SetTag(Object2D::BattlePlayer2D);
+	SetTag(Object2D::Player2D);
 	mbIsJumping = false;
 	isGrounded = true;
 	velocityY = 0.0f;
@@ -27,11 +29,7 @@ Player::Player(VECTOR initPos)
 	mSpawnPos = initPos;
 	mDeadState = 0;
 	mpBlockMap = nullptr;
-	mHeartFullGraph = LoadGraph(CharacterGraphPath::HeartFull.c_str());
-	mHeartHalfGraph = LoadGraph(CharacterGraphPath::HeartHalf.c_str());
-	mHeartEmptyGraph = LoadGraph(CharacterGraphPath::HeartEmpty.c_str());
-
-	UpdateStatusByProgress(GameProgress::Tutorial1);
+	mStatus.hp = PlayerConstants::MaxHp;
 
 	mCurrentFrame = 0;
 	mFrameTimer = 0;
@@ -262,7 +260,7 @@ void Player::Update()
 		}
 	}
 
-	if (CheckHitKey(KEY_INPUT_K) == 1 && !isDead)
+	if (!isDead && (CheckHitKey(KEY_INPUT_K) == 1 || mStatus.hp <= 0))
 	{
 		isDead = true;
 		mDeadState = 1; // SCATTER
@@ -418,6 +416,9 @@ void Player::DebugDraw()
 	int playerBottom = static_cast<int>(mvPosition.y + mfPlayerHeight / 2.0f);
 	DrawBox(playerLeft, playerTop, playerRight, playerBottom, GetColor(0, 0, 255), FALSE);
 
+	// HPのデバッグ
+	DrawFormatString((int)mvPosition.x, (int)mvPosition.y + 10, ColorOption::White, "HP: %d", mStatus.hp);
+
 
 	// シーン上のすべての敵の当たり判定をデバッグ表示（黄緑色）
 	ObjectManager* objManager = Master::mpGameManager->GetSceneManager()->GetCurrentScene()->GetObjectManager();
@@ -518,6 +519,7 @@ void Player::DeadProcess()
 			deadTimer = 0;
 			isFacingRight = true;
 			mFragments.clear();
+			GetStatus().hp = PlayerConstants::MaxHp; // 最大HPで復活
 		}
 	}
-}
+	}

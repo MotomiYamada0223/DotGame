@@ -26,6 +26,8 @@ namespace PlayerConstants
 
 	static const int PlayerAttackWidth = 60; // プレイヤーの攻撃範囲の幅
 	static const int PlayerAttackHeight = 40; // プレイヤーの攻撃範囲の高さ
+
+	static const int MaxHp = 3; // プレイヤーの最大HP
 }
 
 
@@ -60,6 +62,13 @@ namespace BlockMapGraphPath
 	static const std::string BlockMap = "Resource/Map/image_Map.png"; // ブロックマップの画像
 }
 
+// ブロックマップの当たり判定の設定
+namespace BlockCollision
+{
+	static const int MinDamageBlock = 13; // ダメージ判定があるブロックの最小値
+	static const int MaxDamageBlock = 15; // ダメージ判定があるブロックの最大値
+}
+
 // 読み込むCSVパス
 namespace CsvPath
 {
@@ -67,8 +76,16 @@ namespace CsvPath
 	static const std::string TutorialText = "Resource/TutorialText/tutorialTextData.csv"; // チュートリアルテキストのCSV
 }
 
+// よく使う色
 namespace ColorOption
 {
 	static const int White = GetColor(240, 240, 240);
 	static const int Black = GetColor(0, 0, 0);
+}
+
+// ダメージの定義
+namespace SetDamage
+{
+	static const int SpikeBlock = 3; // 針と当たったら1ダメージ
+	static const int EnemyAttack = 1; // 敵と当たったら1ダメージ
 }
