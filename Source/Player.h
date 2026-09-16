@@ -30,6 +30,8 @@ public:
 	PlayerStatus& GetStatus() { return mStatus; }
 	const PlayerStatus& GetStatus() const { return mStatus; }
 
+	void SetStatus(PlayerStatus st) { mStatus = st; }
+
 
 
 private:

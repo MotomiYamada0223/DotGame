@@ -29,7 +29,7 @@ Player::Player(VECTOR initPos)
 	mSpawnPos = initPos;
 	mDeadState = 0;
 	mpBlockMap = nullptr;
-	mStatus.hp = 3;
+	mStatus.hp = PlayerConstants::MaxHp;
 
 	mCurrentFrame = 0;
 	mFrameTimer = 0;
@@ -214,7 +214,7 @@ void Player::Update()
 		}
 	}
 
-	if (CheckHitKey(KEY_INPUT_K) == 1 && !isDead)
+	if (!isDead && (CheckHitKey(KEY_INPUT_K) == 1 || mStatus.hp <= 0))
 	{
 		isDead = true;
 		mDeadState = 1; // SCATTER
@@ -473,6 +473,7 @@ void Player::DeadProcess()
 			deadTimer = 0;
 			isFacingRight = true;
 			mFragments.clear();
+			GetStatus().hp = PlayerConstants::MaxHp; // 最大HPで復活
 		}
 	}
 	}
