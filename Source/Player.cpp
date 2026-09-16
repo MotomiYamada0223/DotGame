@@ -48,13 +48,13 @@ Player::~Player()
 void Player::PlayerMove(BlockMap& blockMap)
 {
 	mpBlockMap = &blockMap;
-
 	// 死亡時は操作を受け付けない
-	if (isDead) return;
+	if (isDead)
+	{
+		return;
+	}
 
-	bool moved = false;
-
-	// 左右移動の共通化（Aキーは-1, Dキーは1）
+	// 左右移動
 	float moveDirection = 0.0f;
 	if (CheckHitKey(KEY_INPUT_A) == 1)
 	{
@@ -67,21 +67,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 		isFacingRight = true;
 	}
 
-	// どちらかのキーが押されている場合
-	if (moveDirection != 0.0f)
-	{
-		float nextX = mvPosition.x + (moveSpeed * moveDirection);
-		float playerLeft = nextX - mfPlayerWidth / 2.0f;
-		float playerTop = mvPosition.y - mfPlayerHeight / 2.0f;
-
-		if (!blockMap.CheckCollisionBlock(playerLeft, playerTop, mfPlayerWidth, mfPlayerHeight))
-		{
-			mvPosition.x = nextX;
-			moved = true;
-		}
-	}
-
-	// キャラクターの物理処理や当たり判定クラスの呼び出し
+	// キャラクターの物理処理
 	mCharacterPhysics.UpdateMoveAndCollision(
 		mvPosition,
 		velocityY,
@@ -91,10 +77,12 @@ void Player::PlayerMove(BlockMap& blockMap)
 		mfPlayerWidth,
 		mfPlayerHeight,
 		gravity,
-		moveSpeed
+		moveSpeed,
+		moveDirection
 	);
 
-	// ジャンプ開始 Space
+
+	// ジャンプ開始
 	if (CheckHitKey(KEY_INPUT_SPACE) == 1 &&
 		isGrounded)
 	{
@@ -102,6 +90,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 		isGrounded = false;
 		velocityY = jumpPower;
 	}
+
 
 	// 攻撃 F
 	if (CheckHitKey(KEY_INPUT_F) == 1 &&
@@ -126,12 +115,14 @@ void Player::PlayerMove(BlockMap& blockMap)
 
 
 	// アニメーション更新
-	if (moved)
+	if (moveDirection != 0.0f)
 	{
 		mFrameTimer++;
+
 		if (mFrameTimer >= FRAME_INTERVAL)
 		{
 			mFrameTimer = 0;
+
 			mCurrentFrame =
 				(mCurrentFrame + 1) % TOTAL_FRAMES;
 		}
@@ -139,7 +130,6 @@ void Player::PlayerMove(BlockMap& blockMap)
 	else
 	{
 		mCurrentFrame = 0;
-
 		mFrameTimer = 0;
 	}
 }
@@ -393,13 +383,14 @@ void Player::DebugDraw()
 		}
 	}
 
-	// ブロックマップとの当たり判定デバッグ表示
-	int left = static_cast<int>(mvPosition.x - mfPlayerWidth / 2.0f);
-	int top = static_cast<int>(mvPosition.y - mfPlayerHeight / 2.0f);
-	int right = static_cast<int>(mvPosition.x + mfPlayerWidth / 2.0f);
-	int bottom = static_cast<int>(mvPosition.y + mfPlayerHeight / 2.0f);
-	DrawBox(left, top, right, bottom, GetColor(255, 0, 0), FALSE);
+	//// ブロックマップとの当たり判定デバッグ表示
+	//int left = static_cast<int>(mvPosition.x - mfPlayerWidth / 2.0f);
+	//int top = static_cast<int>(mvPosition.y - mfPlayerHeight / 2.0f);
+	//int right = static_cast<int>(mvPosition.x + mfPlayerWidth / 2.0f);
+	//int bottom = static_cast<int>(mvPosition.y + mfPlayerHeight / 2.0f);
+	//DrawBox(left, top, right, bottom, GetColor(255, 0, 0), FALSE);
 }
+
 
 void Player::DeadProcess()
 {
@@ -409,17 +400,29 @@ void Player::DeadProcess()
 	{
 		for (auto& frag : mFragments)
 		{
-			frag.vel.y += gravity;
-
 			frag.pos.x += frag.vel.x;
-			if (mpBlockMap && mpBlockMap->CheckCollisionBlock(frag.pos.x, frag.pos.y, static_cast<float>(frag.width), static_cast<float>(frag.height)))
+
+			if (mpBlockMap &&
+				mCharacterPhysics.IsBlockCollision(
+					*mpBlockMap,
+					frag.pos.x,
+					frag.pos.y,
+					static_cast<float>(frag.width),
+					static_cast<float>(frag.height)))
 			{
 				frag.pos.x -= frag.vel.x;
 				frag.vel.x *= -0.6f;
 			}
 
 			frag.pos.y += frag.vel.y;
-			if (mpBlockMap && mpBlockMap->CheckCollisionBlock(frag.pos.x, frag.pos.y, static_cast<float>(frag.width), static_cast<float>(frag.height)))
+
+			if (mpBlockMap &&
+				mCharacterPhysics.IsBlockCollision(
+					*mpBlockMap,
+					frag.pos.x,
+					frag.pos.y,
+					static_cast<float>(frag.width),
+					static_cast<float>(frag.height)))
 			{
 				frag.pos.y -= frag.vel.y;
 				frag.vel.y *= -0.4f;
