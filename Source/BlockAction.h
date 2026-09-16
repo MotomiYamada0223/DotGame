@@ -13,7 +13,7 @@ public:
 	void SetCollisionType(BlockMap::CollisionType collisionType);
 
 	// 設定された地形に応じて死亡処理を実行する
-	void ExecuteDeath(int& playerHp);
+	void ExecuteDeath(int& inHp);
 
 	// 設定された地形に応じてゴール処理を実行する
 	void ExecuteGoal();
