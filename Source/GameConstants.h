@@ -18,6 +18,16 @@ namespace ScreenSize
 	static const int CenterY = ScrrenHeight / 2;
 }
 
+// プレイヤー関係
+namespace PlayerConstants
+{
+	static const int PlayerCollisionWidth = 32; // プレイヤーの幅
+	static const int PlayerCollisionHeight = 80; // プレイヤーの高さ
+
+	static const int PlayerAttackWidth = 60; // プレイヤーの攻撃範囲の幅
+	static const int PlayerAttackHeight = 40; // プレイヤーの攻撃範囲の高さ
+}
+
 
 // キャラクター画像関係
 namespace CharacterGraphPath
@@ -50,4 +60,10 @@ namespace CsvPath
 {
 	static const std::string BlockMapFile = "Resource/Map/BlockMapFile.csv"; // ブロックマップの配列CSV
 	static const std::string TutorialText = "Resource/TutorialText/tutorialTextData.csv"; // チュートリアルテキストのCSV
+}
+
+namespace ColorOption
+{
+	static const int White = GetColor(240, 240, 240);
+	static const int Black = GetColor(0, 0, 0);
 }

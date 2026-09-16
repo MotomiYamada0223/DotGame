@@ -71,14 +71,12 @@ void GameScene::Draw()
 	DrawFormatStringToHandle(500, 500, GetColor(255, 255, 255),
 		Master::mpGameManager->GetFontManager()->GetDotFont(), "ゲームシーン\n\n Enterでリザルトへ");
 
-	mBlockMap.Draw();
-	mpPlayer->DebugDraw(); // デバッグ表示するため
-
 	// クラスのDraw呼び出し
 	Scene::Draw();
 
-	// チュートリアルの描画 
-	mTutorialText.Draw();
+	mpPlayer->DebugDraw(); // デバッグ表示するため
+	mBlockMap.Draw(); // ブロックマップの描画
+	mTutorialText.Draw(); // チュートリアルの描画
 }
 
 void GameScene::Finalize()

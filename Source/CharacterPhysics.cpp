@@ -28,18 +28,12 @@ void CharacterPhysics::UpdateMoveAndCollision(
 	float nextY = position.y + velocityY;
 
 	// 現在のプレイヤー上下
-	float oldTop =
-		position.y - height / 2.0f;
-
-	float oldBottom =
-		position.y + height / 2.0f;
+	float oldTop = position.y - height / 2.0f;
+	float oldBottom = position.y + height / 2.0f;
 
 	// 次のプレイヤー矩形
-	float playerLeft =
-		position.x - width / 2.0f;
-
-	float playerTop =
-		nextY - height / 2.0f;
+	float playerLeft = position.x - width / 2.0f;
+	float playerTop = nextY - height / 2.0f;
 
 	// 衝突したブロック
 	int blockX = -1;

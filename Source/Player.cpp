@@ -34,8 +34,8 @@ Player::Player(VECTOR initPos)
     // プレイヤー当たり判定サイズ
 	// Width...幅
 	// Height...足元の位置
-	mfPlayerWidth = 32.0f;
-	mfPlayerHeight = 100.0f;
+	playerWidth = PlayerConstants::PlayerCollisionWidth;
+	playerHeight = PlayerConstants::PlayerCollisionHeight;
 }
 
 Player::~Player()
@@ -167,8 +167,8 @@ void Player::Update()
 	if (isAttacking)
 	{
 		hasAttackRect = true;
-		int attackWidth = 60;
-		int attackHeight = 40;
+		int attackWidth = PlayerConstants::PlayerAttackWidth;
+		int attackHeight = PlayerConstants::PlayerAttackHeight;
 		int halfSizeX = FRAME_WIDTH / 2;
 		float atkLeft;
 

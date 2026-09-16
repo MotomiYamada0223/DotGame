@@ -1,6 +1,7 @@
 #include "BlockMap.h"
 #include "Master.h"
 #include "Collision.h"
+#include "Utility.h"
 #include <string>
 #include <algorithm>
 
@@ -16,7 +17,7 @@ namespace
 	// チップIDが当たり判定を持つかどうかを判定する
 	bool IsSolidChip(int chipID)
 	{
-		return (chipID >= 1 && chipID <= 3);
+		return (chipID >= 1 && chipID <= MAX_BLOCK_COUNT);
 	}
 }
 
@@ -89,41 +90,35 @@ bool BlockMap::Load(const std::string& csvPath, const std::string& texturePath)
 	return true;
 }
 
-
 void BlockMap::Draw()
 {
 	// マップが読み込まれていない場合は描画しない
 	if (!mbIsLoaded) { return; }
 
-	for (int y = 0; y < MAX_MAP_HEIGHT; y++)
+	// 画面サイズから、描画するタイルの最大インデックスを計算する
+	int right = Utility::SCREEN_WIDTH / CHIP_SIZE;
+	int bottom = Utility::SCREEN_HEIGHT / CHIP_SIZE;
+
+	// マップの端を超えないように調整する
+	if (right >= MAX_MAP_WIDTH) { right = MAX_MAP_WIDTH - 1; }
+	if (bottom >= MAX_MAP_HEIGHT) { bottom = MAX_MAP_HEIGHT - 1; }
+
+	// 画面内に収まる範囲だけでループを回す
+	for (int y = 0; y <= bottom; y++)
 	{
-		for (int x = 0; x < MAX_MAP_WIDTH; x++)
+		for (int x = 0; x <= right; x++)
 		{
 			// 現在のチップID
 			int chipID = mnMapData[y][x];
 
 			// 0番は何も描画しない
 			if (chipID == 0) { continue; }
-			
-			// ====================================
-			// タイルセット内の位置を計算
-			//
-			// 0 1 2 3 4
-			// 5 6 7 8 9
-			//
-			// chipID = 7 の場合
-			// srcX = 2
-			// srcY = 1
-			// ====================================
 
 			int tileX = chipID % TILESET_COLUMNS;
 			int tileY = chipID / TILESET_COLUMNS;
 
-
-			// タイルセット画像から切り出す座標
 			int srcX = tileX * CHIP_SIZE;
 			int srcY = tileY * CHIP_SIZE;
-
 
 			// マップ上に描画
 			DrawRectGraph(
@@ -134,13 +129,12 @@ void BlockMap::Draw()
 				CHIP_SIZE,
 				CHIP_SIZE,
 				mnTileGraph,
-
 				TRUE
 			);
 
 
-			// 0から10まではデバッグ表示している
-			if (chipID >= 1 && chipID <= 10)
+			// デバッグ表示
+			if (IsSolidChip)
 			{
 				DrawBox(
 					x * CHIP_SIZE,
@@ -154,6 +148,8 @@ void BlockMap::Draw()
 		}
 	}
 }
+
+
 
 // プレイヤーと当たっているブロックを探す
 bool BlockMap::CheckCollisionBlock(
