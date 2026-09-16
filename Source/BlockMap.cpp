@@ -133,18 +133,18 @@ void BlockMap::Draw()
 			);
 
 
-			// デバッグ表示
-			if (IsSolidChip)
-			{
-				DrawBox(
-					x * CHIP_SIZE,
-					y * CHIP_SIZE,
-					(x + 1) * CHIP_SIZE,
-					(y + 1) * CHIP_SIZE,
-					GetColor(0, 255, 0),
-					FALSE
-				);
-			}
+			//// デバッグ表示
+			//if (IsSolidChip)
+			//{
+			//	DrawBox(
+			//		x * CHIP_SIZE,
+			//		y * CHIP_SIZE,
+			//		(x + 1) * CHIP_SIZE,
+			//		(y + 1) * CHIP_SIZE,
+			//		GetColor(0, 255, 0),
+			//		FALSE
+			//	);
+			//}
 		}
 	}
 }
@@ -208,10 +208,10 @@ bool BlockMap::CheckCollisionBlock(
 				blockPos,
 				blockSize))
 			{
-				if (chipID <= BlockCollision::MinDamageBlock &&
-					chipID >= BlockCollision::MaxDamageBlock)
+				if (chipID >= BlockCollision::MinDamageBlock &&
+					chipID <= BlockCollision::MaxDamageBlock)
 				{
-
+					DrawFormatString(600, 600, GetColor(255, 255, 255), "針にあたった");
 				}
 
 				// 格納先が指定されている場合のみブロック座標を代入する
