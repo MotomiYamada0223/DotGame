@@ -2,6 +2,7 @@
 #include "Master.h"
 #include "GameConstants.h"
 #include <iostream>
+#include "GameConstants.h"
 
 
 BlockMap::BlockMap()
@@ -11,6 +12,9 @@ BlockMap::BlockMap()
     , mnCollisionHeight(0)
     , mCollisionData()
     , mbIsLoaded(false)
+    , mBackgroundWidth(0)
+    , mBackgroundHeight(0)
+    , mScrollX(0)
 {
 }
 
@@ -37,6 +41,15 @@ bool BlockMap::Load(
         std::cout<< "ブロックの背景画像が開けませんでした。" << std::endl;
         return false;
     }
+
+    // 背景画像のサイズを取得
+    GetGraphSize(
+        mnBackgroundGraph,
+        &mBackgroundWidth,
+        &mBackgroundHeight
+    );
+
+
 
     // 当たり判定画像を読み込む
     mnCollisionSoftImage =
@@ -156,15 +169,96 @@ void BlockMap::Draw()
 {
     if (!mbIsLoaded) { return; }
 
-    // 背景画像を描画 今は00だが将来的には変更したい
-    // 今のメイン画像の前後だけ描画など (画像は4毎ぐらい用意する予定)
-    DrawGraph(
-        0,
-        0,
+    // 背景画像を描画
+    DrawRectGraph(
+        0,                  // 画面上のX
+        0,                  // 画面上のY
+        mScrollX,           // 元画像から切り出すX
+        0,                  // 元画像から切り出すY
+        ScreenSize::ScrrenWidth,       // 切り出す幅
+        ScreenSize::ScrrenHeight,      // 切り出す高さ
         mnBackgroundGraph,
         TRUE
     );
+
+
+    // 9/18 1:34大谷からのメッセージ
+   // プレイヤー座標からスクロール量を引く処理をやめ
+   // プレイヤー位置とマップ位置を分離したことで、スクロール判定が正しくなった。
+
+    // デバッグ表示
+    // 左スクロール開始位置
+    DrawLine(
+        MapScrollConstants::ScrollStartLeftX,
+        0,
+        MapScrollConstants::ScrollStartLeftX,
+        ScreenSize::ScrrenHeight,
+        GetColor(0, 255, 0)
+    );
+
+    // 右スクロール開始位置
+    DrawLine(
+        MapScrollConstants::ScrollStartRightX,
+        0,
+        MapScrollConstants::ScrollStartRightX,
+        ScreenSize::ScrrenHeight,
+        GetColor(255, 0, 0)
+    );
+
+    DrawFormatString(
+        20,
+        200,
+        GetColor(255, 255, 255),
+        "ScrollX: %d",
+        mScrollX
+    );
+
+
 }
+
+// マップのスクロール処理
+void BlockMap::Move(int playerX, float moveDirection)
+{
+    if (!mbIsLoaded)
+    {
+        return;
+    }
+
+    // 右側の線を超えていて、右に移動中
+    if (playerX > MapScrollConstants::ScrollStartRightX &&
+        moveDirection > 0.0f)
+    {
+        mScrollX += MapScrollConstants::ScrollSpeed;
+    }
+
+    // 左側の線を超えていて、左に移動中
+    else if (playerX < MapScrollConstants::ScrollStartLeftX &&
+        moveDirection < 0.0f)
+    {
+        mScrollX -= MapScrollConstants::ScrollSpeed;
+    }
+
+    // 左端
+    if (mScrollX < 0)
+    {
+        mScrollX = 0;
+    }
+
+    // 右端
+    int maxScrollX =
+        mBackgroundWidth - ScreenSize::ScrrenWidth;
+
+    if (maxScrollX < 0)
+    {
+        maxScrollX = 0;
+    }
+
+    if (mScrollX > maxScrollX)
+    {
+        mScrollX = maxScrollX;
+    }
+}
+
 
 
 // CollisionType取得
@@ -183,4 +277,16 @@ BlockMap::CollisionType BlockMap::GetCollisionType(
     return mCollisionData[
         GetCollisionIndex(x, y)
     ];
+}
+
+
+// スクリーン座標をマップ座標に変換
+int BlockMap::ScreenToMapX(int screenX) const
+{
+    return screenX + mScrollX;
+}
+
+int BlockMap::ScreenToMapY(int screenY) const
+{
+    return screenY;
 }

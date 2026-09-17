@@ -1,0 +1,1700 @@
+#include "Player.h"
+#include "DxLib.h"
+#include "Texture.h"
+#include "Master.h"
+#include "SceneManager.h"
+#include "Scene.h"
+#include "ObjectManager.h"
+#include "Enemy.h"
+#include "Collision.h"
+#include "GameConstants.h"
+#include "BlockAction.h"
+#include "InputManager.h"
+
+Player::Player(VECTOR initPos) 
+	// TextureAnimationは使わず一枚絵としてロード
+	: Object2D(CharacterGraphPath::PlayerAnimation, initPos)
+{
+	SetTag(Object2D::Player2D);
+	mbIsJumping = false;
+	isGrounded = true;
+	velocityY = 0.0f;
+	isFacingRight = true;
+	isAttacking = false;
+	attackTimer = 0;
+	isHitDamage = false;
+	isDead = false;
+	deadTimer = 0;
+	alpha = 255.0f;
+	mSpawnPos = initPos;
+	mDeadState = 0;
+	mpBlockMap = nullptr;
+	mMaxHp = PlayerConstants::MaxHp;
+	mHp = PlayerConstants::MaxHp;
+	mCurrentFrame = 0;
+	mFrameTimer = 0;
+	mfReviveTimer = TextTimer::MaxFallDeathTimer;
+	mfMoveDirection = 0.0f;
+
+
+	UpdateStatusByProgress(GameProgress::Tutorial1);
+
+	// 画像の読み込み
+	mHeartFullGraph = LoadGraph(CharacterGraphPath::HeartFull.c_str());
+	if (mHeartFullGraph == -1) { printfDx("体力MAXの画像がない。"); }
+	mHeartHalfGraph = LoadGraph(CharacterGraphPath::HeartHalf.c_str());
+	if (mHeartHalfGraph == -1) { printfDx("体力半分の画像がない。"); }
+	mHeartEmptyGraph = LoadGraph(CharacterGraphPath::HeartEmpty.c_str());
+	if (mHeartEmptyGraph == -1) { printfDx("体力0の画像がない。"); }
+
+
+	// プレイヤー当たり判定サイズ
+	// Width...幅
+	// Height...足元の位置
+	mfPlayerWidth = PlayerConstants::PlayerCollisionWidth;
+	mfPlayerHeight = PlayerConstants::PlayerCollisionHeight;
+}
+
+Player::~Player()
+{
+	DeleteGraph(mHeartFullGraph);
+	DeleteGraph(mHeartHalfGraph);
+	DeleteGraph(mHeartEmptyGraph);
+}
+
+void Player::UpdateStatusByProgress(GameProgress progress)
+{
+	switch (progress)
+	{
+	case GameProgress::Tutorial1:
+		mMaxHp = 15; mHp = 15;
+		mAttack = 5; mDefense = 5; mMagic = 5;
+		mIsBlinkWallDeathImmune = false;
+		break;
+	case GameProgress::PostTutorial1:
+	case GameProgress::Tutorial2:
+		mMaxHp = 30; mHp = 30;
+		mAttack = 15; mDefense = 15; mMagic = 15;
+		mIsBlinkWallDeathImmune = true;
+		break;
+	case GameProgress::PostTutorial2:
+	case GameProgress::Tutorial3:
+		mMaxHp = 90; mHp = 90;
+		mAttack = 45; mDefense = 45; mMagic = 45;
+		mIsBlinkWallDeathImmune = true;
+		mAttackReachLevel = 1;
+		mIsAttackFlashy = true;
+		mBlinkCooldownLevel = 1;
+		mIsPoisonImmune = true;
+		mIsPetrificationImmune = true;
+		break;
+	case GameProgress::PostTutorial3:
+	case GameProgress::BossTree:
+	case GameProgress::BossSnake:
+	case GameProgress::BossDragon:
+		mMaxHp = 450; mHp = 450;
+		mAttack = 250; mDefense = 250; mMagic = 250;
+		mIsBlinkWallDeathImmune = true;
+		mAttackReachLevel = 2;
+		mIsAttackFlashy = true;
+		mBlinkCooldownLevel = 1;
+		mIsPoisonImmune = true;
+		mIsPetrificationImmune = true;
+		mIsFireImmune = true;
+		break;
+	}
+}
+
+void Player::PlayerMove(BlockMap& blockMap)
+{
+	mpBlockMap = &blockMap;
+	// 死亡時は操作を受け付けない
+	if (isDead)
+	{
+		return;
+	}
+
+	// 左右移動
+	mfMoveDirection = 0.0f;
+	if (CheckHitKey(KEY_INPUT_A) == 1)
+	{
+		mfMoveDirection = -1.0f;
+		isFacingRight = false;
+	}
+	else if (CheckHitKey(KEY_INPUT_D) == 1)
+	{
+		mfMoveDirection = 1.0f;
+		isFacingRight = true;
+	}
+
+
+	// キャラクターの物理処理
+	BlockMap::CollisionType collisionType =
+		mCharacterPhysics.UpdateMoveAndCollision(
+			mvPosition,
+			velocityY,
+			isGrounded,
+			mbIsJumping,
+			blockMap,
+			mfPlayerWidth,
+			mfPlayerHeight,
+			gravity,
+			moveSpeed,
+			mfMoveDirection
+		);
+
+	// 当たり判定後にスクロール
+	// 画面上のプレイヤー位置に変換して渡す。
+	const int playerScreenX =
+		static_cast<int>(
+			mvPosition.x - blockMap.GetScrollX()
+			);
+
+	blockMap.Move(
+		playerScreenX,
+		mfMoveDirection
+	);
+
+
+	// 特殊地形の処理
+	mBlockAction.SetCollisionType(collisionType);
+	mBlockAction.ExecuteDeath(mHp);
+	mBlockAction.ExecuteGoal();
+
+
+
+	// ジャンプ開始
+	if (CheckHitKey(KEY_INPUT_SPACE) == 1 &&
+		isGrounded)
+	{
+		mbIsJumping = true;
+		isGrounded = false;
+		velocityY = jumpPower;
+	}
+
+
+	// 攻撃 F
+	if (CheckHitKey(KEY_INPUT_F) == 1 &&
+		!isAttacking)
+	{
+		isAttacking = true;
+		attackTimer = attackDuration;
+	}
+
+
+	// 攻撃エフェクト更新
+	if (isAttacking)
+	{
+		attackTimer--;
+
+		if (attackTimer <= 0)
+		{
+			isAttacking = false;
+		}
+	}
+
+
+	// アニメーション更新
+	if (mfMoveDirection != 0.0f)
+	{
+		mFrameTimer++;
+
+		if (mFrameTimer >= FRAME_INTERVAL)
+		{
+			mFrameTimer = 0;
+
+			mCurrentFrame =
+				(mCurrentFrame + 1) % TOTAL_FRAMES;
+		}
+	}
+	else
+	{
+		mCurrentFrame = 0;
+		mFrameTimer = 0;
+	}
+}
+
+void Player::Update()
+{
+	if (mbFallDeath)
+	{
+		UpdateFallDeath();
+	}
+
+	if (isDead)
+	{
+		DeadProcess();
+
+		Object2D::Update();
+		return;
+	}
+
+
+	// --- 当たり判定処理 ---
+	isHitDamage = false;
+
+	ObjectManager* objManager = Master::mpGameManager->GetSceneManager()->GetCurrentScene()->GetObjectManager();
+	std::vector<Object2D*> enemyList = objManager->GetObject2DListByTag(Object2D::Enemy2D);
+
+	// プレイヤーの当たり判定
+	VECTOR myPos = VGet(
+		mvPosition.x - mfPlayerWidth / 2.0f,
+		mvPosition.y - mfPlayerHeight / 2.0f,
+		0.0f
+	);
+	VECTOR mySize = VGet(
+		mfPlayerWidth,
+		mfPlayerHeight,
+		0.0f
+	);
+
+
+	VECTOR atkPos = VGet(0, 0, 0);
+	VECTOR atkSize = VGet(0, 0, 0);
+	bool hasAttackRect = false;
+
+	if (isAttacking)
+	{
+		hasAttackRect = true;
+		int attackWidth = PlayerConstants::PlayerAttackWidth;
+		int attackHeight = PlayerConstants::PlayerAttackHeight;
+		int halfSizeX = FRAME_WIDTH / 2;
+		float atkLeft;
+
+		if (isFacingRight)
+		{
+			atkLeft = mvPosition.x + halfSizeX;
+		}
+		else
+		{
+			atkLeft = mvPosition.x - halfSizeX - attackWidth;
+		}
+		float atkTop = mvPosition.y - attackHeight / 2.0f;
+
+		atkPos = VGet(atkLeft, atkTop, 0.0f);
+		atkSize = VGet((float)attackWidth, (float)attackHeight, 0.0f);
+	}
+
+	for (Object2D* obj : enemyList)
+	{
+		Enemy* enemy = dynamic_cast<Enemy*>(obj);
+		if (!enemy) continue;
+
+		// 敵の当たり判定
+		float enemyWidth = enemy->GetSizeX() / 6.0f;
+		float enemyHeight = enemy->GetSizeY() / 6.0f;
+		int eneLeft = static_cast<int>(
+			enemy->GetPosition().x - enemyWidth / 2.0f
+			);
+		int eneTop = static_cast<int>(
+			enemy->GetPosition().y - enemyHeight / 2.0f
+			);
+
+		VECTOR enePos = VGet(
+			(float)eneLeft,
+			(float)eneTop,
+			0.0f
+		);
+		VECTOR eneSize = VGet(
+			enemyWidth,
+			enemyHeight,
+			0.0f
+		);
+
+		// 1. プレイヤー自身と敵の衝突判定 (ダメージで赤くする)
+		if (Collision::CheckRectToRect(myPos, mySize, enePos, eneSize))
+		{
+			isHitDamage = true;
+		}
+
+		// 2. 攻撃判定と敵の衝突判定 (敵を赤く光らせる)
+		if (hasAttackRect)
+		{
+			if (Collision::CheckRectToRect(atkPos, atkSize, enePos, eneSize))
+			{
+				enemy->OnDamaged();
+			}
+		}
+	}
+	// デバッグ用: Kキーで5ダメージ
+	static bool kKeyWasDown = false;
+	bool kKeyIsDown = (CheckHitKey(KEY_INPUT_K) == 1);
+	if (kKeyIsDown && !kKeyWasDown && !isDead)
+	{
+		TakeDamage(5);
+	}
+
+	kKeyWasDown = kKeyIsDown;
+
+	if (mHp <= 0 && !isDead)
+	{
+		isDead = true;
+		mDeadState = 1; // SCATTER
+		deadTimer = 0;
+		mFragments.clear();
+
+		int fragSize = 16;
+		int srcBaseY = isFacingRight ? 384 : 256;
+
+		for (int y = 0; y < FRAME_HEIGHT; y += fragSize)
+		{
+			for (int x = 0; x < FRAME_WIDTH; x += fragSize)
+			{
+				PlayerFragment frag;
+				frag.pos.x = mvPosition.x - (FRAME_WIDTH / 2.0f) + (float)x;
+				frag.pos.y = mvPosition.y - (FRAME_HEIGHT / 2.0f) + (float)y;
+				frag.srcX = x;
+				frag.srcY = srcBaseY + y;
+				frag.width = fragSize;
+				frag.height = fragSize;
+
+				frag.vel.x = ((float)GetRand(100) / 100.0f * 10.0f) - 5.0f;
+				frag.vel.y = ((float)GetRand(100) / 100.0f * -15.0f) - 5.0f;
+
+				mFragments.push_back(frag);
+			}
+		}
+	}
+
+	Object2D::Update();
+}
+
+
+void Player::Draw()
+{
+	DrawFallDeath();
+
+
+	if (isDead)
+	{
+		SetDrawBright(255, 255, 255); // 色をリセット
+		for (const auto& frag : mFragments)
+		{
+			if (mpTexture != nullptr)
+			{
+				DrawRectGraph(
+					static_cast<int>(
+						frag.pos.x
+						- (mpBlockMap
+							? mpBlockMap->GetScrollX()
+							: 0)
+						),
+					static_cast<int>(frag.pos.y),
+					frag.srcX + (mCurrentFrame * FRAME_WIDTH),
+					frag.srcY,
+					frag.width,
+					frag.height,
+					mpTexture->GetHandle(),
+					true
+				);
+			}
+			else
+			{
+				// テクスチャが無い場合の保険
+				DrawBox(
+					static_cast<int>(
+						frag.pos.x
+						- (mpBlockMap
+							? mpBlockMap->GetScrollX()
+							: 0)
+						),
+					static_cast<int>(frag.pos.y),
+					static_cast<int>(
+						frag.pos.x
+						+ frag.width
+						- (mpBlockMap
+							? mpBlockMap->GetScrollX()
+							: 0)
+						),
+					static_cast<int>(
+						frag.pos.y
+						+ frag.height
+						),
+					GetColor(255, 0, 0),
+					TRUE
+				);
+			}
+		}
+		return;
+	}
+
+	// ==========================================
+// プレイヤー画像描画
+// ==========================================
+
+	if (mpTexture != nullptr)
+	{
+		const int srcX =
+			mCurrentFrame * FRAME_WIDTH;
+
+		// 向きに応じた基本の Y 座標を設定する
+		int srcY = 256; // 右向き
+
+		if (!isFacingRight)
+		{
+			srcY = 384; // 左向き
+		}
+
+		// ダメージ中なら赤く変色させる
+		if (isHitDamage)
+		{
+			SetDrawBright(255, 100, 100);
+		}
+
+		// ワールド座標 → スクリーン座標
+		const int scrollX =
+			mpBlockMap
+			? mpBlockMap->GetScrollX()
+			: 0;
+
+		const int screenX =
+			static_cast<int>(
+				mvPosition.x
+				- FRAME_WIDTH / 2
+				- scrollX
+				);
+
+		const int screenY =
+			static_cast<int>(
+				mvPosition.y
+				- FRAME_HEIGHT / 2
+				);
+
+		// プレイヤーを描画
+		DrawRectGraph(
+			screenX,
+			screenY,
+			srcX,
+			srcY,
+			FRAME_WIDTH,
+			FRAME_HEIGHT,
+			mpTexture->GetHandle(),
+			true
+		);
+
+		// 色を元に戻す
+		if (isHitDamage)
+		{
+			SetDrawBright(255, 255, 255);
+		}
+	}
+	else
+	{
+		Object2D::Draw();
+	}
+
+
+	// ==========================================
+	// 攻撃エフェクトの描画
+	// ==========================================
+
+	if (isAttacking)
+	{
+		int attackWidth = 60;
+		int attackHeight = 40;
+
+		int rectLeft;
+		int rectTop;
+		int rectRight;
+		int rectBottom;
+
+		int halfSizeX =
+			FRAME_WIDTH / 2;
+
+		// ワールド座標 → スクリーン座標
+		int scrollX =
+			mpBlockMap
+			? mpBlockMap->GetScrollX()
+			: 0;
+
+		if (isFacingRight)
+		{
+			rectLeft =
+				static_cast<int>(
+					mvPosition.x
+					+ halfSizeX
+					- scrollX
+					);
+
+			rectRight =
+				rectLeft + attackWidth;
+		}
+		else
+		{
+			rectLeft =
+				static_cast<int>(
+					mvPosition.x
+					- halfSizeX
+					- attackWidth
+					- scrollX
+					);
+
+			rectRight =
+				rectLeft + attackWidth;
+		}
+
+		rectTop =
+			static_cast<int>(
+				mvPosition.y
+				- attackHeight / 2
+				);
+
+		rectBottom =
+			rectTop + attackHeight;
+
+		SetDrawBlendMode(
+			DX_BLENDMODE_ALPHA,
+			128
+		);
+
+		DrawBox(
+			rectLeft,
+			rectTop,
+			rectRight,
+			rectBottom,
+			GetColor(255, 50, 50),
+			TRUE
+		);
+
+		SetDrawBlendMode(
+			DX_BLENDMODE_NOBLEND,
+			0
+		);
+	}
+
+	// UI（ハート）の描画（右上）
+	if (mMaxHp > 0)
+	{
+		int hpLevel = (mHp * 6) / mMaxHp;
+		if (mHp > 0 && hpLevel == 0) hpLevel = 1;
+
+		int drawX = ScreenSize::ScrrenWidth - 150; // 右上に配置
+		int drawY = 20;
+		for (int i = 0; i < 3; i++)
+		{
+			int heartState = hpLevel - (i * 2);
+			int graph = mHeartEmptyGraph;
+			if (heartState >= 2) graph = mHeartFullGraph;
+			else if (heartState == 1) graph = mHeartHalfGraph;
+
+			if (graph != -1)
+			{
+				DrawGraph(drawX + i * 40, drawY, graph, TRUE);
+			}
+		}
+	}
+
+
+}
+
+
+
+// デバッグ表示をしている関数
+// GameSceneで呼び出している
+void Player::DebugDraw()
+{
+	// ==========================================
+	// プレイヤーの当たり判定デバッグ表示
+	// ==========================================
+
+	const int scrollX =
+		mpBlockMap
+		? mpBlockMap->GetScrollX()
+		: 0;
+
+	const int playerLeft =
+		static_cast<int>(
+			mvPosition.x
+			- mfPlayerWidth / 2.0f
+			- scrollX
+			);
+
+	const int playerTop =
+		static_cast<int>(
+			mvPosition.y
+			- mfPlayerHeight / 2.0f
+			);
+
+	const int playerRight =
+		static_cast<int>(
+			mvPosition.x
+			+ mfPlayerWidth / 2.0f
+			- scrollX
+			);
+
+	const int playerBottom =
+		static_cast<int>(
+			mvPosition.y
+			+ mfPlayerHeight / 2.0f
+			);
+
+	DrawBox(
+		playerLeft,
+		playerTop,
+		playerRight,
+		playerBottom,
+		GetColor(0, 0, 255),
+		FALSE
+	);
+
+	// HPのデバッグ
+	DrawFormatString(
+		playerLeft,
+		playerBottom + 10,
+		ColorOption::White,
+		"HP: %d",
+		mHp
+	);
+
+
+	// ==========================================
+	// 敵の当たり判定デバッグ表示
+	// ==========================================
+
+	ObjectManager* objManager =
+		Master::mpGameManager
+		->GetSceneManager()
+		->GetCurrentScene()
+		->GetObjectManager();
+
+	if (objManager != nullptr)
+	{
+		std::vector<Object2D*> enemyList =
+			objManager->GetObject2DListByTag(
+				Object2D::Enemy2D
+			);
+
+		for (Object2D* obj : enemyList)
+		{
+			Enemy* enemy =
+				dynamic_cast<Enemy*>(obj);
+
+			if (!enemy)
+			{
+				continue;
+			}
+
+			// 実際の当たり判定と同じサイズ
+			float enemyWidth =
+				enemy->GetSizeX() / 6.0f;
+
+			float enemyHeight =
+				enemy->GetSizeY() / 6.0f;
+
+			float divide = 2.0f;
+
+			int eneLeft =
+				static_cast<int>(
+					enemy->GetPosition().x
+					- enemyWidth / divide
+					- scrollX
+					);
+
+			int eneTop =
+				static_cast<int>(
+					enemy->GetPosition().y
+					- enemyHeight / divide
+					);
+
+			int eneRight =
+				static_cast<int>(
+					enemy->GetPosition().x
+					+ enemyWidth / divide
+					- scrollX
+					);
+
+			int eneBottom =
+				static_cast<int>(
+					enemy->GetPosition().y
+					+ enemyHeight / divide
+					);
+
+			DrawBox(
+				eneLeft,
+				eneTop,
+				eneRight,
+				eneBottom,
+				GetColor(0, 255, 0),
+				FALSE
+			);
+		}
+	}
+}
+
+
+void Player::DeadProcess()
+{
+	if (mbFallDeath) return;
+
+	deadTimer++;
+
+	if (mDeadState == 1) // 飛び散り
+	{
+		for (auto& frag : mFragments)
+		{
+			frag.pos.x += frag.vel.x;
+
+			if (mpBlockMap &&
+				mCharacterPhysics.IsBlockCollision(
+					*mpBlockMap,
+					frag.pos.x,
+					frag.pos.y,
+					static_cast<float>(frag.width),
+					static_cast<float>(frag.height)))
+			{
+				frag.pos.x -= frag.vel.x;
+				frag.vel.x *= -0.6f;
+			}
+
+			frag.pos.y += frag.vel.y;
+
+			if (mpBlockMap &&
+				mCharacterPhysics.IsBlockCollision(
+					*mpBlockMap,
+					frag.pos.x,
+					frag.pos.y,
+					static_cast<float>(frag.width),
+					static_cast<float>(frag.height)))
+			{
+				frag.pos.y -= frag.vel.y;
+				frag.vel.y *= -0.4f;
+				frag.vel.x *= 0.9f; // 摩擦
+			}
+		}
+
+		if (deadTimer > 150) // 2.5秒経過
+		{
+			mDeadState = 2; // 戻り
+			deadTimer = 0;
+			for (auto& frag : mFragments)
+			{
+				frag.vel.y = -5.0f - ((float)GetRand(50) / 10.0f);
+				frag.vel.x = ((float)GetRand(100) / 100.0f * 4.0f) - 2.0f;
+			}
+		}
+	}
+	else if (mDeadState == 2) // 戻り
+	{
+		bool allReturned = true;
+
+		for (auto& frag : mFragments)
+		{
+			float targetX = mSpawnPos.x - (FRAME_WIDTH / 2.0f) + frag.srcX;
+			float targetY = mSpawnPos.y - (FRAME_HEIGHT / 2.0f) + (frag.srcY % FRAME_HEIGHT);
+
+			float dx = targetX - frag.pos.x;
+			float dy = targetY - frag.pos.y;
+			float dist = sqrtf(dx * dx + dy * dy);
+
+			if (dist > 2.0f)
+			{
+				frag.pos.x += dx * 0.05f;
+				frag.pos.y += dy * 0.05f;
+				allReturned = false;
+			}
+			else
+			{
+				frag.pos.x = targetX;
+				frag.pos.y = targetY;
+			}
+		}
+
+		// 全て集まったか、タイムアウト（5秒）で強制復活
+		if ((allReturned && deadTimer > 60) || deadTimer > 300)
+		{
+			mDeadState = 0;
+			deadTimer = 0;
+			isFacingRight = true;
+			mFragments.clear();
+
+			Revive();
+		}
+	}
+}
+
+// プレイヤーが落下で死亡した時に表示するテキスト
+void Player::DrawFallDeath()
+{
+	// プレイヤーが落下したら死亡する処理
+	if (mvPosition.y >= PlayerConstants::PlayerDeathHeight)
+	{
+		mHp = 0;
+		mbFallDeath = true;
+	}
+
+	// テキストの表示
+	if (mbFallDeath)
+	{
+		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 200);
+		DrawBox(0, 0, ScreenSize::ScrrenWidth, ScreenSize::ScrrenHeight, ColorOption::Black, TRUE);
+		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+		DrawFormatStringToHandle(TextPosition::FallDeathX, TextPosition::FallDeathY, ColorOption::White,
+			Master::mpGameManager->GetFontManager()->GetDotFont_200(),
+			"GAME OVER Enterで復活");
+
+		// Enterが押されたら表示
+		if (InputManager::CheckDownKey(KEY_INPUT_RETURN) || mbIsPressEnter)
+		{
+			DrawFormatStringToHandle(TextPosition::LivesX, TextPosition::LivesY, ColorOption::White,
+				Master::mpGameManager->GetFontManager()->GetDotFont_100(),
+				"残機 × 5");
+
+			DrawFormatString(TextPosition::LivesX, TextPosition::LivesY + 100, ColorOption::White, "%2f", mfReviveTimer / 60);
+				mbIsPressEnter = true;
+		}
+	}
+}
+
+// プレイヤーの落下後
+void Player::UpdateFallDeath()
+{
+	if (mbIsPressEnter)
+	{
+		mfReviveTimer -= 1.0f;
+		if (mfReviveTimer <= 0.0f)
+		{
+			Revive();
+			mfReviveTimer = TextTimer::MaxFallDeathTimer;
+			mbIsPressEnter = false;
+			mbFallDeath = false;
+		}
+	}
+}
+
+// 復活した時に位置とHPを戻す処理
+void Player::Revive()
+{
+	isDead = false;
+	mvPosition = mSpawnPos;
+	mHp = mMaxHp; // 復活時にHPをリセット
+}
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+#include "BlockMap.h"
+#include "Master.h"
+#include "GameConstants.h"
+#include <iostream>
+
+BlockMap::BlockMap()
+    : mnBackgroundGraph(-1)
+    , mnCollisionSoftImage(-1)
+    , mnCollisionWidth(0)
+    , mnCollisionHeight(0)
+    , mCollisionData()
+    , mbIsLoaded(false)
+    , mBackgroundWidth(0)
+    , mBackgroundHeight(0)
+    , mScrollX(0)
+{
+}
+
+BlockMap::~BlockMap()
+{
+}
+
+
+// マップ読み込み
+bool BlockMap::Load(
+    const std::string& backgroundPath,
+    const std::string& collisionPath)
+{
+    if (mbIsLoaded)
+    {
+        return true;
+    }
+
+    // 背景画像の読み込み
+    mnBackgroundGraph =
+        Master::mpGameManager
+        ->GetResourceManager()
+        ->LoadGraphics(backgroundPath);
+
+    if (mnBackgroundGraph == -1)
+    {
+        std::cout << "ブロックの背景画像が開けませんでした。" << std::endl;
+        return false;
+    }
+
+    // 背景画像のサイズを取得
+    GetGraphSize(
+        mnBackgroundGraph,
+        &mBackgroundWidth,
+        &mBackgroundHeight
+    );
+
+    // 当たり判定画像を読み込む
+    mnCollisionSoftImage =
+        LoadSoftImage(
+            collisionPath.c_str()
+        );
+
+    if (mnCollisionSoftImage == -1)
+    {
+        std::cout << "ブロックの当たり判定画像が開けませんでした。" << std::endl;
+        return false;
+    }
+
+    // 当たり判定画像のサイズを取得
+    GetSoftImageSize(
+        mnCollisionSoftImage,
+        &mnCollisionWidth,
+        &mnCollisionHeight
+    );
+
+    // CollisionTypeデータを確保
+    mCollisionData.resize(
+        mnCollisionWidth * mnCollisionHeight,
+        CollisionType::None
+    );
+
+    // 当たり判定画像を1ピクセルずつ調べる
+    for (int y = 0; y < mnCollisionHeight; y++)
+    {
+        for (int x = 0; x < mnCollisionWidth; x++)
+        {
+            int r = 0;
+            int g = 0;
+            int b = 0;
+            int a = 0;
+
+            int result =
+                GetPixelSoftImage(
+                    mnCollisionSoftImage,
+                    x,
+                    y,
+                    &r,
+                    &g,
+                    &b,
+                    &a
+                );
+
+            if (result != 0)
+            {
+                continue;
+            }
+
+            // 透明ならNone
+            if (a == 0)
+            {
+                mCollisionData[
+                    GetCollisionIndex(x, y)
+                ] = CollisionType::None;
+
+                continue;
+            }
+
+            // 赤ならBlock
+            if (r == BlockCollisionColor::BLOCK_R &&
+                g == BlockCollisionColor::BLOCK_G &&
+                b == BlockCollisionColor::BLOCK_B)
+            {
+                mCollisionData[
+                    GetCollisionIndex(x, y)
+                ] = CollisionType::Block;
+
+                continue;
+            }
+
+            // 青ならDeath
+            if (r == BlockCollisionColor::DEATH_R &&
+                g == BlockCollisionColor::DEATH_G &&
+                b == BlockCollisionColor::DEATH_B)
+            {
+                mCollisionData[
+                    GetCollisionIndex(x, y)
+                ] = CollisionType::Death;
+
+                continue;
+            }
+
+            // 緑ならGoal
+            if (r == BlockCollisionColor::GOAL_R &&
+                g == BlockCollisionColor::GOAL_G &&
+                b == BlockCollisionColor::GOAL_B)
+            {
+                mCollisionData[
+                    GetCollisionIndex(x, y)
+                ] = CollisionType::Goal;
+
+                continue;
+            }
+
+            // それ以外はNone
+            mCollisionData[
+                GetCollisionIndex(x, y)
+            ] = CollisionType::None;
+        }
+    }
+
+    // 元の画像データはもう必要ない
+    DeleteSoftImage(
+        mnCollisionSoftImage
+    );
+
+    mnCollisionSoftImage = -1;
+
+    mbIsLoaded = true;
+
+    return true;
+}
+
+
+// 背景描画
+void BlockMap::Draw()
+{
+    if (!mbIsLoaded)
+    {
+        return;
+    }
+
+    // 背景画像を描画
+    DrawRectGraph(
+        0,
+        0,
+        mScrollX,
+        0,
+        ScreenSize::ScrrenWidth,
+        ScreenSize::ScrrenHeight,
+        mnBackgroundGraph,
+        TRUE
+    );
+
+    // 左スクロール開始位置
+    DrawLine(
+        MapScrollConstants::ScrollStartLeftX,
+        0,
+        MapScrollConstants::ScrollStartLeftX,
+        ScreenSize::ScrrenHeight,
+        GetColor(0, 255, 0)
+    );
+
+    // 右スクロール開始位置
+    DrawLine(
+        MapScrollConstants::ScrollStartRightX,
+        0,
+        MapScrollConstants::ScrollStartRightX,
+        ScreenSize::ScrrenHeight,
+        GetColor(255, 0, 0)
+    );
+
+    DrawFormatString(
+        20,
+        200,
+        GetColor(255, 255, 255),
+        "ScrollX: %d",
+        mScrollX
+    );
+}
+
+
+// マップのスクロール処理
+//
+// playerScreenX は「画面上のプレイヤー座標」
+void BlockMap::Move(
+    int playerScreenX,
+    float moveDirection)
+{
+    if (!mbIsLoaded)
+    {
+        return;
+    }
+
+    // 右スクロール
+    if (playerScreenX > MapScrollConstants::ScrollStartRightX &&
+        moveDirection > 0.0f)
+    {
+        mScrollX += MapScrollConstants::ScrollSpeed;
+    }
+
+    // 左スクロール
+    else if (playerScreenX < MapScrollConstants::ScrollStartLeftX &&
+        moveDirection < 0.0f)
+    {
+        mScrollX -= MapScrollConstants::ScrollSpeed;
+    }
+
+    // 左端
+    if (mScrollX < 0)
+    {
+        mScrollX = 0;
+    }
+
+    // 右端
+    int maxScrollX =
+        mBackgroundWidth - ScreenSize::ScrrenWidth;
+
+    if (maxScrollX < 0)
+    {
+        maxScrollX = 0;
+    }
+
+    if (mScrollX > maxScrollX)
+    {
+        mScrollX = maxScrollX;
+    }
+}
+
+
+// CollisionType取得
+//
+// ここに渡す x,y は「ワールド座標」
+BlockMap::CollisionType BlockMap::GetCollisionType(
+    int x,
+    int y) const
+{
+    // マップ外
+    if (x < 0 || x >= mnCollisionWidth ||
+        y < 0 || y >= mnCollisionHeight)
+    {
+        return CollisionType::None;
+    }
+
+    return mCollisionData[
+        GetCollisionIndex(x, y)
+    ];
+}
+
+
+
+int BlockMap::ScreenToMapX(int screenX) const
+{
+    return screenX + mScrollX;
+}
+
+
+int BlockMap::ScreenToMapY(int screenY) const
+{
+    return screenY;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#include "CharacterPhysics.h"
+#include "GameConstants.h"
+
+
+CharacterPhysics::CharacterPhysics()
+{
+}
+
+
+CharacterPhysics::~CharacterPhysics()
+{
+}
+
+
+// 矩形領域とマップタイルが接触しているかを判定
+//
+// x,y,width,height はすべて「ワールド座標」
+BlockMap::CollisionType CharacterPhysics::CheckCollision(
+    const BlockMap& blockMap,
+    float x,
+    float y,
+    float width,
+    float height,
+    int* blockX,
+    int* blockY) const
+{
+    const int left =
+        static_cast<int>(x);
+
+    const int right =
+        static_cast<int>(x + width - 1.0f);
+
+    const int top =
+        static_cast<int>(y);
+
+    const int bottom =
+        static_cast<int>(y + height - 1.0f);
+
+
+    // 矩形内を1ピクセルずつ調べる
+    for (int pixelY = top; pixelY <= bottom; ++pixelY)
+    {
+        for (int pixelX = left; pixelX <= right; ++pixelX)
+        {
+            // ★重要
+            // ここではスクロール変換しない。
+            // pixelX / pixelY は最初からワールド座標。
+            const int mapX = pixelX;
+            const int mapY = pixelY;
+
+            const BlockMap::CollisionType type =
+                blockMap.GetCollisionType(
+                    mapX,
+                    mapY
+                );
+
+            if (type == BlockMap::CollisionType::None)
+            {
+                continue;
+            }
+
+            if (blockX != nullptr)
+            {
+                *blockX = pixelX;
+            }
+
+            if (blockY != nullptr)
+            {
+                *blockY = pixelY;
+            }
+
+            return type;
+        }
+    }
+
+    return BlockMap::CollisionType::None;
+}
+
+
+// キャラクターの移動、重力、当たり判定
+BlockMap::CollisionType CharacterPhysics::UpdateMoveAndCollision(
+    VECTOR& position,
+    float& velocityY,
+    bool& isGrounded,
+    bool& isJumping,
+    const BlockMap& blockMap,
+    float width,
+    float height,
+    float gravity,
+    float moveSpeed,
+    float moveDirection)
+{
+    BlockMap::CollisionType detectedSpecialType =
+        BlockMap::CollisionType::None;
+
+    bool isHittingWall = false;
+
+
+    // ==========================================
+    // X方向移動
+    // ==========================================
+
+    const float nextX =
+        position.x +
+        (moveSpeed * moveDirection);
+
+    if (moveDirection != 0.0f)
+    {
+        const float halfWidth =
+            width * HalfMultiply;
+
+        const float halfHeight =
+            height * HalfMultiply;
+
+
+        const float wallCheckX =
+            (moveDirection < 0.0f)
+            ? (nextX - halfWidth)
+            : (nextX + halfWidth);
+
+
+        const float wallCheckTop =
+            position.y -
+            halfHeight +
+            PlayerBlockCollision::WallCheckMargin;
+
+
+        const float wallCheckHeight =
+            height -
+            PlayerBlockCollision::WallCheckMargin * 2.0f;
+
+
+        int wallX = -1;
+        int wallY = -1;
+
+
+        const BlockMap::CollisionType wallType =
+            CheckCollision(
+                blockMap,
+                wallCheckX,
+                wallCheckTop,
+                PlayerBlockCollision::CollisionThickness,
+                wallCheckHeight,
+                &wallX,
+                &wallY
+            );
+
+
+        // Blockなら壁なので移動しない
+        if (wallType == BlockMap::CollisionType::Block)
+        {
+            isHittingWall = true;
+        }
+        else
+        {
+            // ★positionはワールド座標
+            position.x = nextX;
+
+            if (wallType != BlockMap::CollisionType::None)
+            {
+                detectedSpecialType = wallType;
+            }
+        }
+    }
+
+
+    // ==========================================
+    // Y方向移動
+    // ==========================================
+
+    velocityY += gravity;
+
+    const float nextY =
+        position.y + velocityY;
+
+
+    const float halfWidth =
+        width * HalfMultiply;
+
+    const float halfHeight =
+        height * HalfMultiply;
+
+
+    const float playerLeft =
+        position.x - halfWidth;
+
+
+    const float oldBottom =
+        position.y + halfHeight;
+
+
+    const float nextTop =
+        nextY - halfHeight;
+
+
+    const float nextBottom =
+        nextY + halfHeight;
+
+
+    // 接地状態を一旦解除
+    isGrounded = false;
+
+
+    // ==========================================
+    // 落下中
+    // ==========================================
+
+    if (velocityY > 0.0f)
+    {
+        int collisionX = -1;
+        int collisionY = -1;
+
+
+        const BlockMap::CollisionType floorType =
+            CheckCollision(
+                blockMap,
+                playerLeft,
+                nextBottom,
+                width,
+                PlayerBlockCollision::CollisionThickness,
+                &collisionX,
+                &collisionY
+            );
+
+
+        if (floorType != BlockMap::CollisionType::None)
+        {
+            if (floorType == BlockMap::CollisionType::Block)
+            {
+                const float floorY =
+                    static_cast<float>(collisionY);
+
+
+                // Blockの上面に乗る
+                if (oldBottom <= floorY ||
+                    nextBottom >= floorY)
+                {
+                    position.y =
+                        floorY - halfHeight;
+
+                    velocityY = 0.0f;
+
+                    isGrounded = true;
+
+                    isJumping = false;
+                }
+                else
+                {
+                    position.y = nextY;
+
+                    isGrounded = false;
+
+                    isJumping = true;
+                }
+            }
+            else
+            {
+                detectedSpecialType = floorType;
+
+                position.y = nextY;
+
+                isGrounded = false;
+
+                isJumping = true;
+            }
+        }
+        else
+        {
+            position.y = nextY;
+
+            isGrounded = false;
+
+            isJumping = true;
+        }
+    }
+
+
+    // ==========================================
+    // 上昇中
+    // ==========================================
+
+    else if (velocityY < 0.0f)
+    {
+        int collisionX = -1;
+        int collisionY = -1;
+
+
+        const BlockMap::CollisionType ceilingType =
+            CheckCollision(
+                blockMap,
+                playerLeft,
+                nextTop,
+                width,
+                PlayerBlockCollision::CollisionThickness,
+                &collisionX,
+                &collisionY
+            );
+
+
+        if (ceilingType != BlockMap::CollisionType::None)
+        {
+            if (ceilingType == BlockMap::CollisionType::Block)
+            {
+                const float ceilingY =
+                    static_cast<float>(collisionY);
+
+
+                position.y =
+                    ceilingY +
+                    PlayerBlockCollision::CollisionThickness +
+                    halfHeight;
+
+                velocityY = 0.0f;
+            }
+            else
+            {
+                detectedSpecialType = ceilingType;
+
+                position.y = nextY;
+            }
+
+            isGrounded = false;
+
+            isJumping = true;
+        }
+        else
+        {
+            position.y = nextY;
+
+            isGrounded = false;
+
+            isJumping = true;
+        }
+    }
+
+
+    // ==========================================
+    // 垂直速度が0
+    // ==========================================
+
+    else
+    {
+        position.y = nextY;
+    }
+
+
+    // ==========================================
+    // デバッグ描画
+    //
+    // ★ここはワールド座標なので
+    //   スクリーンに出す場合はScrollXを引く
+    // ==========================================
+
+    if (moveDirection != 0.0f)
+    {
+        const float debugX =
+            (moveDirection < 0.0f)
+            ? (nextX - halfWidth)
+            : (nextX + halfWidth);
+
+
+        const float debugTop =
+            position.y - halfHeight;
+
+
+        const int screenDebugX =
+            static_cast<int>(
+                debugX - blockMap.GetScrollX()
+                );
+
+
+        const int screenDebugY =
+            static_cast<int>(debugTop);
+
+
+        DrawBox(
+            screenDebugX,
+            screenDebugY,
+            screenDebugX +
+            PlayerBlockCollision::CollisionThickness,
+            screenDebugY +
+            static_cast<int>(height),
+            GetColor(255, 255, 0),
+            FALSE
+        );
+    }
+
+
+    if (velocityY > 0.0f)
+    {
+        const int screenLeft =
+            static_cast<int>(
+                playerLeft -
+                blockMap.GetScrollX()
+                );
+
+
+        const int screenBottom =
+            static_cast<int>(nextBottom);
+
+
+        DrawBox(
+            screenLeft,
+            screenBottom,
+            screenLeft +
+            static_cast<int>(width),
+            screenBottom +
+            PlayerBlockCollision::CollisionThickness,
+            GetColor(0, 255, 255),
+            FALSE
+        );
+    }
+
+
+    if (velocityY < 0.0f)
+    {
+        const int screenLeft =
+            static_cast<int>(
+                playerLeft -
+                blockMap.GetScrollX()
+                );
+
+
+        const int screenTop =
+            static_cast<int>(nextTop);
+
+
+        DrawBox(
+            screenLeft,
+            screenTop,
+            screenLeft +
+            static_cast<int>(width),
+            screenTop +
+            PlayerBlockCollision::CollisionThickness,
+            GetColor(255, 0, 255),
+            FALSE
+        );
+    }
+
+
+    if (isGrounded)
+    {
+        DrawFormatString(
+            0,
+            40,
+            GetColor(255, 255, 255),
+            "床にあたっている"
+        );
+    }
+
+
+    if (isHittingWall)
+    {
+        DrawFormatString(
+            0,
+            60,
+            GetColor(255, 255, 0),
+            "壁に当たっている"
+        );
+    }
+
+
+    return detectedSpecialType;
+}
+
+
+// 指定した矩形が地形に接触しているか
+bool CharacterPhysics::IsBlockCollision(
+    const BlockMap& blockMap,
+    float x,
+    float y,
+    float width,
+    float height) const
+{
+    return CheckCollision(
+        blockMap,
+        x,
+        y,
+        width,
+        height
+    ) != BlockMap::CollisionType::None;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

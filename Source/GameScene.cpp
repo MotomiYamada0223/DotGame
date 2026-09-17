@@ -59,6 +59,7 @@ void GameScene::Update()
 	mTutorialText.Update(1.0f / 60.0f);
 	
 	mpPlayer->PlayerMove(mBlockMap);
+	// mBlockMap.Move(static_cast<int>(mpPlayer->GetPosition().x), mpPlayer->GetMoveDirection()); // マップのスクロール処理
 
 	// クラスのUpdate呼び出し
 	Scene::Update();

@@ -32,8 +32,11 @@ BlockMap::CollisionType CharacterPhysics::CheckCollision(
 	{
 		for (int pixelX = left; pixelX <= right; ++pixelX)
 		{
+			// スクリーン座標をマップ座標に変換してから当たり判定を行う
+			const int mapX = blockMap.ScreenToMapX(pixelX);
+			const int mapY = blockMap.ScreenToMapY(pixelY);
 			const BlockMap::CollisionType type =
-				blockMap.GetCollisionType(pixelX, pixelY);
+				blockMap.GetCollisionType(mapX, mapY);
 
 			if (type == BlockMap::CollisionType::None) { continue; }
 			if (blockX != nullptr) { *blockX = pixelX; }

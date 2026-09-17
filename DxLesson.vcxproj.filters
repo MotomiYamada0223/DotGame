@@ -66,9 +66,6 @@
     <ClCompile Include="Source\TitleScene.cpp">
       <Filter>ソース ファイル\Scene系</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Player.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="Source\TutorialTextManager.cpp">
       <Filter>ソース ファイル\Text関係</Filter>
     </ClCompile>
@@ -96,9 +93,6 @@
     <ClCompile Include="Source\GameManager.cpp">
       <Filter>ソース ファイル\Manager系</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Damage.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="Source\BlockMap.cpp">
       <Filter>ソース ファイル\Manager系\Map関係</Filter>
     </ClCompile>
@@ -107,6 +101,30 @@
     </ClCompile>
     <ClCompile Include="Source\BlockAction.cpp">
       <Filter>ソース ファイル\Manager系\Map関係</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\BossEnemyDragon.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\BossEnemySnake.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\BossEnemyTree.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\EnemySkeleton.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\EnemySlime.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\EnemyWolf.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\UnitStatus.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Player.cpp">
+      <Filter>ヘッダー ファイル</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -191,11 +209,29 @@
     <ClInclude Include="Source\CharacterPhysics.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Damage.h">
-      <Filter>ソース ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="Source\BlockAction.h">
       <Filter>ソース ファイル\Manager系\Map関係</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\BossEnemyDragon.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\BossEnemySnake.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\BossEnemyTree.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\EnemySkeleton.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\EnemySlime.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\EnemyWolf.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\UnitStatus.h">
+      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
