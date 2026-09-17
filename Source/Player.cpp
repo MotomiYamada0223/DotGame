@@ -201,11 +201,11 @@ void Player::Draw()
 		const int srcX = mCurrentFrame * FRAME_WIDTH;
 
 		// 向きに応じた基本の Y 座標を設定する
-		int srcY = 481; // 右向きの画像座標 768  idle用:618
+		int srcY = 471; // 右向きの画像座標 768  idle用:618
 
 		if (!isFacingRight)
 		{
-			srcY = 744; // 左向きの画像座標 512  idle用:962
+			srcY = 733; // 左向きの画像座標 512  idle用:962
 		}
 
 		// ダメージ中なら赤く変色させる
