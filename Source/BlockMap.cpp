@@ -180,5 +180,7 @@ BlockMap::CollisionType BlockMap::GetCollisionType(
         return CollisionType::None;
     }
 
-	return mCollisionData;
+    return mCollisionData[
+        GetCollisionIndex(x, y)
+    ];
 }
