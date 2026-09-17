@@ -14,11 +14,16 @@ public:
 	void Initialize();
 	void Finalize();
 
-	//読み込んだフォントを呼び出すゲッター
-	int GetDotFont() const { return mnDotFont; }
+	//読み込んだフォントを呼び出すゲッター 大きさ 100
+	int GetDotFont_100() const { return mnDotFont100; }
+
+	// 大きさ200
+	int GetDotFont_200() const { return mnDotFont200; }
 
 private:
 
 	// フォントを代入するメンバ変数
-	int mnDotFont; // ドットのフォント
+	int mnDotFont100; // ドットのフォント
+
+	int mnDotFont200; // 大きめのフォント
 };

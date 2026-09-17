@@ -32,7 +32,7 @@ void WinResultScene::Update()
 void WinResultScene::Draw()
 {
 	DrawFormatStringToHandle(500, 500, GetColor(255, 255, 255),
-		Master::mpGameManager->GetFontManager()->GetDotFont(), "勝利画面\n\nEnterでタイトル");
+		Master::mpGameManager->GetFontManager()->GetDotFont_100(), "勝利画面\n\nEnterでタイトル");
 
 	Scene::Draw();
 }

@@ -28,6 +28,9 @@ namespace PlayerConstants
 	static const int PlayerAttackHeight = 40; // プレイヤーの攻撃範囲の高さ
 
 	static const int MaxHp = 3; // プレイヤーの最大HP
+
+	// 落下でプレイヤーが死亡する位置
+	static const int PlayerDeathHeight = ScreenSize::ScrrenHeight + 100;
 }
 
 
@@ -110,4 +113,21 @@ namespace PlayerBlockCollision
 	static constexpr float WallCheckMargin = 20.0f;
 	// 壁や床、天井の判定を行う際の厚み
 	static constexpr float CollisionThickness = 1.0f;
+}
+
+// 表示するテキストの位置
+namespace TextPosition
+{
+	// 落ちた時のGAMEOVER文字
+	static const int FallDeathX =  200;
+	static const int FallDeathY = ScreenSize::CenterY - 150;
+
+	// 残機表示
+	static const int LivesX = ScreenSize::CenterX - 80;
+	static const int LivesY = FallDeathY + 200;
+}
+
+namespace TextTimer
+{
+	static constexpr float MaxFallDeathTimer = 180.0f;
 }

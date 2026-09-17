@@ -23,6 +23,8 @@ public:
 	// Mapを受け取って位置を更新する処理
 	void PlayerMove(BlockMap& blockMap);
 
+	void DrawFallDeath(); // 落下したときの文字の処理
+	void UpdateFallDeath(); // 落下した後にキー入力を受け取る処理[
 
 
 private:
@@ -83,6 +85,10 @@ private:
 	int mHeartFullGraph;
 	int mHeartHalfGraph;
 	int mHeartEmptyGraph;
+
+private: // 復活処理関係
+	void Revive();
+	bool mbFallDeath = false; // 死亡判定
+	bool mbIsPressEnter = false; // Enterが押されたか
+	float mfReviveTimer = 0.0f; // 復活タイマー
 };
-
-

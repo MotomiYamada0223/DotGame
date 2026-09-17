@@ -9,7 +9,7 @@
 #include "Collision.h"
 #include "GameConstants.h"
 #include "BlockAction.h"
-
+#include "InputManager.h"
 
 Player::Player(VECTOR initPos)
 // TextureAnimationは使わず一枚絵としてロード
@@ -33,6 +33,7 @@ Player::Player(VECTOR initPos)
 	mHp = PlayerConstants::MaxHp;
 	mCurrentFrame = 0;
 	mFrameTimer = 0;
+	mfReviveTimer = TextTimer::MaxFallDeathTimer;
 
 	UpdateStatusByProgress(GameProgress::Tutorial1);
 
@@ -199,12 +200,19 @@ void Player::PlayerMove(BlockMap& blockMap)
 
 void Player::Update()
 {
+	if (mbFallDeath)
+	{
+		UpdateFallDeath();
+	}
+
 	if (isDead)
 	{
 		DeadProcess();
+
 		Object2D::Update();
 		return;
 	}
+
 
 	// --- 当たり判定処理 ---
 	isHitDamage = false;
@@ -266,7 +274,6 @@ void Player::Update()
 			}
 		}
 	}
-
 	// デバッグ用: Kキーで5ダメージ
 	static bool kKeyWasDown = false;
 	bool kKeyIsDown = (CheckHitKey(KEY_INPUT_K) == 1);
@@ -313,6 +320,9 @@ void Player::Update()
 
 void Player::Draw()
 {
+	DrawFallDeath();
+
+
 	if (isDead)
 	{
 		SetDrawBright(255, 255, 255); // 色をリセット
@@ -346,8 +356,6 @@ void Player::Draw()
 		}
 		return;
 	}
-
-
 
 	if (mpTexture != nullptr)
 	{
@@ -482,6 +490,8 @@ void Player::DebugDraw()
 
 void Player::DeadProcess()
 {
+	if (mbFallDeath) return;
+
 	deadTimer++;
 
 	if (mDeadState == 1) // 飛び散り
@@ -558,14 +568,71 @@ void Player::DeadProcess()
 		// 全て集まったか、タイムアウト（5秒）で強制復活
 		if ((allReturned && deadTimer > 60) || deadTimer > 300)
 		{
-			mvPosition = mSpawnPos;
-			isDead = false;
 			mDeadState = 0;
 			deadTimer = 0;
 			isFacingRight = true;
 			mFragments.clear();
-			mHp = mMaxHp; // 復活時にHPをリセット
+
+			Revive();
 		}
 	}
+}
+
+// プレイヤーが落下で死亡した時に表示するテキスト
+void Player::DrawFallDeath()
+{
+	// プレイヤーが落下したら死亡する処理
+	if (mvPosition.y >= PlayerConstants::PlayerDeathHeight)
+	{
+		mHp = 0;
+		mbFallDeath = true;
+	}
+
+	// テキストの表示
+	if (mbFallDeath)
+	{
+		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 200);
+		DrawBox(0, 0, ScreenSize::ScrrenWidth, ScreenSize::ScrrenHeight, ColorOption::Black, TRUE);
+		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+		DrawFormatStringToHandle(TextPosition::FallDeathX, TextPosition::FallDeathY, ColorOption::White,
+			Master::mpGameManager->GetFontManager()->GetDotFont_200(),
+			"GAME OVER Enterで復活");
+
+		// Enterが押されたら表示
+		if (InputManager::CheckDownKey(KEY_INPUT_RETURN) || mbIsPressEnter)
+		{
+			DrawFormatStringToHandle(TextPosition::LivesX, TextPosition::LivesY, ColorOption::White,
+				Master::mpGameManager->GetFontManager()->GetDotFont_100(),
+				"残機 × 5");
+
+			DrawFormatString(TextPosition::LivesX, TextPosition::LivesY + 100, ColorOption::White, "%2f", mfReviveTimer / 60);
+				mbIsPressEnter = true;
+		}
+	}
+}
+
+// プレイヤーの落下後
+void Player::UpdateFallDeath()
+{
+	if (mbIsPressEnter)
+	{
+		mfReviveTimer -= 1.0f;
+		if (mfReviveTimer <= 0.0f)
+		{
+			Revive();
+			mfReviveTimer = TextTimer::MaxFallDeathTimer;
+			mbIsPressEnter = false;
+			mbFallDeath = false;
+		}
+	}
+}
+
+// 復活した時に位置とHPを戻す処理
+void Player::Revive()
+{
+	isDead = false;
+	mvPosition = mSpawnPos;
+	mHp = mMaxHp; // 復活時にHPをリセット
 }
 

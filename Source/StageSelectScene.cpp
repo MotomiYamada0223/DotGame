@@ -181,7 +181,7 @@ void StageSelectScene::Draw()
 	SetFontSize(oldFontSize);
 
 	DrawFormatStringToHandle(50, 60, GetColor(255, 255, 255),
-		Master::mpGameManager->GetFontManager()->GetDotFont(), "Stage Select Scene\nPress Enter to Game");
+		Master::mpGameManager->GetFontManager()->GetDotFont_100(), "Stage Select Scene\nPress Enter to Game");
 
 	Scene::Draw();
 }
