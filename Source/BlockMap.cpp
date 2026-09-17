@@ -180,6 +180,79 @@ BlockMap::CollisionType BlockMap::GetCollisionType(
         return CollisionType::None;
     }
 
+<<<<<<< HEAD
     // 指定座標のCollisionTypeを返す
     return mCollisionData[ GetCollisionIndex(x, y)];
+=======
+	// プレイヤーが重なっているブロック範囲を計算
+	// ワールド座標をマップの配列インデックスに変換するため
+	int left = static_cast<int>(x) / CHIP_SIZE;
+	int right = static_cast<int>(x + width - 1) / CHIP_SIZE;
+	int top = static_cast<int>(y) / CHIP_SIZE;
+	int bottom = static_cast<int>(y + height - 1) / CHIP_SIZE;
+
+	// マップ範囲を調整
+	if (left < 0) {left = 0;}
+	if (right >= MAX_MAP_WIDTH) {right = MAX_MAP_WIDTH - 1;}
+	if (top < 0) {top = 0;}
+	if (bottom >= MAX_MAP_HEIGHT) {bottom = MAX_MAP_HEIGHT - 1;}
+
+
+	// 周囲のブロックを1個ずつ調べる
+	// マップ全体を毎フレーム調べると重いので、プレイヤーが実際に重なっている可能性のある近傍のチップだけを効率よく探すため
+	for (int mapY = top; mapY <= bottom; mapY++)
+	{
+		for (int mapX = left; mapX <= right; mapX++)
+		{
+			int chipID = mnMapData[mapY][mapX];
+
+			if (!IsSolidChip(chipID)) { continue; }
+
+			// ブロックの矩形
+			VECTOR blockPos = VGet(
+				static_cast<float>(mapX * CHIP_SIZE),
+				static_cast<float>(mapY * CHIP_SIZE),
+				0.0f
+			);
+
+			VECTOR blockSize = VGet(
+				static_cast<float>(CHIP_SIZE),
+				static_cast<float>(CHIP_SIZE),
+				0.0f
+			);
+
+			// プレイヤーとブロックの当たり判定
+			if (Collision::CheckRectToRect(
+				playerPos,
+				playerSize,
+				blockPos,
+				blockSize))
+			{
+				if (chipID >= BlockCollision::MinDamageBlock &&
+					chipID <= BlockCollision::MaxDamageBlock)
+				{
+					DrawFormatString(600, 600, GetColor(255, 255, 255), "針にあたった");
+
+					auto getPlayer = Master::mpGameManager->GetSceneManager()->GetCurrentScene()
+						->GetObjectManager()->GetObject2DByTag(Object2D::Player2D);
+
+					Player* player = dynamic_cast<Player*>(getPlayer);
+					if(player) { player->TakeDamage(SetDamage::SpikeBlock); }
+				}
+
+				// 格納先が指定されている場合のみブロック座標を代入する
+				if (blockX != nullptr)
+				{
+					*blockX = mapX;
+				}
+				if (blockY != nullptr)
+				{
+					*blockY = mapY;
+				}
+				return true;
+			}
+		}
+	}
+	return false;
+>>>>>>> Yamada
 }
