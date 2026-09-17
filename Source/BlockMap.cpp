@@ -4,27 +4,6 @@
 #include <iostream>
 
 
-namespace
-{
-    // “–‚½‚è”»’è‰æ‘œ‚Åg—p‚·‚éF
-
-    // Ô ¨ Block
-    constexpr int BLOCK_R = 255;
-    constexpr int BLOCK_G = 0;
-    constexpr int BLOCK_B = 0;
-
-
-    // Â ¨ Death
-    constexpr int DEATH_R = 0;
-    constexpr int DEATH_G = 0;
-    constexpr int DEATH_B = 255;
-
-
-    // —Î ¨ Goal
-    constexpr int GOAL_R = 0;
-    constexpr int GOAL_G = 255;
-    constexpr int GOAL_B = 0;
-}
 
 
 BlockMap::BlockMap()

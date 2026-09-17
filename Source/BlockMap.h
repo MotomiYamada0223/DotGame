@@ -8,9 +8,10 @@ class BlockMap
 {
 public:
 
+    // 当たり判定の色によってタイプを分ける
 	enum class CollisionType
 	{
-		None = 0,   // 当たり判定なし
+		None = 0, // 当たり判定なし
 		Block,  // 当たり判定あり
 		Death, // 死亡判定あり
 		Goal,  // ゴール判定あり
@@ -39,7 +40,7 @@ private:
     int mnCollisionWidth;
     int mnCollisionHeight;
 
-    // 赤い場所ならtrue
+    // タイプのデータをのメンバ変数
     std::vector<CollisionType> mCollisionData;
 
     // 読み込み済みかのフラグ

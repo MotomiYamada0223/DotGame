@@ -59,23 +59,14 @@ namespace BackGroundGraphPath
 // ブロックマップ関係
 namespace BlockMapGraphPath
 {
-	static const std::string BlockMap = "Resource/Map/image_Map.png"; // ブロックマップの画像
-
-	static const char* Background = "Resource/Map/Background.png";
-	static const char* Collision = "Resource/Map/Collision.png";
-}
-
-// ブロックマップの当たり判定の設定
-namespace BlockCollision
-{
-	static const int MinDamageBlock = 13; // ダメージ判定があるブロックの最小値
-	static const int MaxDamageBlock = 15; // ダメージ判定があるブロックの最大値
+	//static const char* Background = "Resource/Map/background.png";
+	static const char* Background = "Resource/Map/collision.png";
+	static const char* Collision = "Resource/Map/collision.png";
 }
 
 // 読み込むCSVパス
 namespace CsvPath
 {
-	static const std::string BlockMapFile = "Resource/Map/BlockMapFile.csv"; // ブロックマップの配列CSV
 	static const std::string TutorialText = "Resource/TutorialText/tutorialTextData.csv"; // チュートリアルテキストのCSV
 }
 
@@ -89,6 +80,27 @@ namespace ColorOption
 // ダメージの定義
 namespace SetDamage
 {
-	static const int SpikeBlock = 3; // 針と当たったら1ダメージ
+	static const int SpikeBlock = 3; // 針と当たったら3ダメージ
 	static const int EnemyAttack = 1; // 敵と当たったら1ダメージ
+}
+
+// ブロックマップの当たり判定の色の指定
+namespace
+{
+	// 赤 Block
+	constexpr int BLOCK_R = 255;
+	constexpr int BLOCK_G = 0;
+	constexpr int BLOCK_B = 0;
+
+
+	// 青 Death
+	constexpr int DEATH_R = 0;
+	constexpr int DEATH_G = 0;
+	constexpr int DEATH_B = 255;
+
+
+	// 緑 Goal
+	constexpr int GOAL_R = 0;
+	constexpr int GOAL_G = 255;
+	constexpr int GOAL_B = 0;
 }
