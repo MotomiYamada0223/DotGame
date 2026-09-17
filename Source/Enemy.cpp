@@ -4,11 +4,7 @@
 #include "GameConstants.h"
 
 Enemy::Enemy(VECTOR initPos)
-<<<<<<< HEAD
-	: Object2D(CharacterGraphPath::Skeleton, initPos)
-=======
 	: Object2D("Resource/Image/enemy_dragon_move.png", initPos)
->>>>>>> origin/Hinata
 {
 	SetTag(Object2D::Enemy2D);
 
