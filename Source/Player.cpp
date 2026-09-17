@@ -1,4 +1,4 @@
-﻿#include "Player.h"
+#include "Player.h"
 #include "DxLib.h"
 #include "Texture.h"
 #include "Master.h"
@@ -29,7 +29,12 @@ Player::Player(VECTOR initPos)
 	mSpawnPos = initPos;
 	mDeadState = 0;
 	mpBlockMap = nullptr;
-	mStatus.hp = PlayerConstants::MaxHp;
+
+	mHeartFullGraph = LoadGraph(CharacterGraphPath::HeartFull.c_str());
+	mHeartHalfGraph = LoadGraph(CharacterGraphPath::HeartHalf.c_str());
+	mHeartEmptyGraph = LoadGraph(CharacterGraphPath::HeartEmpty.c_str());
+
+	UpdateStatusByProgress(GameProgress::Tutorial1);
 
 	mCurrentFrame = 0;
 	mFrameTimer = 0;
@@ -448,7 +453,7 @@ void Player::DebugDraw()
 	DrawBox(playerLeft, playerTop, playerRight, playerBottom, GetColor(0, 0, 255), FALSE);
 
 	// HPのデバッグ
-	DrawFormatString((int)mvPosition.x, (int)mvPosition.y + 10, ColorOption::White, "HP: %d", mStatus.hp);
+	DrawFormatString((int)mvPosition.x, (int)mvPosition.y + 10, ColorOption::White, "HP: %d", mHp);
 
 
 	// シーン上のすべての敵の当たり判定をデバッグ表示（黄緑色）
@@ -554,3 +559,4 @@ void Player::DeadProcess()
 		}
 	}
 	}
+
