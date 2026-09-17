@@ -1,16 +1,22 @@
-Ôªø#include "Enemy.h"
+#include "Enemy.h"
 #include "DxLib.h"
 #include "Texture.h"
 #include "GameConstants.h"
 
 Enemy::Enemy(VECTOR initPos)
+<<<<<<< HEAD
 	: Object2D(CharacterGraphPath::Skeleton, initPos)
+=======
+	: Object2D("Resource/Image/enemy_dragon_move.png", initPos)
+>>>>>>> origin/Hinata
 {
 	SetTag(Object2D::Enemy2D);
 
 	moveSpeed = 2.0f;
 	isDamaged = false;
 	damageTimer = 0;
+	mnCurrentFrame = 0;
+	mnFrameTimer = 0;
 }
 
 Enemy::~Enemy()
@@ -19,8 +25,8 @@ Enemy::~Enemy()
 
 void Enemy::Update()
 {
-	// ÁîªÈù¢Â∑¶„Åã„ÇâÂá∫Áèæ„Åô„Çã„ÅÆ„Åß„ÄÅÂè≥„Å∏ÁßªÂãï„Åï„Åõ„Çã
-	
+	// âÊñ ç∂Ç©ÇÁèoåªÇ∑ÇÈÇÃÇ≈ÅAâEÇ÷à⁄ìÆÇ≥ÇπÇÈ
+
 	mvPosition.x += moveSpeed;
 
 	if (isDamaged)
@@ -32,27 +38,58 @@ void Enemy::Update()
 		}
 	}
 
+	// ÉAÉjÉÅÅ[ÉVÉáÉìçXêV
+	mnFrameTimer++;
+	if (mnFrameTimer >= FRAME_INTERVAL)
+	{
+		mnFrameTimer = 0;
+		mnCurrentFrame =
+		(mnCurrentFrame + 1) % TOTAL_FRAMES;
+	}
+
 	Object2D::Update();
 }
 
 void Enemy::Draw()
 {
-	if (isDamaged)
+	if (mpTexture != nullptr)
 	{
-		SetDrawBright(255, 100, 100);
+		const int srcX = mnCurrentFrame * FRAME_WIDTH;
+
+		int srcY = 457;
+
+		if (isDamaged)
+		{
+			SetDrawBright(255, 100, 100);
+		}
+
+		DrawRectGraph(
+			static_cast<int>(mvPosition.x - FRAME_WIDTH / 2),
+			static_cast<int>(mvPosition.y - FRAME_HEIGHT / 2),
+			srcX,
+			srcY,
+			FRAME_WIDTH,
+			FRAME_HEIGHT,
+			mpTexture->GetHandle(),
+			true
+		);
+
+		if (isDamaged)
+		{
+			SetDrawBright(255, 255, 255);
+		}
+
+	}
+	else
+	{
+		Object2D::Draw();
 	}
 
-	Object2D::Draw();
-
-	if (isDamaged)
-	{
-		SetDrawBright(255, 255, 255);
-	}
 }
 
 void Enemy::OnDamaged()
 {
 	isDamaged = true;
-	damageTimer = 30; // 30„Éï„É¨„Éº„É†Ëµ§„ÅèÂÖâ„Çã
-	
+	damageTimer = 30; // 30ÉtÉåÅ[ÉÄê‘Ç≠åıÇÈ
+
 }

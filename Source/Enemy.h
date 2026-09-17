@@ -1,4 +1,4 @@
-ï»¿#pragma once
+#pragma once
 #include "Object2D.h"
 
 class Enemy : public Object2D
@@ -10,14 +10,20 @@ public:
 	virtual void Update() override;
 	virtual void Draw() override;
 
-	// æ”»æ’ƒã‚’å—ã‘ãŸéš›ã«å‘¼ã°ã‚Œã‚‹å‡¦ç†
-	
+	// UŒ‚‚ğó‚¯‚½Û‚ÉŒÄ‚Î‚ê‚éˆ—
+
 	void OnDamaged();
 
 private:
 	float moveSpeed;
-	bool isDamaged; // ãƒ€ãƒ¡ãƒ¼ã‚¸ã‚’å—ã‘ã¦èµ¤ããªã£ã¦ã„ã‚‹ã‹
-	
-	int damageTimer; // èµ¤ãã™ã‚‹ãƒ•ãƒ¬ãƒ¼ãƒ æ™‚é–“
-	
+	bool isDamaged; // ƒ_ƒ[ƒW‚ğó‚¯‚ÄÔ‚­‚È‚Á‚Ä‚¢‚é‚©
+
+	int damageTimer; // Ô‚­‚·‚éƒtƒŒ[ƒ€ŠÔ
+
+	int mnCurrentFrame;
+	int mnFrameTimer;
+	static const int FRAME_WIDTH = 370;
+	static const int FRAME_HEIGHT = 256;
+	static const int TOTAL_FRAMES = 4;
+	static const int FRAME_INTERVAL = 13;
 };

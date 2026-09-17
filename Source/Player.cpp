@@ -11,9 +11,15 @@
 #include "BlockAction.h"
 #include "InputManager.h"
 
+<<<<<<< HEAD
 Player::Player(VECTOR initPos)
 // TextureAnimationは使わず一枚絵としてロード
 	: Object2D(CharacterGraphPath::PlayerAnimation, initPos)
+=======
+Player::Player(VECTOR initPos) 
+	// TextureAnimationは使わず一枚絵としてロード
+	: Object2D("Resource/Image/player_move.png", initPos) 
+>>>>>>> origin/Hinata
 {
 	SetTag(Object2D::Player2D);
 	mbIsJumping = false;
@@ -362,11 +368,19 @@ void Player::Draw()
 		const int srcX = mCurrentFrame * FRAME_WIDTH;
 
 		// 向きに応じた基本の Y 座標を設定する
+<<<<<<< HEAD
 		int srcY = 384; // 右向きの画像座標
 
 		if (!isFacingRight)
 		{
 			srcY = 256; // 左向きの画像座標
+=======
+		int srcY = 471; // 右向きの画像座標 768  idle用:618
+
+		if (!isFacingRight)
+		{
+			srcY = 733; // 左向きの画像座標 512  idle用:962
+>>>>>>> origin/Hinata
 		}
 
 		// ダメージ中なら赤く変色させる
