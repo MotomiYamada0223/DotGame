@@ -24,11 +24,12 @@ public:
 	void PlayerMove(BlockMap& blockMap);
 
 	void DrawFallDeath(); // 落下したときの文字の処理
-	void UpdateFallDeath(); // 落下した後にキー入力を受け取る処理[
-
+	void UpdateFallDeath(); // 落下した後にキー入力を受け取る処理
+	float GetMoveDirection() const { return mfMoveDirection; }
 
 private:
 	CharacterPhysics mCharacterPhysics; // 物理計算用のインスタンス
+	float mfMoveDirection;
 
 	// プレイヤーの当たり判定サイズ
 	float mfPlayerWidth;

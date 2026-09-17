@@ -34,6 +34,8 @@ Player::Player(VECTOR initPos)
 	mCurrentFrame = 0;
 	mFrameTimer = 0;
 	mfReviveTimer = TextTimer::MaxFallDeathTimer;
+	mfMoveDirection = 0.0f;
+
 
 	UpdateStatusByProgress(GameProgress::Tutorial1);
 
@@ -113,15 +115,15 @@ void Player::PlayerMove(BlockMap& blockMap)
 	}
 
 	// 左右移動
-	float moveDirection = 0.0f;
+	mfMoveDirection = 0.0f;
 	if (CheckHitKey(KEY_INPUT_A) == 1)
 	{
-		moveDirection = -1.0f;
+		mfMoveDirection = -1.0f;
 		isFacingRight = false;
 	}
 	else if (CheckHitKey(KEY_INPUT_D) == 1)
 	{
-		moveDirection = 1.0f;
+		mfMoveDirection = 1.0f;
 		isFacingRight = true;
 	}
 
@@ -138,8 +140,16 @@ void Player::PlayerMove(BlockMap& blockMap)
 			mfPlayerHeight,
 			gravity,
 			moveSpeed,
-			moveDirection
+			mfMoveDirection
 		);
+
+	// 当たり判定後にスクロール
+	blockMap.Move(
+		static_cast<int>(mvPosition.x),
+		mfMoveDirection
+	);
+
+
 	// 特殊地形の処理
 	mBlockAction.SetCollisionType(collisionType);
 	mBlockAction.ExecuteDeath(mHp);
@@ -179,7 +189,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 
 
 	// アニメーション更新
-	if (moveDirection != 0.0f)
+	if (mfMoveDirection != 0.0f)
 	{
 		mFrameTimer++;
 

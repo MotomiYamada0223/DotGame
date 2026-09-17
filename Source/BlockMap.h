@@ -27,11 +27,12 @@ public:
         const std::string& collisionPath
     );
 
-    void Move(int playerX);
+    void Move(int playerX, float moveDirection);
     void Draw();
 
 	// 場所の種類を取得する
 	CollisionType GetCollisionType(int x, int y) const;
+    int ScreenToMapX(int screenX, int scrollX) const { return screenX + scrollX; }
 
     // 位置のゲッターセッター
     int ScreenToMapX(int screenX) const;

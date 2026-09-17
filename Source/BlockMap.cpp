@@ -217,20 +217,23 @@ void BlockMap::Draw()
 }
 
 // マップのスクロール処理
-void BlockMap::Move(int playerX)
+void BlockMap::Move(int playerX, float moveDirection)
 {
     if (!mbIsLoaded)
     {
         return;
     }
 
-    // プレイヤーが右側の線を超えたらスクロール
-    if (playerX > MapScrollConstants::ScrollStartRightX)
+    // 右側の線を超えていて、右に移動中
+    if (playerX > MapScrollConstants::ScrollStartRightX &&
+        moveDirection > 0.0f)
     {
         mScrollX += MapScrollConstants::ScrollSpeed;
     }
-    // プレイヤーが左側の線を下回ったら逆方向へスクロール
-    else if (playerX < MapScrollConstants::ScrollStartLeftX)
+
+    // 左側の線を超えていて、左に移動中
+    else if (playerX < MapScrollConstants::ScrollStartLeftX &&
+        moveDirection < 0.0f)
     {
         mScrollX -= MapScrollConstants::ScrollSpeed;
     }
@@ -254,8 +257,6 @@ void BlockMap::Move(int playerX)
     {
         mScrollX = maxScrollX;
     }
-
-
 }
 
 
