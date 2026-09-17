@@ -131,13 +131,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\BlockAction.cpp" />
     <ClCompile Include="Source\BlockMap.cpp" />
     <ClCompile Include="Source\BossEnemyDragon.cpp" />
     <ClCompile Include="Source\BossEnemySnake.cpp" />
     <ClCompile Include="Source\BossEnemyTree.cpp" />
     <ClCompile Include="Source\CharacterPhysics.cpp" />
     <ClCompile Include="Source\Collision.cpp" />
-    <ClCompile Include="Source\Damage.cpp" />
     <ClCompile Include="Source\Enemy.cpp" />
     <ClCompile Include="Source\EnemySkeleton.cpp" />
     <ClCompile Include="Source\EnemySlime.cpp" />
@@ -166,12 +166,12 @@
     <ClCompile Include="Source\WinResultScene.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\BlockAction.h" />
     <ClInclude Include="Source\BlockMap.h" />
     <ClInclude Include="Source\BossEnemyDragon.h" />
     <ClInclude Include="Source\BossEnemySnake.h" />
     <ClInclude Include="Source\BossEnemyTree.h" />
     <ClInclude Include="Source\Collision.h" />
-    <ClInclude Include="Source\Damage.h" />
     <ClInclude Include="Source\Enemy.h" />
     <ClInclude Include="Source\EnemySkeleton.h" />
     <ClInclude Include="Source\EnemySlime.h" />

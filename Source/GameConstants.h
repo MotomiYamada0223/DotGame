@@ -22,7 +22,7 @@ namespace ScreenSize
 namespace PlayerConstants
 {
 	static const int PlayerCollisionWidth = 32; // プレイヤーの幅
-	static const int PlayerCollisionHeight = 80; // プレイヤーの高さ
+	static const int PlayerCollisionHeight = 100; // プレイヤーの高さ
 
 	static const int PlayerAttackWidth = 60; // プレイヤーの攻撃範囲の幅
 	static const int PlayerAttackHeight = 40; // プレイヤーの攻撃範囲の高さ
@@ -59,20 +59,14 @@ namespace BackGroundGraphPath
 // ブロックマップ関係
 namespace BlockMapGraphPath
 {
-	static const std::string BlockMap = "Resource/Map/image_Map.png"; // ブロックマップの画像
-}
-
-// ブロックマップの当たり判定の設定
-namespace BlockCollision
-{
-	static const int MinDamageBlock = 13; // ダメージ判定があるブロックの最小値
-	static const int MaxDamageBlock = 15; // ダメージ判定があるブロックの最大値
+	//static const char* Background = "Resource/Map/background.png";
+	static const char* Background = "Resource/Map/collision.png";
+	static const char* Collision = "Resource/Map/collision.png";
 }
 
 // 読み込むCSVパス
 namespace CsvPath
 {
-	static const std::string BlockMapFile = "Resource/Map/BlockMapFile.csv"; // ブロックマップの配列CSV
 	static const std::string TutorialText = "Resource/TutorialText/tutorialTextData.csv"; // チュートリアルテキストのCSV
 }
 
@@ -86,6 +80,34 @@ namespace ColorOption
 // ダメージの定義
 namespace SetDamage
 {
-	static const int SpikeBlock = 3; // 針と当たったら1ダメージ
+	static const int SpikeBlock = 3; // 針と当たったら3ダメージ
 	static const int EnemyAttack = 1; // 敵と当たったら1ダメージ
+}
+
+// ブロックマップの当たり判定の色の指定
+namespace BlockCollisionColor
+{
+	// 赤  Block 当たり判定
+	static constexpr int BLOCK_R = 255;
+	static constexpr int BLOCK_G = 0;
+	static constexpr int BLOCK_B = 0;
+
+	// 青 Death
+	static constexpr int DEATH_R = 0;
+	static constexpr int DEATH_G = 0;
+	static constexpr int DEATH_B = 255;
+
+	// 緑 Goal
+	static constexpr int GOAL_R = 0;
+	static constexpr int GOAL_G = 255;
+	static constexpr int GOAL_B = 0;
+}
+
+// プレイヤーがブロックマップとの当たり判定で使用するサイズ
+namespace PlayerBlockCollision
+{
+	// 壁判定時に床や天井のブロックを誤検出しないように上下を縮める
+	static constexpr float WallCheckMargin = 20.0f;
+	// 壁や床、天井の判定を行う際の厚み
+	static constexpr float CollisionThickness = 1.0f;
 }

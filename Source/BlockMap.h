@@ -1,53 +1,52 @@
 #pragma once
+
 #include "DxLib.h"
 #include <string>
-// CSVを読み込んでブロックマップを生成するクラス
-
-// 1ブロックのサイズ 64
-const int CHIP_SIZE = 64;
-
-// マップの横縦の最大チップ数
-const int MAX_MAP_WIDTH = 30;
-const int MAX_MAP_HEIGHT = 17;
-
-// タイルセットの設定
-// 画像にチップが横方向に何個並んでいるか
-const int TILESET_COLUMNS = 8;
-
-// 画像にあるブロックの種類の最大
-const int MAX_BLOCK_COUNT = 64;
+#include <vector>
 
 class BlockMap
 {
 public:
-	BlockMap();
-	~BlockMap();
 
-	// CSVファイルと画像をセットで読み込む関数
-	bool Load(const std::string& csvPath, const std::string& texturePath);
+    // 当たり判定の色によってタイプを分ける
+	enum class CollisionType
+	{
+		None = 0, // 当たり判定なし
+		Block,  // 当たり判定あり
+		Death, // 死亡判定あり
+		Goal,  // ゴール判定あり
+	};
 
-	// マップの描画
-	void Draw();
 
-	// プレイヤーと当たっているブロックを探す処理（位置が不要な場合は省略可能になっている）
-	bool CheckCollisionBlock(
-		float x,
-		float y,
-		float width,
-		float height,
-		int* blockX = nullptr,
-		int* blockY = nullptr
-	);
+    BlockMap();
+    ~BlockMap();
+
+    // 背景画像と当たり判定画像を読み込む
+    bool Load(
+        const std::string& backgroundPath,
+        const std::string& collisionPath
+    );
+
+    void Draw();
+
+	// 場所の種類を取得する
+	CollisionType GetCollisionType(int x, int y) const;
 
 private:
-	// タイルセットの画像
-	int mnTileGraph;
-	// マップデータ
-	int mnMapData[MAX_MAP_HEIGHT][MAX_MAP_WIDTH];
+    int mnBackgroundGraph;   // 背景画像
+    int mnCollisionSoftImage; // 当たり判定画像 (描画はしない)
 
-	// マップを読み込んだか
-	bool mbIsLoaded;
+    // 当たり判定画像のサイズ
+    int mnCollisionWidth;
+    int mnCollisionHeight;
+
+    // タイプのデータをのメンバ変数
+    std::vector<CollisionType> mCollisionData;
+
+    // 読み込み済みかのフラグ
+    bool mbIsLoaded;
+
+    // 配列のインデックスを取得
+    // 2次元座標を1次元配列の番号に変換する。
+    int GetCollisionIndex(int x, int y) const { return y * mnCollisionWidth + x; }
 };
-
-
-

@@ -1,4 +1,4 @@
-#include "Player.h"
+﻿#include "Player.h"
 #include "DxLib.h"
 #include "Texture.h"
 #include "Master.h"
@@ -8,11 +8,11 @@
 #include "Enemy.h"
 #include "Collision.h"
 #include "GameConstants.h"
-#include "Damage.h"
+#include "BlockAction.h"
 
 
-Player::Player(VECTOR initPos) 
-	// TextureAnimationは使わず一枚絵としてロード
+Player::Player(VECTOR initPos)
+// TextureAnimationは使わず一枚絵としてロード
 	: Object2D(CharacterGraphPath::PlayerAnimation, initPos)
 {
 	SetTag(Object2D::Player2D);
@@ -29,17 +29,23 @@ Player::Player(VECTOR initPos)
 	mSpawnPos = initPos;
 	mDeadState = 0;
 	mpBlockMap = nullptr;
-
-	mHeartFullGraph = LoadGraph(CharacterGraphPath::HeartFull.c_str());
-	mHeartHalfGraph = LoadGraph(CharacterGraphPath::HeartHalf.c_str());
-	mHeartEmptyGraph = LoadGraph(CharacterGraphPath::HeartEmpty.c_str());
-
-	UpdateStatusByProgress(GameProgress::Tutorial1);
-
+	mMaxHp = PlayerConstants::MaxHp;
+	mHp = PlayerConstants::MaxHp;
 	mCurrentFrame = 0;
 	mFrameTimer = 0;
 
-    // プレイヤー当たり判定サイズ
+	UpdateStatusByProgress(GameProgress::Tutorial1);
+
+	// 画像の読み込み
+	mHeartFullGraph = LoadGraph(CharacterGraphPath::HeartFull.c_str());
+	if (mHeartFullGraph == -1) { printfDx("体力MAXの画像がない。"); }
+	mHeartHalfGraph = LoadGraph(CharacterGraphPath::HeartHalf.c_str());
+	if (mHeartHalfGraph == -1) { printfDx("体力半分の画像がない。"); }
+	mHeartEmptyGraph = LoadGraph(CharacterGraphPath::HeartEmpty.c_str());
+	if (mHeartEmptyGraph == -1) { printfDx("体力0の画像がない。"); }
+
+
+	// プレイヤー当たり判定サイズ
 	// Width...幅
 	// Height...足元の位置
 	mfPlayerWidth = PlayerConstants::PlayerCollisionWidth;
@@ -99,13 +105,13 @@ void Player::UpdateStatusByProgress(GameProgress progress)
 void Player::PlayerMove(BlockMap& blockMap)
 {
 	mpBlockMap = &blockMap;
-
 	// 死亡時は操作を受け付けない
-	if (isDead) return;
+	if (isDead)
+	{
+		return;
+	}
 
-	bool moved = false;
-
-	// 左右移動の共通化（Aキーは-1, Dキーは1）
+	// 左右移動
 	float moveDirection = 0.0f;
 	if (CheckHitKey(KEY_INPUT_A) == 1)
 	{
@@ -118,34 +124,29 @@ void Player::PlayerMove(BlockMap& blockMap)
 		isFacingRight = true;
 	}
 
-	// どちらかのキーが押されている場合
-	if (moveDirection != 0.0f)
-	{
-		float nextX = mvPosition.x + (moveSpeed * moveDirection);
-		float playerLeft = nextX - mfPlayerWidth / 2.0f;
-		float playerTop = mvPosition.y - mfPlayerHeight / 2.0f;
 
-		if (!blockMap.CheckCollisionBlock(playerLeft, playerTop, mfPlayerWidth, mfPlayerHeight))
-		{
-			mvPosition.x = nextX;
-			moved = true;
-		}
-	}
+	// キャラクターの物理処理
+	BlockMap::CollisionType collisionType =
+		mCharacterPhysics.UpdateMoveAndCollision(
+			mvPosition,
+			velocityY,
+			isGrounded,
+			mbIsJumping,
+			blockMap,
+			mfPlayerWidth,
+			mfPlayerHeight,
+			gravity,
+			moveSpeed,
+			moveDirection
+		);
+	// 特殊地形の処理
+	mBlockAction.SetCollisionType(collisionType);
+	mBlockAction.ExecuteDeath(mHp);
+	mBlockAction.ExecuteGoal();
 
-	// キャラクターの物理処理や当たり判定クラスの呼び出し
-	mCharacterPhysics.UpdateMoveAndCollision(
-		mvPosition,
-		velocityY,
-		isGrounded,
-		mbIsJumping,
-		blockMap,
-		mfPlayerWidth,
-		mfPlayerHeight,
-		gravity,
-		moveSpeed
-	);
 
-	// ジャンプ開始 Space
+
+	// ジャンプ開始
 	if (CheckHitKey(KEY_INPUT_SPACE) == 1 &&
 		isGrounded)
 	{
@@ -154,12 +155,12 @@ void Player::PlayerMove(BlockMap& blockMap)
 		velocityY = jumpPower;
 	}
 
+
 	// 攻撃 F
 	if (CheckHitKey(KEY_INPUT_F) == 1 &&
 		!isAttacking)
 	{
 		isAttacking = true;
-
 		attackTimer = attackDuration;
 	}
 
@@ -177,12 +178,14 @@ void Player::PlayerMove(BlockMap& blockMap)
 
 
 	// アニメーション更新
-	if (moved)
+	if (moveDirection != 0.0f)
 	{
 		mFrameTimer++;
+
 		if (mFrameTimer >= FRAME_INTERVAL)
 		{
 			mFrameTimer = 0;
+
 			mCurrentFrame =
 				(mCurrentFrame + 1) % TOTAL_FRAMES;
 		}
@@ -190,7 +193,6 @@ void Player::PlayerMove(BlockMap& blockMap)
 	else
 	{
 		mCurrentFrame = 0;
-
 		mFrameTimer = 0;
 	}
 }
@@ -252,7 +254,7 @@ void Player::Update()
 		// 1. プレイヤー自身と敵の衝突判定 (ダメージで赤くする)
 		if (Collision::CheckRectToRect(myPos, mySize, enePos, eneSize))
 		{
-			isHitDamage = true; 
+			isHitDamage = true;
 		}
 
 		// 2. 攻撃判定と敵の衝突判定 (敵を赤く光らせる)
@@ -272,6 +274,7 @@ void Player::Update()
 	{
 		TakeDamage(5);
 	}
+
 	kKeyWasDown = kKeyIsDown;
 
 	if (mHp <= 0 && !isDead)
@@ -283,7 +286,7 @@ void Player::Update()
 
 		int fragSize = 16;
 		int srcBaseY = isFacingRight ? 384 : 256;
-		
+
 		for (int y = 0; y < FRAME_HEIGHT; y += fragSize)
 		{
 			for (int x = 0; x < FRAME_WIDTH; x += fragSize)
@@ -295,10 +298,10 @@ void Player::Update()
 				frag.srcY = srcBaseY + y;
 				frag.width = fragSize;
 				frag.height = fragSize;
-				
+
 				frag.vel.x = ((float)GetRand(100) / 100.0f * 10.0f) - 5.0f;
 				frag.vel.y = ((float)GetRand(100) / 100.0f * -15.0f) - 5.0f;
-				
+
 				mFragments.push_back(frag);
 			}
 		}
@@ -474,14 +477,8 @@ void Player::DebugDraw()
 			DrawBox(eneLeft, eneTop, eneRight, eneBottom, GetColor(0, 255, 0), FALSE);
 		}
 	}
-
-	// ブロックマップとの当たり判定デバッグ表示
-	int left = static_cast<int>(mvPosition.x - mfPlayerWidth / 2.0f);
-	int top = static_cast<int>(mvPosition.y - mfPlayerHeight / 2.0f);
-	int right = static_cast<int>(mvPosition.x + mfPlayerWidth / 2.0f);
-	int bottom = static_cast<int>(mvPosition.y + mfPlayerHeight / 2.0f);
-	DrawBox(left, top, right, bottom, GetColor(255, 0, 0), FALSE);
 }
+
 
 void Player::DeadProcess()
 {
@@ -491,17 +488,29 @@ void Player::DeadProcess()
 	{
 		for (auto& frag : mFragments)
 		{
-			frag.vel.y += gravity;
-
 			frag.pos.x += frag.vel.x;
-			if (mpBlockMap && mpBlockMap->CheckCollisionBlock(frag.pos.x, frag.pos.y, static_cast<float>(frag.width), static_cast<float>(frag.height)))
+
+			if (mpBlockMap &&
+				mCharacterPhysics.IsBlockCollision(
+					*mpBlockMap,
+					frag.pos.x,
+					frag.pos.y,
+					static_cast<float>(frag.width),
+					static_cast<float>(frag.height)))
 			{
 				frag.pos.x -= frag.vel.x;
 				frag.vel.x *= -0.6f;
 			}
 
 			frag.pos.y += frag.vel.y;
-			if (mpBlockMap && mpBlockMap->CheckCollisionBlock(frag.pos.x, frag.pos.y, static_cast<float>(frag.width), static_cast<float>(frag.height)))
+
+			if (mpBlockMap &&
+				mCharacterPhysics.IsBlockCollision(
+					*mpBlockMap,
+					frag.pos.x,
+					frag.pos.y,
+					static_cast<float>(frag.width),
+					static_cast<float>(frag.height)))
 			{
 				frag.pos.y -= frag.vel.y;
 				frag.vel.y *= -0.4f;
@@ -547,7 +556,7 @@ void Player::DeadProcess()
 		}
 
 		// 全て集まったか、タイムアウト（5秒）で強制復活
-		if ((allReturned && deadTimer > 60) || deadTimer > 300) 
+		if ((allReturned && deadTimer > 60) || deadTimer > 300)
 		{
 			mvPosition = mSpawnPos;
 			isDead = false;
@@ -558,5 +567,5 @@ void Player::DeadProcess()
 			mHp = mMaxHp; // 復活時にHPをリセット
 		}
 	}
-	}
+}
 
