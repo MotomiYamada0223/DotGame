@@ -220,9 +220,18 @@ void Player::Update()
 	ObjectManager* objManager = Master::mpGameManager->GetSceneManager()->GetCurrentScene()->GetObjectManager();
 	std::vector<Object2D*> enemyList = objManager->GetObject2DListByTag(Object2D::Enemy2D);
 
-	// 自身の矩形
-	VECTOR myPos = VGet(mvPosition.x - FRAME_WIDTH / 2.0f, mvPosition.y - FRAME_HEIGHT / 2.0f, 0.0f);
-	VECTOR mySize = VGet((float)FRAME_WIDTH, (float)FRAME_HEIGHT, 0.0f);
+	// プレイヤーの当たり判定
+	VECTOR myPos = VGet(
+		mvPosition.x - mfPlayerWidth / 2.0f,
+		mvPosition.y - mfPlayerHeight / 2.0f,
+		0.0f
+	);
+	VECTOR mySize = VGet(
+		mfPlayerWidth,
+		mfPlayerHeight,
+		0.0f
+	);
+
 
 	VECTOR atkPos = VGet(0, 0, 0);
 	VECTOR atkSize = VGet(0, 0, 0);
@@ -255,9 +264,26 @@ void Player::Update()
 		Enemy* enemy = dynamic_cast<Enemy*>(obj);
 		if (!enemy) continue;
 
-		// 敵の矩形
-		VECTOR enePos = VGet(enemy->GetPosition().x - enemy->GetSizeX() / 2.0f, enemy->GetPosition().y - enemy->GetSizeY() / 2.0f, 0.0f);
-		VECTOR eneSize = VGet((float)enemy->GetSizeX(), (float)enemy->GetSizeY(), 0.0f);
+		// 敵の当たり判定
+		float enemyWidth = enemy->GetSizeX() / 6.0f;
+		float enemyHeight = enemy->GetSizeY() / 6.0f;
+		int eneLeft = static_cast<int>(
+			enemy->GetPosition().x - enemyWidth / 2.0f
+			);
+		int eneTop = static_cast<int>(
+			enemy->GetPosition().y - enemyHeight / 2.0f
+			);
+
+		VECTOR enePos = VGet(
+			(float)eneLeft,
+			(float)eneTop,
+			0.0f
+		);
+		VECTOR eneSize = VGet(
+			enemyWidth,
+			enemyHeight,
+			0.0f
+		);
 
 		// 1. プレイヤー自身と敵の衝突判定 (ダメージで赤くする)
 		if (Collision::CheckRectToRect(myPos, mySize, enePos, eneSize))
@@ -362,11 +388,11 @@ void Player::Draw()
 		const int srcX = mCurrentFrame * FRAME_WIDTH;
 
 		// 向きに応じた基本の Y 座標を設定する
-		int srcY = 471; // 右向きの画像座標 768  idle用:618
+		int srcY = 256; // 右向きの画像座標 768  idle用:618
 
 		if (!isFacingRight)
 		{
-			srcY = 733; // 左向きの画像座標 512  idle用:962
+			srcY = 384; // 左向きの画像座標 512  idle用:962
 		}
 
 		// ダメージ中なら赤く変色させる
@@ -467,24 +493,41 @@ void Player::DebugDraw()
 	DrawFormatString((int)mvPosition.x, (int)mvPosition.y + 10, ColorOption::White, "HP: %d", mHp);
 
 
-	// シーン上のすべての敵の当たり判定をデバッグ表示（黄緑色）
-	ObjectManager* objManager = Master::mpGameManager->GetSceneManager()->GetCurrentScene()->GetObjectManager();
+		// シーン上のすべての敵の当たり判定をデバッグ表示（黄緑色）
+		ObjectManager* objManager = Master::mpGameManager->GetSceneManager()->GetCurrentScene()->GetObjectManager();
+
 	if (objManager != nullptr)
 	{
-		std::vector<Object2D*> enemyList = objManager->GetObject2DListByTag(Object2D::Enemy2D);
+		std::vector<Object2D*> enemyList =
+			objManager->GetObject2DListByTag(Object2D::Enemy2D);
+
 		for (Object2D* obj : enemyList)
 		{
 			Enemy* enemy = dynamic_cast<Enemy*>(obj);
 			if (!enemy) continue;
 
-			int eneLeft = static_cast<int>(enemy->GetPosition().x - enemy->GetSizeX() / 2.0f);
-			int eneTop = static_cast<int>(enemy->GetPosition().y - enemy->GetSizeY() / 2.0f);
-			int eneRight = static_cast<int>(eneLeft + enemy->GetSizeX());
-			int eneBottom = static_cast<int>(eneTop + enemy->GetSizeY());
+			// 実際の当たり判定と同じサイズ
+			float enemyWidth = enemy->GetSizeX() / 6.0f;
+			float enemyHeight = enemy->GetSizeY() / 6.0f;
 
-			DrawBox(eneLeft, eneTop, eneRight, eneBottom, GetColor(0, 255, 0), FALSE);
+			float divide = 2.0f;
+
+			int eneLeft = static_cast<int>(enemy->GetPosition().x - enemyWidth / divide);
+			int eneTop = static_cast<int>(enemy->GetPosition().y - enemyHeight / divide);
+			int eneRight = static_cast<int>(enemy->GetPosition().x + enemyWidth / divide);
+			int eneBottom = static_cast<int>(enemy->GetPosition().y + enemyHeight / divide);
+
+			DrawBox(
+				eneLeft,
+				eneTop,
+				eneRight,
+				eneBottom,
+				GetColor(0, 255, 0),
+				FALSE
+			);
 		}
 	}
+
 }
 
 

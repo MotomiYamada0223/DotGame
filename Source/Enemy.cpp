@@ -4,14 +4,14 @@
 #include "GameConstants.h"
 
 Enemy::Enemy(VECTOR initPos)
-	: Object2D("Resource/Image/enemy_dragon_move.png", initPos)
+	: Object2D(CharacterGraphPath::Dragon, initPos)
 {
 	SetTag(Object2D::Enemy2D);
 
 	moveSpeed = 2.0f;
 	isDamaged = false;
 	damageTimer = 0;
-	mnCurrentFrame = 0;
+	mnCurrentFrame = 0;    
 	mnFrameTimer = 0;
 }
 
@@ -34,6 +34,9 @@ void Enemy::Update()
 		}
 	}
 
+
+
+
 	// アニメーション更新
 	mnFrameTimer++;
 	if (mnFrameTimer >= FRAME_INTERVAL)
@@ -52,7 +55,7 @@ void Enemy::Draw()
 	{
 		const int srcX = mnCurrentFrame * FRAME_WIDTH;
 
-		int srcY = 457;
+		int srcY  = 256;
 
 		if (isDamaged)
 		{

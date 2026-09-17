@@ -56,8 +56,8 @@ private:
 	// アニメーション関連
 	int mCurrentFrame;
 	int mFrameTimer;
-	static const int FRAME_WIDTH = 256 / 2; 
-	static const int FRAME_HEIGHT = 256 / 2; 
+	static const int FRAME_WIDTH = 128; 
+	static const int FRAME_HEIGHT = 128;
 	static const int TOTAL_FRAMES = 4; 
 	static const int FRAME_INTERVAL = 8; 
 
