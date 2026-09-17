@@ -8,7 +8,6 @@
 #include "Enemy.h"
 #include "Collision.h"
 #include "GameConstants.h"
-#include "Damage.h"
 #include "BlockAction.h"
 
 
@@ -34,6 +33,15 @@ Player::Player(VECTOR initPos)
 
 	mCurrentFrame = 0;
 	mFrameTimer = 0;
+
+	// 画像の読み込み
+	mHeartFullGraph = LoadGraph(CharacterGraphPath::HeartFull.c_str());
+	if (mHeartFullGraph == -1) { printfDx("体力MAXの画像がない。"); }
+	mHeartHalfGraph = LoadGraph(CharacterGraphPath::HeartHalf.c_str());
+	if (mHeartHalfGraph == -1) { printfDx("体力半分の画像がない。"); }
+	mHeartEmptyGraph = LoadGraph(CharacterGraphPath::HeartEmpty.c_str());
+	if (mHeartEmptyGraph == -1) { printfDx("体力0の画像がない。"); }
+
 
 	// プレイヤー当たり判定サイズ
 	// Width...幅
@@ -264,6 +272,7 @@ void Player::Update()
 	{
 		TakeDamage(5);
 	}
+
 	kKeyWasDown = kKeyIsDown;
 
 	if (mHp <= 0 && !isDead)

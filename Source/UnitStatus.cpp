@@ -18,6 +18,7 @@ void UnitStatus::UpdateStatusByProgress(GameProgress progress)
     // 基底クラスでは何もしない。派生クラスでオーバーライドする
 }
 
+// 敵との判定で使用するダメージ処理
 void UnitStatus::TakeDamage(int damage)
 {
     mHp -= damage;

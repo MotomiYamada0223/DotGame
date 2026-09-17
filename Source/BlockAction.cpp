@@ -1,7 +1,7 @@
 ﻿#include "BlockAction.h"
-#include "Damage.h"
 #include "GameConstants.h"
 #include "Master.h"
+#include "UnitStatus.h"
 
 BlockAction::BlockAction()
 	: mCurrentCollisionType(BlockMap::CollisionType::None)
@@ -18,12 +18,12 @@ void BlockAction::SetCollisionType(BlockMap::CollisionType collisionType)
 	mCurrentCollisionType = collisionType;
 }
 
-// 保持している状態がデスブロックの場合にダメージを適用する
+// 保持している状態がデスブロックの場合は確実に死亡させる
 void BlockAction::ExecuteDeath(int& inHp)
 {
 	if (mCurrentCollisionType == BlockMap::CollisionType::Death)
 	{
-		Damage::ApplyDamage(inHp, SetDamage::SpikeBlock);
+		inHp = 0;
 	}
 }
 
