@@ -1,6 +1,7 @@
 ﻿#include "BlockAction.h"
 #include "Damage.h"
 #include "GameConstants.h"
+#include "Master.h"
 
 BlockAction::BlockAction()
 	: mCurrentCollisionType(BlockMap::CollisionType::None)
@@ -31,6 +32,6 @@ void BlockAction::ExecuteGoal()
 {
 	if (mCurrentCollisionType == BlockMap::CollisionType::Goal)
 	{
-		// ゴール時の処理をここに記述
+		Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_WINRESULT);
 	}
 }

@@ -4,11 +4,14 @@
 
 class CharacterPhysics
 {
+private:
+    static  constexpr float HalfMultiply = 0.5f; // 半分にする時にかける数値
+
 public:
     CharacterPhysics();
     ~CharacterPhysics();
 
-    // 1軸ずつ移動と判定を処理し、接触した特殊タイルの種類を返す
+    // 1軸ずつ移動と判定を処理して接触した特殊タイルの種類を返す
     BlockMap::CollisionType UpdateMoveAndCollision(
         VECTOR& position,
         float& velocityY,
@@ -31,7 +34,8 @@ public:
         float height
     ) const;
 
-    // 敵などからも共通で呼び出せるピクセル単位の当たり判定
+
+    // 敵からも共通で呼び出せるピクセル単位の当たり判定
     BlockMap::CollisionType CheckCollision(
         const BlockMap& blockMap,
         float x,
@@ -41,4 +45,5 @@ public:
         int* blockX = nullptr,
         int* blockY = nullptr
     ) const;
+
 };

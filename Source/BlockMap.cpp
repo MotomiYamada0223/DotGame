@@ -1,9 +1,7 @@
 #include "BlockMap.h"
 #include "Master.h"
-
+#include "GameConstants.h"
 #include <iostream>
-
-
 
 
 BlockMap::BlockMap()
@@ -26,11 +24,7 @@ bool BlockMap::Load(
     const std::string& backgroundPath,
     const std::string& collisionPath)
 {
-    if (mbIsLoaded)
-    {
-        return true;
-    }
-
+    if (mbIsLoaded) { return true; }
 
     // 背景画像の読み込み
     mnBackgroundGraph =
@@ -40,7 +34,7 @@ bool BlockMap::Load(
 
     if (mnBackgroundGraph == -1)
     {
-        std::cout<< "背景画像が開けませんでした。" << std::endl;
+        std::cout<< "ブロックの背景画像が開けませんでした。" << std::endl;
         return false;
     }
 
@@ -52,7 +46,7 @@ bool BlockMap::Load(
 
     if (mnCollisionSoftImage == -1)
     {
-        std::cout<< "当たり判定画像が開けませんでした。" << std::endl;
+        std::cout<< "ブロックの当たり判定画像が開けませんでした。" << std::endl;
         return false;
     }
 
@@ -64,13 +58,11 @@ bool BlockMap::Load(
         &mnCollisionHeight
     );
 
-
-    // CollisionTypeデータを確保
+    // CollisionTypeデータを確保 全てNONEにしている
     mCollisionData.resize(
         mnCollisionWidth * mnCollisionHeight,
         CollisionType::None
     );
-
 
     // 当たり判定画像を1ピクセルずつ調べる
     for (int y = 0; y < mnCollisionHeight; y++)
@@ -83,7 +75,6 @@ bool BlockMap::Load(
             int b = 0;
             int a = 0;
 
-
             // 現在のピクセルの色を取得
             int result =
                 GetPixelSoftImage(
@@ -95,11 +86,7 @@ bool BlockMap::Load(
                     &b,
                     &a
                 );
-            if (result != 0)
-            {
-                continue;
-            }
-
+            if (result != 0) { continue; }
 
             // 透明ならNone
             if (a == 0)
@@ -107,15 +94,14 @@ bool BlockMap::Load(
                 mCollisionData[
                     GetCollisionIndex(x, y)
                 ] = CollisionType::None;
-
                 continue;
             }
 
 
             // 赤ならBlock
-            if (r == BLOCK_R &&
-                g == BLOCK_G &&
-                b == BLOCK_B)
+            if (r == BlockCollisionColor::BLOCK_R &&
+                g == BlockCollisionColor::BLOCK_G &&
+                b == BlockCollisionColor::BLOCK_B)
             {
                 mCollisionData[
                     GetCollisionIndex(x, y)
@@ -125,27 +111,25 @@ bool BlockMap::Load(
             }
 
             // 青ならDeath
-            if (r == DEATH_R &&
-                g == DEATH_G &&
-                b == DEATH_B)
+            if (r == BlockCollisionColor::DEATH_R &&
+                g == BlockCollisionColor::DEATH_G &&
+                b == BlockCollisionColor::DEATH_B)
             {
                 mCollisionData[
                     GetCollisionIndex(x, y)
                 ] = CollisionType::Death;
-
                 continue;
             }
 
 
             // 緑ならGoal
-            if (r == GOAL_R &&
-                g == GOAL_G &&
-                b == GOAL_B)
+            if (r == BlockCollisionColor::GOAL_R &&
+                g == BlockCollisionColor::GOAL_G &&
+                b == BlockCollisionColor::GOAL_B)
             {
                 mCollisionData[
                     GetCollisionIndex(x, y)
                 ] = CollisionType::Goal;
-
                 continue;
             }
 
@@ -156,7 +140,6 @@ bool BlockMap::Load(
         }
     }
 
-
     // 元の画像データはもう必要ない
     DeleteSoftImage(
         mnCollisionSoftImage
@@ -164,7 +147,6 @@ bool BlockMap::Load(
 
     mnCollisionSoftImage = -1;
     mbIsLoaded = true;
-
     return true;
 }
 
@@ -172,12 +154,10 @@ bool BlockMap::Load(
 // 背景描画
 void BlockMap::Draw()
 {
-    if (!mbIsLoaded)
-    {
-        return;
-    }
+    if (!mbIsLoaded) { return; }
 
-    // 背景画像を描画
+    // 背景画像を描画 今は00だが将来的には変更したい
+    // 今のメイン画像の前後だけ描画など (画像は4毎ぐらい用意する予定)
     DrawGraph(
         0,
         0,
@@ -188,24 +168,18 @@ void BlockMap::Draw()
 
 
 // CollisionType取得
-BlockMap::CollisionType
-BlockMap::GetCollisionType(
+BlockMap::CollisionType BlockMap::GetCollisionType(
     int x,
     int y) const
 {
     // マップ外
-    if (x < 0 ||
-        x >= mnCollisionWidth ||
-        y < 0 ||
-        y >= mnCollisionHeight)
+    if (x < 0 || x >= mnCollisionWidth ||
+        y < 0 || y >= mnCollisionHeight)
     {
         // マップ外は何もない扱い
         return CollisionType::None;
     }
 
-
     // 指定座標のCollisionTypeを返す
-    return mCollisionData[
-        GetCollisionIndex(x, y)
-    ];
+    return mCollisionData[ GetCollisionIndex(x, y)];
 }

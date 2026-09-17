@@ -1,13 +1,5 @@
 ﻿#include "CharacterPhysics.h"
-
-namespace
-{
-	// 壁判定時に床や天井のブロックを誤検出しないように上下を縮めるマージン
-	constexpr float WallCheckMargin = 20.0f;
-
-	// 壁や床、天井の判定を行う際の厚み（1ピクセル）
-	constexpr float CollisionThickness = 1.0f;
-}
+#include "GameConstants.h"
 
 // クラスの初期化を行う
 CharacterPhysics::CharacterPhysics()
@@ -43,29 +35,16 @@ BlockMap::CollisionType CharacterPhysics::CheckCollision(
 			const BlockMap::CollisionType type =
 				blockMap.GetCollisionType(pixelX, pixelY);
 
-			if (type == BlockMap::CollisionType::None)
-			{
-				continue;
-			}
-
-			if (blockX != nullptr)
-			{
-				*blockX = pixelX;
-			}
-
-			if (blockY != nullptr)
-			{
-				*blockY = pixelY;
-			}
-
+			if (type == BlockMap::CollisionType::None) { continue; }
+			if (blockX != nullptr) { *blockX = pixelX; }
+			if (blockY != nullptr) { *blockY = pixelY; }
 			return type;
 		}
 	}
-
 	return BlockMap::CollisionType::None;
 }
 
-// キャラクターの移動、重力処理、およびマップタイルとの当たり判定を解決する
+// キャラクターの移動、重力処理、マップタイルとの当たり判定を解決する
 BlockMap::CollisionType CharacterPhysics::UpdateMoveAndCollision(
 	VECTOR& position,
 	float& velocityY,
@@ -78,35 +57,25 @@ BlockMap::CollisionType CharacterPhysics::UpdateMoveAndCollision(
 	float moveSpeed,
 	float moveDirection)
 {
-	// 特殊地形の検出結果
 	BlockMap::CollisionType detectedSpecialType =
 		BlockMap::CollisionType::None;
 
-	// デバッグ用
 	bool isHittingWall = false;
 
-	// =========================
 	// X方向移動
-	// =========================
-
-	const float nextX =
-		position.x + (moveSpeed * moveDirection);
-
+	const float nextX = position.x + (moveSpeed * moveDirection);
 	if (moveDirection != 0.0f)
 	{
-		const float halfWidth = width * 0.5f;
-		const float halfHeight = height * 0.5f;
+		const float halfWidth = width * HalfMultiply;
+		const float halfHeight = height * HalfMultiply;
 
 		const float wallCheckX =
 			(moveDirection < 0.0f)
 			? (nextX - halfWidth)
 			: (nextX + halfWidth);
 
-		const float wallCheckTop =
-			position.y - halfHeight + WallCheckMargin;
-
-		const float wallCheckHeight =
-			height - WallCheckMargin * 2.0f;
+		const float wallCheckTop = position.y - halfHeight + PlayerBlockCollision::WallCheckMargin;
+		const float wallCheckHeight = height - PlayerBlockCollision::WallCheckMargin * 2.0f;
 
 		int wallX = -1;
 		int wallY = -1;
@@ -116,7 +85,7 @@ BlockMap::CollisionType CharacterPhysics::UpdateMoveAndCollision(
 				blockMap,
 				wallCheckX,
 				wallCheckTop,
-				CollisionThickness,
+				PlayerBlockCollision::CollisionThickness,
 				wallCheckHeight,
 				&wallX,
 				&wallY
@@ -130,7 +99,6 @@ BlockMap::CollisionType CharacterPhysics::UpdateMoveAndCollision(
 		else
 		{
 			position.x = nextX;
-
 			if (wallType != BlockMap::CollisionType::None)
 			{
 				detectedSpecialType = wallType;
@@ -138,37 +106,20 @@ BlockMap::CollisionType CharacterPhysics::UpdateMoveAndCollision(
 		}
 	}
 
-	// =========================
 	// Y方向移動
-	// =========================
-
 	velocityY += gravity;
-
-	const float nextY =
-		position.y + velocityY;
-
-	const float halfWidth = width * 0.5f;
-	const float halfHeight = height * 0.5f;
-
-	const float playerLeft =
-		position.x - halfWidth;
-
-	const float oldBottom =
-		position.y + halfHeight;
-
-	const float nextTop =
-		nextY - halfHeight;
-
-	const float nextBottom =
-		nextY + halfHeight;
+	const float nextY = position.y + velocityY;
+	const float halfWidth = width * HalfMultiply;
+	const float halfHeight = height * HalfMultiply;
+	const float playerLeft = position.x - halfWidth;
+	const float oldBottom = position.y + halfHeight;
+	const float nextTop = nextY - halfHeight;
+	const float nextBottom = nextY + halfHeight;
 
 	// 接地状態を一旦解除
 	isGrounded = false;
 
-	// =========================
 	// 落下中
-	// =========================
-
 	if (velocityY > 0.0f)
 	{
 		int collisionX = -1;
@@ -180,7 +131,7 @@ BlockMap::CollisionType CharacterPhysics::UpdateMoveAndCollision(
 				playerLeft,
 				nextBottom,
 				width,
-				CollisionThickness,
+				PlayerBlockCollision::CollisionThickness,
 				&collisionX,
 				&collisionY
 			);
@@ -189,15 +140,12 @@ BlockMap::CollisionType CharacterPhysics::UpdateMoveAndCollision(
 		{
 			if (floorType == BlockMap::CollisionType::Block)
 			{
-				const float floorY =
-					static_cast<float>(collisionY);
+				const float floorY = static_cast<float>(collisionY);
 
 				// Blockの上面に乗ったかどうかの判定
 				if (oldBottom <= floorY || nextBottom >= floorY)
 				{
-					position.y =
-						floorY - halfHeight;
-
+					position.y = floorY - halfHeight;
 					velocityY = 0.0f;
 					isGrounded = true;
 					isJumping = false;
@@ -225,10 +173,7 @@ BlockMap::CollisionType CharacterPhysics::UpdateMoveAndCollision(
 		}
 	}
 
-	// =========================
 	// 上昇中
-	// =========================
-
 	else if (velocityY < 0.0f)
 	{
 		int collisionX = -1;
@@ -240,7 +185,7 @@ BlockMap::CollisionType CharacterPhysics::UpdateMoveAndCollision(
 				playerLeft,
 				nextTop,
 				width,
-				CollisionThickness,
+				PlayerBlockCollision::CollisionThickness,
 				&collisionX,
 				&collisionY
 			);
@@ -253,7 +198,7 @@ BlockMap::CollisionType CharacterPhysics::UpdateMoveAndCollision(
 					static_cast<float>(collisionY);
 
 				position.y =
-					ceilingY + CollisionThickness + halfHeight;
+					ceilingY + PlayerBlockCollision::CollisionThickness + halfHeight;
 
 				velocityY = 0.0f;
 			}
@@ -273,20 +218,12 @@ BlockMap::CollisionType CharacterPhysics::UpdateMoveAndCollision(
 			isJumping = true;
 		}
 	}
-
-	// =========================
-	// 垂直速度が0
-	// =========================
-
-	else
+	else // 垂直速度が0
 	{
 		position.y = nextY;
 	}
 
-	// =========================
 	// デバッグ描画
-	// =========================
-
 	if (moveDirection != 0.0f)
 	{
 		const float debugX =
@@ -300,7 +237,7 @@ BlockMap::CollisionType CharacterPhysics::UpdateMoveAndCollision(
 		DrawBox(
 			static_cast<int>(debugX),
 			static_cast<int>(debugTop),
-			static_cast<int>(debugX + CollisionThickness),
+			static_cast<int>(debugX + PlayerBlockCollision::CollisionThickness),
 			static_cast<int>(debugTop + height),
 			GetColor(255, 255, 0),
 			FALSE
@@ -313,7 +250,7 @@ BlockMap::CollisionType CharacterPhysics::UpdateMoveAndCollision(
 			static_cast<int>(playerLeft),
 			static_cast<int>(nextBottom),
 			static_cast<int>(playerLeft + width),
-			static_cast<int>(nextBottom + CollisionThickness),
+			static_cast<int>(nextBottom + PlayerBlockCollision::CollisionThickness),
 			GetColor(0, 255, 255),
 			FALSE
 		);
@@ -325,7 +262,7 @@ BlockMap::CollisionType CharacterPhysics::UpdateMoveAndCollision(
 			static_cast<int>(playerLeft),
 			static_cast<int>(nextTop),
 			static_cast<int>(playerLeft + width),
-			static_cast<int>(nextTop + CollisionThickness),
+			static_cast<int>(nextTop + PlayerBlockCollision::CollisionThickness),
 			GetColor(255, 0, 255),
 			FALSE
 		);
@@ -337,7 +274,7 @@ BlockMap::CollisionType CharacterPhysics::UpdateMoveAndCollision(
 			0,
 			40,
 			GetColor(255, 255, 255),
-			"Grounded: ON"
+			"床にあたっている"
 		);
 	}
 
@@ -347,7 +284,7 @@ BlockMap::CollisionType CharacterPhysics::UpdateMoveAndCollision(
 			0,
 			60,
 			GetColor(255, 255, 0),
-			"Wall: ON"
+			"壁に当たっている"
 		);
 	}
 

@@ -22,7 +22,7 @@ namespace ScreenSize
 namespace PlayerConstants
 {
 	static const int PlayerCollisionWidth = 32; // プレイヤーの幅
-	static const int PlayerCollisionHeight = 80; // プレイヤーの高さ
+	static const int PlayerCollisionHeight = 100; // プレイヤーの高さ
 
 	static const int PlayerAttackWidth = 60; // プレイヤーの攻撃範囲の幅
 	static const int PlayerAttackHeight = 40; // プレイヤーの攻撃範囲の高さ
@@ -85,22 +85,29 @@ namespace SetDamage
 }
 
 // ブロックマップの当たり判定の色の指定
-namespace
+namespace BlockCollisionColor
 {
-	// 赤 Block
-	constexpr int BLOCK_R = 255;
-	constexpr int BLOCK_G = 0;
-	constexpr int BLOCK_B = 0;
-
+	// 赤  Block 当たり判定
+	static constexpr int BLOCK_R = 255;
+	static constexpr int BLOCK_G = 0;
+	static constexpr int BLOCK_B = 0;
 
 	// 青 Death
-	constexpr int DEATH_R = 0;
-	constexpr int DEATH_G = 0;
-	constexpr int DEATH_B = 255;
-
+	static constexpr int DEATH_R = 0;
+	static constexpr int DEATH_G = 0;
+	static constexpr int DEATH_B = 255;
 
 	// 緑 Goal
-	constexpr int GOAL_R = 0;
-	constexpr int GOAL_G = 255;
-	constexpr int GOAL_B = 0;
+	static constexpr int GOAL_R = 0;
+	static constexpr int GOAL_G = 255;
+	static constexpr int GOAL_B = 0;
+}
+
+// プレイヤーがブロックマップとの当たり判定で使用するサイズ
+namespace PlayerBlockCollision
+{
+	// 壁判定時に床や天井のブロックを誤検出しないように上下を縮める
+	static constexpr float WallCheckMargin = 20.0f;
+	// 壁や床、天井の判定を行う際の厚み
+	static constexpr float CollisionThickness = 1.0f;
 }

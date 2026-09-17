@@ -12,6 +12,9 @@ public:
 	// 接触した地形の情報を設定する
 	void SetCollisionType(BlockMap::CollisionType collisionType);
 
+	// 各ブロックと当たった時の処理を書く
+	
+
 	// 設定された地形に応じて死亡処理を実行する
 	void ExecuteDeath(int& inHp);
 

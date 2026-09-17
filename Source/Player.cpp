@@ -151,7 +151,6 @@ void Player::PlayerMove(BlockMap& blockMap)
 		!isAttacking)
 	{
 		isAttacking = true;
-
 		attackTimer = attackDuration;
 	}
 
@@ -436,13 +435,6 @@ void Player::DebugDraw()
 			DrawBox(eneLeft, eneTop, eneRight, eneBottom, GetColor(0, 255, 0), FALSE);
 		}
 	}
-
-	//// ブロックマップとの当たり判定デバッグ表示
-	//int left = static_cast<int>(mvPosition.x - mfPlayerWidth / 2.0f);
-	//int top = static_cast<int>(mvPosition.y - mfPlayerHeight / 2.0f);
-	//int right = static_cast<int>(mvPosition.x + mfPlayerWidth / 2.0f);
-	//int bottom = static_cast<int>(mvPosition.y + mfPlayerHeight / 2.0f);
-	//DrawBox(left, top, right, bottom, GetColor(255, 0, 0), FALSE);
 }
 
 

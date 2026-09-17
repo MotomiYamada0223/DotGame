@@ -58,12 +58,6 @@ void GameScene::Update()
 	// チュートリアルテキストの更新
 	mTutorialText.Update(1.0f / 60.0f);
 	
-	// Enterでリザルト画面へ
-	if (InputManager::CheckDownKey(KEY_INPUT_RETURN))
-	{
-		Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_WINRESULT);
-	}	
-
 	mpPlayer->PlayerMove(mBlockMap);
 
 	// クラスのUpdate呼び出し
