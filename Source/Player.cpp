@@ -13,7 +13,7 @@
 
 Player::Player(VECTOR initPos) 
 	// TextureAnimationは使わず一枚絵としてロード
-	: Object2D("Resource/Image/player_move.png", initPos) 
+	: Object2D(CharacterGraphPath::PlayerAnimation, initPos)
 {
 	SetTag(Object2D::Player2D);
 	mbIsJumping = false;

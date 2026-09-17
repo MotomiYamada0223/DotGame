@@ -37,7 +37,7 @@ namespace PlayerConstants
 // キャラクター画像関係
 namespace CharacterGraphPath
 {
-	static const std::string PlayerAnimation = "Resource/Image/player.png"; // プレイヤー画像
+	static const std::string PlayerAnimation = "Resource/Image/player_move.png"; // プレイヤー画像
 	static const std::string LivesIcon = "Resource/Image/playerIcon"; // 残機で表示する画像
 
 	// 敵画像
