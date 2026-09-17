@@ -2,6 +2,7 @@
 #include "Master.h"
 #include "GameConstants.h"
 #include <iostream>
+#include "GameConstants.h"
 
 
 BlockMap::BlockMap()
@@ -11,6 +12,9 @@ BlockMap::BlockMap()
     , mnCollisionHeight(0)
     , mCollisionData()
     , mbIsLoaded(false)
+    , mBackgroundWidth(0)
+    , mBackgroundHeight(0)
+    , mScrollX(0)
 {
 }
 
@@ -37,6 +41,15 @@ bool BlockMap::Load(
         std::cout<< "ブロックの背景画像が開けませんでした。" << std::endl;
         return false;
     }
+
+    // 背景画像のサイズを取得
+    GetGraphSize(
+        mnBackgroundGraph,
+        &mBackgroundWidth,
+        &mBackgroundHeight
+    );
+
+
 
     // 当たり判定画像を読み込む
     mnCollisionSoftImage =
@@ -156,14 +169,54 @@ void BlockMap::Draw()
 {
     if (!mbIsLoaded) { return; }
 
-    // 背景画像を描画 今は00だが将来的には変更したい
-    // 今のメイン画像の前後だけ描画など (画像は4毎ぐらい用意する予定)
-    DrawGraph(
-        0,
-        0,
+    // 背景画像を描画
+    DrawRectGraph(
+        0,                  // 画面上のX
+        0,                  // 画面上のY
+        mScrollX,           // 元画像から切り出すX
+        0,                  // 元画像から切り出すY
+        ScreenSize::ScrrenWidth,       // 切り出す幅
+        ScreenSize::ScrrenHeight,      // 切り出す高さ
         mnBackgroundGraph,
         TRUE
     );
+}
+
+// マップのスクロール処理
+void BlockMap::Move()
+{
+    if (!mbIsLoaded) { return; }
+
+    if (CheckHitKey(KEY_INPUT_1))
+    {
+        mScrollX -= 5;
+    }
+
+    if (CheckHitKey(KEY_INPUT_2))
+    {
+        mScrollX += 5;
+    }
+
+    // 左端
+    if (mScrollX < 0)
+    {
+        mScrollX = 0;
+    }
+
+    // 右端
+    int maxScrollX =
+        mBackgroundWidth -
+        ScreenSize::ScrrenWidth;
+
+    if (maxScrollX < 0)
+    {
+        maxScrollX = 0;
+    }
+
+    if (mScrollX > maxScrollX)
+    {
+        mScrollX = maxScrollX;
+    }
 }
 
 
@@ -183,4 +236,16 @@ BlockMap::CollisionType BlockMap::GetCollisionType(
     return mCollisionData[
         GetCollisionIndex(x, y)
     ];
+}
+
+
+// スクリーン座標をマップ座標に変換
+int BlockMap::ScreenToMapX(int screenX) const
+{
+    return screenX + mScrollX;
+}
+
+int BlockMap::ScreenToMapY(int screenY) const
+{
+    return screenY;
 }

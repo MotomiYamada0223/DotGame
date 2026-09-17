@@ -68,8 +68,8 @@ namespace BackGroundGraphPath
 namespace BlockMapGraphPath
 {
 	//static const char* Background = "Resource/Map/background.png";
-	static const char* Background = "Resource/Map/collision.png";
-	static const char* Collision = "Resource/Map/collision.png";
+	static const char* Background = "Resource/Map/test.png";
+	static const char* Collision = "Resource/Map/test.png";
 }
 
 // 読み込むCSVパス
