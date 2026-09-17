@@ -260,7 +260,16 @@ void Player::Update()
 		}
 	}
 
-	if (!isDead && (CheckHitKey(KEY_INPUT_K) == 1 || mStatus.hp <= 0))
+	// デバッグ用: Kキーで5ダメージ
+	static bool kKeyWasDown = false;
+	bool kKeyIsDown = (CheckHitKey(KEY_INPUT_K) == 1);
+	if (kKeyIsDown && !kKeyWasDown && !isDead)
+	{
+		TakeDamage(5);
+	}
+	kKeyWasDown = kKeyIsDown;
+
+	if (mHp <= 0 && !isDead)
 	{
 		isDead = true;
 		mDeadState = 1; // SCATTER
@@ -400,6 +409,28 @@ void Player::Draw()
 		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 	}
 
+	// UI（ハート）の描画（右上）
+	if (mMaxHp > 0)
+	{
+		int hpLevel = (mHp * 6) / mMaxHp;
+		if (mHp > 0 && hpLevel == 0) hpLevel = 1;
+
+		int drawX = ScreenSize::ScrrenWidth - 150; // 右上に配置
+		int drawY = 20;
+		for (int i = 0; i < 3; i++)
+		{
+			int heartState = hpLevel - (i * 2);
+			int graph = mHeartEmptyGraph;
+			if (heartState >= 2) graph = mHeartFullGraph;
+			else if (heartState == 1) graph = mHeartHalfGraph;
+
+			if (graph != -1)
+			{
+				DrawGraph(drawX + i * 40, drawY, graph, TRUE);
+			}
+		}
+	}
+
 
 }
 
@@ -519,7 +550,7 @@ void Player::DeadProcess()
 			deadTimer = 0;
 			isFacingRight = true;
 			mFragments.clear();
-			GetStatus().hp = PlayerConstants::MaxHp; // 最大HPで復活
+			mHp = mMaxHp; // 復活時にHPをリセット
 		}
 	}
 	}
