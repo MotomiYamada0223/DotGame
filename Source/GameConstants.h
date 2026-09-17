@@ -38,7 +38,9 @@ namespace PlayerConstants
 namespace CharacterGraphPath
 {
 	static const std::string PlayerAnimation = "Resource/Image/player.png"; // プレイヤー画像
+	static const std::string LivesIcon = "Resource/Image/playerIcon"; // 残機で表示する画像
 
+	// 敵画像
 	static const std::string Skeleton = "Resource/Image/SampleSkeleton.png"; // スケルトン画像
 
 	// 天使の画像
@@ -50,6 +52,8 @@ namespace CharacterGraphPath
 	static const std::string HeartFull = "Resource/Image/heart_full.png";
 	static const std::string HeartHalf = "Resource/Image/heart_half.png";
 	static const std::string HeartEmpty = "Resource/Image/heart_empty.png";
+
+
 }
 
 // 背景画像の読み込み
