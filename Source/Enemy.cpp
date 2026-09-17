@@ -22,7 +22,6 @@ Enemy::~Enemy()
 void Enemy::Update()
 {
 	// 画面左から出現するので、右へ移動させる
-
 	mvPosition.x += moveSpeed;
 
 	if (isDamaged)
@@ -33,8 +32,6 @@ void Enemy::Update()
 			isDamaged = false;
 		}
 	}
-
-
 
 
 	// アニメーション更新
