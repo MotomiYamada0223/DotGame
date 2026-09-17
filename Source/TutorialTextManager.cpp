@@ -126,7 +126,7 @@ void TutorialTextManager::Draw()
 		50,
 		50,
 		color,
-		Master::mpGameManager->GetFontManager()->GetDotFont(),
+		Master::mpGameManager->GetFontManager()->GetDotFont_100(),
 		"%s",
 		displayText.c_str()
 	);
