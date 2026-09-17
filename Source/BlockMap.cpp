@@ -180,21 +180,59 @@ void BlockMap::Draw()
         mnBackgroundGraph,
         TRUE
     );
+
+
+    // 9/18 1:34大谷からのメッセージ
+   // プレイヤー座標からスクロール量を引く処理をやめ
+   // プレイヤー位置とマップ位置を分離したことで、スクロール判定が正しくなった。
+
+    // デバッグ表示
+    // 左スクロール開始位置
+    DrawLine(
+        MapScrollConstants::ScrollStartLeftX,
+        0,
+        MapScrollConstants::ScrollStartLeftX,
+        ScreenSize::ScrrenHeight,
+        GetColor(0, 255, 0)
+    );
+
+    // 右スクロール開始位置
+    DrawLine(
+        MapScrollConstants::ScrollStartRightX,
+        0,
+        MapScrollConstants::ScrollStartRightX,
+        ScreenSize::ScrrenHeight,
+        GetColor(255, 0, 0)
+    );
+
+    DrawFormatString(
+        20,
+        200,
+        GetColor(255, 255, 255),
+        "ScrollX: %d",
+        mScrollX
+    );
+
+
 }
 
 // マップのスクロール処理
-void BlockMap::Move()
+void BlockMap::Move(int playerX)
 {
-    if (!mbIsLoaded) { return; }
-
-    if (CheckHitKey(KEY_INPUT_1))
+    if (!mbIsLoaded)
     {
-        mScrollX -= 5;
+        return;
     }
 
-    if (CheckHitKey(KEY_INPUT_2))
+    // プレイヤーが右側の線を超えたらスクロール
+    if (playerX > MapScrollConstants::ScrollStartRightX)
     {
-        mScrollX += 5;
+        mScrollX += MapScrollConstants::ScrollSpeed;
+    }
+    // プレイヤーが左側の線を下回ったら逆方向へスクロール
+    else if (playerX < MapScrollConstants::ScrollStartLeftX)
+    {
+        mScrollX -= MapScrollConstants::ScrollSpeed;
     }
 
     // 左端
@@ -205,8 +243,7 @@ void BlockMap::Move()
 
     // 右端
     int maxScrollX =
-        mBackgroundWidth -
-        ScreenSize::ScrrenWidth;
+        mBackgroundWidth - ScreenSize::ScrrenWidth;
 
     if (maxScrollX < 0)
     {
@@ -217,7 +254,10 @@ void BlockMap::Move()
     {
         mScrollX = maxScrollX;
     }
+
+
 }
+
 
 
 // CollisionType取得

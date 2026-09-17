@@ -136,3 +136,14 @@ namespace TextTimer
 {
 	static constexpr float MaxFallDeathTimer = 180.0f;
 }
+
+// マップスクロール関係
+namespace MapScrollConstants
+{
+	// プレイヤーがこの画面X座標より右に行ったらスクロール
+	static constexpr int ScrollStartRightX = 1200;
+	// プレイヤーがこの画面X座標より左に行ったらスクロール
+	static constexpr int ScrollStartLeftX = 500;
+	// 1フレームあたりのスクロール速度
+	static constexpr int ScrollSpeed = 3;
+}

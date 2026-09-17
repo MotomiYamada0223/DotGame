@@ -1,4 +1,4 @@
-#include "CharacterPhysics.h"
+﻿#include "CharacterPhysics.h"
 #include "GameConstants.h"
 
 // クラスの初期化を行う

@@ -27,7 +27,7 @@ public:
         const std::string& collisionPath
     );
 
-    void Move();
+    void Move(int playerX);
     void Draw();
 
 	// 場所の種類を取得する
@@ -36,6 +36,7 @@ public:
     // 位置のゲッターセッター
     int ScreenToMapX(int screenX) const;
     int ScreenToMapY(int screenY) const;
+    int GetScrollX() const { return mScrollX; }
 
 private:
     int mnBackgroundGraph;   // 背景画像
