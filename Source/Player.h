@@ -23,19 +23,6 @@ public:
 	void PlayerMove(BlockMap& blockMap);
 
 
-	// 簡易的なステータス構造体
-	struct PlayerStatus
-	{
-		int hp;
-	};
-	PlayerStatus mStatus;
-
-	PlayerStatus& GetStatus() { return mStatus; }
-	const PlayerStatus& GetStatus() const { return mStatus; }
-
-	void SetStatus(PlayerStatus st) { mStatus = st; }
-
-
 
 private:
 	CharacterPhysics mCharacterPhysics; // 物理計算用のインスタンス

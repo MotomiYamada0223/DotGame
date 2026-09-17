@@ -219,7 +219,7 @@ bool BlockMap::CheckCollisionBlock(
 						->GetObjectManager()->GetObject2DByTag(Object2D::Player2D);
 
 					Player* player = dynamic_cast<Player*>(getPlayer);
-					Damage::ApplyDamage(player->GetStatus().hp, SetDamage::SpikeBlock);
+					if(player) { player->TakeDamage(SetDamage::SpikeBlock); }
 				}
 
 				// 格納先が指定されている場合のみブロック座標を代入する
