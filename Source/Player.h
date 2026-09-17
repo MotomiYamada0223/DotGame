@@ -6,7 +6,9 @@
 #include "CharacterPhysics.h" // ジャンプとかの当たり判定をしてくれる処理
 #include "BlockAction.h"
 
-class Player : public Object2D
+#include "UnitStatus.h"
+
+class Player : public Object2D, public UnitStatus
 {
 public:
 	Player(VECTOR initPos);
@@ -14,6 +16,7 @@ public:
 
 	virtual void Update() override;
 	virtual void Draw() override;
+	virtual void UpdateStatusByProgress(GameProgress progress) override;
 
 	void DebugDraw(); // デバッグ用の描画関数
 
@@ -89,5 +92,10 @@ private:
 	float alpha;
 
 	void DeadProcess();
+
+	int mHeartFullGraph;
+	int mHeartHalfGraph;
+	int mHeartEmptyGraph;
 };
+
 
