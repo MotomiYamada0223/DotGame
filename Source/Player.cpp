@@ -1,4 +1,4 @@
-#include "Player.h"
+﻿#include "Player.h"
 #include "DxLib.h"
 #include "Texture.h"
 #include "Master.h"
@@ -29,21 +29,12 @@ Player::Player(VECTOR initPos)
 	mSpawnPos = initPos;
 	mDeadState = 0;
 	mpBlockMap = nullptr;
-<<<<<<< HEAD
-	mStatus.hp = PlayerConstants::MaxHp;
 	mMaxHp = PlayerConstants::MaxHp;
 	mHp = PlayerConstants::MaxHp;
-=======
-
-	mHeartFullGraph = LoadGraph(CharacterGraphPath::HeartFull.c_str());
-	mHeartHalfGraph = LoadGraph(CharacterGraphPath::HeartHalf.c_str());
-	mHeartEmptyGraph = LoadGraph(CharacterGraphPath::HeartEmpty.c_str());
-
-	UpdateStatusByProgress(GameProgress::Tutorial1);
->>>>>>> Yamada
-
 	mCurrentFrame = 0;
 	mFrameTimer = 0;
+
+	UpdateStatusByProgress(GameProgress::Tutorial1);
 
 	// 画像の読み込み
 	mHeartFullGraph = LoadGraph(CharacterGraphPath::HeartFull.c_str());
@@ -150,7 +141,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 		);
 	// 特殊地形の処理
 	mBlockAction.SetCollisionType(collisionType);
-	mBlockAction.ExecuteDeath(mStatus.hp);
+	mBlockAction.ExecuteDeath(mHp);
 	mBlockAction.ExecuteGoal();
 
 
@@ -576,9 +567,5 @@ void Player::DeadProcess()
 			mHp = mMaxHp; // 復活時にHPをリセット
 		}
 	}
-<<<<<<< HEAD
 }
-=======
-	}
 
->>>>>>> Yamada
