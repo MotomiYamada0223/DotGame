@@ -30,6 +30,8 @@ Player::Player(VECTOR initPos)
 	mDeadState = 0;
 	mpBlockMap = nullptr;
 	mStatus.hp = PlayerConstants::MaxHp;
+	mMaxHp = PlayerConstants::MaxHp;
+	mHp = PlayerConstants::MaxHp;
 
 	mCurrentFrame = 0;
 	mFrameTimer = 0;
