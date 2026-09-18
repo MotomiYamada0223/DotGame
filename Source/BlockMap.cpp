@@ -15,6 +15,7 @@ BlockMap::BlockMap()
     , mBackgroundHeight(0)
     , mScrollX(0)
 {
+    //mSpawnPos = initPos;
 }
 
 BlockMap::~BlockMap()
@@ -214,6 +215,7 @@ void BlockMap::Draw()
 void BlockMap::Move(int playerScreenX, float moveDirection)
 {
     if (!mbIsLoaded) { return; }
+
    
 
     // ‰E‘¤‚Ìü‚ğ’´‚¦‚Ä‚¢‚ÄA‰E‚ÉˆÚ“®’†

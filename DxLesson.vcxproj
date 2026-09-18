@@ -164,7 +164,6 @@
     <ClCompile Include="Source\TutorialTextManager.cpp" />
     <ClCompile Include="Source\UnitStatus.cpp" />
     <ClCompile Include="Source\WinResultScene.cpp" />
-    <ClCompile Include="Test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\BlockAction.h" />

@@ -126,9 +126,6 @@
     <ClCompile Include="Source\Player.cpp">
       <Filter>ヘッダー ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Test.cpp">
-      <Filter>ソース ファイル\Manager系\Map関係</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Collision.h">

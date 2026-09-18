@@ -16,9 +16,7 @@ public:
 	GameManager();
 	~GameManager();
 
-	void Initialize();
 	void Update();
-	void Finalize();
 
 	SceneManager* GetSceneManager();
 	SoundManager* GetSoundManager();

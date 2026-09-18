@@ -42,6 +42,7 @@ public:
 private:
     int mnBackgroundGraph;   // 背景画像
     int mnCollisionSoftImage; // 当たり判定画像 (描画はしない)
+    VECTOR mSpawnPos; // 復活の時に戻す位置
 
     // 当たり判定画像のサイズ
     int mnCollisionWidth;

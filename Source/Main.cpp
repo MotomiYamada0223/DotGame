@@ -14,7 +14,7 @@
 */
 
 // Master クラスの静的メンバ変数定義
-GameManager* Master::mpGameManager = new GameManager();
+GameManager* Master::mpGameManager = nullptr;
 
 
 /**
@@ -40,7 +40,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	}
 
 	// Manager関係の初期化
-	Master::mpGameManager->Initialize();
+	//Master::mpGameManager->Initialize();
+	Master::mpGameManager = new GameManager();
 
 	// 描画先画面を裏画面に設定する
 	SetDrawScreen(DX_SCREEN_BACK);
@@ -89,7 +90,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	// 終了処理
 	// Manager関係の終了処理
-	Master::mpGameManager->Finalize();
 	delete Master::mpGameManager;
 
 
