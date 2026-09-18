@@ -43,7 +43,7 @@ void GameScene::Initialize()
 	if (mpPlayer != nullptr)
 	{
 		// 画面左側 (X=0 付近)、Yはプレイヤーと同じ高さで生成
-		new Enemy(VGet(-50.0f, mpPlayer->GetPosition().y, 0.0f));
+		new Enemy(VGet(1000.0f, mpPlayer->GetPosition().y - 100, 0.0f));
 	}
 
 	spawnTimer = 0;
