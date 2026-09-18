@@ -664,18 +664,34 @@ void Player::DrawFallDeath()
 		DrawBox(0, 0, ScreenSize::ScrrenWidth, ScreenSize::ScrrenHeight, ColorOption::Black, TRUE);
 		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 
-		DrawFormatStringToHandle(TextPosition::FallDeathX, TextPosition::FallDeathY, ColorOption::White,
-			Master::mpGameManager->GetFontManager()->GetDotFont_200(),
-			"GAME OVER Enterで復活");
+		Master::mpGameManager->GetFontManager()->DrawDotString(
+			TextPosition::FallDeathX,
+			TextPosition::FallDeathY,
+			200,
+			ColorOption::White,
+			"GAME OVER Enterで復活"
+		);
 
 		// Enterが押されたら表示
 		if (InputManager::CheckDownKey(KEY_INPUT_RETURN) || mbIsPressEnter)
 		{
-			DrawFormatStringToHandle(TextPosition::LivesX, TextPosition::LivesY, ColorOption::White,
-				Master::mpGameManager->GetFontManager()->GetDotFont_100(),
-				"残機 × 5");
+			Master::mpGameManager->GetFontManager()->DrawDotString(
+				TextPosition::LivesX,
+				TextPosition::LivesY,
+				100,
+				ColorOption::White,
+				"残機 × 5"
+			);
 
-			DrawFormatString(TextPosition::LivesX, TextPosition::LivesY + 100, ColorOption::White, "%2f", mfReviveTimer / 60);
+			Master::mpGameManager->GetFontManager()->DrawDotString(
+				TextPosition::LivesX,
+				TextPosition::LivesY + 100,
+				60,
+				ColorOption::White,
+				"%.2f",
+				mfReviveTimer / 60.0f
+			);
+
 			mbIsPressEnter = true;
 		}
 	}

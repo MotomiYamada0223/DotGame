@@ -121,15 +121,15 @@ void TutorialTextManager::Draw()
 	// substr...文字列の中から指定した一部分を切り出して新しい文字列を作る
 	std::string displayText =
 		step.text.substr(0, mnDisplayByteCount);
+
 	// 切り出したテキストを指定位置に描画する
-	DrawFormatStringToHandle(
+	Master::mpGameManager->GetFontManager()->DrawDotString(
 		50,
 		50,
+		100,
 		color,
-		Master::mpGameManager->GetFontManager()->GetDotFont_100(),
 		"%s",
-		displayText.c_str()
-	);
+		displayText.c_str());
 
 
 	// デバッグ用の表示

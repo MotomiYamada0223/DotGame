@@ -6,6 +6,7 @@
 
 Enemy::Enemy(VECTOR initPos)
 	: Object2D(CharacterGraphPath::Dragon, initPos)
+	, mpBlockMap(nullptr)
 {
 	SetTag(Object2D::Enemy2D);
 

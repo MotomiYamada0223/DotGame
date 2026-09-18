@@ -41,9 +41,13 @@ void TitleScene::Update()
 
 void TitleScene::Draw()
 {
-
-	DrawFormatStringToHandle(500, 500, GetColor(255, 255, 255),
-		Master::mpGameManager->GetFontManager()->GetDotFont_100(), "タイトル　才能の原石\n\n Enterでゲームシーン");
+		Master::mpGameManager->GetFontManager()->DrawDotString(
+			500,
+			500,
+			100,
+			GetColor(255, 255, 255),
+			"タイトル　才能の原石\n\n Enterでゲームシーン"
+		);
 
 	// 基底クラスの更新処理を呼びだす
 	Scene::Draw();

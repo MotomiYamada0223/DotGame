@@ -1,29 +1,39 @@
 #pragma once
-#include "DxLib.h"
 
-// フォルダにあるフォントをまとめるためのクラス
-// Master依存にして、どのクラスからでも呼び出せるように
+#include <map>
 
 class FontManager
 {
 public:
-	FontManager();
-	~FontManager();
+    FontManager();
+    ~FontManager();
 
-	// Mainで初期化と終了処理を呼び出すため
-	void Initialize();
-	void Finalize();
+    void Initialize();
+    void Finalize();
 
-	//読み込んだフォントを呼び出すゲッター 大きさ 100
-	int GetDotFont_100() const { return mnDotFont100; }
-
-	// 大きさ200
-	int GetDotFont_200() const { return mnDotFont200; }
+    // ドットフォントで文字を描画する
+    // size : フォントサイズ
+    // color : 文字色
+    // format : printfと同じように指定
+    void DrawDotString(
+        int x,
+        int y,
+        int size,
+        unsigned int color,
+        const char* format,
+        ...
+    );
 
 private:
+    // 指定されたサイズのドットフォントハンドルを取得する
+    // まだ存在しなければ新しく作成する
+    int GetDotFontHandle(int size);
 
-	// フォントを代入するメンバ変数
-	int mnDotFont100; // ドットのフォント
+    // ドットフォントを作成する
+    int CreateDotFont(int size);
 
-	int mnDotFont200; // 大きめのフォント
+private:
+    // key   : フォントサイズ
+    // value : フォントハンドル
+    std::map<int, int> mDotFontHandles;
 };

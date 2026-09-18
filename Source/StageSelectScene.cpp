@@ -180,8 +180,13 @@ void StageSelectScene::Draw()
 	DrawFormatString(10, 40, GetColor(150, 255, 150), "Status: %s", isMoving ? "Moving..." : "Waiting");
 	SetFontSize(oldFontSize);
 
-	DrawFormatStringToHandle(50, 60, GetColor(255, 255, 255),
-		Master::mpGameManager->GetFontManager()->GetDotFont_100(), "Stage Select Scene\nPress Enter to Game");
+		Master::mpGameManager->GetFontManager()->DrawDotString(
+			50,
+			60,
+			100,
+			GetColor(255, 255, 255),
+			"Stage Select Scene\nPress Enter to Game"
+		);
 
 	Scene::Draw();
 }
