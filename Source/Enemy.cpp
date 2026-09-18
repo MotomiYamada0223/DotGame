@@ -22,10 +22,6 @@ Enemy::~Enemy()
 
 void Enemy::Update()
 {
-	// 画面左から出現するので、右へ移動させる
-	// 敵の基本的な移動処理としてワールド座標を右方向へ進めるため
-	mvPosition.x += moveSpeed;
-
 	if (isDamaged)
 	{
 		damageTimer--;
