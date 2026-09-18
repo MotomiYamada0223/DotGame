@@ -43,7 +43,7 @@ void GameScene::Initialize()
 	if (mpPlayer != nullptr)
 	{
 		// 画面左側 (X=0 付近)、Yはプレイヤーと同じ高さで生成
-		//new Enemy(VGet(-50.0f, mpPlayer->GetPosition().y, 0.0f));
+		new Enemy(VGet(-50.0f, mpPlayer->GetPosition().y, 0.0f));
 	}
 
 	spawnTimer = 0;
@@ -57,7 +57,25 @@ void GameScene::Update()
 	mTutorialText.Update(1.0f / 60.0f);
 	
 	mpPlayer->PlayerMove(mBlockMap);
-	 //mBlockMap.Move(static_cast<int>(mpPlayer->GetPosition().x), mpPlayer->GetMoveDirection()); // マップのスクロール処理
+
+
+
+	// シーン上に存在するすべての敵をオブジェクトマネージャー経由で一括取得
+	/// 個別のコードを追加することなく共通の移動処理を実行するため
+	ObjectManager* objManager = GetObjectManager();
+	if (objManager != nullptr)
+	{
+		std::vector<Object2D*> enemyList = objManager->GetObject2DListByTag(Object2D::Enemy2D);
+		for (Object2D* obj : enemyList)
+		{
+			Enemy* enemy = dynamic_cast<Enemy*>(obj);
+			if (enemy != nullptr)
+			{
+				enemy->EnemyMove(mBlockMap); // 敵に追加した移動関数を呼び出す
+			}
+		}
+	}
+
 
 	// クラスのUpdate呼び出し
 	Scene::Update();
