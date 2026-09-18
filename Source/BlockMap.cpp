@@ -216,7 +216,10 @@ void BlockMap::Move(int playerScreenX, float moveDirection)
 {
     if (!mbIsLoaded) { return; }
 
-   
+    if (CheckHitKey(KEY_INPUT_1))
+    {
+        mScrollX = 0;
+   }
 
     // ‰E‘¤‚Ìü‚ð’´‚¦‚Ä‚¢‚ÄA‰E‚ÉˆÚ“®’†
     if (playerScreenX > MapScrollConstants::ScrollStartRightX &&
