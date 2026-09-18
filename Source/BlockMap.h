@@ -38,6 +38,8 @@ public:
     int ScreenToMapX(int screenX) const;
     int ScreenToMapY(int screenY) const;
     int GetScrollX() const { return mScrollX; }
+    // スクロール位置をリセットする
+    void ResetScroll() { mScrollX = 0; }
 
 private:
     int mnBackgroundGraph;   // 背景画像

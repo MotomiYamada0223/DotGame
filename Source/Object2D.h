@@ -5,6 +5,7 @@
 // クラスの前方宣言
 class Texture;
 class TextureAnimation;
+class BlockMap;
 
 // 
 // 2D オブジェクトの基底クラス
@@ -92,9 +93,14 @@ protected:
 private:
 	bool mbDeleteFlag;    // 削除フラグ(これがtrue になっていると自動的に削除される（ように作る）)
 	Tag mnTag;            // オブジェクトを見分ける用のタグ
-
 	// プレイヤー用
 	VECTOR mvDirection;
+
+
+protected:
+	// ワールド座標をスクリーン座標に変換する共通関数
+	// プレイヤーや敵など、複数のオブジェクトで共通のスクロール計算を行てコードの重複を防ぐため
+	float ConvertToScreenX(float worldX, const BlockMap* blockMap) const;
 };
 
 /*

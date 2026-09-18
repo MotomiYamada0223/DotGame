@@ -11,8 +11,8 @@
 #include "BlockAction.h"
 #include "InputManager.h"
 
-Player::Player(VECTOR initPos) 
-	// TextureAnimationは使わず一枚絵としてロード
+Player::Player(VECTOR initPos)
+// TextureAnimationは使わず一枚絵としてロード
 	: Object2D(CharacterGraphPath::PlayerAnimation, initPos)
 {
 	SetTag(Object2D::Player2D);
@@ -64,6 +64,7 @@ Player::~Player()
 
 void Player::UpdateStatusByProgress(GameProgress progress)
 {
+	// なぜそうしたか・何のための処理か（意図）: 進行度ごとのパラメータ設定を明確に分離し、マジックナンバーの散逸を防ぐため
 	switch (progress)
 	{
 	case GameProgress::Tutorial1:
@@ -105,6 +106,7 @@ void Player::UpdateStatusByProgress(GameProgress progress)
 	}
 }
 
+
 void Player::PlayerMove(BlockMap& blockMap)
 {
 	mpBlockMap = &blockMap;
@@ -143,9 +145,8 @@ void Player::PlayerMove(BlockMap& blockMap)
 			mfMoveDirection
 		);
 
-	// 当たり判定後にスクロール
-	// プレイヤー位置に変換して渡している
-	const int playerScreenX = static_cast<int>(mvPosition.x - blockMap.GetScrollX());
+	// 当たり判定後にスクロール量を反映させるため、親クラスの共通関数を使用してプレイヤーのスクリーン座標を算出する
+	const int playerScreenX = static_cast<int>(ConvertToScreenX(mvPosition.x, mpBlockMap));
 
 	blockMap.Move(
 		playerScreenX,
@@ -366,7 +367,8 @@ void Player::Draw()
 		{
 			if (mpTexture != nullptr)
 			{
-				int playerLeft = static_cast<int>(frag.pos.x- (mpBlockMap? mpBlockMap->GetScrollX(): 0));
+				// 死亡時の破片描画でも親クラスの共通関数を使用してスクロールを正確に反映させる
+				int playerLeft = static_cast<int>(ConvertToScreenX(frag.pos.x, mpBlockMap));
 
 				DrawRectGraph(
 					playerLeft,
@@ -381,8 +383,8 @@ void Player::Draw()
 			}
 			else
 			{
-				int playerLeftX = static_cast<int>(frag.pos.x - (mpBlockMap ? mpBlockMap->GetScrollX() : 0));
-				int playerRigthtX = static_cast<int>(frag.pos.x + frag.width - (mpBlockMap ? mpBlockMap->GetScrollX() : 0));
+				int playerLeftX = static_cast<int>(ConvertToScreenX(frag.pos.x, mpBlockMap));
+				int playerRigthtX = static_cast<int>(ConvertToScreenX(frag.pos.x + frag.width, mpBlockMap));
 
 				// テクスチャが無い場合の保険
 				DrawBox(
@@ -403,11 +405,11 @@ void Player::Draw()
 		const int srcX = mCurrentFrame * FRAME_WIDTH;
 
 		// 向きに応じた基本の Y 座標を設定する
-		int srcY = 256; // 右向きの画像座標 768  idle用:618
+		int srcY = 256; // 右向きの画像座標
 
 		if (!isFacingRight)
 		{
-			srcY = 384; // 左向きの画像座標 512  idle用:962
+			srcY = 384; // 左向きの画像座標
 		}
 
 		// ダメージ中なら赤く変色させる
@@ -417,10 +419,9 @@ void Player::Draw()
 		}
 
 		// 指定の場所だけ描画する
-		// ワールド座標からスクリーン座標
-		const int scrollX =mpBlockMap? mpBlockMap->GetScrollX(): 0;
-		const int screenX =static_cast<int>(mvPosition.x- FRAME_WIDTH / 2- scrollX);
-		const int screenY =static_cast<int>(mvPosition.y- FRAME_HEIGHT / 2);
+		// 親クラスの共通関数を使用してワールド座標からスクリーン座標へ変換する
+		const int screenX = static_cast<int>(ConvertToScreenX(mvPosition.x, mpBlockMap) - FRAME_WIDTH / 2);
+		const int screenY = static_cast<int>(mvPosition.y - FRAME_HEIGHT / 2);
 
 		// プレイヤーを描画
 		DrawRectGraph(
@@ -453,20 +454,14 @@ void Player::Draw()
 		int rectLeft, rectTop, rectRight, rectBottom;
 		int halfSizeX = FRAME_WIDTH / 2;
 
-		// ワールド座標からスクリーン座標
-		int scrollX =
-			mpBlockMap
-			? mpBlockMap->GetScrollX()
-			: 0;
-
 		if (isFacingRight)
 		{
-			rectLeft = static_cast<int>(mvPosition.x + halfSizeX - scrollX);
+			rectLeft = static_cast<int>(ConvertToScreenX(mvPosition.x + halfSizeX, mpBlockMap));
 			rectRight = rectLeft + attackWidth;
 		}
 		else
 		{
-			rectLeft = static_cast<int>(mvPosition.x - halfSizeX - attackWidth - scrollX);
+			rectLeft = static_cast<int>(ConvertToScreenX(mvPosition.x - halfSizeX - attackWidth, mpBlockMap));
 			rectRight = rectLeft + attackWidth;
 		}
 
@@ -499,22 +494,17 @@ void Player::Draw()
 			}
 		}
 	}
-
-
 }
-
-
 
 // デバッグ表示をしている関数
 // GameSceneで呼び出している
 void Player::DebugDraw()
 {
-	// プレイヤーの当たり判定デバッグ表示
-	const int scrollX =mpBlockMap ? mpBlockMap->GetScrollX() : 0;
-	const int playerLeft = static_cast<int>(mvPosition.x- mfPlayerWidth / 2.0f- scrollX);
-	const int playerTop =static_cast<int>(mvPosition.y- mfPlayerHeight / 2.0f);
-	const int playerRight =static_cast<int>(mvPosition.x+ mfPlayerWidth / 2.0f- scrollX);
-	const int playerBottom =static_cast<int>(mvPosition.y+ mfPlayerHeight / 2.0f);
+	// プレイヤーの当たり判定デバッグ表示（共通関数を使ってスクロール位置を正しく反映）
+	const int playerLeft = static_cast<int>(ConvertToScreenX(mvPosition.x - mfPlayerWidth / 2.0f, mpBlockMap));
+	const int playerTop = static_cast<int>(mvPosition.y - mfPlayerHeight / 2.0f);
+	const int playerRight = static_cast<int>(ConvertToScreenX(mvPosition.x + mfPlayerWidth / 2.0f, mpBlockMap));
+	const int playerBottom = static_cast<int>(mvPosition.y + mfPlayerHeight / 2.0f);
 	DrawBox(
 		playerLeft,
 		playerTop,
@@ -548,9 +538,10 @@ void Player::DebugDraw()
 
 			float divide = 2.0f;
 
-			int eneLeft = static_cast<int>(enemy->GetPosition().x - enemyWidth / divide);
+			// 敵のデバッグ描画でも共通関数を利用してスクロールを正確に合わせる
+			int eneLeft = static_cast<int>(ConvertToScreenX(enemy->GetPosition().x - enemyWidth / divide, mpBlockMap));
 			int eneTop = static_cast<int>(enemy->GetPosition().y - enemyHeight / divide);
-			int eneRight = static_cast<int>(enemy->GetPosition().x + enemyWidth / divide);
+			int eneRight = static_cast<int>(ConvertToScreenX(enemy->GetPosition().x + enemyWidth / divide, mpBlockMap));
 			int eneBottom = static_cast<int>(enemy->GetPosition().y + enemyHeight / divide);
 
 			DrawBox(
@@ -563,7 +554,6 @@ void Player::DebugDraw()
 			);
 		}
 	}
-
 }
 
 
@@ -686,7 +676,7 @@ void Player::DrawFallDeath()
 				"残機 × 5");
 
 			DrawFormatString(TextPosition::LivesX, TextPosition::LivesY + 100, ColorOption::White, "%2f", mfReviveTimer / 60);
-				mbIsPressEnter = true;
+			mbIsPressEnter = true;
 		}
 	}
 }
@@ -713,5 +703,10 @@ void Player::Revive()
 	isDead = false;
 	mvPosition = mSpawnPos;
 	mHp = mMaxHp; // 復活時にHPをリセット
-}
 
+	// マップのスクロール位置を一番左に戻す
+	if (mpBlockMap != nullptr)
+	{
+		mpBlockMap->ResetScroll();
+	}
+}
