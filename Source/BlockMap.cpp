@@ -2,7 +2,6 @@
 #include "Master.h"
 #include "GameConstants.h"
 #include <iostream>
-#include "GameConstants.h"
 
 
 BlockMap::BlockMap()
@@ -48,7 +47,6 @@ bool BlockMap::Load(
         &mBackgroundWidth,
         &mBackgroundHeight
     );
-
 
 
     // 当たり判定画像を読み込む
@@ -182,10 +180,6 @@ void BlockMap::Draw()
     );
 
 
-    // 9/18 1:34大谷からのメッセージ
-   // プレイヤー座標からスクロール量を引く処理をやめ
-   // プレイヤー位置とマップ位置を分離したことで、スクロール判定が正しくなった。
-
     // デバッグ表示
     // 左スクロール開始位置
     DrawLine(
@@ -217,22 +211,20 @@ void BlockMap::Draw()
 }
 
 // マップのスクロール処理
-void BlockMap::Move(int playerX, float moveDirection)
+void BlockMap::Move(int playerScreenX, float moveDirection)
 {
-    if (!mbIsLoaded)
-    {
-        return;
-    }
+    if (!mbIsLoaded) { return; }
+   
 
     // 右側の線を超えていて、右に移動中
-    if (playerX > MapScrollConstants::ScrollStartRightX &&
+    if (playerScreenX > MapScrollConstants::ScrollStartRightX &&
         moveDirection > 0.0f)
     {
         mScrollX += MapScrollConstants::ScrollSpeed;
     }
 
     // 左側の線を超えていて、左に移動中
-    else if (playerX < MapScrollConstants::ScrollStartLeftX &&
+    else if (playerScreenX < MapScrollConstants::ScrollStartLeftX &&
         moveDirection < 0.0f)
     {
         mScrollX -= MapScrollConstants::ScrollSpeed;
@@ -248,20 +240,14 @@ void BlockMap::Move(int playerX, float moveDirection)
     int maxScrollX =
         mBackgroundWidth - ScreenSize::ScrrenWidth;
 
-    if (maxScrollX < 0)
-    {
-        maxScrollX = 0;
-    }
-
-    if (mScrollX > maxScrollX)
-    {
-        mScrollX = maxScrollX;
-    }
+    if (maxScrollX < 0) { maxScrollX = 0; }
+    if (mScrollX > maxScrollX) { mScrollX = maxScrollX; }
+    
 }
 
 
 
-// CollisionType取得
+// CollisionType取得 xとyはワールド座標
 BlockMap::CollisionType BlockMap::GetCollisionType(
     int x,
     int y) const

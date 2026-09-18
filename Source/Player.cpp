@@ -144,11 +144,13 @@ void Player::PlayerMove(BlockMap& blockMap)
 		);
 
 	// 当たり判定後にスクロール
+	// プレイヤー位置に変換して渡している
+	const int playerScreenX = static_cast<int>(mvPosition.x - blockMap.GetScrollX());
+
 	blockMap.Move(
-		static_cast<int>(mvPosition.x),
+		playerScreenX,
 		mfMoveDirection
 	);
-
 
 	// 特殊地形の処理
 	mBlockAction.SetCollisionType(collisionType);
@@ -218,7 +220,6 @@ void Player::Update()
 	if (isDead)
 	{
 		DeadProcess();
-
 		Object2D::Update();
 		return;
 	}
@@ -358,7 +359,6 @@ void Player::Draw()
 {
 	DrawFallDeath();
 
-
 	if (isDead)
 	{
 		SetDrawBright(255, 255, 255); // 色をリセット
@@ -366,8 +366,10 @@ void Player::Draw()
 		{
 			if (mpTexture != nullptr)
 			{
+				int playerLeft = static_cast<int>(frag.pos.x- (mpBlockMap? mpBlockMap->GetScrollX(): 0));
+
 				DrawRectGraph(
-					static_cast<int>(frag.pos.x),
+					playerLeft,
 					static_cast<int>(frag.pos.y),
 					frag.srcX + (mCurrentFrame * FRAME_WIDTH),
 					frag.srcY,
@@ -379,11 +381,14 @@ void Player::Draw()
 			}
 			else
 			{
+				int playerLeftX = static_cast<int>(frag.pos.x - (mpBlockMap ? mpBlockMap->GetScrollX() : 0));
+				int playerRigthtX = static_cast<int>(frag.pos.x + frag.width - (mpBlockMap ? mpBlockMap->GetScrollX() : 0));
+
 				// テクスチャが無い場合の保険
 				DrawBox(
-					static_cast<int>(frag.pos.x),
+					playerLeftX,
 					static_cast<int>(frag.pos.y),
-					static_cast<int>(frag.pos.x + frag.width),
+					playerRigthtX,
 					static_cast<int>(frag.pos.y + frag.height),
 					GetColor(255, 0, 0),
 					TRUE
@@ -412,9 +417,15 @@ void Player::Draw()
 		}
 
 		// 指定の場所だけ描画する
+		// ワールド座標からスクリーン座標
+		const int scrollX =mpBlockMap? mpBlockMap->GetScrollX(): 0;
+		const int screenX =static_cast<int>(mvPosition.x- FRAME_WIDTH / 2- scrollX);
+		const int screenY =static_cast<int>(mvPosition.y- FRAME_HEIGHT / 2);
+
+		// プレイヤーを描画
 		DrawRectGraph(
-			static_cast<int>(mvPosition.x - FRAME_WIDTH / 2),
-			static_cast<int>(mvPosition.y - FRAME_HEIGHT / 2),
+			screenX,
+			screenY,
 			srcX,
 			srcY,
 			FRAME_WIDTH,
@@ -442,14 +453,20 @@ void Player::Draw()
 		int rectLeft, rectTop, rectRight, rectBottom;
 		int halfSizeX = FRAME_WIDTH / 2;
 
+		// ワールド座標からスクリーン座標
+		int scrollX =
+			mpBlockMap
+			? mpBlockMap->GetScrollX()
+			: 0;
+
 		if (isFacingRight)
 		{
-			rectLeft = static_cast<int>(mvPosition.x) + halfSizeX;
+			rectLeft = static_cast<int>(mvPosition.x + halfSizeX - scrollX);
 			rectRight = rectLeft + attackWidth;
 		}
 		else
 		{
-			rectLeft = static_cast<int>(mvPosition.x) - halfSizeX - attackWidth;
+			rectLeft = static_cast<int>(mvPosition.x - halfSizeX - attackWidth - scrollX);
 			rectRight = rectLeft + attackWidth;
 		}
 
@@ -492,19 +509,28 @@ void Player::Draw()
 // GameSceneで呼び出している
 void Player::DebugDraw()
 {
-	// レイヤー自身の当たり判定のデバッグ表示（青色）
-	int playerLeft = static_cast<int>(mvPosition.x - mfPlayerWidth / 2.0f);
-	int playerTop = static_cast<int>(mvPosition.y - mfPlayerHeight / 2.0f);
-	int playerRight = static_cast<int>(mvPosition.x + mfPlayerWidth / 2.0f);
-	int playerBottom = static_cast<int>(mvPosition.y + mfPlayerHeight / 2.0f);
-	DrawBox(playerLeft, playerTop, playerRight, playerBottom, GetColor(0, 0, 255), FALSE);
+	// プレイヤーの当たり判定デバッグ表示
+	const int scrollX =mpBlockMap ? mpBlockMap->GetScrollX() : 0;
+	const int playerLeft = static_cast<int>(mvPosition.x- mfPlayerWidth / 2.0f- scrollX);
+	const int playerTop =static_cast<int>(mvPosition.y- mfPlayerHeight / 2.0f);
+	const int playerRight =static_cast<int>(mvPosition.x+ mfPlayerWidth / 2.0f- scrollX);
+	const int playerBottom =static_cast<int>(mvPosition.y+ mfPlayerHeight / 2.0f);
+	DrawBox(
+		playerLeft,
+		playerTop,
+		playerRight,
+		playerBottom,
+		GetColor(0, 0, 255),
+		FALSE
+	);
+
 
 	// HPのデバッグ
-	DrawFormatString((int)mvPosition.x, (int)mvPosition.y + 10, ColorOption::White, "HP: %d", mHp);
+	DrawFormatString(playerLeft, (int)mvPosition.y + 10, ColorOption::White, "HP: %d", mHp);
+	DrawFormatString(0, 600, ColorOption::White, "X:%2f, Y:%2f\n L:%d", mvPosition.x, mvPosition.y, playerLeft);
 
-
-		// シーン上のすべての敵の当たり判定をデバッグ表示（黄緑色）
-		ObjectManager* objManager = Master::mpGameManager->GetSceneManager()->GetCurrentScene()->GetObjectManager();
+	// シーン上のすべての敵の当たり判定をデバッグ表示（黄緑色）
+	ObjectManager* objManager = Master::mpGameManager->GetSceneManager()->GetCurrentScene()->GetObjectManager();
 
 	if (objManager != nullptr)
 	{

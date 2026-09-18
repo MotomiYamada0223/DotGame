@@ -27,7 +27,7 @@ public:
         const std::string& collisionPath
     );
 
-    void Move(int playerX, float moveDirection);
+    void Move(int playerScreenX, float moveDirection);
     void Draw();
 
 	// êŠ‚Ìí—Ş‚ğæ“¾‚·‚é

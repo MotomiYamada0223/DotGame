@@ -32,9 +32,9 @@ BlockMap::CollisionType CharacterPhysics::CheckCollision(
 	{
 		for (int pixelX = left; pixelX <= right; ++pixelX)
 		{
-			// スクリーン座標をマップ座標に変換してから当たり判定を行う
-			const int mapX = blockMap.ScreenToMapX(pixelX);
-			const int mapY = blockMap.ScreenToMapY(pixelY);
+			// スクロール判定をしない
+			const int mapX = pixelX;
+			const int mapY = pixelY;
 			const BlockMap::CollisionType type =
 				blockMap.GetCollisionType(mapX, mapY);
 
@@ -46,6 +46,7 @@ BlockMap::CollisionType CharacterPhysics::CheckCollision(
 	}
 	return BlockMap::CollisionType::None;
 }
+
 
 // キャラクターの移動、重力処理、マップタイルとの当たり判定を解決する
 BlockMap::CollisionType CharacterPhysics::UpdateMoveAndCollision(
@@ -71,12 +72,7 @@ BlockMap::CollisionType CharacterPhysics::UpdateMoveAndCollision(
 	{
 		const float halfWidth = width * HalfMultiply;
 		const float halfHeight = height * HalfMultiply;
-
-		const float wallCheckX =
-			(moveDirection < 0.0f)
-			? (nextX - halfWidth)
-			: (nextX + halfWidth);
-
+		const float wallCheckX = (moveDirection < 0.0f) ? (nextX - halfWidth) : (nextX + halfWidth);
 		const float wallCheckTop = position.y - halfHeight + PlayerBlockCollision::WallCheckMargin;
 		const float wallCheckHeight = height - PlayerBlockCollision::WallCheckMargin * 2.0f;
 
@@ -226,7 +222,7 @@ BlockMap::CollisionType CharacterPhysics::UpdateMoveAndCollision(
 		position.y = nextY;
 	}
 
-	// デバッグ描画
+	// デバッグ描画 ワールド座標
 	if (moveDirection != 0.0f)
 	{
 		const float debugX =
@@ -234,14 +230,15 @@ BlockMap::CollisionType CharacterPhysics::UpdateMoveAndCollision(
 			? (nextX - halfWidth)
 			: (nextX + halfWidth);
 
-		const float debugTop =
-			position.y - halfHeight;
+		const float debugTop =position.y - halfHeight;
+		const int screenDebugX = static_cast<int>(debugX - blockMap.GetScrollX());
+		const int screenDebugY = static_cast<int>(debugTop);
 
 		DrawBox(
-			static_cast<int>(debugX),
-			static_cast<int>(debugTop),
-			static_cast<int>(debugX + PlayerBlockCollision::CollisionThickness),
-			static_cast<int>(debugTop + height),
+			screenDebugX,
+			screenDebugY,
+			screenDebugX + static_cast<int>(PlayerBlockCollision::CollisionThickness),
+			screenDebugY + static_cast<int>(height),
 			GetColor(255, 255, 0),
 			FALSE
 		);
@@ -249,11 +246,14 @@ BlockMap::CollisionType CharacterPhysics::UpdateMoveAndCollision(
 
 	if (velocityY > 0.0f)
 	{
+		const int screenLeft = static_cast<int>(playerLeft - blockMap.GetScrollX());
+		const int screenBottom = static_cast<int>(nextBottom);
+
 		DrawBox(
-			static_cast<int>(playerLeft),
-			static_cast<int>(nextBottom),
-			static_cast<int>(playerLeft + width),
-			static_cast<int>(nextBottom + PlayerBlockCollision::CollisionThickness),
+			screenLeft,
+			screenBottom,
+			screenLeft + static_cast<int>(width),
+			screenBottom + static_cast<int>(PlayerBlockCollision::CollisionThickness),
 			GetColor(0, 255, 255),
 			FALSE
 		);
@@ -261,11 +261,14 @@ BlockMap::CollisionType CharacterPhysics::UpdateMoveAndCollision(
 
 	if (velocityY < 0.0f)
 	{
+		const int screenLeft = static_cast<int>(playerLeft - blockMap.GetScrollX());
+		const int screenBottom = static_cast<int>(nextTop);
+
 		DrawBox(
-			static_cast<int>(playerLeft),
-			static_cast<int>(nextTop),
-			static_cast<int>(playerLeft + width),
-			static_cast<int>(nextTop + PlayerBlockCollision::CollisionThickness),
+			screenLeft,
+			screenBottom,
+			screenLeft + static_cast<int>(width),
+			screenBottom + static_cast<int>(PlayerBlockCollision::CollisionThickness),
 			GetColor(255, 0, 255),
 			FALSE
 		);

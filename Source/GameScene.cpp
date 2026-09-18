@@ -40,12 +40,10 @@ void GameScene::Initialize()
 	new Saint(VGet(Utility::SCREEN_WIDTH / 2.0f, 150.0f, 0.0f));
 
 	// 敵の生成
-
 	if (mpPlayer != nullptr)
 	{
 		// 画面左側 (X=0 付近)、Yはプレイヤーと同じ高さで生成
-
-		new Enemy(VGet(-50.0f, mpPlayer->GetPosition().y, 0.0f));
+		//new Enemy(VGet(-50.0f, mpPlayer->GetPosition().y, 0.0f));
 	}
 
 	spawnTimer = 0;
@@ -59,7 +57,7 @@ void GameScene::Update()
 	mTutorialText.Update(1.0f / 60.0f);
 	
 	mpPlayer->PlayerMove(mBlockMap);
-	// mBlockMap.Move(static_cast<int>(mpPlayer->GetPosition().x), mpPlayer->GetMoveDirection()); // マップのスクロール処理
+	 //mBlockMap.Move(static_cast<int>(mpPlayer->GetPosition().x), mpPlayer->GetMoveDirection()); // マップのスクロール処理
 
 	// クラスのUpdate呼び出し
 	Scene::Update();
