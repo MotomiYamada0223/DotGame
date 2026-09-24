@@ -42,6 +42,9 @@ public:
     // スクロール位置をリセットする
     void ResetScroll() { mScrollX = 0; }
 
+    // 背景画像の元の長さを取得する プレイヤーの移動領域のため
+    int GetCurrentWidth() const { return mBackgroundWidth; }
+
 private:
     int mnBackgroundGraph;   // 背景画像
     int mnCollisionSoftImage; // 当たり判定画像 (描画はしない)

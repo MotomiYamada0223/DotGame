@@ -122,6 +122,13 @@ void Player::PlayerMove(BlockMap& blockMap)
 		mbFallDeath = true;
 	}
 
+	// 移動領域の設定
+	if (mvPosition.x <= static_cast<float>(PlayerConstants::PlayerCollisionWidth))
+	{ mvPosition.x = static_cast<float>(PlayerConstants::PlayerCollisionWidth); }
+	if (mvPosition.x >= static_cast<float>(mpBlockMap->GetCurrentWidth() - PlayerConstants::PlayerCollisionWidth))
+	{ mvPosition.x = static_cast<float>(mpBlockMap->GetCurrentWidth() - PlayerConstants::PlayerCollisionWidth); }
+
+
 	// 左右移動
 	mfMoveDirection = 0.0f;
 	if (CheckHitKey(KEY_INPUT_A) == 1)

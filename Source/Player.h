@@ -45,11 +45,11 @@ private:
 	bool mbIsJumping;
 	float velocityY;
 	const float gravity = 0.3f; // 元0.5
-	const float jumpPower = -15.0f; // 元12
+	const float jumpPower = -16.0f; // 元12
 	bool isGrounded; // 地面に接地しているかどうか
 
 	// 移動関連
-	const float moveSpeed = 4.0f;
+	const float moveSpeed = 5.0f;
 	bool isFacingRight; 
 
 	// 攻撃関連

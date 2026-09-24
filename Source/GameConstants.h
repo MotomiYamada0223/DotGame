@@ -140,9 +140,9 @@ namespace TextTimer
 namespace MapScrollConstants
 {
 	// プレイヤーがこの画面X座標より右に行ったらスクロール
-	static constexpr int ScrollStartRightX = ScreenSize::CenterX;
+	static constexpr int ScrollStartRightX = 1000;
 	// プレイヤーがこの画面X座標より左に行ったらスクロール
-	static constexpr int ScrollStartLeftX = 500;
+	static constexpr int ScrollStartLeftX = 600;
 	// 1フレームあたりのスクロール速度
-	static constexpr int ScrollSpeed = 4;
+	static constexpr int ScrollSpeed = 5;
 }

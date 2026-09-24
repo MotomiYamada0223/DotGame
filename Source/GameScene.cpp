@@ -34,7 +34,7 @@ void GameScene::Initialize()
 
 
 	// プレイヤーの生成
-	mpPlayer = new Player(VGet(ScreenSize::CenterX - 600, 600, 0.0f));
+	mpPlayer = new Player(VGet(ScreenSize::CenterX - 6000, 600, 0.0f));
 
 	// Saint（しゃべるキャラクター）を画面上部に配置
 	new Saint(VGet(Utility::SCREEN_WIDTH / 2.0f, 150.0f, 0.0f));
@@ -43,7 +43,7 @@ void GameScene::Initialize()
 	if (mpPlayer != nullptr)
 	{
 		// 画面左側 (X=0 付近)、Yはプレイヤーと同じ高さで生成
-		new Enemy(VGet(1000.0f, mpPlayer->GetPosition().y - 100, 0.0f));
+		new Enemy(VGet(1000.0f, mpPlayer->GetPosition().y - 500, 0.0f));
 	}
 
 	spawnTimer = 0;
