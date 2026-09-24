@@ -248,7 +248,6 @@ void BlockMap::Move(int playerScreenX, float moveDirection)
 
     if (maxScrollX < 0) { maxScrollX = 0; }
     if (mScrollX > maxScrollX) { mScrollX = maxScrollX; }
-    
 }
 
 

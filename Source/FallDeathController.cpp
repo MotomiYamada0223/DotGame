@@ -36,7 +36,7 @@ void FallDeathController::Update(VECTOR playerPos)
 	}
 }
 
-void FallDeathController::Draw()
+void FallDeathController::Draw(int live)
 {
 	if (!mActive) { return; }
 
@@ -71,7 +71,8 @@ void FallDeathController::Draw()
 			TextPosition::LivesY,
 			100,
 			ColorOption::White,
-			"Žc‹@ ~ 5"
+			"Žc‹@ ~ %d",
+			live
 		);
 
 		Master::mpGameManager->GetFontManager()->DrawDotString(

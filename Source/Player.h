@@ -30,7 +30,7 @@ public:
 
 public:
 	bool GetIsDead() const { return isDead; } // 死亡判定かの処理
-
+	int GetLive() const { return mlives; } // 残機の表示
 
 private:
 	CharacterPhysics mCharacterPhysics; // 物理計算用のインスタンス

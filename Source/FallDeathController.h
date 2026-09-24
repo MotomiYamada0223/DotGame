@@ -12,7 +12,7 @@ class FallDeathController
 public:
 
     void Update(VECTOR playerPos);
-    void Draw();
+    void Draw(int live);
 
     bool IsActive() const { return mActive; };
     bool IsReviveReady() const { return mIsPressEnter; }

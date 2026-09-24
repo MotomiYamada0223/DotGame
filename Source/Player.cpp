@@ -29,8 +29,6 @@ Player::Player(VECTOR initPos)
 	mSpawnPos = initPos;
 	mDeadState = 0;
 	mpBlockMap = nullptr;
-	mMaxHp = PlayerConstants::MaxHp;
-	mHp = PlayerConstants::MaxHp;
 	mCurrentFrame = 0;
 	mFrameTimer = 0;
 	mfMoveDirection = 0.0f;
@@ -104,6 +102,9 @@ void Player::UpdateStatusByProgress(GameProgress progress)
 		mIsFireImmune = true;
 		break;
 	}
+
+	// 残機の代入
+	mlives = PlayerConstants::MaxLive;
 }
 
 
@@ -340,6 +341,7 @@ void Player::Update()
 	if (mHp <= 0 && !isDead)
 	{
 		isDead = true;
+		mlives -= 1;
 		mDeadState = 1; // SCATTER
 		deadTimer = 0;
 		mFragments.clear();
@@ -373,7 +375,7 @@ void Player::Update()
 // GameScereで呼び出し
 void Player::DrawFallDeath()
 {
-	mFallDeath.Draw();
+	mFallDeath.Draw(mlives);
 }
 
 void Player::Draw()
@@ -534,7 +536,7 @@ void Player::DebugDraw()
 
 
 	// HPのデバッグ
-	DrawFormatString(playerLeft, (int)mvPosition.y + 10, ColorOption::White, "HP: %d", mHp);
+	DrawFormatString(playerLeft, (int)mvPosition.y + 10, ColorOption::White, "HP: %d\n残機: %d", mHp, mlives);
 	DrawFormatString(0, 600, ColorOption::White, "X:%2f, Y:%2f\n L:%d", mvPosition.x, mvPosition.y, playerLeft);
 
 	// シーン上のすべての敵の当たり判定をデバッグ表示（黄緑色）

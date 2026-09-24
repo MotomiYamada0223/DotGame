@@ -26,6 +26,7 @@ public:
     int mAttack;
     int mDefense;
     int mMagic;
+    int mlives;
 
     // プレイヤー用フラグ
     bool mIsBlinkWallDeathImmune;
@@ -46,4 +47,5 @@ public:
     
     // ダメージ処理
     virtual void TakeDamage(int damage);
+
 };
