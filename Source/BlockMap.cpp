@@ -179,8 +179,11 @@ void BlockMap::Draw()
         mnBackgroundGraph,
         TRUE
     );
+}
 
-
+// デバッグ描画まとめ
+void BlockMap::DebugDraw()
+{
     // デバッグ表示
     // 左スクロール開始位置
     DrawLine(
@@ -207,8 +210,6 @@ void BlockMap::Draw()
         "ScrollX: %d",
         mScrollX
     );
-
-
 }
 
 // マップのスクロール処理

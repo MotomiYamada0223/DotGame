@@ -88,9 +88,15 @@ void GameScene::Draw()
 	// クラスのDraw呼び出し
 	Scene::Draw();
 
-	mpPlayer->DebugDraw(); // デバッグ表示するため
+	// デバッグ系
+	mpPlayer->DebugDraw(); // ブロックデバッグ
+	mBlockMap.DebugDraw(); // ブロックマップデバッグ表示
+	mTutorialText.DebugDraw(); // テキスト
+
+	// オブジェクトの描画
 	mBlockMap.Draw(); // ブロックマップの描画
 	mTutorialText.Draw(); // チュートリアルの描画
+
 	mpPlayer->DrawFallDeath(); // 死亡テキストの表示
 }
 

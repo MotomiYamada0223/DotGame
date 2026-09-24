@@ -29,6 +29,7 @@ public:
 
     void Move(int playerScreenX, float moveDirection);
     void Draw();
+    void DebugDraw();
 
 	// 場所の種類を取得する
 	CollisionType GetCollisionType(int x, int y) const;
@@ -44,7 +45,6 @@ public:
 private:
     int mnBackgroundGraph;   // 背景画像
     int mnCollisionSoftImage; // 当たり判定画像 (描画はしない)
-    VECTOR mSpawnPos; // 復活の時に戻す位置
 
     // 当たり判定画像のサイズ
     int mnCollisionWidth;

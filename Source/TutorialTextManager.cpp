@@ -2,6 +2,18 @@
 #include "Master.h"
 #include "GameConstants.h"
 
+// ステップの取得処理を共通化
+const StepData* TutorialTextManager::GetCurrentStep() const
+{
+	// 現在のステップを探す
+	auto itr = loader.steps.find(mnCurrentID);
+	if (itr == loader.steps.end())
+	{
+		return nullptr;
+	}
+	return &itr->second;
+}
+
 // Shift-JISの文字コードから文字のバイト数を判別する処理
 //1文字が2バイトで構成されているので2バイト文字だと分かったら一気に進めるため
 static int GetCharByteCount(const std::string& text, int index)
@@ -33,12 +45,8 @@ void TutorialTextManager::Initialize(const std::string& csvPath)
 
 void TutorialTextManager::Update(float dt)
 {
-	// 現在のステップを探す
-	auto itr = loader.steps.find(mnCurrentID);
-	if (itr == loader.steps.end()) { return; }
-
-	StepData& step = itr->second;
-
+	// 現在のステップを取得する
+	const StepData* step = GetCurrentStep();
 
 	// 一定速度で文字を進めるため、経過時間を加算する
 	mfCharTimer += dt;
@@ -48,11 +56,11 @@ void TutorialTextManager::Update(float dt)
 		mfCharTimer -= mfCharSpeed;
 
 		// すべての文字が表示しきっていない場合のみ処理する
-		if (mnDisplayByteCount < step.text.size())
+		if (mnDisplayByteCount < step->text.size())
 		{
 			// マルチバイト文字を考慮して次の文字のバイト数を取得する
 			int byteCount = GetCharByteCount(
-				step.text,
+				step->text,
 				mnDisplayByteCount
 			);
 			mnDisplayByteCount += byteCount;
@@ -60,14 +68,14 @@ void TutorialTextManager::Update(float dt)
 	}
 
 	// すべての文字が表示された後、次のステップへ移行するまでの余韻時間を計測する
-	if (mnDisplayByteCount >= step.text.size())
+	if (mnDisplayByteCount >= step->text.size())
 	{
 		mfIdelTimer += dt;
 
 		// 待ち時間が完了したら次のステップへ切り替える
-		if (mfIdelTimer >= step.completeValue)
+		if (mfIdelTimer >= step->completeValue)
 		{
-			ChangeStep(step.nextID);
+			ChangeStep(step->nextID);
 			return;
 		}
 	}
@@ -89,38 +97,22 @@ void TutorialTextManager::ChangeStep(int nextID)
 	mnDisplayByteCount = 0;
 }
 
-// 今の文章を取得する処理
-const std::string& TutorialTextManager::GetCurrentText() const
-{
-	// 現在のステップを探す
-	auto itr = loader.steps.find(mnCurrentID);
-	if (itr == loader.steps.end())
-	{
-		static std::string emptyText;
-		return emptyText;
-	}
-	return itr->second.text;
-}
-
 
 // 画面に表示するテキストの描画
 void TutorialTextManager::Draw()
 {
 	// 現在のステップを探す
-	auto itr = loader.steps.find(mnCurrentID);
-	if (itr == loader.steps.end()) { return; }
-	
 	unsigned int color = ColorOption::White;
-	const StepData& step = itr->second;
-	// 表示時間を越していたら表示しない
-	if (mfIdelTimer >= step.completeValue) { return; }
+	const StepData* step = GetCurrentStep();
 
+	// 表示時間を越していたら表示しない
+	if (mfIdelTimer >= step->completeValue) { return; }
 
 	// 現在表示すべきバイト数分だけ文字列を切り出す処理
 	// 先頭の文字から出すべきバイト数まで。mnDisplayByteCountが伸びていくので出る
 	// substr...文字列の中から指定した一部分を切り出して新しい文字列を作る
 	std::string displayText =
-		step.text.substr(0, mnDisplayByteCount);
+		step->text.substr(0, mnDisplayByteCount);
 
 	// 切り出したテキストを指定位置に描画する
 	Master::mpGameManager->GetFontManager()->DrawDotString(
@@ -130,10 +122,21 @@ void TutorialTextManager::Draw()
 		color,
 		"%s",
 		displayText.c_str());
+}
 
+// デバッグ描画
+void TutorialTextManager::DebugDraw()
+{
+	const StepData* step = GetCurrentStep();
+
+	// 現在表示すべきバイト数分だけ文字列を切り出す処理
+	// 先頭の文字から出すべきバイト数まで。mnDisplayByteCountが伸びていくので出る
+	// substr...文字列の中から指定した一部分を切り出して新しい文字列を作る
+	std::string displayText =
+		step->text.substr(0, mnDisplayByteCount);
 
 	// デバッグ用の表示
-	DrawFormatString(0, 0, color, "ID: %d  表示時間: %f / %f", mnCurrentID, mfIdelTimer, step.completeValue);
+	DrawFormatString(0, 0, ColorOption::White, "ID: %d  表示時間: %f / %f", mnCurrentID, mfIdelTimer, step->completeValue);
 }
 
 

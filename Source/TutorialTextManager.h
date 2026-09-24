@@ -14,11 +14,13 @@ public:
 	void Initialize(const std::string& csvPath);
 	void Update(float dt);
 	void Draw();
+	void DebugDraw();
 
 	// ステップの変更
 	void ChangeStep(int nextID);
-	// 現在の文章を取得
-	const std::string& GetCurrentText() const;
+
+	// 現在のステップを返すもの
+	const StepData* GetCurrentStep() const;
 
 private:
 	StepLoader loader;

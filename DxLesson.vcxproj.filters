@@ -191,12 +191,6 @@
     <ClInclude Include="Source\Saint.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\GameConstants.h">
-      <Filter>ソース ファイル\Manager系</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\GameManager.h">
-      <Filter>ソース ファイル\Manager系</Filter>
-    </ClInclude>
     <ClInclude Include="Source\StepData.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -208,9 +202,6 @@
     </ClInclude>
     <ClInclude Include="Source\CharacterPhysics.h">
       <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\BlockAction.h">
-      <Filter>ソース ファイル\Manager系\Map関係</Filter>
     </ClInclude>
     <ClInclude Include="Source\BossEnemyDragon.h">
       <Filter>ヘッダー ファイル</Filter>
@@ -231,6 +222,15 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\UnitStatus.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\BlockAction.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\GameConstants.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\GameManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

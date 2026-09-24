@@ -67,9 +67,8 @@ namespace BackGroundGraphPath
 // ブロックマップ関係
 namespace BlockMapGraphPath
 {
-	//static const char* Background = "Resource/Map/background.png";
-	static const char* Background = "Resource/Map/test.png";
-	static const char* Collision = "Resource/Map/test.png";
+	static const char* Background = "Resource/Map/backGround.png";
+	static const char* Collision = "Resource/Map/collision.png";
 }
 
 // 読み込むCSVパス
@@ -141,9 +140,9 @@ namespace TextTimer
 namespace MapScrollConstants
 {
 	// プレイヤーがこの画面X座標より右に行ったらスクロール
-	static constexpr int ScrollStartRightX = 1200;
+	static constexpr int ScrollStartRightX = ScreenSize::CenterX;
 	// プレイヤーがこの画面X座標より左に行ったらスクロール
 	static constexpr int ScrollStartLeftX = 500;
 	// 1フレームあたりのスクロール速度
-	static constexpr int ScrollSpeed = 3;
+	static constexpr int ScrollSpeed = 4;
 }
