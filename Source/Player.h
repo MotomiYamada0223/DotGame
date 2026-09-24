@@ -5,6 +5,7 @@
 #include "BlockMap.h"
 #include "CharacterPhysics.h" // ジャンプとかの当たり判定をしてくれる処理
 #include "BlockAction.h"
+#include "FallDeathController.h"
 
 #include "UnitStatus.h"
 
@@ -23,12 +24,17 @@ public:
 	// Mapを受け取って位置を更新する処理
 	void PlayerMove(BlockMap& blockMap);
 
-	void DrawFallDeath(); // 落下したときの文字の処理
-	void UpdateFallDeath(); // 落下した後にキー入力を受け取る処理
 	float GetMoveDirection() const { return mfMoveDirection; }
+	// 死亡テキストの呼び出し
+	void DrawFallDeath();
+
+public:
+	bool GetIsDead() const { return isDead; } // 死亡判定かの処理
+
 
 private:
 	CharacterPhysics mCharacterPhysics; // 物理計算用のインスタンス
+	FallDeathController mFallDeath; // 落下処理
 	float mfMoveDirection;
 
 	// プレイヤーの当たり判定サイズ
@@ -90,6 +96,4 @@ private:
 private: // 復活処理関係
 	void Revive();
 	bool mbFallDeath = false; // 死亡判定
-	bool mbIsPressEnter = false; // Enterが押されたか
-	float mfReviveTimer = 0.0f; // 復活タイマー
 };

@@ -33,11 +33,11 @@ Player::Player(VECTOR initPos)
 	mHp = PlayerConstants::MaxHp;
 	mCurrentFrame = 0;
 	mFrameTimer = 0;
-	mfReviveTimer = TextTimer::MaxFallDeathTimer;
 	mfMoveDirection = 0.0f;
 
 
 	UpdateStatusByProgress(GameProgress::Tutorial1);
+	mFallDeath.Reset();
 
 	// 画像の読み込み
 	mHeartFullGraph = LoadGraph(CharacterGraphPath::HeartFull.c_str());
@@ -114,6 +114,12 @@ void Player::PlayerMove(BlockMap& blockMap)
 	if (isDead)
 	{
 		return;
+	}
+
+	if (!mbFallDeath && mvPosition.y >= PlayerConstants::PlayerDeathHeight)
+	{
+		mHp = 0;
+		mbFallDeath = true;
 	}
 
 	// 左右移動
@@ -215,7 +221,9 @@ void Player::Update()
 {
 	if (mbFallDeath)
 	{
-		UpdateFallDeath();
+		mFallDeath.Update(mvPosition);
+		// タイマーが0かつエンターが押されていたらの判定の可否をとる
+		if (mFallDeath.IsReviveFinished()) { Revive(); }
 	}
 
 	if (isDead)
@@ -355,11 +363,14 @@ void Player::Update()
 	Object2D::Update();
 }
 
+// GameScereで呼び出し
+void Player::DrawFallDeath()
+{
+	mFallDeath.Draw();
+}
 
 void Player::Draw()
 {
-	DrawFallDeath();
-
 	if (isDead)
 	{
 		SetDrawBright(255, 255, 255); // 色をリセット
@@ -647,76 +658,11 @@ void Player::DeadProcess()
 	}
 }
 
-// プレイヤーが落下で死亡した時に表示するテキスト
-void Player::DrawFallDeath()
-{
-	// プレイヤーが落下したら死亡する処理
-	if (mvPosition.y >= PlayerConstants::PlayerDeathHeight)
-	{
-		mHp = 0;
-		mbFallDeath = true;
-	}
-
-	// テキストの表示
-	if (mbFallDeath)
-	{
-		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 200);
-		DrawBox(0, 0, ScreenSize::ScrrenWidth, ScreenSize::ScrrenHeight, ColorOption::Black, TRUE);
-		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
-
-		Master::mpGameManager->GetFontManager()->DrawDotString(
-			TextPosition::FallDeathX,
-			TextPosition::FallDeathY,
-			200,
-			ColorOption::White,
-			"GAME OVER Enterで復活"
-		);
-
-		// Enterが押されたら表示
-		if (InputManager::CheckDownKey(KEY_INPUT_RETURN) || mbIsPressEnter)
-		{
-			Master::mpGameManager->GetFontManager()->DrawDotString(
-				TextPosition::LivesX,
-				TextPosition::LivesY,
-				100,
-				ColorOption::White,
-				"残機 × 5"
-			);
-
-			Master::mpGameManager->GetFontManager()->DrawDotString(
-				TextPosition::LivesX,
-				TextPosition::LivesY + 100,
-				60,
-				ColorOption::White,
-				"%.2f",
-				mfReviveTimer / 60.0f
-			);
-
-			mbIsPressEnter = true;
-		}
-	}
-}
-
-// プレイヤーの落下後
-void Player::UpdateFallDeath()
-{
-	if (mbIsPressEnter)
-	{
-		mfReviveTimer -= 1.0f;
-		if (mfReviveTimer <= 0.0f)
-		{
-			Revive();
-			mfReviveTimer = TextTimer::MaxFallDeathTimer;
-			mbIsPressEnter = false;
-			mbFallDeath = false;
-		}
-	}
-}
 
 // 復活した時に位置とHPを戻す処理
 void Player::Revive()
 {
-	isDead = false;
+	mvPosition = mSpawnPos;
 	mvPosition = mSpawnPos;
 	mHp = mMaxHp; // 復活時にHPをリセット
 
@@ -724,5 +670,9 @@ void Player::Revive()
 	if (mpBlockMap != nullptr)
 	{
 		mpBlockMap->ResetScroll();
+		mFallDeath.Reset();
 	}
+
+	isDead = false;
+	mbFallDeath = false;
 }

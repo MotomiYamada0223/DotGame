@@ -54,7 +54,7 @@ void GameScene::Initialize()
 void GameScene::Update()
 {
 	// チュートリアルテキストの更新
-	mTutorialText.Update(1.0f / 60.0f);
+	if (!mpPlayer->GetIsDead()) mTutorialText.Update(1.0f / 60.0f);
 	
 	mpPlayer->PlayerMove(mBlockMap);
 
@@ -89,9 +89,9 @@ void GameScene::Draw()
 	Scene::Draw();
 
 	// デバッグ系
-	//mpPlayer->DebugDraw(); // ブロックデバッグ
-	//mBlockMap.DebugDraw(); // ブロックマップデバッグ表示
-	//mTutorialText.DebugDraw(); // テキスト
+	mpPlayer->DebugDraw(); // ブロックデバッグ
+	mBlockMap.DebugDraw(); // ブロックマップデバッグ表示
+	mTutorialText.DebugDraw(); // テキスト
 
 	// オブジェクトの描画
 	mBlockMap.Draw(); // ブロックマップの描画

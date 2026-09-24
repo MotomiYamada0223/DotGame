@@ -25,6 +25,9 @@
     <Filter Include="ソース ファイル\Manager系\Map関係">
       <UniqueIdentifier>{571b8c62-aa7d-4336-9f42-5e50d9ce1513}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\Controller系">
+      <UniqueIdentifier>{40826dca-7f30-4305-bcc2-bb876c196539}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Collision.cpp">
@@ -125,6 +128,9 @@
     </ClCompile>
     <ClCompile Include="Source\Player.cpp">
       <Filter>ヘッダー ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\FallDeathController.cpp">
+      <Filter>ソース ファイル\Controller系</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -232,6 +238,9 @@
     </ClInclude>
     <ClInclude Include="Source\GameManager.h">
       <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\FallDeathController.h">
+      <Filter>ソース ファイル\Controller系</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
