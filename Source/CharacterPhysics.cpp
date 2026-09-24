@@ -222,7 +222,9 @@ BlockMap::CollisionType CharacterPhysics::UpdateMoveAndCollision(
 		position.y = nextY;
 	}
 
-	// デバッグ描画 ワールド座標
+
+
+	/*// デバッグ描画 ワールド座標
 	if (moveDirection != 0.0f)
 	{
 		const float debugX =
@@ -283,7 +285,6 @@ BlockMap::CollisionType CharacterPhysics::UpdateMoveAndCollision(
 			"床にあたっている"
 		);
 	}
-
 	if (isHittingWall)
 	{
 		DrawFormatString(
@@ -292,10 +293,13 @@ BlockMap::CollisionType CharacterPhysics::UpdateMoveAndCollision(
 			GetColor(255, 255, 0),
 			"壁に当たっている"
 		);
-	}
+	}*/
+
 
 	return detectedSpecialType;
 }
+
+
 
 // 指定した矩形が何らかの地形に接触しているかどうかを判定する
 bool CharacterPhysics::IsBlockCollision(

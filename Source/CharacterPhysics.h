@@ -11,6 +11,7 @@ public:
     CharacterPhysics();
     ~CharacterPhysics();
 
+
     // 1軸ずつ移動と判定を処理して接触した特殊タイルの種類を返す
     BlockMap::CollisionType UpdateMoveAndCollision(
         VECTOR& position,

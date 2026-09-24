@@ -89,9 +89,9 @@ void GameScene::Draw()
 	Scene::Draw();
 
 	// デバッグ系
-	mpPlayer->DebugDraw(); // ブロックデバッグ
-	mBlockMap.DebugDraw(); // ブロックマップデバッグ表示
-	mTutorialText.DebugDraw(); // テキスト
+	//mpPlayer->DebugDraw(); // ブロックデバッグ
+	//mBlockMap.DebugDraw(); // ブロックマップデバッグ表示
+	//mTutorialText.DebugDraw(); // テキスト
 
 	// オブジェクトの描画
 	mBlockMap.Draw(); // ブロックマップの描画
