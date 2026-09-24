@@ -89,7 +89,7 @@ void FontManager::DrawDotString(
     unsigned int color,
     const char* format,
     ...
-)
+    )
 {
     // 指定されたサイズのフォントを取得
     int fontHandle = GetDotFontHandle(size);
