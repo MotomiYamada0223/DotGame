@@ -1,18 +1,18 @@
-﻿#include "Player.h" 
-#include "DxLib.h" 
-#include "Texture.h" 
-#include "Master.h" 
-#include "SceneManager.h" 
-#include "Scene.h" 
-#include "ObjectManager.h" 
-#include "Enemy.h" 
-#include "Collision.h" 
-#include "GameConstants.h" 
-#include "BlockAction.h" 
-#include "InputManager.h" 
+﻿#include "Player.h"   
+#include "DxLib.h"   
+#include "Texture.h"   
+#include "Master.h"   
+#include "SceneManager.h"   
+#include "Scene.h"   
+#include "ObjectManager.h"   
+#include "Enemy.h"   
+#include "Collision.h"   
+#include "GameConstants.h"   
+#include "BlockAction.h"   
+#include "InputManager.h"   
 
 Player::Player(VECTOR initPos)
-// TextureAnimationは使わず一枚絵としてロード 
+// TextureAnimationは使わず一枚絵としてロード   
 	: Object2D(CharacterGraphPath::PlayerAnimation, initPos)
 {
 	SetTag(Object2D::Player2D);
@@ -29,15 +29,13 @@ Player::Player(VECTOR initPos)
 	mSpawnPos = initPos;
 	mDeadState = 0;
 	mpBlockMap = nullptr;
-	mCurrentFrame = 0;
-	mFrameTimer = 0;
 	mfMoveDirection = 0.0f;
 
 
 	UpdateStatusByProgress(GameProgress::Tutorial1);
 	mFallDeath.Reset();
 
-	// 画像の読み込み 
+	// 画像の読み込み   
 	mHeartFullGraph = LoadGraph(CharacterGraphPath::HeartFull.c_str());
 	if (mHeartFullGraph == -1) { printfDx("体力MAXの画像がない。"); }
 	mHeartHalfGraph = LoadGraph(CharacterGraphPath::HeartHalf.c_str());
@@ -46,9 +44,9 @@ Player::Player(VECTOR initPos)
 	if (mHeartEmptyGraph == -1) { printfDx("体力0の画像がない。"); }
 
 
-	// プレイヤー当たり判定サイズ 
-	// Width...幅 
-	// Height...足元の位置 
+	// プレイヤー当たり判定サイズ   
+	// Width...幅   
+	// Height...足元の位置   
 	mfPlayerWidth = PlayerConstants::PlayerCollisionWidth;
 	mfPlayerHeight = PlayerConstants::PlayerCollisionHeight;
 }
@@ -62,7 +60,7 @@ Player::~Player()
 
 void Player::UpdateStatusByProgress(GameProgress progress)
 {
-	// なぜそうしたか・何のための処理か（意図）: 進行度ごとのパラメータ設定を明確に分離し、マジックナンバーの散逸を防ぐため 
+	// なぜそうしたか・何のための処理か（意図）: 進行度ごとのパラメータ設定を明確に分離し、マジックナンバーの散逸を防ぐため   
 	switch (progress)
 	{
 	case GameProgress::Tutorial1:
@@ -103,7 +101,7 @@ void Player::UpdateStatusByProgress(GameProgress progress)
 		break;
 	}
 
-	// 残機の代入 
+	// 残機の代入   
 	mlives = PlayerConstants::MaxLive;
 }
 
@@ -111,7 +109,7 @@ void Player::UpdateStatusByProgress(GameProgress progress)
 void Player::PlayerMove(BlockMap& blockMap)
 {
 	mpBlockMap = &blockMap;
-	// 死亡時は操作を受け付けない 
+	// 死亡時は操作を受け付けない   
 	if (isDead)
 	{
 		return;
@@ -123,7 +121,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 		mbFallDeath = true;
 	}
 
-	// 移動領域の設定 
+	// 移動領域の設定   
 	if (mvPosition.x <= static_cast<float>(PlayerConstants::PlayerCollisionWidth))
 	{
 		mvPosition.x = static_cast<float>(PlayerConstants::PlayerCollisionWidth);
@@ -134,7 +132,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 	}
 
 
-	// 左右移動 
+	// 左右移動   
 	mfMoveDirection = 0.0f;
 	if (CheckHitKey(KEY_INPUT_A) == 1)
 	{
@@ -148,7 +146,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 	}
 
 
-	// キャラクターの物理処理 
+	// キャラクターの物理処理   
 	BlockMap::CollisionType collisionType =
 		mCharacterPhysics.UpdateMoveAndCollision(
 			mvPosition,
@@ -163,7 +161,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 			mfMoveDirection
 		);
 
-	// 当たり判定後にスクロール量を反映させるため、親クラスの共通関数を使用してプレイヤーのスクリーン座標を算出する 
+	// 当たり判定後にスクロール量を反映させるため、親クラスの共通関数を使用してプレイヤーのスクリーン座標を算出する   
 	const int playerScreenX = static_cast<int>(ConvertToScreenX(mvPosition.x, mpBlockMap));
 
 	blockMap.Move(
@@ -171,14 +169,14 @@ void Player::PlayerMove(BlockMap& blockMap)
 		mfMoveDirection
 	);
 
-	// 特殊地形の処理 
+	// 特殊地形の処理   
 	mBlockAction.SetCollisionType(collisionType);
 	mBlockAction.ExecuteDeath(mHp);
 	mBlockAction.ExecuteGoal();
 
 
 
-	// ジャンプ開始 
+	// ジャンプ開始   
 	if (CheckHitKey(KEY_INPUT_SPACE) == 1 &&
 		isGrounded)
 	{
@@ -188,36 +186,64 @@ void Player::PlayerMove(BlockMap& blockMap)
 	}
 
 
-	// 攻撃 F 
+	// 攻撃 F   
 	if (CheckHitKey(KEY_INPUT_F) == 1 &&
 		!isAttacking)
 	{
 		isAttacking = true;
 		attackTimer = attackDuration;
+		mPlayerState.SetAttack();
 	}
 
 
-	// 攻撃エフェクト更新 
+	// 攻撃エフェクト更新   
 	if (isAttacking)
 	{
 		attackTimer--;
 
 		if (attackTimer <= 0)
 		{
-			isAttacking = false;
+			attackTimer = 0;
 		}
 	}
 
 
-	// アニメーション更新 
-	mFrameTimer++;
-
-	if (mFrameTimer >= FRAME_INTERVAL)
+	// アニメーション状態を更新   
+	if (!isAttacking)
 	{
-		mFrameTimer = 0;
+		if (mbIsJumping)
+		{
+			mPlayerState.SetJump();
+		}
+		else if (mfMoveDirection != 0.0f)
+		{
+			mPlayerState.SetWalk();
+		}
+		else
+		{
+			mPlayerState.SetIdle();
+		}
+	}
 
-		mCurrentFrame =
-			(mCurrentFrame + 1) % TOTAL_FRAMES;
+	mPlayerState.Update();
+
+	if (isAttacking && mPlayerState.IsFinished())
+	{
+		isAttacking = false;
+		attackTimer = 0;
+
+		if (mbIsJumping)
+		{
+			mPlayerState.SetJump();
+		}
+		else if (mfMoveDirection != 0.0f)
+		{
+			mPlayerState.SetWalk();
+		}
+		else
+		{
+			mPlayerState.SetIdle();
+		}
 	}
 }
 
@@ -226,7 +252,7 @@ void Player::Update()
 	if (mbFallDeath)
 	{
 		mFallDeath.Update(mvPosition, mlives);
-		// タイマーが0かつエンターが押されていたらの判定の可否をとる 
+		// タイマーが0かつエンターが押されていたらの判定の可否をとる   
 		if (mFallDeath.IsReviveFinished()) { Revive(); }
 	}
 
@@ -237,13 +263,13 @@ void Player::Update()
 		return;
 	}
 
-	// --- 当たり判定処理 --- 
+	// --- 当たり判定処理 ---   
 	isHitDamage = false;
 
 	ObjectManager* objManager = Master::mpGameManager->GetSceneManager()->GetCurrentScene()->GetObjectManager();
 	std::vector<Object2D*> enemyList = objManager->GetObject2DListByTag(Object2D::Enemy2D);
 
-	// プレイヤーの当たり判定 
+	// プレイヤーの当たり判定   
 	VECTOR myPos = VGet(
 		mvPosition.x - mfPlayerWidth / 2.0f,
 		mvPosition.y - mfPlayerHeight / 2.0f,
@@ -265,7 +291,7 @@ void Player::Update()
 		hasAttackRect = true;
 		int attackWidth = PlayerConstants::PlayerAttackWidth;
 		int attackHeight = PlayerConstants::PlayerAttackHeight;
-		int halfSizeX = FRAME_WIDTH / 2;
+		int halfSizeX = PlayerAnimState::FRAME_WIDTH / 2;
 		float atkLeft;
 
 		if (isFacingRight)
@@ -287,7 +313,7 @@ void Player::Update()
 		Enemy* enemy = dynamic_cast<Enemy*>(obj);
 		if (!enemy) continue;
 
-		// 敵の当たり判定 
+		// 敵の当たり判定   
 		float enemyWidth = enemy->GetSizeX() / 6.0f;
 		float enemyHeight = enemy->GetSizeY() / 6.0f;
 		int eneLeft = static_cast<int>(
@@ -308,13 +334,13 @@ void Player::Update()
 			0.0f
 		);
 
-		// 1. プレイヤー自身と敵の衝突判定 (ダメージで赤くする) 
+		// 1. プレイヤー自身と敵の衝突判定 (ダメージで赤くする)   
 		if (Collision::CheckRectToRect(myPos, mySize, enePos, eneSize))
 		{
 			isHitDamage = true;
 		}
 
-		// 2. 攻撃判定と敵の衝突判定 (敵を赤く光らせる) 
+		// 2. 攻撃判定と敵の衝突判定 (敵を赤く光らせる)   
 		if (hasAttackRect)
 		{
 			if (Collision::CheckRectToRect(atkPos, atkSize, enePos, eneSize))
@@ -323,7 +349,7 @@ void Player::Update()
 			}
 		}
 	}
-	// デバッグ用: Kキーで5ダメージ 
+	// デバッグ用: Kキーで5ダメージ   
 	static bool kKeyWasDown = false;
 	bool kKeyIsDown = (CheckHitKey(KEY_INPUT_K) == 1);
 	if (kKeyIsDown && !kKeyWasDown && !isDead)
@@ -337,33 +363,33 @@ void Player::Update()
 	{
 		isDead = true;
 		mlives -= 1;
-		mDeadState = 1; // SCATTER 
+		mDeadState = 1; // SCATTER   
 		deadTimer = 0;
 		mFragments.clear();
 
 		int fragSize = 16;
-		int srcBaseY = IDLE_POS;
+		int srcBaseY = PlayerAnimState::IDLE_POS;
 
 		if (isAttacking)
 		{
-			srcBaseY = ATTACK_POS;
+			srcBaseY = PlayerAnimState::ATTACK_POS;
 		}
 		else if (mbIsJumping)
 		{
-			srcBaseY = JUMP_POS;
+			srcBaseY = PlayerAnimState::JUMP_POS;
 		}
 		else if (mfMoveDirection != 0.0f)
 		{
-			srcBaseY = WALK_POS;
+			srcBaseY = PlayerAnimState::WALK_POS;
 		}
 
-		for (int y = 0; y < FRAME_HEIGHT; y += fragSize)
+		for (int y = 0; y < PlayerAnimState::FRAME_HEIGHT; y += fragSize)
 		{
-			for (int x = 0; x < FRAME_WIDTH; x += fragSize)
+			for (int x = 0; x < PlayerAnimState::FRAME_WIDTH; x += fragSize)
 			{
 				PlayerFragment frag;
-				frag.pos.x = mvPosition.x - (FRAME_WIDTH / 2.0f) + (float)x;
-				frag.pos.y = mvPosition.y - (FRAME_HEIGHT / 2.0f) + (float)y;
+				frag.pos.x = mvPosition.x - (PlayerAnimState::FRAME_WIDTH / 2.0f) + (float)x;
+				frag.pos.y = mvPosition.y - (PlayerAnimState::FRAME_HEIGHT / 2.0f) + (float)y;
 				frag.srcX = x;
 				frag.srcY = srcBaseY + y;
 				frag.width = fragSize;
@@ -380,7 +406,7 @@ void Player::Update()
 	Object2D::Update();
 }
 
-// GameScereで呼び出し 
+// GameScereで呼び出し   
 void Player::DrawFallDeath()
 {
 	mFallDeath.Draw(mlives);
@@ -390,12 +416,12 @@ void Player::Draw()
 {
 	if (isDead)
 	{
-		SetDrawBright(255, 255, 255); // 色をリセット 
+		SetDrawBright(255, 255, 255); // 色をリセット   
 		for (const auto& frag : mFragments)
 		{
 			if (mpTexture != nullptr)
 			{
-				// 死亡時の破片描画でも親クラスの共通関数を使用してスクロールを正確に反映させる 
+				// 死亡時の破片描画でも親クラスの共通関数を使用してスクロールを正確に反映させる   
 				int playerLeft = static_cast<int>(ConvertToScreenX(frag.pos.x, mpBlockMap));
 
 				DrawRectGraph(
@@ -414,7 +440,7 @@ void Player::Draw()
 				int playerLeftX = static_cast<int>(ConvertToScreenX(frag.pos.x, mpBlockMap));
 				int playerRigthtX = static_cast<int>(ConvertToScreenX(frag.pos.x + frag.width, mpBlockMap));
 
-				// テクスチャが無い場合の保険 
+				// テクスチャが無い場合の保険   
 				DrawBox(
 					playerLeftX,
 					static_cast<int>(frag.pos.y),
@@ -430,39 +456,41 @@ void Player::Draw()
 
 	if (mpTexture != nullptr)
 	{
-		const int srcX = mCurrentFrame * FRAME_WIDTH;
+		const int srcX = mPlayerState.GetCurrentFrame() * PlayerAnimState::FRAME_WIDTH;
 
-		// 現在の状態に応じた画像の切り出し位置を設定する 
-		int srcY = IDLE_POS;
+		// 現在の状態に応じた画像の切り出し位置を設定する   
+		int srcY = PlayerAnimState::IDLE_POS;
 
-		if (isAttacking)
+		PlayerAnimState::State animState = mPlayerState.GetState();
+
+		if (animState == PlayerAnimState::State::Attack)
 		{
-			srcY = ATTACK_POS;
+			srcY = PlayerAnimState::ATTACK_POS;
 		}
-		else if (mbIsJumping)
+		else if (animState == PlayerAnimState::State::Jump)
 		{
-			srcY = JUMP_POS;
+			srcY = PlayerAnimState::JUMP_POS;
 		}
-		else if (mfMoveDirection != 0.0f)
+		else if (animState == PlayerAnimState::State::Walk)
 		{
-			srcY = WALK_POS;
+			srcY = PlayerAnimState::WALK_POS;
 		}
 
-		// ダメージ中なら赤く変色させる 
+		// ダメージ中なら赤く変色させる   
 		if (isHitDamage)
 		{
 			SetDrawBright(255, 100, 100);
 		}
 
-		// 指定の場所だけ描画する 
-		// 親クラスの共通関数を使用してワールド座標からスクリーン座標へ変換する 
-		const int screenX = static_cast<int>(ConvertToScreenX(mvPosition.x, mpBlockMap) - FRAME_WIDTH / 2);
-		const int screenY = static_cast<int>(mvPosition.y - FRAME_HEIGHT / 2);
+		// 指定の場所だけ描画する   
+		// 親クラスの共通関数を使用してワールド座標からスクリーン座標へ変換する   
+		const int screenX = static_cast<int>(ConvertToScreenX(mvPosition.x, mpBlockMap) - PlayerAnimState::FRAME_WIDTH / 2);
+		const int screenY = static_cast<int>(mvPosition.y - PlayerAnimState::FRAME_HEIGHT / 2);
 
-		// プレイヤーを描画  
-		//  
-		// 右向き：通常描画  
-		// 左向き：左右反転して描画  
+		// プレイヤーを描画    
+		//    
+		// 右向き：通常描画    
+		// 左向き：左右反転して描画    
 		if (isFacingRight)
 		{
 			DrawRectGraph(
@@ -470,8 +498,8 @@ void Player::Draw()
 				screenY,
 				srcX,
 				srcY,
-				FRAME_WIDTH,
-				FRAME_HEIGHT,
+				PlayerAnimState::FRAME_WIDTH,
+				PlayerAnimState::FRAME_HEIGHT,
 				mpTexture->GetHandle(),
 				true,
 				false
@@ -484,15 +512,15 @@ void Player::Draw()
 				screenY,
 				srcX,
 				srcY,
-				FRAME_WIDTH,
-				FRAME_HEIGHT,
+				PlayerAnimState::FRAME_WIDTH,
+				PlayerAnimState::FRAME_HEIGHT,
 				mpTexture->GetHandle(),
 				true,
 				true
 			);
 		}
 
-		// 色を元に戻す 
+		// 色を元に戻す   
 		if (isHitDamage)
 		{
 			SetDrawBright(255, 255, 255);
@@ -503,13 +531,13 @@ void Player::Draw()
 		Object2D::Draw();
 	}
 
-	// 攻撃エフェクトの描画 
+	// 攻撃エフェクトの描画   
 	if (isAttacking)
 	{
 		int attackWidth = 60;
 		int attackHeight = 40;
 		int rectLeft, rectTop, rectRight, rectBottom;
-		int halfSizeX = FRAME_WIDTH / 2;
+		int halfSizeX = PlayerAnimState::FRAME_WIDTH / 2;
 
 		if (isFacingRight)
 		{
@@ -530,13 +558,13 @@ void Player::Draw()
 		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 	}
 
-	// UI（ハート）の描画（右上） 
+	// UI（ハート）の描画（右上）   
 	if (mMaxHp > 0)
 	{
 		int hpLevel = (mHp * 6) / mMaxHp;
 		if (mHp > 0 && hpLevel == 0) hpLevel = 1;
 
-		int drawX = ScreenSize::ScrrenWidth - 150; // 右上に配置 
+		int drawX = ScreenSize::ScrrenWidth - 150; // 右上に配置   
 		int drawY = 20;
 		for (int i = 0; i < 3; i++)
 		{
@@ -553,11 +581,11 @@ void Player::Draw()
 	}
 }
 
-// デバッグ表示をしている関数 
-// GameSceneで呼び出している 
+// デバッグ表示をしている関数   
+// GameSceneで呼び出している   
 void Player::DebugDraw()
 {
-	// プレイヤーの当たり判定デバッグ表示（共通関数を使ってスクロール位置を正しく反映） 
+	// プレイヤーの当たり判定デバッグ表示（共通関数を使ってスクロール位置を正しく反映）   
 	const int playerLeft = static_cast<int>(ConvertToScreenX(mvPosition.x - mfPlayerWidth / 2.0f, mpBlockMap));
 	const int playerTop = static_cast<int>(mvPosition.y - mfPlayerHeight / 2.0f);
 	const int playerRight = static_cast<int>(ConvertToScreenX(mvPosition.x + mfPlayerWidth / 2.0f, mpBlockMap));
@@ -572,11 +600,11 @@ void Player::DebugDraw()
 	);
 
 
-	// HPのデバッグ 
+	// HPのデバッグ   
 	DrawFormatString(playerLeft, (int)mvPosition.y + 10, ColorOption::White, "HP: %d\n残機: %d", mHp, mlives);
 	DrawFormatString(0, 600, ColorOption::White, "X:%2f, Y:%2f\n L:%d", mvPosition.x, mvPosition.y, playerLeft);
 
-	// シーン上のすべての敵の当たり判定をデバッグ表示（黄緑色） 
+	// シーン上のすべての敵の当たり判定をデバッグ表示（黄緑色）   
 	ObjectManager* objManager = Master::mpGameManager->GetSceneManager()->GetCurrentScene()->GetObjectManager();
 
 	if (objManager != nullptr)
@@ -589,13 +617,13 @@ void Player::DebugDraw()
 			Enemy* enemy = dynamic_cast<Enemy*>(obj);
 			if (!enemy) continue;
 
-			// 実際の当たり判定と同じサイズ 
+			// 実際の当たり判定と同じサイズ   
 			float enemyWidth = enemy->GetSizeX() / 6.0f;
 			float enemyHeight = enemy->GetSizeY() / 6.0f;
 
 			float divide = 2.0f;
 
-			// 敵のデバッグ描画でも共通関数を利用してスクロールを正確に合わせる 
+			// 敵のデバッグ描画でも共通関数を利用してスクロールを正確に合わせる   
 			int eneLeft = static_cast<int>(ConvertToScreenX(enemy->GetPosition().x - enemyWidth / divide, mpBlockMap));
 			int eneTop = static_cast<int>(enemy->GetPosition().y - enemyHeight / divide);
 			int eneRight = static_cast<int>(ConvertToScreenX(enemy->GetPosition().x + enemyWidth / divide, mpBlockMap));
@@ -620,7 +648,7 @@ void Player::DeadProcess()
 
 	deadTimer++;
 
-	if (mDeadState == 1) // 飛び散り 
+	if (mDeadState == 1) // 飛び散り   
 	{
 		for (auto& frag : mFragments)
 		{
@@ -650,13 +678,13 @@ void Player::DeadProcess()
 			{
 				frag.pos.y -= frag.vel.y;
 				frag.vel.y *= -0.4f;
-				frag.vel.x *= 0.9f; // 摩擦 
+				frag.vel.x *= 0.9f; // 摩擦   
 			}
 		}
 
-		if (deadTimer > 150) // 2.5秒経過 
+		if (deadTimer > 150) // 2.5秒経過   
 		{
-			mDeadState = 2; // 戻り 
+			mDeadState = 2; // 戻り   
 			deadTimer = 0;
 			for (auto& frag : mFragments)
 			{
@@ -665,14 +693,14 @@ void Player::DeadProcess()
 			}
 		}
 	}
-	else if (mDeadState == 2) // 戻り 
+	else if (mDeadState == 2) // 戻り   
 	{
 		bool allReturned = true;
 
 		for (auto& frag : mFragments)
 		{
-			float targetX = mSpawnPos.x - (FRAME_WIDTH / 2.0f) + frag.srcX;
-			float targetY = mSpawnPos.y - (FRAME_HEIGHT / 2.0f) + (frag.srcY % FRAME_HEIGHT);
+			float targetX = mSpawnPos.x - (PlayerAnimState::FRAME_WIDTH / 2.0f) + frag.srcX;
+			float targetY = mSpawnPos.y - (PlayerAnimState::FRAME_HEIGHT / 2.0f) + (frag.srcY % PlayerAnimState::FRAME_HEIGHT);
 
 			float dx = targetX - frag.pos.x;
 			float dy = targetY - frag.pos.y;
@@ -691,7 +719,7 @@ void Player::DeadProcess()
 			}
 		}
 
-		// 全て集まったか、タイムアウト（5秒）で強制復活 
+		// 全て集まったか、タイムアウト（5秒）で強制復活   
 		if ((allReturned && deadTimer > 60) || deadTimer > 300)
 		{
 			mDeadState = 0;
@@ -705,14 +733,14 @@ void Player::DeadProcess()
 }
 
 
-// 復活した時に位置とHPを戻す処理 
+// 復活した時に位置とHPを戻す処理   
 void Player::Revive()
 {
 	mvPosition = mSpawnPos;
 	mvPosition = mSpawnPos;
-	mHp = mMaxHp; // 復活時にHPをリセット 
+	mHp = mMaxHp; // 復活時にHPをリセット   
 
-	// マップのスクロール位置を一番左に戻す 
+	// マップのスクロール位置を一番左に戻す   
 	if (mpBlockMap != nullptr)
 	{
 		mpBlockMap->ResetScroll();
