@@ -24,3 +24,13 @@ void UnitStatus::TakeDamage(int damage)
     mHp -= damage;
     if (mHp < 0) mHp = 0;
 }
+
+// 残機がない判定
+bool UnitStatus::IsOutOfLive()
+{
+    if (mlives > 0)
+    {
+        return false;
+    }
+    return true;
+}

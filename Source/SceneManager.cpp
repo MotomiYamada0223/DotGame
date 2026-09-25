@@ -7,6 +7,7 @@
 #include "StageSelectScene.h"
 #include "GameScene.h"
 #include "WinResultScene.h"
+#include "LoseResultScene.h"
 
 
 SceneManager::SceneManager()
@@ -75,7 +76,7 @@ void SceneManager::ChangeSceneIfNeeded()
 	switch (mnSceneType)
 	{
 	case SCENE_TYPE::SCENE_TITLE:
-		mpCurrentScene = new TitleScene(); // タイトルシーンの生成
+		mpCurrentScene = new TitleScene();
 		break;
 
 	case SCENE_TYPE::SCENE_STAGESELECT:
@@ -83,12 +84,15 @@ void SceneManager::ChangeSceneIfNeeded()
 		break;
 
 	case SCENE_TYPE::SCENE_GAME:
-		mpCurrentScene = new GameScene(); // ゲームシーンの作成
+		mpCurrentScene = new GameScene();
 		break;
 
-
 	case SCENE_TYPE::SCENE_WINRESULT:
-		mpCurrentScene = new WinResultScene(); // 勝利シーンの作成
+		mpCurrentScene = new WinResultScene();
+		break;
+
+	case SCENE_TYPE::SCENE_LOSERESULT:
+		mpCurrentScene = new LoseResultScene();
 		break;
 	}
 

@@ -6,10 +6,11 @@
 #include "InputManager.h"
 
 
-void FallDeathController::Update(VECTOR playerPos)
+void FallDeathController::Update(VECTOR playerPos, int playerLive)
 {
-	// プレイヤーが地点を超えたら
-	if (!mActive && playerPos.y >= PlayerConstants::PlayerDeathHeight)
+	// プレイヤーが地点を超えたらかつ残機が１以上なら
+	if (!mActive && playerPos.y >= PlayerConstants::PlayerDeathHeight
+		&& playerLive > 1)
 	{
 		mActive = true;
 		mIsPressEnter = false;

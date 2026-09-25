@@ -48,4 +48,10 @@ public:
     // ダメージ処理
     virtual void TakeDamage(int damage);
 
+    // 残機が0かの判定 いちいち<=と書かなくてすむように作成
+    virtual bool IsOutOfLive();
+
+    // ゲッター関係
+public:
+    int GetHp() const { return mHp; }
 };

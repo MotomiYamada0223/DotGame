@@ -126,11 +126,14 @@
     <ClCompile Include="Source\UnitStatus.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Player.cpp">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="Source\FallDeathController.cpp">
       <Filter>ソース ファイル\Controller系</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\LoseResultScene.cpp">
+      <Filter>ソース ファイル\Scene系</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Player.cpp">
+      <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -241,6 +244,9 @@
     </ClInclude>
     <ClInclude Include="Source\FallDeathController.h">
       <Filter>ソース ファイル\Controller系</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LoseResultScene.h">
+      <Filter>ソース ファイル\Scene系</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

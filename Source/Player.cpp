@@ -229,7 +229,7 @@ void Player::Update()
 {
 	if (mbFallDeath)
 	{
-		mFallDeath.Update(mvPosition);
+		mFallDeath.Update(mvPosition, mlives);
 		// タイマーが0かつエンターが押されていたらの判定の可否をとる
 		if (mFallDeath.IsReviveFinished()) { Revive(); }
 	}
@@ -240,7 +240,6 @@ void Player::Update()
 		Object2D::Update();
 		return;
 	}
-
 
 	// --- 当たり判定処理 ---
 	isHitDamage = false;

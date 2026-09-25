@@ -53,11 +53,16 @@ void GameScene::Initialize()
 
 void GameScene::Update()
 {
+	//残機がないかの判定がtrueなら
+	if (mpPlayer->IsOutOfLive())
+	{
+		Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_LOSERESULT);
+	}
+
 	// チュートリアルテキストの更新
 	if (!mpPlayer->GetIsDead()) mTutorialText.Update(1.0f / 60.0f);
 	
 	mpPlayer->PlayerMove(mBlockMap);
-
 
 
 	// シーン上に存在するすべての敵をオブジェクトマネージャー経由で一括取得
@@ -75,7 +80,6 @@ void GameScene::Update()
 			}
 		}
 	}
-
 
 	// クラスのUpdate呼び出し
 	Scene::Update();

@@ -13,10 +13,11 @@ public: // enum, struct の定義
 	{
 		SCENE_NONE = 0,   // 定義なし
 		SCENE_TITLE,
-		SCENE_STAGESELECT,      // タイトル
+		SCENE_STAGESELECT,// タイトル
 		SCENE_GAME,       // ゲーム
 
-		SCENE_WINRESULT, // 勝利シーン
+		SCENE_WINRESULT,  // 勝利シーン
+		SCENE_LOSERESULT, // 敗北
 	};
 
 

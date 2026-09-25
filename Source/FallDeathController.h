@@ -11,7 +11,7 @@ class FallDeathController
 {
 public:
 
-    void Update(VECTOR playerPos);
+    void Update(VECTOR playerPos, int playerLive);
     void Draw(int live);
 
     bool IsActive() const { return mActive; };
