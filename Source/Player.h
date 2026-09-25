@@ -68,8 +68,10 @@ private:
 	static const int TOTAL_FRAMES = 4; 
 	static const int FRAME_INTERVAL = 8; 
 	// 画像の切り出し位置
-	static const int IDEL_POS = 0;
-	static const int WALK_POS = 0;
+	static const int IDLE_POS = 0;
+	static const int WALK_POS = 128;
+	static const int JUMP_POS = 256;
+	static const int ATTACK_POS = 384;
 
 
 	// 死亡処理関連
