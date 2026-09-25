@@ -71,6 +71,12 @@ namespace BlockMapGraphPath
 	static const char* Collision = "Resource/Map/collision.png";
 }
 
+// スクロール背景のパス
+namespace BackgroundGraphPath
+{
+	static const char* Stage1 = "Resource/Map/background_1.png";
+}
+
 // 読み込むCSVパス
 namespace CsvPath
 {
