@@ -246,7 +246,7 @@
       <Filter>ソース ファイル\Controller系</Filter>
     </ClInclude>
     <ClInclude Include="Source\LoseResultScene.h">
-      <Filter>ソース ファイル\Scene系</Filter>
+      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
