@@ -6,6 +6,7 @@
 #include "CharacterPhysics.h" // ジャンプとかの当たり判定をしてくれる処理
 #include "BlockAction.h"
 #include "FallDeathController.h"
+#include "PlayerAnimState.h"
 
 #include "UnitStatus.h"
 
@@ -63,12 +64,8 @@ private:
 	int mInvincibleTimer;
 
 	// アニメーション関連
-	int mCurrentFrame;
-	int mFrameTimer;
-	static const int FRAME_WIDTH = 128; 
-	static const int FRAME_HEIGHT = 128;
-	static const int TOTAL_FRAMES = 4; 
-	static const int FRAME_INTERVAL = 8; 
+	PlayerAnimState mPlayerState;
+
 
 	// 死亡処理関連
 		// ブリンク関連
