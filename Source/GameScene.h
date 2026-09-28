@@ -1,9 +1,10 @@
-ï»¿#pragma once
+#pragma once
+#include "UnitStatus.h"
 #include "Scene.h"
 #include "TutorialTextManager.h"
 #include"BlockMap.h"
 
-// å‰æ–¹å®£è¨€
+// ‘O•ûéŒ¾
 class Player;
 
 class GameScene : public Scene
@@ -24,8 +25,9 @@ private:
 	TutorialTextManager mTutorialText;
 
 	int spawnTimer; 
-	Player* mpPlayer; // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®åº§æ¨™ã‚’å‚ç…§ã™ã‚‹ãŸã‚ã«ä¿æŒ
+	Player* mpPlayer;
+	GameProgress mProgress; // ƒvƒŒƒCƒ„[‚ÌÀ•W‚ğQÆ‚·‚é‚½‚ß‚É•Û
 	BlockMap mBlockMap;
 
-	bool mbIsLoaded = false; // ãƒãƒƒãƒ—ãŒãƒ­ãƒ¼ãƒ‰ã•ã‚ŒãŸã‹ã©ã†ã‹ã®ãƒ•ãƒ©ã‚°
+	bool mbIsLoaded = false; // ƒ}ƒbƒv‚ªƒ[ƒh‚³‚ê‚½‚©‚Ç‚¤‚©‚Ìƒtƒ‰ƒO
 };

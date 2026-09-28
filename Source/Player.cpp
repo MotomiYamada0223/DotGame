@@ -23,6 +23,7 @@ Player::Player(VECTOR initPos)
 	isAttacking = false;
 	attackTimer = 0;
 	isHitDamage = false;
+	mInvincibleTimer = 0;
 	isDead = false;
 	deadTimer = 0;
 	alpha = 255.0f;
@@ -190,6 +191,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 	{
 		isAttacking = true;
 		attackTimer = attackDuration;
+		mHitEnemies.clear();
 	}
 
 
@@ -243,6 +245,7 @@ void Player::Update()
 
 	// --- 当たり判定処理 ---
 	isHitDamage = false;
+	if (mInvincibleTimer > 0) mInvincibleTimer--;
 
 	ObjectManager* objManager = Master::mpGameManager->GetSceneManager()->GetCurrentScene()->GetObjectManager();
 	std::vector<Object2D*> enemyList = objManager->GetObject2DListByTag(Object2D::Enemy2D);
@@ -312,18 +315,51 @@ void Player::Update()
 			0.0f
 		);
 
-		// 1. プレイヤー自身と敵の衝突判定 (ダメージで赤くする)
+				// 1. プレイヤー自身と敵の衝突判定 (ダメージで赤くする)
 		if (Collision::CheckRectToRect(myPos, mySize, enePos, eneSize))
 		{
 			isHitDamage = true;
+			if (mInvincibleTimer <= 0 && mDeadState == 0)
+			{
+				mInvincibleTimer = 60; // 1秒無敵
+				UnitStatus* enemyStatus = dynamic_cast<UnitStatus*>(enemy);
+				if (enemyStatus)
+				{
+					int dmg = enemyStatus->mAttack;
+					if (enemyStatus->mHasInstantKillAttack) dmg = mHp;
+					TakeDamage(dmg);
+				}
+			}
 		}
 
-		// 2. 攻撃判定と敵の衝突判定 (敵を赤く光らせる)
+						// 2. 攻撃判定と敵の衝突判定 (敵を赤く光らせる)
 		if (hasAttackRect)
 		{
 			if (Collision::CheckRectToRect(atkPos, atkSize, enePos, eneSize))
 			{
-				enemy->OnDamaged();
+				bool alreadyHit = false;
+				for (auto* hitEnemy : mHitEnemies)
+				{
+					if (hitEnemy == enemy)
+					{
+						alreadyHit = true;
+						break;
+					}
+				}
+				if (!alreadyHit)
+				{
+					enemy->OnDamaged();
+					mHitEnemies.push_back(enemy);
+					UnitStatus* enemyStatus = dynamic_cast<UnitStatus*>(enemy);
+					if (enemyStatus)
+					{
+						enemyStatus->TakeDamage(mAttack);
+						if (enemyStatus->mHp <= 0)
+						{
+							enemy->SetDeleteFlag(true);
+						}
+					}
+				}
 			}
 		}
 	}
