@@ -25,6 +25,10 @@ Player::Player(VECTOR initPos)
 	isHitDamage = false;
 	mInvincibleTimer = 0;
 	isDead = false;
+	isBlinking = false;
+	blinkTimer = 0;
+	blinkCooldownTimer = 0;
+	blinkDirection = 0.0f;
 	deadTimer = 0;
 	alpha = 255.0f;
 	mSpawnPos = initPos;
@@ -146,6 +150,18 @@ void Player::PlayerMove(BlockMap& blockMap)
 
 
 	// キャラクターの物理処理
+		float currentSpeed = moveSpeed;
+	float currentGravity = gravity;
+	if (isBlinking)
+	{
+		currentSpeed = blinkSpeed;
+		currentGravity = 0.0f;
+		velocityY = 0.0f; // 落下を止める
+		mfMoveDirection = blinkDirection; // ブリンク開始時の方向に固定
+	}
+
+	float prevX = mvPosition.x;
+
 	BlockMap::CollisionType collisionType =
 		mCharacterPhysics.UpdateMoveAndCollision(
 			mvPosition,
@@ -155,10 +171,19 @@ void Player::PlayerMove(BlockMap& blockMap)
 			blockMap,
 			mfPlayerWidth,
 			mfPlayerHeight,
-			gravity,
-			moveSpeed,
+			currentGravity,
+			currentSpeed,
 			mfMoveDirection
 		);
+
+	if (isBlinking && !mIsBlinkWallDeathImmune)
+	{
+		// X軸方向の移動がほとんどできなかった場合、壁に激突したとみなして即死
+		if (abs(mvPosition.x - prevX) < 1.0f)
+		{
+			TakeDamage(mHp);
+		}
+	}
 
 	// 当たり判定後にスクロール量を反映させるため、親クラスの共通関数を使用してプレイヤーのスクリーン座標を算出する
 	const int playerScreenX = static_cast<int>(ConvertToScreenX(mvPosition.x, mpBlockMap));
@@ -185,7 +210,18 @@ void Player::PlayerMove(BlockMap& blockMap)
 	}
 
 
-	// 攻撃 F
+		// Blink (Eキー)
+	static bool eKeyWasDown = false;
+	bool eKeyIsDown = (CheckHitKey(KEY_INPUT_E) == 1);
+	if (eKeyIsDown && !eKeyWasDown && !isBlinking && blinkCooldownTimer <= 0 && mfMoveDirection != 0.0f)
+	{
+		isBlinking = true;
+		blinkTimer = blinkDuration;
+		blinkDirection = isFacingRight ? 1.0f : -1.0f;
+	}
+	eKeyWasDown = eKeyIsDown;
+
+	// U F
 	if (CheckHitKey(KEY_INPUT_F) == 1 &&
 		!isAttacking)
 	{
@@ -246,6 +282,36 @@ void Player::Update()
 	// --- 当たり判定処理 ---
 	isHitDamage = false;
 	if (mInvincibleTimer > 0) mInvincibleTimer--;
+	if (blinkCooldownTimer > 0) blinkCooldownTimer--;
+
+	// ブリンクと残像の更新
+	for (auto it = mAfterimages.begin(); it != mAfterimages.end(); )
+	{
+		it->alpha -= 15.0f;
+		if (it->alpha <= 0.0f) {
+			it = mAfterimages.erase(it);
+		} else {
+			++it;
+		}
+	}
+
+	if (isBlinking)
+	{
+		blinkTimer--;
+		if (blinkTimer <= 0)
+		{
+			isBlinking = false;
+			blinkCooldownTimer = 60; // 60フレームのクールタイム
+		}
+		else if (blinkTimer % 2 == 0) // 2フレームに1回残像を生成
+		{
+			BlinkAfterimage img;
+			img.pos = mvPosition;
+			img.facingRight = isFacingRight;
+			img.alpha = 150.0f; // 半透明からスタート
+			mAfterimages.push_back(img);
+		}
+	}
 
 	ObjectManager* objManager = Master::mpGameManager->GetSceneManager()->GetCurrentScene()->GetObjectManager();
 	std::vector<Object2D*> enemyList = objManager->GetObject2DListByTag(Object2D::Enemy2D);
@@ -318,16 +384,28 @@ void Player::Update()
 				// 1. プレイヤー自身と敵の衝突判定 (ダメージで赤くする)
 		if (Collision::CheckRectToRect(myPos, mySize, enePos, eneSize))
 		{
-			isHitDamage = true;
-			if (mInvincibleTimer <= 0 && mDeadState == 0)
+			if (isBlinking)
 			{
-				mInvincibleTimer = 60; // 1秒無敵
-				UnitStatus* enemyStatus = dynamic_cast<UnitStatus*>(enemy);
-				if (enemyStatus)
+				if (!mIsBlinkWallDeathImmune)
 				{
-					int dmg = enemyStatus->mAttack;
-					if (enemyStatus->mHasInstantKillAttack) dmg = mHp;
-					TakeDamage(dmg);
+					// ブリンク中かつ未強化なら即死
+					TakeDamage(mHp);
+				}
+				// 強化中なら何もしない（すり抜け）
+			}
+			else
+			{
+				isHitDamage = true;
+				if (mInvincibleTimer <= 0 && mDeadState == 0)
+				{
+					mInvincibleTimer = 60; // 1秒無敵
+					UnitStatus* enemyStatus = dynamic_cast<UnitStatus*>(enemy);
+					if (enemyStatus)
+					{
+						int dmg = enemyStatus->mAttack;
+						if (enemyStatus->mHasInstantKillAttack) dmg = mHp;
+						TakeDamage(dmg);
+					}
 				}
 			}
 		}
@@ -457,14 +535,28 @@ void Player::Draw()
 
 	if (mpTexture != nullptr)
 	{
-		const int srcX = mCurrentFrame * FRAME_WIDTH;
+		// 残像の描画
+		for (const auto& img : mAfterimages)
+		{
+			int ax = static_cast<int>(ConvertToScreenX(img.pos.x, mpBlockMap) - FRAME_WIDTH / 2);
+			int ay = static_cast<int>(img.pos.y - FRAME_HEIGHT / 2);
+			int aSrcX = 128;
+			int aSrcY = img.facingRight ? 256 : 384;
+			SetDrawBlendMode(DX_BLENDMODE_ALPHA, (int)img.alpha);
+			DrawRectGraph(ax, ay, aSrcX, aSrcY, FRAME_WIDTH, FRAME_HEIGHT, mpTexture->GetHandle(), true);
+		}
+		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 
-		// 向きに応じた基本の Y 座標を設定する
-		int srcY = 256; // 右向きの画像座標
-
+		int srcX = mCurrentFrame * FRAME_WIDTH;
+		int srcY = 256;
 		if (!isFacingRight)
 		{
-			srcY = 384; // 左向きの画像座標
+			srcY = 384;
+		}
+
+		if (isBlinking)
+		{
+			srcX = 128;
 		}
 
 		// ダメージ中なら赤く変色させる
