@@ -1,4 +1,4 @@
-#include "GameScene.h"
+ï»¿#include "GameScene.h"
 #include "Utility.h"
 #include "Master.h"
 #include "InputManager.h"
@@ -23,27 +23,27 @@ GameScene::~GameScene()
 
 void GameScene::Initialize()
 {
-	// CSV‚Ìƒtƒ@ƒCƒ‹“Ç‚İ‚İ
-	// ƒ`ƒ…[ƒgƒŠƒAƒ‹ƒeƒLƒXƒg‚ÆƒuƒƒbƒNƒ}ƒbƒv‚Ìƒ^ƒCƒ‹
+	// CSVã®ãƒ•ã‚¡ã‚¤ãƒ«èª­ã¿è¾¼ã¿
+	// ãƒãƒ¥ãƒ¼ãƒˆãƒªã‚¢ãƒ«ãƒ†ã‚­ã‚¹ãƒˆã¨ãƒ–ãƒ­ãƒƒã‚¯ãƒãƒƒãƒ—ã®ã‚¿ã‚¤ãƒ«
 	mTutorialText.Initialize(CsvPath::TutorialText);
 
-	// ”wŒi‰æ‘œ‚Æ“–‚½‚è”»’è‰æ‘œ‚ğ“Ç‚İ‚Ş
+	// èƒŒæ™¯ç”»åƒã¨å½“ãŸã‚Šåˆ¤å®šç”»åƒã‚’èª­ã¿è¾¼ã‚€
 	mBlockMap.Load(
 		BlockMapGraphPath::Background,
 		BlockMapGraphPath::Collision
 	);
 
 
-	// ƒvƒŒƒCƒ„[‚Ì¶¬
+	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ç”Ÿæˆ
 	mpPlayer = new Player(VGet(ScreenSize::CenterX - 6000, 600, 0.0f));
 
-	// Sainti‚µ‚á‚×‚éƒLƒƒƒ‰ƒNƒ^[j‚ğ‰æ–Êã•”‚É”z’u
+	// Saintï¼ˆã—ã‚ƒã¹ã‚‹ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ï¼‰ã‚’ç”»é¢ä¸Šéƒ¨ã«é…ç½®
 	new Saint(VGet(Utility::SCREEN_WIDTH / 2.0f, 150.0f, 0.0f));
 
-	// “G‚Ì¶¬
+	// æ•µã®ç”Ÿæˆ
 	if (mpPlayer != nullptr)
 	{
-		// ‰æ–Ê¶‘¤ (X=0 •t‹ß)AY‚ÍƒvƒŒƒCƒ„[‚Æ“¯‚¶‚‚³‚Å¶¬
+		// ç”»é¢å·¦å´ (X=0 ä»˜è¿‘)ã€Yã¯ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã¨åŒã˜é«˜ã•ã§ç”Ÿæˆ
 				EnemySlime* slime = new EnemySlime(VGet(1000.0f, mpPlayer->GetPosition().y - 500, 0.0f));
 		slime->UpdateStatusByProgress(mProgress);
 	}
@@ -55,20 +55,51 @@ void GameScene::Initialize()
 
 void GameScene::Update()
 {
-	//c‹@‚ª‚È‚¢‚©‚Ì”»’è‚ªtrue‚È‚ç
+	// Pã‚­ãƒ¼ã§é€²è¡Œåº¦åˆ‡ã‚Šæ›¿ãˆ (ãƒ‡ãƒãƒƒã‚°ç”¨)
+	static bool pKeyWasDown = false;
+	bool pKeyIsDown = (CheckHitKey(KEY_INPUT_P) == 1);
+	if (pKeyIsDown && !pKeyWasDown)
+	{
+		if (mProgress == GameProgress::Tutorial1)
+		{
+			mProgress = GameProgress::Tutorial2; // ã™ã‚ŠæŠœã‘ON (ç„¡æ•µ)
+		}
+		else
+		{
+			mProgress = GameProgress::Tutorial1; // ã™ã‚ŠæŠœã‘OFF (å³æ­»)
+		}
+
+		if (mpPlayer) mpPlayer->UpdateStatusByProgress(mProgress);
+
+		ObjectManager* objManager = Master::mpGameManager->GetSceneManager()->GetCurrentScene()->GetObjectManager();
+		if (objManager)
+		{
+			std::vector<Object2D*> enemyList = objManager->GetObject2DListByTag(Object2D::Enemy2D);
+			for (Object2D* obj : enemyList)
+			{
+				UnitStatus* enemyStatus = dynamic_cast<UnitStatus*>(obj);
+				if (enemyStatus)
+				{
+					enemyStatus->UpdateStatusByProgress(mProgress);
+				}
+			}
+		}
+	}
+	pKeyWasDown = pKeyIsDown;
+	//æ®‹æ©ŸãŒãªã„ã‹ã®åˆ¤å®šãŒtrueãªã‚‰
 	if (mpPlayer->IsOutOfLive())
 	{
 		Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_LOSERESULT);
 	}
 
-	// ƒ`ƒ…[ƒgƒŠƒAƒ‹ƒeƒLƒXƒg‚ÌXV
+	// ãƒãƒ¥ãƒ¼ãƒˆãƒªã‚¢ãƒ«ãƒ†ã‚­ã‚¹ãƒˆã®æ›´æ–°
 	if (!mpPlayer->GetIsDead()) mTutorialText.Update(1.0f / 60.0f);
 	
 	mpPlayer->PlayerMove(mBlockMap);
 
 
-	// ƒV[ƒ“ã‚É‘¶İ‚·‚é‚·‚×‚Ä‚Ì“G‚ğƒIƒuƒWƒFƒNƒgƒ}ƒl[ƒWƒƒ[Œo—R‚ÅˆêŠ‡æ“¾
-	/// ŒÂ•Ê‚ÌƒR[ƒh‚ğ’Ç‰Á‚·‚é‚±‚Æ‚È‚­‹¤’Ê‚ÌˆÚ“®ˆ—‚ğÀs‚·‚é‚½‚ß
+	// ã‚·ãƒ¼ãƒ³ä¸Šã«å­˜åœ¨ã™ã‚‹ã™ã¹ã¦ã®æ•µã‚’ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆãƒãƒãƒ¼ã‚¸ãƒ£ãƒ¼çµŒç”±ã§ä¸€æ‹¬å–å¾—
+	/// å€‹åˆ¥ã®ã‚³ãƒ¼ãƒ‰ã‚’è¿½åŠ ã™ã‚‹ã“ã¨ãªãå…±é€šã®ç§»å‹•å‡¦ç†ã‚’å®Ÿè¡Œã™ã‚‹ãŸã‚
 	ObjectManager* objManager = GetObjectManager();
 	if (objManager != nullptr)
 	{
@@ -78,12 +109,12 @@ void GameScene::Update()
 			Enemy* enemy = dynamic_cast<Enemy*>(obj);
 			if (enemy != nullptr)
 			{
-				enemy->EnemyMove(mBlockMap); // “G‚É’Ç‰Á‚µ‚½ˆÚ“®ŠÖ”‚ğŒÄ‚Ño‚·
+				enemy->EnemyMove(mBlockMap); // æ•µã«è¿½åŠ ã—ãŸç§»å‹•é–¢æ•°ã‚’å‘¼ã³å‡ºã™
 			}
 		}
 	}
 
-	// ƒNƒ‰ƒX‚ÌUpdateŒÄ‚Ño‚µ
+	// ã‚¯ãƒ©ã‚¹ã®Updateå‘¼ã³å‡ºã—
 	Scene::Update();
 }
 
@@ -91,19 +122,23 @@ void GameScene::Draw()
 {
 	if (!mbIsLoaded) { return; }
 
-	// ƒNƒ‰ƒX‚ÌDrawŒÄ‚Ño‚µ
+	// ã‚¯ãƒ©ã‚¹ã®Drawå‘¼ã³å‡ºã—
 	Scene::Draw();
 
-	// ƒfƒoƒbƒOŒn
-	mpPlayer->DebugDraw(); // ƒuƒƒbƒNƒfƒoƒbƒO
-	mBlockMap.DebugDraw(); // ƒuƒƒbƒNƒ}ƒbƒvƒfƒoƒbƒO•\¦
-	mTutorialText.DebugDraw(); // ƒeƒLƒXƒg
+	// ãƒ‡ãƒãƒƒã‚°ç³»
+	mpPlayer->DebugDraw(); // ãƒ–ãƒ­ãƒƒã‚¯ãƒ‡ãƒãƒƒã‚°
+	mBlockMap.DebugDraw(); // ãƒ–ãƒ­ãƒƒã‚¯ãƒãƒƒãƒ—ãƒ‡ãƒãƒƒã‚°è¡¨ç¤º
+	mTutorialText.DebugDraw(); // ãƒ†ã‚­ã‚¹ãƒˆ
 
-	// ƒIƒuƒWƒFƒNƒg‚Ì•`‰æ
-	mBlockMap.Draw(); // ƒuƒƒbƒNƒ}ƒbƒv‚Ì•`‰æ
-	mTutorialText.Draw(); // ƒ`ƒ…[ƒgƒŠƒAƒ‹‚Ì•`‰æ
+	// ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®æç”»
+	mBlockMap.Draw(); // ãƒ–ãƒ­ãƒƒã‚¯ãƒãƒƒãƒ—ã®æç”»
+	mTutorialText.Draw(); // ãƒãƒ¥ãƒ¼ãƒˆãƒªã‚¢ãƒ«ã®æç”»
 
-	mpPlayer->DrawFallDeath(); // €–SƒeƒLƒXƒg‚Ì•\¦
+	mpPlayer->DrawFallDeath(); // æ­»äº¡æ™‚ãƒ†ã‚­ã‚¹ãƒˆ
+
+	// ãƒ‡ãƒãƒƒã‚°è¡¨ç¤º: ç¾åœ¨ã®é€²è¡Œåº¦
+	const char* progStr = (mProgress == GameProgress::Tutorial1) ? "Tutorial1 (Death)" : "Tutorial2 (Immune)";
+	DrawFormatString(10, 30, GetColor(0, 255, 0), "Progress: %s  [Press P to toggle]", progStr);
 }
 
 void GameScene::Finalize()
