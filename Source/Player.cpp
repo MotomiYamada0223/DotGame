@@ -151,7 +151,6 @@ void Player::PlayerMove(BlockMap& blockMap)
 	}
 
 
-<<<<<<< HEAD
 	// キャラクターの物理処理
 		float currentSpeed = moveSpeed;
 	float currentGravity = gravity;
@@ -165,9 +164,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 
 	float prevX = mvPosition.x;
 
-=======
 	// キャラクターの物理処理   
->>>>>>> AyameTest
 	BlockMap::CollisionType collisionType =
 		mCharacterPhysics.UpdateMoveAndCollision(
 			mvPosition,
@@ -182,7 +179,6 @@ void Player::PlayerMove(BlockMap& blockMap)
 			mfMoveDirection
 		);
 
-<<<<<<< HEAD
 	if (isBlinking && !mIsBlinkWallDeathImmune)
 	{
 		// X軸方向の移動がほとんどできなかった場合、壁に激突したとみなして即死
@@ -192,10 +188,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 		}
 	}
 
-	// 当たり判定後にスクロール量を反映させるため、親クラスの共通関数を使用してプレイヤーのスクリーン座標を算出する
-=======
 	// 当たり判定後にスクロール量を反映させるため、親クラスの共通関数を使用してプレイヤーのスクリーン座標を算出する   
->>>>>>> AyameTest
 	const int playerScreenX = static_cast<int>(ConvertToScreenX(mvPosition.x, mpBlockMap));
 
 	blockMap.Move(
@@ -220,7 +213,6 @@ void Player::PlayerMove(BlockMap& blockMap)
 	}
 
 
-<<<<<<< HEAD
 		// Blink (Eキー)
 	static bool eKeyWasDown = false;
 	bool eKeyIsDown = (CheckHitKey(KEY_INPUT_E) == 1);
@@ -233,19 +225,14 @@ void Player::PlayerMove(BlockMap& blockMap)
 	eKeyWasDown = eKeyIsDown;
 
 	// U F
-=======
 	// 攻撃 F   
->>>>>>> AyameTest
 	if (CheckHitKey(KEY_INPUT_F) == 1 &&
 		!isAttacking)
 	{
 		isAttacking = true;
 		attackTimer = attackDuration;
-<<<<<<< HEAD
 		mHitEnemies.clear();
-=======
 		mPlayerState.SetAttack();
->>>>>>> AyameTest
 	}
 
 
@@ -418,11 +405,7 @@ void Player::Update()
 			0.0f
 		);
 
-<<<<<<< HEAD
-				// 1. プレイヤー自身と敵の衝突判定 (ダメージで赤くする)
-=======
 		// 1. プレイヤー自身と敵の衝突判定 (ダメージで赤くする)   
->>>>>>> AyameTest
 		if (Collision::CheckRectToRect(myPos, mySize, enePos, eneSize))
 		{
 			if (isBlinking)
@@ -451,11 +434,7 @@ void Player::Update()
 			}
 		}
 
-<<<<<<< HEAD
-						// 2. 攻撃判定と敵の衝突判定 (敵を赤く光らせる)
-=======
 		// 2. 攻撃判定と敵の衝突判定 (敵を赤く光らせる)   
->>>>>>> AyameTest
 		if (hasAttackRect)
 		{
 			if (Collision::CheckRectToRect(atkPos, atkSize, enePos, eneSize))
@@ -593,7 +572,6 @@ void Player::Draw()
 
 	if (mpTexture != nullptr)
 	{
-<<<<<<< HEAD
 		// 残像の描画
 		for (const auto& img : mAfterimages)
 		{
@@ -616,128 +594,127 @@ void Player::Draw()
 		if (isBlinking)
 		{
 			srcX = 128;
-=======
-		const int srcX = mPlayerState.GetCurrentFrame() * PlayerAnimState::FRAME_WIDTH;
+			const int srcX = mPlayerState.GetCurrentFrame() * PlayerAnimState::FRAME_WIDTH;
 
-		// 現在の状態に応じた画像の切り出し位置を設定する   
-		int srcY = PlayerAnimState::IDLE_POS;
+			// 現在の状態に応じた画像の切り出し位置を設定する   
+			int srcY = PlayerAnimState::IDLE_POS;
 
-		PlayerAnimState::State animState = mPlayerState.GetState();
+			PlayerAnimState::State animState = mPlayerState.GetState();
 
-		if (animState == PlayerAnimState::State::Attack)
-		{
-			srcY = PlayerAnimState::ATTACK_POS;
-		}
-		else if (animState == PlayerAnimState::State::Jump)
-		{
-			srcY = PlayerAnimState::JUMP_POS;
-		}
-		else if (animState == PlayerAnimState::State::Walk)
-		{
-			srcY = PlayerAnimState::WALK_POS;
->>>>>>> AyameTest
-		}
-
-		// ダメージ中なら赤く変色させる   
-		if (isHitDamage)
-		{
-			SetDrawBright(255, 100, 100);
-		}
-
-		// 指定の場所だけ描画する   
-		// 親クラスの共通関数を使用してワールド座標からスクリーン座標へ変換する   
-		const int screenX = static_cast<int>(ConvertToScreenX(mvPosition.x, mpBlockMap) - PlayerAnimState::FRAME_WIDTH / 2);
-		const int screenY = static_cast<int>(mvPosition.y - PlayerAnimState::FRAME_HEIGHT / 2);
-
-		// プレイヤーを描画    
-		//    
-		// 右向き：通常描画    
-		// 左向き：左右反転して描画    
-		if (isFacingRight)
-		{
-			DrawRectGraph(
-				screenX,
-				screenY,
-				srcX,
-				srcY,
-				PlayerAnimState::FRAME_WIDTH,
-				PlayerAnimState::FRAME_HEIGHT,
-				mpTexture->GetHandle(),
-				true,
-				false
-			);
-		}
-		else
-		{
-			DrawRectGraph(
-				screenX,
-				screenY,
-				srcX,
-				srcY,
-				PlayerAnimState::FRAME_WIDTH,
-				PlayerAnimState::FRAME_HEIGHT,
-				mpTexture->GetHandle(),
-				true,
-				true
-			);
-		}
-
-		// 色を元に戻す   
-		if (isHitDamage)
-		{
-			SetDrawBright(255, 255, 255);
-		}
-	}
-	else
-	{
-		Object2D::Draw();
-	}
-
-	// 攻撃エフェクトの描画   
-	if (isAttacking)
-	{
-		int attackWidth = 60;
-		int attackHeight = 40;
-		int rectLeft, rectTop, rectRight, rectBottom;
-		int halfSizeX = PlayerAnimState::FRAME_WIDTH / 2;
-
-		if (isFacingRight)
-		{
-			rectLeft = static_cast<int>(ConvertToScreenX(mvPosition.x + halfSizeX, mpBlockMap));
-			rectRight = rectLeft + attackWidth;
-		}
-		else
-		{
-			rectLeft = static_cast<int>(ConvertToScreenX(mvPosition.x - halfSizeX - attackWidth, mpBlockMap));
-			rectRight = rectLeft + attackWidth;
-		}
-
-		rectTop = static_cast<int>(mvPosition.y) - attackHeight / 2;
-		rectBottom = rectTop + attackHeight;
-
-		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 128);
-		DrawBox(rectLeft, rectTop, rectRight, rectBottom, GetColor(255, 50, 50), TRUE);
-		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
-	}
-
-	// UI（ハート）の描画（右上）   
-	if (mMaxHp > 0)
-	{
-		int hpLevel = (mHp * 6) / mMaxHp;
-		if (mHp > 0 && hpLevel == 0) hpLevel = 1;
-
-		int drawX = ScreenSize::ScrrenWidth - 150; // 右上に配置   
-		int drawY = 20;
-		for (int i = 0; i < 3; i++)
-		{
-			int heartState = hpLevel - (i * 2);
-			int graph = mHeartEmptyGraph;
-			if (heartState >= 2) graph = mHeartFullGraph;
-			else if (heartState == 1) graph = mHeartHalfGraph;
-
-			if (graph != -1)
+			if (animState == PlayerAnimState::State::Attack)
 			{
-				DrawGraph(drawX + i * 40, drawY, graph, TRUE);
+				srcY = PlayerAnimState::ATTACK_POS;
+			}
+			else if (animState == PlayerAnimState::State::Jump)
+			{
+				srcY = PlayerAnimState::JUMP_POS;
+			}
+			else if (animState == PlayerAnimState::State::Walk)
+			{
+				srcY = PlayerAnimState::WALK_POS;
+			}
+
+			// ダメージ中なら赤く変色させる   
+			if (isHitDamage)
+			{
+				SetDrawBright(255, 100, 100);
+			}
+
+			// 指定の場所だけ描画する   
+			// 親クラスの共通関数を使用してワールド座標からスクリーン座標へ変換する   
+			const int screenX = static_cast<int>(ConvertToScreenX(mvPosition.x, mpBlockMap) - PlayerAnimState::FRAME_WIDTH / 2);
+			const int screenY = static_cast<int>(mvPosition.y - PlayerAnimState::FRAME_HEIGHT / 2);
+
+			// プレイヤーを描画    
+			//    
+			// 右向き：通常描画    
+			// 左向き：左右反転して描画    
+			if (isFacingRight)
+			{
+				DrawRectGraph(
+					screenX,
+					screenY,
+					srcX,
+					srcY,
+					PlayerAnimState::FRAME_WIDTH,
+					PlayerAnimState::FRAME_HEIGHT,
+					mpTexture->GetHandle(),
+					true,
+					false
+				);
+			}
+			else
+			{
+				DrawRectGraph(
+					screenX,
+					screenY,
+					srcX,
+					srcY,
+					PlayerAnimState::FRAME_WIDTH,
+					PlayerAnimState::FRAME_HEIGHT,
+					mpTexture->GetHandle(),
+					true,
+					true
+				);
+			}
+
+			// 色を元に戻す   
+			if (isHitDamage)
+			{
+				SetDrawBright(255, 255, 255);
+			}
+		}
+		else
+		{
+			Object2D::Draw();
+		}
+
+		// 攻撃エフェクトの描画   
+		if (isAttacking)
+		{
+			int attackWidth = 60;
+			int attackHeight = 40;
+			int rectLeft, rectTop, rectRight, rectBottom;
+			int halfSizeX = PlayerAnimState::FRAME_WIDTH / 2;
+
+			if (isFacingRight)
+			{
+				rectLeft = static_cast<int>(ConvertToScreenX(mvPosition.x + halfSizeX, mpBlockMap));
+				rectRight = rectLeft + attackWidth;
+			}
+			else
+			{
+				rectLeft = static_cast<int>(ConvertToScreenX(mvPosition.x - halfSizeX - attackWidth, mpBlockMap));
+				rectRight = rectLeft + attackWidth;
+			}
+
+			rectTop = static_cast<int>(mvPosition.y) - attackHeight / 2;
+			rectBottom = rectTop + attackHeight;
+
+			SetDrawBlendMode(DX_BLENDMODE_ALPHA, 128);
+			DrawBox(rectLeft, rectTop, rectRight, rectBottom, GetColor(255, 50, 50), TRUE);
+			SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+		}
+
+		// UI（ハート）の描画（右上）   
+		if (mMaxHp > 0)
+		{
+			int hpLevel = (mHp * 6) / mMaxHp;
+			if (mHp > 0 && hpLevel == 0) hpLevel = 1;
+
+			int drawX = ScreenSize::ScrrenWidth - 150; // 右上に配置   
+			int drawY = 20;
+			for (int i = 0; i < 3; i++)
+			{
+				int heartState = hpLevel - (i * 2);
+				int graph = mHeartEmptyGraph;
+				if (heartState >= 2) graph = mHeartFullGraph;
+				else if (heartState == 1) graph = mHeartHalfGraph;
+
+				if (graph != -1)
+				{
+					DrawGraph(drawX + i * 40, drawY, graph, TRUE);
+				}
 			}
 		}
 	}
