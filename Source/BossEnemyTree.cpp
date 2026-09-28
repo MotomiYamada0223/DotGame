@@ -1,7 +1,8 @@
-ï»¿#include "BossEnemyTree.h"
+#include "GameConstants.h"
+#include "BossEnemyTree.h"
 
 BossEnemyTree::BossEnemyTree(VECTOR initPos)
-    : Enemy(initPos)
+    : Enemy(CharacterGraphPath::Dragon, initPos)
 {
     UpdateStatusByProgress(GameProgress::BossTree);
 }
@@ -9,6 +10,6 @@ BossEnemyTree::BossEnemyTree(VECTOR initPos)
 void BossEnemyTree::UpdateStatusByProgress(GameProgress progress)
 {
     mMaxHp = 50; mHp = 50;
-    mAttack = 5; // ã¾ãŸã¯å³æ­»
-    mHasInstantKillAttack = true; // ä¸€éƒ¨å³æ­»
+    mAttack = 5; // ‚Ü‚½‚Í‘¦€
+    mHasInstantKillAttack = true; // ˆê•”‘¦€
 }

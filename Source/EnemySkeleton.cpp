@@ -1,7 +1,8 @@
-﻿#include "EnemySkeleton.h"
+#include "GameConstants.h"
+#include "EnemySkeleton.h"
 
 EnemySkeleton::EnemySkeleton(VECTOR initPos)
-    : Enemy(initPos)
+    : Enemy(CharacterGraphPath::Dragon, initPos)
 {
     UpdateStatusByProgress(GameProgress::Tutorial2);
 }

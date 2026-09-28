@@ -1,3 +1,4 @@
+ï»¿$content = @"
 #include "EnemySlime.h"
 #include "DxLib.h"
 #include "Texture.h"
@@ -7,15 +8,13 @@
 EnemySlime::EnemySlime(VECTOR initPos)
     : Enemy("Resource/Image/SampleSlime.png", initPos)
 {
-    mMoveSpeed = 2.0f; // ƒXƒ‰ƒCƒ€ê—p‚ÌˆÚ“®‘¬“x
+    mMoveSpeed = 2.0f; // ã‚¹ãƒ©ã‚¤ãƒ å°‚ç”¨ã®ç§»å‹•é€Ÿåº¦
 
-    // “–‚½‚è”»’è‚ÌƒTƒCƒYİ’èi‰æ‘œ‚ÌƒTƒCƒY‚ğ‚»‚Ì‚Ü‚Üg‚¤‚©’²®‚·‚é‚©j
-    // ‚Ğ‚Æ‚Ü‚¸‰æ‘œ‚ª400x400‚Æ‘å‚«‚ß‚È‚Ì‚ÅA­‚µk¬‚·‚é‚©ŒŸ“¢‚µ‚Â‚ÂA
-    // Šù‘¶‚Ì’Ê‚è 1/6 ƒTƒCƒY’ö“x‚É‚·‚é‚©Aˆê’U‚»‚Ì‚Ü‚Ü‚Ì”ä—¦‚Åİ’è
+    // å½“ãŸã‚Šåˆ¤å®šã®ã‚µã‚¤ã‚ºè¨­å®šï¼ˆç”»åƒã®ã‚µã‚¤ã‚ºã‚’ãã®ã¾ã¾ä½¿ã†ã‹èª¿æ•´ã™ã‚‹ã‹ï¼‰
+    // ã²ã¨ã¾ãšç”»åƒãŒ400x400ã¨å¤§ãã‚ãªã®ã§ã€å°‘ã—ç¸®å°ã™ã‚‹ã‹æ¤œè¨ã—ã¤ã¤ã€
+    // æ—¢å­˜ã®é€šã‚Š 1/6 ã‚µã‚¤ã‚ºç¨‹åº¦ã«ã™ã‚‹ã‹ã€ä¸€æ—¦ãã®ã¾ã¾ã®æ¯”ç‡ã§è¨­å®š
     mfEnemyWidth = 64.0f;
     mfEnemyHeight = 64.0f;
-
-    UpdateStatusByProgress(GameProgress::Tutorial1);
 }
 
 EnemySlime::~EnemySlime()
@@ -33,13 +32,13 @@ void EnemySlime::Draw()
     {
         if (isDamaged) { SetDrawBright(255, 100, 100); }
 
-        // •`‰æˆÊ’ui’†SÀ•Wj
+        // æç”»ä½ç½®ï¼ˆä¸­å¿ƒåº§æ¨™ï¼‰
         const float screenX = ConvertToScreenX(mvPosition.x, mpBlockMap);
         const float screenY = mvPosition.y;
 
-        // ˆê–‡ŠG‚Æ‚µ‚Ä•`‰æi‰æ‘œ‚ª400x400‚È‚Ì‚ÅA“–‚½‚è”»’è‚É‡‚í‚¹‚Äk¬‚µ‚Ä•`‰æ‚·‚éj
-        // DrawRotaGraph(x, y, Šg‘å—¦, ‰ñ“]Šp“x, ƒOƒ‰ƒtƒBƒbƒNƒnƒ“ƒhƒ‹, “§‰ßƒtƒ‰ƒO)
-        float scale = mfEnemyWidth / GetSizeX(); // “–‚½‚è”»’è‚Ì•(64)‚É‡‚í‚¹‚é
+        // ä¸€æšçµµã¨ã—ã¦æç”»ï¼ˆç”»åƒãŒ400x400ãªã®ã§ã€å½“ãŸã‚Šåˆ¤å®šã«åˆã‚ã›ã¦ç¸®å°ã—ã¦æç”»ã™ã‚‹ï¼‰
+        // DrawRotaGraph(x, y, æ‹¡å¤§ç‡, å›è»¢è§’åº¦, ã‚°ãƒ©ãƒ•ã‚£ãƒƒã‚¯ãƒãƒ³ãƒ‰ãƒ«, é€éãƒ•ãƒ©ã‚°)
+        float scale = mfEnemyWidth / GetSizeX(); // å½“ãŸã‚Šåˆ¤å®šã®å¹…(64)ã«åˆã‚ã›ã‚‹
 
         DrawRotaGraph(
             static_cast<int>(screenX),
@@ -79,17 +78,7 @@ void EnemySlime::EnemyMove(BlockMap& blockMap)
 
 void EnemySlime::UpdateStatusByProgress(GameProgress progress)
 {
-    switch (progress)
-    {
-    case GameProgress::Tutorial1:
-        mMaxHp = 15; mHp = 15;
-        mAttack = 9999; 
-        mHasInstantKillAttack = true;
-        break;
-    default: 
-        mMaxHp = 15; mHp = 15;
-        mAttack = 5;
-        mHasInstantKillAttack = false;
-        break;
-    }
+    // é€²è¡Œåº¦ã«å¿œã˜ãŸã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹è¨­å®šãªã©
 }
+"@
+[System.IO.File]::WriteAllText("Source\EnemySlime.cpp", $content, [System.Text.Encoding]::GetEncoding(932))

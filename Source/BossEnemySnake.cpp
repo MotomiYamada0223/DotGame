@@ -1,7 +1,8 @@
-ï»¿#include "BossEnemySnake.h"
+#include "GameConstants.h"
+#include "BossEnemySnake.h"
 
 BossEnemySnake::BossEnemySnake(VECTOR initPos)
-    : Enemy(initPos)
+    : Enemy(CharacterGraphPath::Dragon, initPos)
 {
     UpdateStatusByProgress(GameProgress::BossSnake);
 }
@@ -9,6 +10,6 @@ BossEnemySnake::BossEnemySnake(VECTOR initPos)
 void BossEnemySnake::UpdateStatusByProgress(GameProgress progress)
 {
     mMaxHp = 150; mHp = 150;
-    mAttack = 15; // æ¯’ã¯åˆ¥é€”å‡¦ç†
-    mHasInstantKillAttack = true; // çŸ³åŒ–å³æ­»
+    mAttack = 15; // “Å‚Í•Ê“rˆ—
+    mHasInstantKillAttack = true; // Î‰»‘¦€
 }

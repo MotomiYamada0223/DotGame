@@ -7,22 +7,21 @@
 class Enemy : public Object2D
 {
 public:
-	Enemy(VECTOR initPos);
+	Enemy(const std::string& graphPath, VECTOR initPos);
 	virtual ~Enemy();
 
 	virtual void Update() override;
 	virtual void Draw() override;
 
 	// “G‚ÌˆÚ“®ˆ—
-	void EnemyMove(BlockMap& blockMap);
+	virtual void EnemyMove(BlockMap& blockMap) {}
 
 	// UŒ‚‚ğó‚¯‚½Û‚ÉŒÄ‚Î‚ê‚éˆ—
 	void OnDamaged();
 
-private:
+protected:
 	// ˆÚ“®E•¨—ŠÖ˜A
-	float moveSpeed;
-
+	
 	// CharacterPhysics—p
 	bool mbIsJumping;
 	bool isGrounded;

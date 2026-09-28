@@ -1,7 +1,8 @@
-﻿#include "EnemyWolf.h"
+#include "GameConstants.h"
+#include "EnemyWolf.h"
 
 EnemyWolf::EnemyWolf(VECTOR initPos)
-    : Enemy(initPos)
+    : Enemy(CharacterGraphPath::Dragon, initPos)
 {
     UpdateStatusByProgress(GameProgress::Tutorial3);
 }

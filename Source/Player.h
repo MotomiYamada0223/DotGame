@@ -1,9 +1,9 @@
-ï»¿#pragma once
+#pragma once
 #include "Object2D.h"
 #include <vector>
 #include <math.h>
 #include "BlockMap.h"
-#include "CharacterPhysics.h" // ã‚¸ãƒ£ãƒ³ãƒ—ã¨ã‹ã®å½“ãŸã‚Šåˆ¤å®šã‚’ã—ã¦ãã‚Œã‚‹å‡¦ç†
+#include "CharacterPhysics.h" // ƒWƒƒƒ“ƒv‚Æ‚©‚Ì“–‚½‚è”»’è‚ğ‚µ‚Ä‚­‚ê‚éˆ—
 #include "BlockAction.h"
 #include "FallDeathController.h"
 
@@ -19,48 +19,50 @@ public:
 	virtual void Draw() override;
 	virtual void UpdateStatusByProgress(GameProgress progress) override;
 
-	void DebugDraw(); // ãƒ‡ãƒãƒƒã‚°ç”¨ã®æç”»é–¢æ•°
+	void DebugDraw(); // ƒfƒoƒbƒO—p‚Ì•`‰æŠÖ”
 
-	// Mapã‚’å—ã‘å–ã£ã¦ä½ç½®ã‚’æ›´æ–°ã™ã‚‹å‡¦ç†
+	// Map‚ğó‚¯æ‚Á‚ÄˆÊ’u‚ğXV‚·‚éˆ—
 	void PlayerMove(BlockMap& blockMap);
 
 	float GetMoveDirection() const { return mfMoveDirection; }
-	// æ­»äº¡ãƒ†ã‚­ã‚¹ãƒˆã®å‘¼ã³å‡ºã—
+	// €–SƒeƒLƒXƒg‚ÌŒÄ‚Ño‚µ
 	void DrawFallDeath();
 
 public:
-	bool GetIsDead() const { return isDead; } // æ­»äº¡åˆ¤å®šã‹ã®å‡¦ç†
+	bool GetIsDead() const { return isDead; } // €–S”»’è‚©‚Ìˆ—
 
 
 private:
-	CharacterPhysics mCharacterPhysics; // ç‰©ç†è¨ˆç®—ç”¨ã®ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹
-	FallDeathController mFallDeath; // è½ä¸‹å‡¦ç†
+	CharacterPhysics mCharacterPhysics; // •¨—ŒvZ—p‚ÌƒCƒ“ƒXƒ^ƒ“ƒX
+	FallDeathController mFallDeath; // —‰ºˆ—
 	float mfMoveDirection;
 
-	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®å½“ãŸã‚Šåˆ¤å®šã‚µã‚¤ã‚º
+	// ƒvƒŒƒCƒ„[‚Ì“–‚½‚è”»’èƒTƒCƒY
 	float mfPlayerWidth;
 	float mfPlayerHeight;
 
-	// ã‚¸ãƒ£ãƒ³ãƒ—é–¢é€£
+	// ƒWƒƒƒ“ƒvŠÖ˜A
 	bool mbIsJumping;
 	float velocityY;
-	const float gravity = 0.3f; // å…ƒ0.5
-	const float jumpPower = -16.0f; // å…ƒ12
-	bool isGrounded; // åœ°é¢ã«æ¥åœ°ã—ã¦ã„ã‚‹ã‹ã©ã†ã‹
+	const float gravity = 0.3f; // Œ³0.5
+	const float jumpPower = -16.0f; // Œ³12
+	bool isGrounded; // ’n–Ê‚ÉÚ’n‚µ‚Ä‚¢‚é‚©‚Ç‚¤‚©
 
-	// ç§»å‹•é–¢é€£
+	// ˆÚ“®ŠÖ˜A
 	const float moveSpeed = 5.0f;
 	bool isFacingRight; 
 
-	// æ”»æ’ƒé–¢é€£
+	// UŒ‚ŠÖ˜A
 	bool isAttacking;
 	int attackTimer;
+	std::vector<Object2D*> mHitEnemies;
 	const int attackDuration = 15; 
 
-	// è¢«ãƒ€ãƒ¡ãƒ¼ã‚¸ï¼ˆè¡çªï¼‰ãƒ•ãƒ©ã‚°
+	// ”íƒ_ƒ[ƒWiÕ“Ëjƒtƒ‰ƒO
 	bool isHitDamage;
+	int mInvincibleTimer;
 
-	// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³é–¢é€£
+	// ƒAƒjƒ[ƒVƒ‡ƒ“ŠÖ˜A
 	int mCurrentFrame;
 	int mFrameTimer;
 	static const int FRAME_WIDTH = 128; 
@@ -68,7 +70,7 @@ private:
 	static const int TOTAL_FRAMES = 4; 
 	static const int FRAME_INTERVAL = 8; 
 
-	// æ­»äº¡å‡¦ç†é–¢é€£
+	// €–Sˆ—ŠÖ˜A
 	struct PlayerFragment
 	{
 		VECTOR pos;
@@ -93,7 +95,7 @@ private:
 	int mHeartHalfGraph;
 	int mHeartEmptyGraph;
 
-private: // å¾©æ´»å‡¦ç†é–¢ä¿‚
+private: // •œŠˆˆ—ŠÖŒW
 	void Revive();
-	bool mbFallDeath = false; // æ­»äº¡åˆ¤å®š
+	bool mbFallDeath = false; // €–S”»’è
 };

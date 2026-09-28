@@ -1,3 +1,4 @@
+﻿$content = @"
 #pragma once
 #include "Enemy.h"
 #include "UnitStatus.h"
@@ -16,3 +17,5 @@ public:
 protected:
     float mMoveSpeed;
 };
+"@
+[System.IO.File]::WriteAllText("Source\EnemySlime.h", $content, [System.Text.Encoding]::GetEncoding(932))

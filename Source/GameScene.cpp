@@ -1,9 +1,10 @@
-ï»¿#include "GameScene.h"
+#include "GameScene.h"
 #include "Utility.h"
 #include "Master.h"
 #include "InputManager.h"
 #include "Player.h" 
-#include "Enemy.h" 
+#include "Enemy.h"
+#include "EnemySlime.h" 
 #include "Saint.h"
 #include "GameConstants.h"
 
@@ -22,28 +23,29 @@ GameScene::~GameScene()
 
 void GameScene::Initialize()
 {
-	// CSVã®ãƒ•ã‚¡ã‚¤ãƒ«èª­ã¿è¾¼ã¿
-	// ãƒãƒ¥ãƒ¼ãƒˆãƒªã‚¢ãƒ«ãƒ†ã‚­ã‚¹ãƒˆã¨ãƒ–ãƒ­ãƒƒã‚¯ãƒãƒƒãƒ—ã®ã‚¿ã‚¤ãƒ«
+	// CSV‚Ìƒtƒ@ƒCƒ‹“Ç‚İ‚İ
+	// ƒ`ƒ…[ƒgƒŠƒAƒ‹ƒeƒLƒXƒg‚ÆƒuƒƒbƒNƒ}ƒbƒv‚Ìƒ^ƒCƒ‹
 	mTutorialText.Initialize(CsvPath::TutorialText);
 
-	// èƒŒæ™¯ç”»åƒã¨å½“ãŸã‚Šåˆ¤å®šç”»åƒã‚’èª­ã¿è¾¼ã‚€
+	// ”wŒi‰æ‘œ‚Æ“–‚½‚è”»’è‰æ‘œ‚ğ“Ç‚İ‚Ş
 	mBlockMap.Load(
 		BlockMapGraphPath::Background,
 		BlockMapGraphPath::Collision
 	);
 
 
-	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ç”Ÿæˆ
+	// ƒvƒŒƒCƒ„[‚Ì¶¬
 	mpPlayer = new Player(VGet(ScreenSize::CenterX - 6000, 600, 0.0f));
 
-	// Saintï¼ˆã—ã‚ƒã¹ã‚‹ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ï¼‰ã‚’ç”»é¢ä¸Šéƒ¨ã«é…ç½®
+	// Sainti‚µ‚á‚×‚éƒLƒƒƒ‰ƒNƒ^[j‚ğ‰æ–Êã•”‚É”z’u
 	new Saint(VGet(Utility::SCREEN_WIDTH / 2.0f, 150.0f, 0.0f));
 
-	// æ•µã®ç”Ÿæˆ
+	// “G‚Ì¶¬
 	if (mpPlayer != nullptr)
 	{
-		// ç”»é¢å·¦å´ (X=0 ä»˜è¿‘)ã€Yã¯ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã¨åŒã˜é«˜ã•ã§ç”Ÿæˆ
-		new Enemy(VGet(1000.0f, mpPlayer->GetPosition().y - 500, 0.0f));
+		// ‰æ–Ê¶‘¤ (X=0 •t‹ß)AY‚ÍƒvƒŒƒCƒ„[‚Æ“¯‚¶‚‚³‚Å¶¬
+				EnemySlime* slime = new EnemySlime(VGet(1000.0f, mpPlayer->GetPosition().y - 500, 0.0f));
+		slime->UpdateStatusByProgress(mProgress);
 	}
 
 	spawnTimer = 0;
@@ -53,20 +55,20 @@ void GameScene::Initialize()
 
 void GameScene::Update()
 {
-	//æ®‹æ©ŸãŒãªã„ã‹ã®åˆ¤å®šãŒtrueãªã‚‰
+	//c‹@‚ª‚È‚¢‚©‚Ì”»’è‚ªtrue‚È‚ç
 	if (mpPlayer->IsOutOfLive())
 	{
 		Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_LOSERESULT);
 	}
 
-	// ãƒãƒ¥ãƒ¼ãƒˆãƒªã‚¢ãƒ«ãƒ†ã‚­ã‚¹ãƒˆã®æ›´æ–°
+	// ƒ`ƒ…[ƒgƒŠƒAƒ‹ƒeƒLƒXƒg‚ÌXV
 	if (!mpPlayer->GetIsDead()) mTutorialText.Update(1.0f / 60.0f);
 	
 	mpPlayer->PlayerMove(mBlockMap);
 
 
-	// ã‚·ãƒ¼ãƒ³ä¸Šã«å­˜åœ¨ã™ã‚‹ã™ã¹ã¦ã®æ•µã‚’ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆãƒãƒãƒ¼ã‚¸ãƒ£ãƒ¼çµŒç”±ã§ä¸€æ‹¬å–å¾—
-	/// å€‹åˆ¥ã®ã‚³ãƒ¼ãƒ‰ã‚’è¿½åŠ ã™ã‚‹ã“ã¨ãªãå…±é€šã®ç§»å‹•å‡¦ç†ã‚’å®Ÿè¡Œã™ã‚‹ãŸã‚
+	// ƒV[ƒ“ã‚É‘¶İ‚·‚é‚·‚×‚Ä‚Ì“G‚ğƒIƒuƒWƒFƒNƒgƒ}ƒl[ƒWƒƒ[Œo—R‚ÅˆêŠ‡æ“¾
+	/// ŒÂ•Ê‚ÌƒR[ƒh‚ğ’Ç‰Á‚·‚é‚±‚Æ‚È‚­‹¤’Ê‚ÌˆÚ“®ˆ—‚ğÀs‚·‚é‚½‚ß
 	ObjectManager* objManager = GetObjectManager();
 	if (objManager != nullptr)
 	{
@@ -76,12 +78,12 @@ void GameScene::Update()
 			Enemy* enemy = dynamic_cast<Enemy*>(obj);
 			if (enemy != nullptr)
 			{
-				enemy->EnemyMove(mBlockMap); // æ•µã«è¿½åŠ ã—ãŸç§»å‹•é–¢æ•°ã‚’å‘¼ã³å‡ºã™
+				enemy->EnemyMove(mBlockMap); // “G‚É’Ç‰Á‚µ‚½ˆÚ“®ŠÖ”‚ğŒÄ‚Ño‚·
 			}
 		}
 	}
 
-	// ã‚¯ãƒ©ã‚¹ã®Updateå‘¼ã³å‡ºã—
+	// ƒNƒ‰ƒX‚ÌUpdateŒÄ‚Ño‚µ
 	Scene::Update();
 }
 
@@ -89,19 +91,19 @@ void GameScene::Draw()
 {
 	if (!mbIsLoaded) { return; }
 
-	// ã‚¯ãƒ©ã‚¹ã®Drawå‘¼ã³å‡ºã—
+	// ƒNƒ‰ƒX‚ÌDrawŒÄ‚Ño‚µ
 	Scene::Draw();
 
-	// ãƒ‡ãƒãƒƒã‚°ç³»
-	mpPlayer->DebugDraw(); // ãƒ–ãƒ­ãƒƒã‚¯ãƒ‡ãƒãƒƒã‚°
-	mBlockMap.DebugDraw(); // ãƒ–ãƒ­ãƒƒã‚¯ãƒãƒƒãƒ—ãƒ‡ãƒãƒƒã‚°è¡¨ç¤º
-	mTutorialText.DebugDraw(); // ãƒ†ã‚­ã‚¹ãƒˆ
+	// ƒfƒoƒbƒOŒn
+	mpPlayer->DebugDraw(); // ƒuƒƒbƒNƒfƒoƒbƒO
+	mBlockMap.DebugDraw(); // ƒuƒƒbƒNƒ}ƒbƒvƒfƒoƒbƒO•\¦
+	mTutorialText.DebugDraw(); // ƒeƒLƒXƒg
 
-	// ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®æç”»
-	mBlockMap.Draw(); // ãƒ–ãƒ­ãƒƒã‚¯ãƒãƒƒãƒ—ã®æç”»
-	mTutorialText.Draw(); // ãƒãƒ¥ãƒ¼ãƒˆãƒªã‚¢ãƒ«ã®æç”»
+	// ƒIƒuƒWƒFƒNƒg‚Ì•`‰æ
+	mBlockMap.Draw(); // ƒuƒƒbƒNƒ}ƒbƒv‚Ì•`‰æ
+	mTutorialText.Draw(); // ƒ`ƒ…[ƒgƒŠƒAƒ‹‚Ì•`‰æ
 
-	mpPlayer->DrawFallDeath(); // æ­»äº¡ãƒ†ã‚­ã‚¹ãƒˆã®è¡¨ç¤º
+	mpPlayer->DrawFallDeath(); // €–SƒeƒLƒXƒg‚Ì•\¦
 }
 
 void GameScene::Finalize()

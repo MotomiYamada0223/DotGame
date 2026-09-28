@@ -5,16 +5,14 @@
 #include "BlockMap.h"
 
 
-Enemy::Enemy(VECTOR initPos)
-	: Object2D(CharacterGraphPath::Dragon, initPos)
+Enemy::Enemy(const std::string& graphPath, VECTOR initPos)
+	: Object2D(graphPath, initPos)
 	, mpBlockMap(nullptr)
 {
 	SetTag(Object2D::Enemy2D);
 
 
-	// 移動関連
-	moveSpeed = 2.0f;
-
+	
 	// CharacterPhysics用
 	mbIsJumping = false;
 	isGrounded = false;
@@ -136,31 +134,6 @@ void Enemy::Draw()
 	}
 }
 
-
-// EnemyMove
-void Enemy::EnemyMove(BlockMap& blockMap)
-{
-	// マップの参照を保持
-	mpBlockMap = &blockMap;
-
-	// 敵の移動方向
-	float moveDirection = 1.0f;
-
-
-	// BlockMapとの当たり判定付き移動
-	mCharacterPhysics.UpdateMoveAndCollision(
-		mvPosition,
-		velocityY,
-		isGrounded,
-		mbIsJumping,
-		blockMap,
-		mfEnemyWidth,
-		mfEnemyHeight,
-		gravity,
-		moveSpeed,
-		moveDirection
-	);
-}
 
 void Enemy::OnDamaged()
 {
