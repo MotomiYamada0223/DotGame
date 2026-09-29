@@ -36,11 +36,14 @@ public:
 
 	bool IsFinished() const { return mIsFinished; }
 
+	// プレイヤーのアニメーションで使う変数
+	// アニメーションさせる画像情報
 	static const int FRAME_WIDTH = 128;
 	static const int FRAME_HEIGHT = 128;
 	static const int TOTAL_FRAMES = 4;
 	static const int FRAME_INTERVAL = 8;
 
+	// アニメーションさせる時に映す基準位置
 	static const int IDLE_POS = 0;
 	static const int WALK_POS = 128;
 	static const int JUMP_POS = 256;

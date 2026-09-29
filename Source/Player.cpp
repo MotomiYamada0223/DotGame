@@ -34,8 +34,8 @@ Player::Player(VECTOR initPos)
 	mSpawnPos = initPos;
 	mDeadState = 0;
 	mpBlockMap = nullptr;
-	mCurrentFrame = 0;
-	mFrameTimer = 0;
+	//mCurrentFrame = 0;
+	//mFrameTimer = 0;
 	mfMoveDirection = 0.0f;
 
 
@@ -225,12 +225,13 @@ void Player::PlayerMove(BlockMap& blockMap)
 	}
 	eKeyWasDown = eKeyIsDown;
 
-	// U F
+	// 攻撃 F
 	if (CheckHitKey(KEY_INPUT_F) == 1 &&
 		!isAttacking)
 	{
 		isAttacking = true;
 		attackTimer = attackDuration;
+		mPlayerState.SetAttack();
 		mHitEnemies.clear();
 	}
 
@@ -247,24 +248,45 @@ void Player::PlayerMove(BlockMap& blockMap)
 	}
 
 
-	// アニメーション更新
-	if (mfMoveDirection != 0.0f)
+
+	// アニメーション状態を更新   
+	if (!isAttacking)
 	{
-		mFrameTimer++;
-
-		if (mFrameTimer >= FRAME_INTERVAL)
+		if (mbIsJumping)
 		{
-			mFrameTimer = 0;
-
-			mCurrentFrame =
-				(mCurrentFrame + 1) % TOTAL_FRAMES;
+			mPlayerState.SetJump();
+		}
+		else if (mfMoveDirection != 0.0f)
+		{
+			mPlayerState.SetWalk();
+		}
+		else
+		{
+			mPlayerState.SetIdle();
 		}
 	}
-	else
+
+	mPlayerState.Update();
+
+	if (isAttacking && mPlayerState.IsFinished())
 	{
-		mCurrentFrame = 0;
-		mFrameTimer = 0;
+		isAttacking = false;
+		attackTimer = 0;
+
+		if (mbIsJumping)
+		{
+			mPlayerState.SetJump();
+		}
+		else if (mfMoveDirection != 0.0f)
+		{
+			mPlayerState.SetWalk();
+		}
+		else
+		{
+			mPlayerState.SetIdle();
+		}
 	}
+
 }
 
 void Player::Update()
@@ -343,7 +365,7 @@ void Player::Update()
 		hasAttackRect = true;
 		int attackWidth = PlayerConstants::PlayerAttackWidth;
 		int attackHeight = PlayerConstants::PlayerAttackHeight;
-		int halfSizeX = FRAME_WIDTH / 2;
+		int halfSizeX = PlayerAnimState::FRAME_WIDTH / 2;
 		float atkLeft;
 
 		if (isFacingRight)
@@ -465,15 +487,28 @@ void Player::Update()
 		mFragments.clear();
 
 		int fragSize = 16;
-		int srcBaseY = isFacingRight ? 384 : 256;
+		int srcBaseY = PlayerAnimState::IDLE_POS;
 
-		for (int y = 0; y < FRAME_HEIGHT; y += fragSize)
+		if (isAttacking)
 		{
-			for (int x = 0; x < FRAME_WIDTH; x += fragSize)
+			srcBaseY = PlayerAnimState::ATTACK_POS;
+		}
+		else if (mbIsJumping)
+		{
+			srcBaseY = PlayerAnimState::JUMP_POS;
+		}
+		else if (mfMoveDirection != 0.0f)
+		{
+			srcBaseY = PlayerAnimState::WALK_POS;
+		}
+
+		for (int y = 0; y < PlayerAnimState::FRAME_HEIGHT; y += fragSize)
+		{
+			for (int x = 0; x < PlayerAnimState::FRAME_WIDTH; x += fragSize)
 			{
 				PlayerFragment frag;
-				frag.pos.x = mvPosition.x - (FRAME_WIDTH / 2.0f) + (float)x;
-				frag.pos.y = mvPosition.y - (FRAME_HEIGHT / 2.0f) + (float)y;
+				frag.pos.x = mvPosition.x - (PlayerAnimState::FRAME_WIDTH / 2.0f) + (float)x;
+				frag.pos.y = mvPosition.y - (PlayerAnimState::FRAME_HEIGHT / 2.0f) + (float)y;
 				frag.srcX = x;
 				frag.srcY = srcBaseY + y;
 				frag.width = fragSize;
@@ -505,13 +540,13 @@ void Player::Draw()
 		{
 			if (mpTexture != nullptr)
 			{
-				// 死亡時の破片描画でも親クラスの共通関数を使用してスクロールを正確に反映させる
+				// 死亡時の破片描画でも親クラスの共通関数を使用してスクロールを正確に反映させる   
 				int playerLeft = static_cast<int>(ConvertToScreenX(frag.pos.x, mpBlockMap));
 
 				DrawRectGraph(
 					playerLeft,
 					static_cast<int>(frag.pos.y),
-					frag.srcX + (mCurrentFrame * FRAME_WIDTH),
+					frag.srcX,
 					frag.srcY,
 					frag.width,
 					frag.height,
@@ -524,7 +559,7 @@ void Player::Draw()
 				int playerLeftX = static_cast<int>(ConvertToScreenX(frag.pos.x, mpBlockMap));
 				int playerRigthtX = static_cast<int>(ConvertToScreenX(frag.pos.x + frag.width, mpBlockMap));
 
-				// テクスチャが無い場合の保険
+				// テクスチャが無い場合の保険   
 				DrawBox(
 					playerLeftX,
 					static_cast<int>(frag.pos.y),
@@ -540,28 +575,46 @@ void Player::Draw()
 
 	if (mpTexture != nullptr)
 	{
+		const int srcX = mPlayerState.GetCurrentFrame() * PlayerAnimState::FRAME_WIDTH;
+		int srcY = PlayerAnimState::IDLE_POS;
 		// 残像の描画
 		for (const auto& img : mAfterimages)
 		{
-			int ax = static_cast<int>(ConvertToScreenX(img.pos.x, mpBlockMap) - FRAME_WIDTH / 2);
-			int ay = static_cast<int>(img.pos.y - FRAME_HEIGHT / 2);
-			int aSrcX = 128;
-			int aSrcY = img.facingRight ? 256 : 384;
+			int ax = static_cast<int>(ConvertToScreenX(img.pos.x, mpBlockMap) - PlayerAnimState::FRAME_WIDTH / 2);
+			int ay = static_cast<int>(img.pos.y - PlayerAnimState::FRAME_HEIGHT / 2);
+			int aSrcX = srcX;
+			int aSrcY = srcY;
+			bool aFileX = !img.facingRight;
 			SetDrawBlendMode(DX_BLENDMODE_ALPHA, (int)img.alpha);
-			DrawRectGraph(ax, ay, aSrcX, aSrcY, FRAME_WIDTH, FRAME_HEIGHT, mpTexture->GetHandle(), true);
+			DrawRectGraph(
+				ax,
+				ay,
+				aSrcX,
+				aSrcY,
+				PlayerAnimState::FRAME_WIDTH,
+				PlayerAnimState::FRAME_HEIGHT,
+				mpTexture->GetHandle(),
+				true,
+				aFileX
+			);
 		}
 		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 
-		int srcX = mCurrentFrame * FRAME_WIDTH;
-		int srcY = 256;
-		if (!isFacingRight)
-		{
-			srcY = 384;
-		}
 
-		if (isBlinking)
+		// 現在の状態に応じた画像の切り出し位置を設定する   
+		PlayerAnimState::State animState = mPlayerState.GetState();
+
+		if (animState == PlayerAnimState::State::Attack)
 		{
-			srcX = 128;
+			srcY = PlayerAnimState::ATTACK_POS;
+		}
+		else if (animState == PlayerAnimState::State::Jump)
+		{
+			srcY = PlayerAnimState::JUMP_POS;
+		}
+		else if (animState == PlayerAnimState::State::Walk)
+		{
+			srcY = PlayerAnimState::WALK_POS;
 		}
 
 		// ダメージ中なら赤く変色させる
@@ -570,22 +623,43 @@ void Player::Draw()
 			SetDrawBright(255, 100, 100);
 		}
 
-		// 指定の場所だけ描画する
-		// 親クラスの共通関数を使用してワールド座標からスクリーン座標へ変換する
-		const int screenX = static_cast<int>(ConvertToScreenX(mvPosition.x, mpBlockMap) - FRAME_WIDTH / 2);
-		const int screenY = static_cast<int>(mvPosition.y - FRAME_HEIGHT / 2);
+		// 指定の場所だけ描画する   
+		// 親クラスの共通関数を使用してワールド座標からスクリーン座標へ変換する   
+		const int screenX = static_cast<int>(ConvertToScreenX(mvPosition.x, mpBlockMap) - PlayerAnimState::FRAME_WIDTH / 2);
+		const int screenY = static_cast<int>(mvPosition.y - PlayerAnimState::FRAME_HEIGHT / 2);
 
-		// プレイヤーを描画
-		DrawRectGraph(
-			screenX,
-			screenY,
-			srcX,
-			srcY,
-			FRAME_WIDTH,
-			FRAME_HEIGHT,
-			mpTexture->GetHandle(),
-			true
-		);
+		// プレイヤーを描画    
+		//    
+		// 右向き：通常描画    
+		// 左向き：左右反転して描画    
+		if (isFacingRight)
+		{
+			DrawRectGraph(
+				screenX,
+				screenY,
+				srcX,
+				srcY,
+				PlayerAnimState::FRAME_WIDTH,
+				PlayerAnimState::FRAME_HEIGHT,
+				mpTexture->GetHandle(),
+				true,
+				false
+			);
+		}
+		else
+		{
+			DrawRectGraph(
+				screenX,
+				screenY,
+				srcX,
+				srcY,
+				PlayerAnimState::FRAME_WIDTH,
+				PlayerAnimState::FRAME_HEIGHT,
+				mpTexture->GetHandle(),
+				true,
+				true
+			);
+		}
 
 		// 色を元に戻す
 		if (isHitDamage)
@@ -604,7 +678,7 @@ void Player::Draw()
 		int attackWidth = 60;
 		int attackHeight = 40;
 		int rectLeft, rectTop, rectRight, rectBottom;
-		int halfSizeX = FRAME_WIDTH / 2;
+		int halfSizeX = PlayerAnimState::FRAME_WIDTH / 2;
 
 		if (isFacingRight)
 		{
@@ -766,8 +840,8 @@ void Player::DeadProcess()
 
 		for (auto& frag : mFragments)
 		{
-			float targetX = mSpawnPos.x - (FRAME_WIDTH / 2.0f) + frag.srcX;
-			float targetY = mSpawnPos.y - (FRAME_HEIGHT / 2.0f) + (frag.srcY % FRAME_HEIGHT);
+			float targetX = mSpawnPos.x - (PlayerAnimState::FRAME_WIDTH / 2.0f) + frag.srcX;
+			float targetY = mSpawnPos.y - (PlayerAnimState::FRAME_HEIGHT / 2.0f) + (frag.srcY % PlayerAnimState::FRAME_HEIGHT);
 
 			float dx = targetX - frag.pos.x;
 			float dy = targetY - frag.pos.y;
