@@ -33,8 +33,9 @@ public:
 
 	int GetCurrentFrame() const { return mCurrentFrame; }
 	int GetFrameTimer() const { return mFrameTimer; }
-
 	bool IsFinished() const { return mIsFinished; }
+
+	int GetSrcY() const;
 
 	// プレイヤーのアニメーションで使う変数
 	// アニメーションさせる画像情報
@@ -52,11 +53,9 @@ public:
 private:
 	State mState;
 	PlayType mPlayType;
-
 	int mCurrentFrame;
 	int mFrameTimer;
-
 	int mStopFrame;
-
 	bool mIsFinished;
+
 };
