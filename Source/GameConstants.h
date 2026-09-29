@@ -27,7 +27,7 @@ namespace PlayerConstants
 	static const int PlayerAttackWidth = 60; // プレイヤーの攻撃範囲の幅
 	static const int PlayerAttackHeight = 40; // プレイヤーの攻撃範囲の高さ
 
-	static const int MaxLive = 2; // プレイヤーの最大残機
+	static const int MaxLive = 5; // プレイヤーの最大残機
 
 	// 落下でプレイヤーが死亡する位置
 	static const int PlayerDeathHeight = ScreenSize::ScrrenHeight + 100;
@@ -149,6 +149,4 @@ namespace MapScrollConstants
 	static constexpr int ScrollStartRightX = 1000;
 	// プレイヤーがこの画面X座標より左に行ったらスクロール
 	static constexpr int ScrollStartLeftX = 600;
-	// 1フレームあたりのスクロール速度
-	static constexpr int ScrollSpeed = 5;
 }
