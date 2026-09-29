@@ -1,13 +1,14 @@
-#include "SceneManager.h"
+ï»¿#include "SceneManager.h"
 #include "Scene.h"
 #include "Master.h"
 
-// ì¬‚·‚éƒV[ƒ“‚ÌƒCƒ“ƒNƒ‹[ƒh
+// ä½œæˆã™ã‚‹ã‚·ãƒ¼ãƒ³ã®ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰
 #include "TitleScene.h"
 #include "StageSelectScene.h"
 #include "GameScene.h"
 #include "WinResultScene.h"
 #include "LoseResultScene.h"
+#include "TestScene.h"
 
 
 SceneManager::SceneManager()
@@ -25,22 +26,22 @@ SceneManager::~SceneManager()
 
 void SceneManager::Initialize()
 {
-	// ‰ŠúƒV[ƒ“‚ÌÝ’è
+	// åˆæœŸã‚·ãƒ¼ãƒ³ã®è¨­å®š
 	mnNextSceneType = SCENE_TYPE::SCENE_TITLE;
 
-	// ƒV[ƒ“‘JˆÚ‚ð‚³‚¹‚é
+	// ã‚·ãƒ¼ãƒ³é·ç§»ã‚’ã•ã›ã‚‹
 	ChangeSceneIfNeeded();
 }
 
 void SceneManager::Update()
 {
-	// ƒV[ƒ“‚ÌXV
+	// ã‚·ãƒ¼ãƒ³ã®æ›´æ–°
 	mpCurrentScene->Update();
 }
 
 void SceneManager::Draw()
 {
-	// ƒV[ƒ“‚Ì•`‰æ
+	// ã‚·ãƒ¼ãƒ³ã®æç”»
 	mpCurrentScene->Draw();
 }
 
@@ -51,7 +52,7 @@ void SceneManager::Finalize()
 
 void SceneManager::ChangeSceneIfNeeded()
 {
-	// Œ»ÝƒV[ƒ“‚ÆŽŸ‚ÌƒV[ƒ“‚ªˆê‚Å‚ ‚ê‚Î‰½‚à‚µ‚È‚¢
+	// ç¾åœ¨ã‚·ãƒ¼ãƒ³ã¨æ¬¡ã®ã‚·ãƒ¼ãƒ³ãŒä¸€ç·’ã§ã‚ã‚Œã°ä½•ã‚‚ã—ãªã„
 	if (mnSceneType == mnNextSceneType)
 	{
 		return;
@@ -59,19 +60,19 @@ void SceneManager::ChangeSceneIfNeeded()
 
 	if (mpCurrentScene != nullptr)
 	{
-		// Œ»ÝƒV[ƒ“‚ÌI—¹ˆ—‚ð‚·‚é
+		// ç¾åœ¨ã‚·ãƒ¼ãƒ³ã®çµ‚äº†å‡¦ç†ã‚’ã™ã‚‹
 		mpCurrentScene->Finalize();
 
-		// ˆê’UƒV[ƒ“Ž©‘Ì‚à”jŠü‚µ‚Ä‚¨‚­
+		// ä¸€æ—¦ã‚·ãƒ¼ãƒ³è‡ªä½“ã‚‚ç ´æ£„ã—ã¦ãŠã
 		delete mpCurrentScene;
 		mpCurrentScene = nullptr;
 	}
 
-	// ŽŸƒV[ƒ“‚É‚·‚é‚½‚ßƒV[ƒ“ƒ^ƒCƒvXV
+	// æ¬¡ã‚·ãƒ¼ãƒ³ã«ã™ã‚‹ãŸã‚ã‚·ãƒ¼ãƒ³ã‚¿ã‚¤ãƒ—æ›´æ–°
 	mnSceneType = mnNextSceneType;
 
 
-	// mnSceneType ‚É‰ž‚¶‚ÄƒV[ƒ“‚ðì¬‚·‚é
+	// mnSceneType ã«å¿œã˜ã¦ã‚·ãƒ¼ãƒ³ã‚’ä½œæˆã™ã‚‹
 
 	switch (mnSceneType)
 	{
@@ -90,13 +91,15 @@ void SceneManager::ChangeSceneIfNeeded()
 	case SCENE_TYPE::SCENE_WINRESULT:
 		mpCurrentScene = new WinResultScene();
 		break;
-
 	case SCENE_TYPE::SCENE_LOSERESULT:
 		mpCurrentScene = new LoseResultScene();
 		break;
+	case SCENE_TYPE::SCENE_TEST:
+		mpCurrentScene = new TestScene();
+		break;
 	}
 
-	// ƒV[ƒ“‚Ì¶¬‚ª‚³‚ê‚Ä‚¢‚é‚Í‚¸‚È‚Ì‚ÅA‰Šú‰»ˆ—‚ðŒÄ‚ñ‚Å‚¨‚­
+	// ã‚·ãƒ¼ãƒ³ã®ç”ŸæˆãŒã•ã‚Œã¦ã„ã‚‹ã¯ãšãªã®ã§ã€åˆæœŸåŒ–å‡¦ç†ã‚’å‘¼ã‚“ã§ãŠã
 	mpCurrentScene->Initialize();
 
 }

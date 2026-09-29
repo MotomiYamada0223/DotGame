@@ -69,6 +69,8 @@ namespace BlockMapGraphPath
 {
 	static const char* Background = "Resource/Map/backGround.png";
 	static const char* Collision = "Resource/Map/collision.png";
+	static const char* TestBackground = "Resource/Map/TestMap.png";
+	static const char* TestCollision = "Resource/Map/TestMapCollision.png";
 }
 
 // スクロール背景のパス

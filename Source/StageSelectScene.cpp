@@ -156,6 +156,11 @@ void StageSelectScene::Update()
 		Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_GAME);
 	}
 
+	if (InputManager::CheckDownKey(KEY_INPUT_SPACE))
+	{
+		Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_TEST);
+	}
+
 	Scene::Update();
 }
 
@@ -185,7 +190,7 @@ void StageSelectScene::Draw()
 			60,
 			100,
 			GetColor(255, 255, 255),
-			"Stage Select Scene\nPress Enter to Game"
+			"Stage Select Scene\nPress Enter to Game\nPress Space to TestScene"
 		);
 
 	Scene::Draw();
