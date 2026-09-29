@@ -6,7 +6,6 @@
 #include "CharacterPhysics.h" // ジャンプとかの当たり判定をしてくれる処理
 #include "BlockAction.h"
 #include "FallDeathController.h"
-#include "PlayerAnimState.h"
 
 #include "UnitStatus.h"
 
@@ -51,21 +50,25 @@ private:
 
 	// 移動関連
 	const float moveSpeed = 5.0f;
-	bool isFacingRight; 
+	bool isFacingRight;
 
 	// 攻撃関連
 	bool isAttacking;
 	int attackTimer;
 	std::vector<Object2D*> mHitEnemies;
-	const int attackDuration = 15; 
+	const int attackDuration = 15;
 
 	// 被ダメージ（衝突）フラグ
 	bool isHitDamage;
 	int mInvincibleTimer;
 
 	// アニメーション関連
-	PlayerAnimState mPlayerState;
-
+	int mCurrentFrame;
+	int mFrameTimer;
+	static const int FRAME_WIDTH = 128;
+	static const int FRAME_HEIGHT = 128;
+	static const int TOTAL_FRAMES = 4;
+	static const int FRAME_INTERVAL = 8;
 
 	// 死亡処理関連
 		// ブリンク関連
