@@ -74,7 +74,7 @@ namespace BlockMapGraphPath
 // スクロール背景のパス
 namespace BackgroundGraphPath
 {
-	static const char* Stage1 = "Resource/Map/background_1.png";
+	static const char* Stage1 = "Resource/Background/stage1_background.png";
 }
 
 // 読み込むCSVパス
