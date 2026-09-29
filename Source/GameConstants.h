@@ -72,7 +72,7 @@ namespace BlockMapGraphPath
 }
 
 // スクロール背景のパス
-namespace BackgroundGraphPath
+namespace ScrollGraphPath
 {
 	static const char* Stage1 = "Resource/Map/background_1.png";
 }
