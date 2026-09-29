@@ -34,8 +34,6 @@ Player::Player(VECTOR initPos)
 	mSpawnPos = initPos;
 	mDeadState = 0;
 	mpBlockMap = nullptr;
-	//mCurrentFrame = 0;
-	//mFrameTimer = 0;
 	mfMoveDirection = 0.0f;
 
 
