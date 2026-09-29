@@ -204,16 +204,6 @@ void Player::PlayerMove(BlockMap& blockMap)
 
 
 
-	// ジャンプ開始
-	if (CheckHitKey(KEY_INPUT_SPACE) == 1 &&
-		isGrounded)
-	{
-		mbIsJumping = true;
-		isGrounded = false;
-		velocityY = jumpPower;
-	}
-
-
 	// Blink (Eキー)
 	static bool eKeyWasDown = false;
 	bool eKeyIsDown = (CheckHitKey(KEY_INPUT_E) == 1);
@@ -224,6 +214,17 @@ void Player::PlayerMove(BlockMap& blockMap)
 		blinkDirection = isFacingRight ? 1.0f : -1.0f;
 	}
 	eKeyWasDown = eKeyIsDown;
+
+
+
+	// ジャンプ開始
+	if (CheckHitKey(KEY_INPUT_SPACE) == 1 &&
+		isGrounded)
+	{
+		mbIsJumping = true;
+		isGrounded = false;
+		velocityY = jumpPower;
+	}
 
 	// 攻撃 F
 	if (CheckHitKey(KEY_INPUT_F) == 1 &&
@@ -236,6 +237,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 	}
 
 
+
 	// 攻撃エフェクト更新
 	if (isAttacking)
 	{
@@ -243,10 +245,9 @@ void Player::PlayerMove(BlockMap& blockMap)
 
 		if (attackTimer <= 0)
 		{
-			isAttacking = false;
+			attackTimer = 0;
 		}
 	}
-
 
 
 	// アニメーション状態を更新   

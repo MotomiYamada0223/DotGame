@@ -82,6 +82,7 @@ private:
 	};
 	std::vector<BlinkAfterimage> mAfterimages;
 
+	// 死亡処理関連
 	struct PlayerFragment
 	{
 		VECTOR pos;
