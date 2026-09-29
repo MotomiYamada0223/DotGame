@@ -11,6 +11,12 @@ PlayerAnimState::PlayerAnimState()
 {
 }
 
+// 今表示しているYを返す
+int PlayerAnimState::GetSrcY() const
+{
+	return static_cast<int>(mState) * FRAME_HEIGHT;
+}
+
 // アニメーションの状態を変更する
 void PlayerAnimState::SetState(State state)
 {

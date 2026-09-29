@@ -576,14 +576,13 @@ void Player::Draw()
 	if (mpTexture != nullptr)
 	{
 		const int srcX = mPlayerState.GetCurrentFrame() * PlayerAnimState::FRAME_WIDTH;
-		int srcY = PlayerAnimState::IDLE_POS;
 		// 残像の描画
 		for (const auto& img : mAfterimages)
 		{
 			int ax = static_cast<int>(ConvertToScreenX(img.pos.x, mpBlockMap) - PlayerAnimState::FRAME_WIDTH / 2);
 			int ay = static_cast<int>(img.pos.y - PlayerAnimState::FRAME_HEIGHT / 2);
 			int aSrcX = srcX;
-			int aSrcY = srcY;
+			int aSrcY = mPlayerState.GetSrcY();
 			bool aFileX = !img.facingRight;
 			SetDrawBlendMode(DX_BLENDMODE_ALPHA, (int)img.alpha);
 			DrawRectGraph(
@@ -603,6 +602,7 @@ void Player::Draw()
 
 		// 現在の状態に応じた画像の切り出し位置を設定する   
 		PlayerAnimState::State animState = mPlayerState.GetState();
+		int srcY = PlayerAnimState::IDLE_POS;
 
 		if (animState == PlayerAnimState::State::Attack)
 		{
