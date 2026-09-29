@@ -213,7 +213,7 @@ void BlockMap::DebugDraw()
 }
 
 // マップのスクロール処理
-void BlockMap::Move(int playerScreenX, float moveDirection)
+void BlockMap::Move(int playerScreenX, float moveDirection, float currentSpeed)
 {
     if (!mbIsLoaded) { return; }
 
@@ -226,14 +226,14 @@ void BlockMap::Move(int playerScreenX, float moveDirection)
     if (playerScreenX > MapScrollConstants::ScrollStartRightX &&
         moveDirection > 0.0f)
     {
-        mScrollX += MapScrollConstants::ScrollSpeed;
+        mScrollX += static_cast<int>(currentSpeed);
     }
 
     // 左側の線を超えていて、左に移動中
     else if (playerScreenX < MapScrollConstants::ScrollStartLeftX &&
         moveDirection < 0.0f)
     {
-        mScrollX -= MapScrollConstants::ScrollSpeed;
+        mScrollX -= static_cast<int>(currentSpeed);
     }
 
     // 左端

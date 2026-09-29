@@ -93,8 +93,7 @@ void GameScene::Update()
 	}
 
 	// チュートリアルテキストの更新
-	if (!mpPlayer->GetIsDead()) mTutorialText.Update(1.0f / 60.0f);
-	
+	mTutorialText.Update(1.0f / 60.0f);
 	mpPlayer->PlayerMove(mBlockMap);
 
 

@@ -50,6 +50,8 @@ private:
 
 	// 移動関連
 	const float moveSpeed = 5.0f;
+
+	float totalSpeed = moveSpeed; // 合計の今の速さ
 	bool isFacingRight;
 
 	// 攻撃関連
