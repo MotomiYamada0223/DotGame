@@ -16,7 +16,7 @@ void FontManager::Initialize()
 {
     // Resourceにあるフォントを読み込んで使用できるようにする
     AddFontResourceEx(
-        "Resource/Font/dotFont/x12y16pxMaruMonica.ttf",
+        "Resource/Fonts/dotFont/maruMonica.ttf",
         FR_PRIVATE,
         NULL
     );
