@@ -6,6 +6,19 @@
 #include "InputManager.h"
 
 
+FallDeathController::FallDeathController()
+	: mActive(false)
+	, mIsPressEnter(false)
+	, mReviveTimer(0.0f)
+{
+
+}
+
+FallDeathController::~FallDeathController()
+{
+
+}
+
 void FallDeathController::Update(VECTOR playerPos, int playerLive)
 {
 	// プレイヤーが地点を超えたらかつ残機が１以上なら
@@ -37,7 +50,7 @@ void FallDeathController::Update(VECTOR playerPos, int playerLive)
 	}
 }
 
-void FallDeathController::Draw(int live)
+void FallDeathController::Draw(int live) const
 {
 	if (!mActive) { return; }
 

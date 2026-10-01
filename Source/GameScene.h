@@ -3,6 +3,7 @@
 #include "Scene.h"
 #include "TutorialTextManager.h"
 #include"BlockMap.h"
+#include "Background.h"
 
 // 前方宣言
 class Player;
@@ -28,6 +29,7 @@ private:
 	Player* mpPlayer;
 	GameProgress mProgress; // プレイヤーの座標を参照するために保持
 	BlockMap mBlockMap;
+	Background mBackground; // スクロール背景
 
 	bool mbIsLoaded = false; // マップがロードされたかどうかのフラグ
 };

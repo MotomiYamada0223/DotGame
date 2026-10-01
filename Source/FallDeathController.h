@@ -11,8 +11,10 @@ class FallDeathController
 {
 public:
 
+    FallDeathController();
+    ~FallDeathController();
     void Update(VECTOR playerPos, int playerLive);
-    void Draw(int live);
+    void Draw(int live) const;
 
     bool IsActive() const { return mActive; };
     bool IsReviveReady() const { return mIsPressEnter; }
@@ -24,7 +26,7 @@ public:
     void Reset();
 
 private:
-    bool mActive = false;
-    bool mIsPressEnter = false;
+    bool mActive;
+    bool mIsPressEnter;
     float mReviveTimer;
 };

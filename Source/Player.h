@@ -30,7 +30,7 @@ public:
 
 public:
 	bool GetIsDead() const { return isDead; } // 死亡判定かの処理
-
+	float GetCurrentSpeed() const { return mfCurrentSpeed; } // 現在の速さ
 
 private:
 	CharacterPhysics mCharacterPhysics; // 物理計算用のインスタンス
@@ -51,7 +51,7 @@ private:
 	// 移動関連
 	const float moveSpeed = 5.0f;
 
-	float totalSpeed = moveSpeed; // 合計の今の速さ
+	float mfCurrentSpeed = moveSpeed; // 合計の今の速さ
 	bool isFacingRight;
 
 	// 攻撃関連

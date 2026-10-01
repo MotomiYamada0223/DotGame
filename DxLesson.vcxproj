@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -131,6 +131,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Background.cpp" />
     <ClCompile Include="Source\BlockAction.cpp" />
     <ClCompile Include="Source\BlockMap.cpp" />
     <ClCompile Include="Source\BossEnemyDragon.cpp" />
@@ -167,8 +168,10 @@
     <ClCompile Include="Source\TutorialTextManager.cpp" />
     <ClCompile Include="Source\UnitStatus.cpp" />
     <ClCompile Include="Source\WinResultScene.cpp" />
-  <ClCompile Include="Source\TestScene.cpp" /></ItemGroup>
+    <ClCompile Include="Source\TestScene.cpp" />
+  </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Background.h" />
     <ClInclude Include="Source\BlockAction.h" />
     <ClInclude Include="Source\BlockMap.h" />
     <ClInclude Include="Source\BossEnemyDragon.h" />
@@ -207,7 +210,8 @@
     <ClInclude Include="Source\UnitStatus.h" />
     <ClInclude Include="Source\Utility.h" />
     <ClInclude Include="Source\WinResultScene.h" />
-  <ClInclude Include="Source\TestScene.h" /></ItemGroup>
+    <ClInclude Include="Source\TestScene.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
