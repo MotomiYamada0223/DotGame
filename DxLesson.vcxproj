@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -150,6 +150,7 @@
     <ClCompile Include="Source\LoseResultScene.cpp" />
     <ClCompile Include="Source\Main.cpp" />
     <ClCompile Include="Source\Master.cpp" />
+    <ClCompile Include="Source\NeedleTrap.cpp" />
     <ClCompile Include="Source\Object2D.cpp" />
     <ClCompile Include="Source\ObjectManager.cpp" />
     <ClCompile Include="Source\Player.cpp" />
@@ -167,7 +168,8 @@
     <ClCompile Include="Source\TutorialTextManager.cpp" />
     <ClCompile Include="Source\UnitStatus.cpp" />
     <ClCompile Include="Source\WinResultScene.cpp" />
-  <ClCompile Include="Source\TestScene.cpp" /></ItemGroup>
+    <ClCompile Include="Source\TestScene.cpp" />
+  </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\BlockAction.h" />
     <ClInclude Include="Source\BlockMap.h" />
@@ -187,6 +189,7 @@
     <ClInclude Include="Source\InputManager.h" />
     <ClInclude Include="Source\LoseResultScene.h" />
     <ClInclude Include="Source\Master.h" />
+    <ClInclude Include="Source\NeedleTrap.h" />
     <ClInclude Include="Source\Object2D.h" />
     <ClInclude Include="Source\ObjectManager.h" />
     <ClInclude Include="Source\Player.h" />
@@ -207,7 +210,8 @@
     <ClInclude Include="Source\UnitStatus.h" />
     <ClInclude Include="Source\Utility.h" />
     <ClInclude Include="Source\WinResultScene.h" />
-  <ClInclude Include="Source\TestScene.h" /></ItemGroup>
+    <ClInclude Include="Source\TestScene.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

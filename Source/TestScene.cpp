@@ -1,4 +1,5 @@
 ﻿#include "TestScene.h"
+#include "NeedleTrap.h"
 #include "Utility.h"
 #include "Master.h"
 #include "InputManager.h"
@@ -46,6 +47,10 @@ void TestScene::Initialize()
 		// 画面左側 (X=0 付近)、Yはプレイヤーと同じ高さで生成
 				EnemySlime* slime = new EnemySlime(VGet(1000.0f, 300, 0.0f));
 		slime->UpdateStatusByProgress(mProgress);
+
+		// トラップのテスト配置 (スライムと同じY座標 300 付近に配置)
+		new NeedleTrap(VGet(500.0f, 450.0f, 0.0f), TrapType::PopUp);
+		new NeedleTrap(VGet(1500.0f, 400.0f, 0.0f), TrapType::AntiJump);
 	}
 
 	spawnTimer = 0;
