@@ -26,7 +26,7 @@ void GameScene::Initialize()
 {
 	// CSVのファイル読み込み
 	// チュートリアルテキストとブロックマップのタイル
-	mTutorialText.Initialize(CsvPath::TutorialText);
+	mTutorialText.Initialize(CsvPath::TutorialText, CsvPath::TutorialDeathText);
 
 	// 背景画像と当たり判定画像を読み込む
 	if (!mBlockMap.Load(
@@ -98,9 +98,22 @@ void GameScene::Update()
 		Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_LOSERESULT);
 	}
 
+
 	// チュートリアルテキストの更新
-	mTutorialText.Update(1.0f / 60.0f);
 	mpPlayer->PlayerMove(mBlockMap);
+	// プレイヤーの死亡状態の確認
+	bool isPlayerDead = mpPlayer->GetIsDead();
+	// 死亡した瞬間
+	if (isPlayerDead && !mbWasPlayerDead)
+	{
+		mTutorialText.OnPlayerDead();
+	}
+	// 今フレームの死亡状態を保存
+	mbWasPlayerDead = isPlayerDead;
+	mTutorialText.Update(1.0f / 60.0f);
+
+
+
 	if (mpPlayer)
 	{
 		mBackground.Move(static_cast<int>(mpPlayer->GetCurrentSpeed()), mBlockMap.GetIsScrolling(), mBlockMap.GetScrollDirection());

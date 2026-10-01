@@ -32,4 +32,5 @@ private:
 	Background mBackground; // スクロール背景
 
 	bool mbIsLoaded = false; // マップがロードされたかどうかのフラグ
+	bool mbWasPlayerDead = false; // 前フレームのプレイヤーの死亡状態を保持するフラグ
 };

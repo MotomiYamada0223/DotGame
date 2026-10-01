@@ -25,7 +25,7 @@ void TestScene::Initialize()
 {
 	// CSVのファイル読み込み
 	// チュートリアルテキストとブロックマップのタイル
-	mTutorialText.Initialize(CsvPath::TutorialText);
+	mTutorialText.Initialize(CsvPath::TutorialText, CsvPath::TutorialDeathText);
 
 	// 背景画像と当たり判定画像を読み込む
 		mBlockMap.Load(

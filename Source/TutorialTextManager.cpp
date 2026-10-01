@@ -2,54 +2,114 @@
 #include "Master.h"
 #include "GameConstants.h"
 
+
 // ステップの取得処理を共通化
 const StepData* TutorialTextManager::GetCurrentStep() const
 {
-	// 現在のステップを探す
+	// 現在、死亡チュートリアル中かどうかで使用するCSVを切り替える
+	if (mbIsDeathTutorial)
+	{
+		auto itr = deathLoader.steps.find(mnCurrentID);
+
+		if (itr == deathLoader.steps.end())
+		{
+			return nullptr;
+		}
+
+		return &itr->second;
+	}
+
+	// 通常チュートリアル
 	auto itr = loader.steps.find(mnCurrentID);
+
 	if (itr == loader.steps.end())
 	{
 		return nullptr;
 	}
+
 	return &itr->second;
 }
 
+
 // Shift-JISの文字コードから文字のバイト数を判別する処理
-//1文字が2バイトで構成されているので2バイト文字だと分かったら一気に進めるため
+// 1文字が2バイトで構成されているので
+// 2バイト文字だと分かったら一気に進めるため
 static int GetCharByteCount(const std::string& text, int index)
 {
 	unsigned char c = text[index];
+
 	// Shift-JISの2バイト文字の範囲内か判定する
 	if ((c >= 0x81 && c <= 0x9F) ||
 		(c >= 0xE0 && c <= 0xEF))
 	{
 		return 2;
 	}
+
 	// 1バイトの英数字や記号として扱う
 	return 1;
 }
 
 
-void TutorialTextManager::Initialize(const std::string& csvPath)
+void TutorialTextManager::Initialize(
+	const std::string& csvPath,
+	const std::string& deathCsvPath)
 {
 	// メンバ変数の初期化
 	mnCurrentID = 1;
+	mnPreviousID = 1;
+
+	mbIsDeathTutorial = false;
+
 	mfIdelTimer = 0.0f;
 	mfCharSpeed = 0.05f;
 	mfCharTimer = 0.0f;
 	mnDisplayByteCount = 0;
 
-	// CSVの読み込み
+	// 通常チュートリアルCSVの読み込み
 	loader.LoadCSV(csvPath);
+
+	// 死亡時チュートリアルCSVの読み込み
+	deathLoader.LoadCSV(deathCsvPath);
 }
 
+
+// プレイヤーが死亡したときの処理
+void TutorialTextManager::OnPlayerDead()
+{
+	// 通常チュートリアル中なら、現在のIDを保存する
+	if (!mbIsDeathTutorial)
+	{
+		mnPreviousID = mnCurrentID;
+	}
+
+	// 死亡チュートリアルへ切り替える
+	mbIsDeathTutorial = true;
+
+	// 死亡CSVの最初のIDから開始
+	mnCurrentID = 1;
+
+	// 表示状態をリセット
+	mfIdelTimer = 0.0f;
+	mfCharTimer = 0.0f;
+	mnDisplayByteCount = 0;
+}
+
+
+// 更新処理
 void TutorialTextManager::Update(float dt)
 {
 	// 現在のステップを取得する
 	const StepData* step = GetCurrentStep();
 
+	// ステップが存在しない場合は何もしない
+	if (step == nullptr)
+	{
+		return;
+	}
+
 	// 一定速度で文字を進めるため、経過時間を加算する
 	mfCharTimer += dt;
+
 	// 指定の時間が経過したら1文字分のバイト数を進める
 	if (mfCharTimer >= mfCharSpeed)
 	{
@@ -63,11 +123,13 @@ void TutorialTextManager::Update(float dt)
 				step->text,
 				mnDisplayByteCount
 			);
+
 			mnDisplayByteCount += byteCount;
 		}
 	}
 
-	// すべての文字が表示された後、次のステップへ移行するまでの余韻時間を計測する
+	// すべての文字が表示された後、
+	// 次のステップへ移行するまでの余韻時間を計測する
 	if (mnDisplayByteCount >= step->text.size())
 	{
 		mfIdelTimer += dt;
@@ -81,12 +143,48 @@ void TutorialTextManager::Update(float dt)
 	}
 }
 
+
 // ステップを変更する/次のステップに進める処理
 void TutorialTextManager::ChangeStep(int nextID)
 {
-	// 移動先のステップが存在するか
-	auto itr = loader.steps.find(nextID);
-	if (itr == loader.steps.end()) { return; }
+	// 死亡チュートリアルが終了した場合
+	if (mbIsDeathTutorial && nextID == 0)
+	{
+		// 通常チュートリアルへ戻る
+		mbIsDeathTutorial = false;
+
+		// 死亡前に保存しておいたIDへ戻る
+		mnCurrentID = mnPreviousID;
+
+		// 表示状態をリセット
+		mfIdelTimer = 0.0f;
+		mfCharTimer = 0.0f;
+		mnDisplayByteCount = 0;
+
+		return;
+	}
+
+
+	// 現在使用しているCSVから次のステップを探す
+	if (mbIsDeathTutorial)
+	{
+		auto itr = deathLoader.steps.find(nextID);
+
+		if (itr == deathLoader.steps.end())
+		{
+			return;
+		}
+	}
+	else
+	{
+		auto itr = loader.steps.find(nextID);
+
+		if (itr == loader.steps.end())
+		{
+			return;
+		}
+	}
+
 
 	// 存在していたら次のステップへ移行して時間をリセット
 	mnCurrentID = nextID;
@@ -105,12 +203,20 @@ void TutorialTextManager::Draw()
 	unsigned int color = ColorOption::White;
 	const StepData* step = GetCurrentStep();
 
+	// ステップが存在しない場合は何もしない
+	if (step == nullptr)
+	{
+		return;
+	}
+
 	// 表示時間を越していたら表示しない
-	if (mfIdelTimer >= step->completeValue) { return; }
+	if (mfIdelTimer >= step->completeValue)
+	{
+		return;
+	}
 
 	// 現在表示すべきバイト数分だけ文字列を切り出す処理
-	// 先頭の文字から出すべきバイト数まで。mnDisplayByteCountが伸びていくので出る
-	// substr...文字列の中から指定した一部分を切り出して新しい文字列を作る
+	// 先頭の文字から出すべきバイト数まで。
 	std::string displayText =
 		step->text.substr(0, mnDisplayByteCount);
 
@@ -124,19 +230,30 @@ void TutorialTextManager::Draw()
 		displayText.c_str());
 }
 
+
 // デバッグ描画
 void TutorialTextManager::DebugDraw()
 {
 	const StepData* step = GetCurrentStep();
 
+	// ステップが存在しない場合は何もしない
+	if (step == nullptr)
+	{
+		return;
+	}
+
 	// 現在表示すべきバイト数分だけ文字列を切り出す処理
-	// 先頭の文字から出すべきバイト数まで。mnDisplayByteCountが伸びていくので出る
-	// substr...文字列の中から指定した一部分を切り出して新しい文字列を作る
 	std::string displayText =
 		step->text.substr(0, mnDisplayByteCount);
 
 	// デバッグ用の表示
-	DrawFormatString(0, 0, ColorOption::White, "ID: %d  表示時間: %f / %f", mnCurrentID, mfIdelTimer, step->completeValue);
+	DrawFormatString(
+		0,
+		0,
+		ColorOption::White,
+		"ID: %d  表示時間: %f / %f",
+		mnCurrentID,
+		mfIdelTimer,
+		step->completeValue
+	);
 }
-
-
