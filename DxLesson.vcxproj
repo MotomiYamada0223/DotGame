@@ -131,6 +131,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Background.cpp" />
     <ClCompile Include="Source\BlockAction.cpp" />
     <ClCompile Include="Source\BlockMap.cpp" />
     <ClCompile Include="Source\BossEnemyDragon.cpp" />
@@ -171,6 +172,7 @@
     <ClCompile Include="Source\TestScene.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Background.h" />
     <ClInclude Include="Source\BlockAction.h" />
     <ClInclude Include="Source\BlockMap.h" />
     <ClInclude Include="Source\BossEnemyDragon.h" />

@@ -162,7 +162,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 		mfMoveDirection = blinkDirection; // ブリンク開始時の方向に固定
 	}
 
-	totalSpeed = currentSpeed; // 今の速さの代入
+	mfCurrentSpeed = currentSpeed; // 今の速さの代入
 	float prevX = mvPosition.x;
 
 	BlockMap::CollisionType collisionType =
@@ -194,7 +194,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 	blockMap.Move(
 		playerScreenX,
 		mfMoveDirection,
-		totalSpeed
+		mfCurrentSpeed
 	);
 
 	// 特殊地形の処理
@@ -492,6 +492,7 @@ void Player::Update()
 	if (mHp <= 0 && !isDead)
 	{
 		isDead = true;
+		mfCurrentSpeed = 0; // 現在の速さをリセット
 		mlives -= 1;
 		mDeadState = 1; // SCATTER
 		deadTimer = 0;
@@ -753,7 +754,7 @@ void Player::DebugDraw()
 
 
 	// HPのデバッグ
-	DrawFormatString(playerLeft, (int)mvPosition.y + 10, ColorOption::White, "HP: %d\n残機: %d\nSP: %f", mHp, mlives, totalSpeed);
+	DrawFormatString(playerLeft, (int)mvPosition.y + 10, ColorOption::White, "HP: %d\n残機: %d\nSP: %f", mHp, mlives, mfCurrentSpeed);
 	DrawFormatString(0, 600, ColorOption::White, "X:%2f, Y:%2f\n L:%d", mvPosition.x, mvPosition.y, playerLeft);
 
 	// シーン上のすべての敵の当たり判定をデバッグ表示（黄緑色）

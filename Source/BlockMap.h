@@ -38,12 +38,16 @@ public:
     // 位置のゲッターセッター
     int ScreenToMapX(int screenX) const;
     int ScreenToMapY(int screenY) const;
-    int GetScrollX() const { return mScrollX; }
+    int GetScrollX() const { return mnScrollX; }
     // スクロール位置をリセットする
-    void ResetScroll() { mScrollX = 0; }
+    void ResetScroll() { mnScrollX = 0; }
 
     // 背景画像の元の長さを取得する プレイヤーの移動領域のため
-    int GetCurrentWidth() const { return mBackgroundWidth; }
+    int GetCurrentWidth() const { return mnBackgroundWidth; }
+
+    // スクロール中かの判断
+    bool GetIsScrolling() const { return mbIsScrolling; }
+    float GetScrollDirection() const { return mfMoveDirection; }
 
 private:
     int mnBackgroundGraph;   // 背景画像
@@ -66,7 +70,9 @@ private:
 
 private: // スクロール関係
     // 画面の左端がマップ画像の何px目なのか
-    int mScrollX;
-    int mBackgroundWidth;
-    int mBackgroundHeight;
+    int mnScrollX;
+    int mnBackgroundWidth;
+    int mnBackgroundHeight;
+    bool mbIsScrolling; // スクロール中かを判断
+    float mfMoveDirection; // スクロール方向
 };
