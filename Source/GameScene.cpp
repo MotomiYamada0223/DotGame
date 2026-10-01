@@ -136,17 +136,18 @@ void GameScene::Draw()
 	mBlockMap.Draw(); // ブロックマップの描画
 	mTutorialText.Draw(); // チュートリアルの描画
 
-	// デバッグ系
-	mpPlayer->DebugDraw(); // ブロックデバッグ
-	mBlockMap.DebugDraw(); // ブロックマップデバッグ表示
-	mTutorialText.DebugDraw(); // テキスト
-
-
 	// クラスのDraw呼び出し
 	Scene::Draw();
 
 	// 一番手前に描画したいもの
 	mpPlayer->DrawFallDeath(); // 死亡時テキスト
+
+
+	// デバッグ系
+	mpPlayer->DebugDraw(); // ブロックデバッグ
+	mBlockMap.DebugDraw(); // ブロックマップデバッグ表示
+	mTutorialText.DebugDraw(); // テキスト
+
 
 	// デバッグ表示: 現在の進行度
 	const char* progStr = (mProgress == GameProgress::Tutorial1) ? "Tutorial1 (Death)" : "Tutorial2 (Immune)";

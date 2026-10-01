@@ -18,11 +18,14 @@ GameManager::GameManager()
 
 GameManager::~GameManager()
 {
-	// サウンドの終了処理
 	mpSoundManager->Finalize();
-	// フォントの終了処理
 	mpFontManager->Finalize();
 	mpSceneManager->Finalize();
+
+	mpSoundManager.reset();
+	mpFontManager.reset();
+	mpResourceManager.reset();
+	mpSceneManager.reset();
 }
 
 
