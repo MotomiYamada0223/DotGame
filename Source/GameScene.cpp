@@ -1,4 +1,4 @@
-﻿#include "GameScene.h"
+#include "GameScene.h"
 #include "Utility.h"
 #include "Master.h"
 #include "InputManager.h"
@@ -14,6 +14,7 @@ GameScene::GameScene()
 	spawnTimer = 0;
 	mpPlayer = nullptr;
 	mbIsLoaded = false;
+	mProgress = GameProgress::Tutorial1;
 }
 
 GameScene::~GameScene()

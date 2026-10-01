@@ -1,4 +1,4 @@
-#include "EnemySlime.h"
+ï»¿#include "EnemySlime.h"
 #include "DxLib.h"
 #include "Texture.h"
 #include "GameConstants.h"
@@ -7,48 +7,67 @@
 EnemySlime::EnemySlime(VECTOR initPos)
     : Enemy("Resource/Image/SampleSlime.png", initPos)
 {
-    mMoveSpeed = 2.0f; // ƒXƒ‰ƒCƒ€ê—p‚ÌˆÚ“®‘¬“x
+    mMoveSpeed = 2.0f; // ã‚¹ãƒ©ã‚¤ãƒ å°‚ç”¨ã®ç§»å‹•é€Ÿåº¦
 
-    // “–‚½‚è”»’è‚ÌƒTƒCƒYİ’èi‰æ‘œ‚ÌƒTƒCƒY‚ğ‚»‚Ì‚Ü‚Üg‚¤‚©’²®‚·‚é‚©j
-    // ‚Ğ‚Æ‚Ü‚¸‰æ‘œ‚ª400x400‚Æ‘å‚«‚ß‚È‚Ì‚ÅA­‚µk¬‚·‚é‚©ŒŸ“¢‚µ‚Â‚ÂA
-    // Šù‘¶‚Ì’Ê‚è 1/6 ƒTƒCƒY’ö“x‚É‚·‚é‚©Aˆê’U‚»‚Ì‚Ü‚Ü‚Ì”ä—¦‚Åİ’è
+    // å½“ãŸã‚Šåˆ¤å®šã®ã‚µã‚¤ã‚ºè¨­å®šï¼ˆç”»åƒã®ã‚µã‚¤ã‚ºã‚’ãã®ã¾ã¾ä½¿ã†ã‹èª¿æ•´ã™ã‚‹ã‹ï¼‰
+    // ã²ã¨ã¾ãšç”»åƒãŒ400x400ã¨å¤§ãã‚ãªã®ã§ã€å°‘ã—ç¸®å°ã™ã‚‹ã‹æ¤œè¨ã—ã¤ã¤ã€
+    // æ—¢å­˜ã®é€šã‚Š 1/6 ã‚µã‚¤ã‚ºç¨‹åº¦ã«ã™ã‚‹ã‹ã€ä¸€æ—¦ãã®ã¾ã¾ã®æ¯”ç‡ã§è¨­å®š
     mfEnemyWidth = 64.0f;
     mfEnemyHeight = 64.0f;
+
+    mpAnimIdle = new TextureAnimation(initPos, "Resource/Image/slime_idle.png", 6, 6, 1, 8);
+    mpAnimMove = new TextureAnimation(initPos, "Resource/Image/slime_move.png", 6, 6, 1, 8);
+    mpAnimAttack = new TextureAnimation(initPos, "Resource/Image/slime_attack.png", 7, 7, 1, 8);
+
+    mCurrentMoveDirection = 1.0f;
+    mActionTimer = 48;
+    mIsFacingRight = true;
 
     UpdateStatusByProgress(GameProgress::Tutorial1);
 }
 
 EnemySlime::~EnemySlime()
 {
+    if (mpAnimIdle) delete mpAnimIdle;
+    if (mpAnimMove) delete mpAnimMove;
+    if (mpAnimAttack) delete mpAnimAttack;
 }
 
 void EnemySlime::Update()
 {
     Enemy::Update();
+    if (mpAnimIdle) mpAnimIdle->Update();
+    if (mpAnimMove) mpAnimMove->Update();
+    if (mpAnimAttack) mpAnimAttack->Update();
 }
 
 void EnemySlime::Draw()
 {
-    if (mpTexture != nullptr)
+    if (mpBlockMap != nullptr)
     {
         if (isDamaged) { SetDrawBright(255, 100, 100); }
 
-        // •`‰æˆÊ’ui’†SÀ•Wj
         const float screenX = ConvertToScreenX(mvPosition.x, mpBlockMap);
         const float screenY = mvPosition.y;
-
-        // ˆê–‡ŠG‚Æ‚µ‚Ä•`‰æi‰æ‘œ‚ª400x400‚È‚Ì‚ÅA“–‚½‚è”»’è‚É‡‚í‚¹‚Äk¬‚µ‚Ä•`‰æ‚·‚éj
-        // DrawRotaGraph(x, y, Šg‘å—¦, ‰ñ“]Šp“x, ƒOƒ‰ƒtƒBƒbƒNƒnƒ“ƒhƒ‹, “§‰ßƒtƒ‰ƒO)
-        float scale = mfEnemyWidth / GetSizeX(); // “–‚½‚è”»’è‚Ì•(64)‚É‡‚í‚¹‚é
-
-        DrawRotaGraph(
-            static_cast<int>(screenX),
-            static_cast<int>(screenY),
-            scale,
-            0.0,
-            mpTexture->GetHandle(),
-            TRUE
-        );
+        
+        // ç¾åœ¨ã®ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã‚’æ±ºå®š
+        TextureAnimation* currentAnim = mpAnimIdle; // åŸºæœ¬ã¯Idle
+        
+        if (mCurrentMoveDirection != 0.0f)
+        {
+            currentAnim = mpAnimMove; // ç§»å‹•ä¸­ãªã‚‰Move
+        }
+        
+        // æ”»æ’ƒåˆ¤å®šãªã©ãŒã‚ã‚Œã° mpAnimAttack ã«ã™ã‚‹ãŒã€ä»Šå›ã¯ç§»å‹•ã¨å¾…æ©Ÿã®ã¿
+        
+        if (currentAnim != nullptr)
+        {
+            currentAnim->SetPosition(VGet(screenX, screenY, 0.0f));
+            
+            // å³å‘ããªã‚‰falseã€å·¦å‘ããªã‚‰trueã§åè»¢ã•ã›ã‚‹ (ç”»åƒãŒãƒ‡ãƒ•ã‚©ã§å³å‘ãã‚’æƒ³å®š)
+            bool turnFlag = mIsFacingRight;
+            currentAnim->Draw(turnFlag);
+        }
 
         if (isDamaged) { SetDrawBright(255, 255, 255); }
     }
@@ -61,7 +80,26 @@ void EnemySlime::Draw()
 void EnemySlime::EnemyMove(BlockMap& blockMap)
 {
     mpBlockMap = &blockMap;
-    float moveDirection = 1.0f;
+    
+    // ãƒ©ãƒ³ãƒ€ãƒ è¡Œå‹•ã‚¿ã‚¤ãƒãƒ¼
+    mActionTimer--;
+    if (mActionTimer <= 0)
+    {
+        int randAction = GetRand(2); // 0, 1, 2
+        if (randAction == 0) mCurrentMoveDirection = 1.0f;
+        else if (randAction == 1) mCurrentMoveDirection = -1.0f;
+        else mCurrentMoveDirection = 0.0f; // åœæ­¢
+        
+        // 1ç§’ã‹ã‚‰3ç§’ã§æ¬¡ã®è¡Œå‹•ã¸
+                // 1æš8ãƒ•ãƒ¬ãƒ¼ãƒ  Ã— 6æš = 1ãƒ«ãƒ¼ãƒ—48ãƒ•ãƒ¬ãƒ¼ãƒ 
+        // 1ã€œ3å›ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³(ãƒ«ãƒ¼ãƒ—)ã‚’è¡Œã£ãŸã‚‰æ¬¡ã®è¡Œå‹•ã¸ç§»ã‚‹ã‚ˆã†ã«ã™ã‚‹
+        int loopCount = 1 + GetRand(2); // 1, 2, 3
+        mActionTimer = loopCount * 48;
+    }
+    
+    // å‘ãã®ä¿å­˜
+    if (mCurrentMoveDirection > 0.0f) mIsFacingRight = true;
+    else if (mCurrentMoveDirection < 0.0f) mIsFacingRight = false;
 
     mCharacterPhysics.UpdateMoveAndCollision(
         mvPosition,
@@ -73,7 +111,7 @@ void EnemySlime::EnemyMove(BlockMap& blockMap)
         mfEnemyHeight,
         gravity,
         mMoveSpeed,
-        moveDirection
+        mCurrentMoveDirection
     );
 }
 
