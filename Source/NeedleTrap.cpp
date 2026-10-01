@@ -108,7 +108,7 @@ void NeedleTrap::EnemyMove(BlockMap& blockMap)
             {
                 mState = TrapState::Active;
                 // 感知した瞬間のプレイヤーのY座標を基準とし、さらに100ピクセル上（マイナス方向）を目標にする
-                mTargetY = playerY - 100.0f;
+                mTargetY = playerY - 50.0f;
             }
         }
     }
