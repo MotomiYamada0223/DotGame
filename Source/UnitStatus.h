@@ -39,6 +39,7 @@ public:
 
     // 敵用フラグ
     bool mHasInstantKillAttack;
+	bool mIgnoresInvincibility; // ブリンクや被弾後無敵を貫通するかどうか
     bool mIsGiantInvincible;
     bool mUseCounterTeleport;
 

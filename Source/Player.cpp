@@ -1,4 +1,5 @@
 ﻿#include "Player.h"
+#include "NeedleTrap.h"
 #include "DxLib.h"
 #include "Texture.h"
 #include "Master.h"
@@ -411,22 +412,28 @@ void Player::Update()
 		// 1. プレイヤー自身と敵の衝突判定 (ダメージで赤くする)
 		if (Collision::CheckRectToRect(myPos, mySize, enePos, eneSize))
 		{
-			if (isBlinking)
+			UnitStatus* enemyStatus = dynamic_cast<UnitStatus*>(enemy);
+			bool ignoresInvincible = (enemyStatus && enemyStatus->mIgnoresInvincibility);
+
+			if (ignoresInvincible)
+			{
+				int dmg = enemyStatus ? enemyStatus->mAttack : 0;
+				if (enemyStatus && enemyStatus->mHasInstantKillAttack) dmg = mHp;
+				TakeDamage(dmg);
+			}
+			else if (isBlinking)
 			{
 				if (!mIsBlinkWallDeathImmune)
 				{
-					// ブリンク中かつ未強化なら即死
 					TakeDamage(mHp);
 				}
-				// 強化中なら何もしない（すり抜け）
 			}
 			else
 			{
 				isHitDamage = true;
 				if (mInvincibleTimer <= 0 && mDeadState == 0)
 				{
-					mInvincibleTimer = 60; // 1秒無敵
-					UnitStatus* enemyStatus = dynamic_cast<UnitStatus*>(enemy);
+					mInvincibleTimer = 60;
 					if (enemyStatus)
 					{
 						int dmg = enemyStatus->mAttack;
@@ -436,7 +443,6 @@ void Player::Update()
 				}
 			}
 		}
-
 		// 2. 攻撃判定と敵の衝突判定 (敵を赤く光らせる)
 		if (hasAttackRect)
 		{
@@ -450,6 +456,11 @@ void Player::Update()
 						alreadyHit = true;
 						break;
 					}
+				}
+				NeedleTrap* trap = dynamic_cast<NeedleTrap*>(enemy);
+				if (trap != nullptr)
+				{
+					continue;
 				}
 				if (!alreadyHit)
 				{

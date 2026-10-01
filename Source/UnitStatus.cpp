@@ -5,7 +5,7 @@ UnitStatus::UnitStatus()
     , mIsBlinkWallDeathImmune(false), mAttackReachLevel(0), mIsAttackFlashy(false)
     , mBlinkCooldownLevel(0), mIsPoisonImmune(false), mIsPetrificationImmune(false)
     , mIsFireImmune(false)
-    , mHasInstantKillAttack(false), mIsGiantInvincible(false), mUseCounterTeleport(false)
+    , mHasInstantKillAttack(false), mIgnoresInvincibility(false), mIsGiantInvincible(false), mUseCounterTeleport(false)
 {
 }
 

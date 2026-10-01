@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <ItemGroup>
     <Filter Include="ソース ファイル">
@@ -135,7 +135,16 @@
     <ClCompile Include="Source\Player.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-  <ClCompile Include="Source\TestScene.cpp"><Filter>Source</Filter></ClCompile></ItemGroup>
+    <ClCompile Include="Source\PlayerAnimState.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\TestScene.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\NeedleTrap.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+  </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Collision.h">
       <Filter>ヘッダー ファイル</Filter>
@@ -248,5 +257,14 @@
     <ClInclude Include="Source\LoseResultScene.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-  <ClInclude Include="Source\TestScene.h"><Filter>Source</Filter></ClInclude></ItemGroup>
+    <ClInclude Include="Source\PlayerAnimState.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\TestScene.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\NeedleTrap.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+  </ItemGroup>
 </Project>

@@ -1,41 +1,41 @@
-#pragma once
+ï»¿#pragma once
 #include "DxLib.h"
 #include <string>
 
-// ƒNƒ‰ƒX‚Ì‘O•ûéŒ¾
+// ã‚¯ãƒ©ã‚¹ã®å‰æ–¹å®£è¨€
 class Texture;
 class TextureAnimation;
 class BlockMap;
 
 // 
-// 2D ƒIƒuƒWƒFƒNƒg‚ÌŠî’êƒNƒ‰ƒX
-// 2D ƒIƒuƒWƒFƒNƒgiƒvƒŒƒCƒ„[‚â“G‚È‚Çj‚ğì‚éÛ‚ÍA
-// •K‚¸‚±‚ê‚ğŒp³‚µ‚Äì¬‚·‚é@
+// 2D ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®åŸºåº•ã‚¯ãƒ©ã‚¹
+// 2D ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆï¼ˆãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚„æ•µãªã©ï¼‰ã‚’ä½œã‚‹éš›ã¯ã€
+// å¿…ãšã“ã‚Œã‚’ç¶™æ‰¿ã—ã¦ä½œæˆã™ã‚‹ã€€
 // 
 class Object2D
 {
-public:    // enum, struct, ’è”‚Ì’è‹`
+public:    // enum, struct, å®šæ•°ã®å®šç¾©
 
-	// ƒIƒuƒWƒFƒNƒg‚ğŒ©•ª‚¯‚é‚½‚ß‚Ìƒ^ƒO
-	// Object2D ‚¾‚¯‚¾‚Æ‰½‚©•ª‚©‚ç‚È‚¢‚ ‚ÌoŒ©•ª‚¯‚é‚½‚ß‚Ìƒ^ƒO
+	// ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’è¦‹åˆ†ã‘ã‚‹ãŸã‚ã®ã‚¿ã‚°
+	// Object2D ã ã‘ã ã¨ä½•ã‹åˆ†ã‹ã‚‰ãªã„ã‚ã®å‡ºè¦‹åˆ†ã‘ã‚‹ãŸã‚ã®ã‚¿ã‚°
 	enum Tag
 	{
-		// ---ššš---
-		// ƒ^ƒO‚Ì”Ô†”í‚Á‚½‚çƒoƒO‚é‚©‚ç—v’ˆÓ 
+		// ---â˜…â˜…â˜…---
+		// ã‚¿ã‚°ã®ç•ªå·è¢«ã£ãŸã‚‰ãƒã‚°ã‚‹ã‹ã‚‰è¦æ³¨æ„ 
 		
-		// TitleƒV[ƒ“‚Å‚Â‚©‚í‚ê‚éƒ^ƒOi1000`j
+		// Titleã‚·ãƒ¼ãƒ³ã§ã¤ã‹ã‚ã‚Œã‚‹ã‚¿ã‚°ï¼ˆ1000ï½ï¼‰
 
-		// GameƒV[ƒ“‚Å‚Â‚©‚í‚ê‚éƒ^ƒOi2000`j
-		BattleMap2D  = 2200,    // ƒ}ƒbƒv
-		FrontMap  = 2201,    // ƒ}ƒbƒv
-		Player2D = 2300,  // ƒvƒŒƒCƒ„[
-		Enemy2D = 2350,         // “G
+		// Gameã‚·ãƒ¼ãƒ³ã§ã¤ã‹ã‚ã‚Œã‚‹ã‚¿ã‚°ï¼ˆ2000ï½ï¼‰
+		BattleMap2D  = 2200,    // ãƒãƒƒãƒ—
+		FrontMap  = 2201,    // ãƒãƒƒãƒ—
+		Player2D = 2300,  // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼
+		Enemy2D = 2350,         // æ•µ
 
 
-		PlayerBullet2D = 3000,      // ƒvƒŒƒCƒ„[‚Ì’e
-		HomingEnemyBullet2D = 3100, // ƒz[ƒ~ƒ“ƒO‚µ‚Ä‚­‚é“G‚Ì’e
-		BulletUP2D = 3200,          // ƒvƒŒƒCƒ„[‚ÌãŒü‚«‚Ì’e
-		HomingBullet2D = 3300,      // ƒz[ƒ~ƒ“ƒO’eig‚Á‚Ä‚È‚¢j
+		PlayerBullet2D = 3000,      // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®å¼¾
+		HomingEnemyBullet2D = 3100, // ãƒ›ãƒ¼ãƒŸãƒ³ã‚°ã—ã¦ãã‚‹æ•µã®å¼¾
+		BulletUP2D = 3200,          // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ä¸Šå‘ãã®å¼¾
+		HomingBullet2D = 3300,      // ãƒ›ãƒ¼ãƒŸãƒ³ã‚°å¼¾ï¼ˆä½¿ã£ã¦ãªã„ï¼‰
 
 	};
 
@@ -43,17 +43,17 @@ public:    // enum, struct, ’è”‚Ì’è‹`
 public:
 	Object2D(std::string filename, VECTOR initPos);
 
-	// ƒRƒ“ƒXƒgƒ‰ƒNƒ^iƒAƒjƒ[ƒVƒ‡ƒ“—pj
+	// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ï¼ˆã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ç”¨ï¼‰
 	Object2D(VECTOR initPos, std::string filename, int allNum, int numX, int numY, int interval);
 	
 	
-	// ƒRƒ“ƒXƒgƒ‰ƒNƒ^(Player—p)
+	// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿(Playerç”¨)
 	Object2D(const VECTOR initPos);
 
 
 
 
-	// ‚±‚±‚Åƒ}ƒbƒv‚Å’è‹`‚µ‚½ƒQƒbƒ^[ƒZƒbƒ^[‚ğƒo[ƒ`ƒƒƒ‹‚µ‚Ä‚¢‚éi’†g‚Í‹ó‚É‚µ‚Ä‚¢‚éj
+	// ã“ã“ã§ãƒãƒƒãƒ—ã§å®šç¾©ã—ãŸã‚²ãƒƒã‚¿ãƒ¼ã‚»ãƒƒã‚¿ãƒ¼ã‚’ãƒãƒ¼ãƒãƒ£ãƒ«ã—ã¦ã„ã‚‹ï¼ˆä¸­èº«ã¯ç©ºã«ã—ã¦ã„ã‚‹ï¼‰
 	//virtual void SetDrawSize() { return; }
 	//virtual VECTOR GetDrawSize() { return VGet(0.0f, 0.0f, 0.0f); }
 
@@ -66,51 +66,51 @@ public:
 
 	virtual void Draw();
 
-public:   // ƒQƒbƒ^[EƒZƒbƒ^[
-	void SetPosition(VECTOR pos) { mvPosition = pos; }  // À•Wİ’è
-	VECTOR GetPosition() { return mvPosition; }         // À•Wæ“¾
+public:   // ã‚²ãƒƒã‚¿ãƒ¼ãƒ»ã‚»ãƒƒã‚¿ãƒ¼
+	void SetPosition(VECTOR pos) { mvPosition = pos; }  // åº§æ¨™è¨­å®š
+	VECTOR GetPosition() { return mvPosition; }         // åº§æ¨™å–å¾—
 
-	void SetDeleteFlag(bool flag) { mbDeleteFlag = flag; }  // íœƒtƒ‰ƒOİ’è
-	bool IsDeleteFlag() { return mbDeleteFlag; }           // íœƒtƒ‰ƒOæ“¾
+	void SetDeleteFlag(bool flag) { mbDeleteFlag = flag; }  // å‰Šé™¤ãƒ•ãƒ©ã‚°è¨­å®š
+	bool IsDeleteFlag() { return mbDeleteFlag; }           // å‰Šé™¤ãƒ•ãƒ©ã‚°å–å¾—
 
-	void SetTag(Tag tag) { mnTag = tag; }  // ƒ^ƒOİ’è
-	Tag GetTag() { return mnTag; }         // ƒ^ƒOæ“¾
+	void SetTag(Tag tag) { mnTag = tag; }  // ã‚¿ã‚°è¨­å®š
+	Tag GetTag() { return mnTag; }         // ã‚¿ã‚°å–å¾—
 
 
-	virtual float GetRadius(); // ”¼Œa‚Ìæ“¾
+	virtual float GetRadius(); // åŠå¾„ã®å–å¾—
 
-	// ƒvƒŒƒCƒ„[‚Åg‚¤‚½‚ß
-	int GetSizeX();  // •
-	int GetSizeY();  // ‚‚³
+	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã§ä½¿ã†ãŸã‚
+	virtual int GetSizeX();  // å¹…
+	virtual int GetSizeY();  // é«˜ã•
 
 
 protected:
-	//2D‚Ì—v‘f‚Í‰½‚ª•K—v‚©l‚¦‚Ä‘‚­
-	Texture* mpTexture;   // ‰æ‘œ
-	VECTOR mvPosition;    // À•W
-	TextureAnimation* mpTextureAnimation; // ƒAƒjƒ[ƒVƒ‡ƒ“‰æ‘œ
+	//2Dã®è¦ç´ ã¯ä½•ãŒå¿…è¦ã‹è€ƒãˆã¦æ›¸ã
+	Texture* mpTexture;   // ç”»åƒ
+	VECTOR mvPosition;    // åº§æ¨™
+	TextureAnimation* mpTextureAnimation; // ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ç”»åƒ
 	
 private:
-	bool mbDeleteFlag;    // íœƒtƒ‰ƒO(‚±‚ê‚ªtrue ‚É‚È‚Á‚Ä‚¢‚é‚Æ©“®“I‚Éíœ‚³‚ê‚éi‚æ‚¤‚Éì‚éj)
-	Tag mnTag;            // ƒIƒuƒWƒFƒNƒg‚ğŒ©•ª‚¯‚é—p‚Ìƒ^ƒO
-	// ƒvƒŒƒCƒ„[—p
+	bool mbDeleteFlag;    // å‰Šé™¤ãƒ•ãƒ©ã‚°(ã“ã‚ŒãŒtrue ã«ãªã£ã¦ã„ã‚‹ã¨è‡ªå‹•çš„ã«å‰Šé™¤ã•ã‚Œã‚‹ï¼ˆã‚ˆã†ã«ä½œã‚‹ï¼‰)
+	Tag mnTag;            // ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’è¦‹åˆ†ã‘ã‚‹ç”¨ã®ã‚¿ã‚°
+	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ç”¨
 	VECTOR mvDirection;
 
 
 protected:
-	// ƒ[ƒ‹ƒhÀ•W‚ğƒXƒNƒŠ[ƒ“À•W‚É•ÏŠ·‚·‚é‹¤’ÊŠÖ”
-	// ƒvƒŒƒCƒ„[‚â“G‚È‚ÇA•¡”‚ÌƒIƒuƒWƒFƒNƒg‚Å‹¤’Ê‚ÌƒXƒNƒ[ƒ‹ŒvZ‚ğs‚ÄƒR[ƒh‚Ìd•¡‚ğ–h‚®‚½‚ß
+	// ãƒ¯ãƒ¼ãƒ«ãƒ‰åº§æ¨™ã‚’ã‚¹ã‚¯ãƒªãƒ¼ãƒ³åº§æ¨™ã«å¤‰æ›ã™ã‚‹å…±é€šé–¢æ•°
+	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚„æ•µãªã©ã€è¤‡æ•°ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã§å…±é€šã®ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«è¨ˆç®—ã‚’è¡Œã¦ã‚³ãƒ¼ãƒ‰ã®é‡è¤‡ã‚’é˜²ããŸã‚
 	float ConvertToScreenX(float worldX, const BlockMap* blockMap) const;
 };
 
 /*
-// ˆê–‡‰æ‘œ—p‚ÌƒNƒ‰ƒX
+// ä¸€æšç”»åƒç”¨ã®ã‚¯ãƒ©ã‚¹
 class Tecture2D : public Object2D
 {
 
 };
 
-// ƒeƒNƒXƒ`ƒƒƒAƒjƒ[ƒVƒ‡ƒ“—p‚ÌƒNƒ‰ƒX
+// ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ç”¨ã®ã‚¯ãƒ©ã‚¹
 class TectureAnimation2D : public Object2D
 {
 
