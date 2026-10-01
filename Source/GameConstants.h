@@ -82,7 +82,7 @@ namespace ScrollGraphPath
 // 読み込むCSVパス
 namespace CsvPath
 {
-	static const std::string TutorialText = "Resource/TutorialText/tutorialTextData.csv"; // チュートリアルテキストのCSV
+	static const std::string TutorialText = "Resource/TutorialTexts/tutorialTextData.csv"; // チュートリアルテキストのCSV
 }
 
 // よく使う色
