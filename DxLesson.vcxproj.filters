@@ -135,25 +135,14 @@
     <ClCompile Include="Source\Player.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-<<<<<<< HEAD
-=======
-    <ClCompile Include="Source\Background.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
->>>>>>> A_Text
     <ClCompile Include="Source\PlayerAnimState.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Source\TestScene.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-<<<<<<< HEAD
     <ClCompile Include="Source\NeedleTrap.cpp">
       <Filter>ソース ファイル</Filter>
-=======
-    <ClCompile Include="Source\DrawFrame.cpp">
-      <Filter>ソース ファイル\Scene系</Filter>
->>>>>>> A_Text
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -268,23 +257,13 @@
     <ClInclude Include="Source\LoseResultScene.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-<<<<<<< HEAD
-=======
-    <ClInclude Include="Source\Background.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
->>>>>>> A_Text
     <ClInclude Include="Source\PlayerAnimState.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\TestScene.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-<<<<<<< HEAD
     <ClInclude Include="Source\NeedleTrap.h">
-=======
-    <ClInclude Include="Source\DrawFrame.h">
->>>>>>> A_Text
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

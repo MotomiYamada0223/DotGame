@@ -4,7 +4,6 @@
 #include "TutorialTextManager.h"
 #include"BlockMap.h"
 #include "Background.h"
-#include "DrawFrame.h"
 
 // 前方宣言
 class Player;
@@ -23,8 +22,6 @@ public:
 	virtual void Draw() override;
 	virtual void Finalize() override;
 
-	void SetTextUpdate();// テキストの更新を行う関数
-
 private:
 	TutorialTextManager mTutorialText;
 
@@ -33,8 +30,6 @@ private:
 	GameProgress mProgress; // プレイヤーの座標を参照するために保持
 	BlockMap mBlockMap;
 	Background mBackground; // スクロール背景
-	DrawFrame mDrawFrame; // フレーム描画用
 
 	bool mbIsLoaded = false; // マップがロードされたかどうかのフラグ
-	bool mbWasPlayerDead = false; // 前フレームのプレイヤーの死亡状態を保持するフラグ
 };
