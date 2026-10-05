@@ -72,11 +72,16 @@ void TextureAnimation::Update()// 更新
 	}
 }
 
-void TextureAnimation::Draw()// 描画
+void TextureAnimation::Draw(bool turnFlag)// 描画
 {
-	
-	// ここをcenterPositionにすれば良い
-	// このままだと、左上中心でそこから半径分となってしまっている
-	// これをcenterPositionにすると、真ん中の座標から半径分になるので判定が正しくなる
-	DrawGraph(static_cast<int>(mvPosition.x - (mnxNum / 2)), static_cast<int>(mvPosition.y - (mnyNum / 2)), mnHandleList[mnCurrentNum], true);
+	int x = static_cast<int>(mvPosition.x - (mnxNum / 2));
+	int y = static_cast<int>(mvPosition.y - (mnyNum / 2));
+	if (turnFlag)
+	{
+		DrawTurnGraph(x, y, mnHandleList[mnCurrentNum], true);
+	}
+	else
+	{
+		DrawGraph(x, y, mnHandleList[mnCurrentNum], true);
+	}
 }

@@ -1,4 +1,6 @@
-﻿#include "EnemySlime.h"
+﻿import sys
+
+content = """#include "EnemySlime.h"
 #include "Master.h"
 #include "ObjectManager.h"
 #include "SceneManager.h"
@@ -154,32 +156,20 @@ void EnemySlime::EnemyMove(BlockMap& blockMap)
             if (currentFrame == 1 && mTargetPlayerPos.x == 0.0f && mTargetPlayerPos.y == 0.0f)
             {
                 mTargetPlayerPos = playerObj->GetPosition();
-                // プレイヤーの少し奥(100.0f)を目標にする
-                if (mTargetPlayerPos.x > enemyX) {
-                    mTargetPlayerPos.x += 100.0f;
-                } else {
-                    mTargetPlayerPos.x -= 100.0f;
-                }
             }
             
             // 4枚目(インデックス3)になったらジャンプ突進開始
             if (currentFrame == 3 && !mHasJumped)
             {
                 mbIsJumping = true;
+                velocityY = -10.0f; // 弧を描くための上方向への初速
                 mHasJumped = true;
                 
-                // アニメーションは全7枚、インデックス3(4枚目)から飛びつき開始
-                // SetInterval(6)の場合、残り4枚(3,4,5,6) × 6フレーム = 約24フレーム
-                float jumpFrames = 24.0f;
-                
-                // 攻撃モーション終了時に目標のX座標へ必ず到達するように速度を算出
-                mJumpSpeedX = (mTargetPlayerPos.x - enemyX) / jumpFrames;
-                
-                // 攻撃モーション終了時に目標のY座標（あるいは着地）に必ず到達するように初速を算出
-                // 等加速度直線運動: Δy = v0 * t + 0.5 * g * t^2
-                // v0 = (Δy / t) - 0.5 * g * t
-                float deltaY = mTargetPlayerPos.y - enemyY;
-                velocityY = (deltaY / jumpFrames) - (0.5f * gravity * jumpFrames);
+                // 目標座標へ向かうX速度を計算 (着地まで約30フレームと仮定)
+                mJumpSpeedX = (mTargetPlayerPos.x - enemyX) / 30.0f;
+                // 最大速度を制限
+                if (mJumpSpeedX > 8.0f) mJumpSpeedX = 8.0f;
+                if (mJumpSpeedX < -8.0f) mJumpSpeedX = -8.0f;
             }
             
             // ジャンプ中(空中にいる)の移動処理
@@ -283,7 +273,7 @@ void EnemySlime::EnemyMove(BlockMap& blockMap)
     if (mIsAttacking)
     {
         // 攻撃時のスピードはジャンプ時に計算した mJumpSpeedX を適用済み
-        if (mpAnimAttack) mpAnimAttack->SetInterval(7); // 攻撃は少し早めに再生
+        if (mpAnimAttack) mpAnimAttack->SetInterval(6); // 攻撃は少し早めに再生
     }
     else if (mIsChasing)
     {
@@ -351,3 +341,8 @@ void EnemySlime::UpdateStatusByProgress(GameProgress progress)
         break;
     }
 }
+"""
+
+with open('Source/EnemySlime.cpp', 'w', encoding='utf-8-sig') as f:
+    f.write(content)
+

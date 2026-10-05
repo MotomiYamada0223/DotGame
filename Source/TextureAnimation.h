@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include"DxLib.h"
 #include <string>
 
@@ -17,37 +17,42 @@ public:
 	~TextureAnimation();
 
 
-	void Update(); // XV
-	void Draw();   // •`‰æ
+	void Update(); // æ›´æ–°
+	void Draw(bool turnFlag = false); // æç”»
 
-	// ƒZƒbƒ^[ŠÖ” // 
-	// ƒ|ƒWƒVƒ‡ƒ“İ’è
+	// ã‚»ãƒƒã‚¿ãƒ¼é–¢æ•° // 
+	// ãƒã‚¸ã‚·ãƒ§ãƒ³è¨­å®š
+	void SetInterval(int interval) { mnInterval = interval; }
 	void SetPosition(VECTOR centerPosition) { mvPosition = centerPosition; }
 
-	// ƒQƒbƒ^[ŠÖ” //
-	// ƒ|ƒWƒVƒ‡ƒ“æ“¾
+	// ã‚²ãƒƒã‚¿ãƒ¼é–¢æ•° //
+	// ãƒã‚¸ã‚·ãƒ§ãƒ³å–å¾—
 	VECTOR GetPosition() { return mvPosition; }
 
+	// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³åˆ¶å¾¡
+	int GetCurrentFrame() const { return mnCurrentNum; }
+	void ResetAnimation() { mnCurrentNum = 0; mnCounter = 0; }
 
-	// ƒvƒŒƒCƒ„[‚Åg‚¤‚½‚ß
-	int GetSizeX() { return mnxNum; }  // •
-	int GetSizeY() { return mnyNum; }  // ‚‚³
 
-	//@”¼Œaæ“¾
+	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã§ä½¿ã†ãŸã‚
+	int GetSizeX() { return mnxNum; }  // å¹…
+	int GetSizeY() { return mnyNum; }  // é«˜ã•
+
+	//ã€€åŠå¾„å–å¾—
 	float GetRadius() { return mfRadius; }
 
 
 private:
-	VECTOR mvPosition; // ƒ|ƒWƒVƒ‡ƒ“
-	int mnCounter;     // ƒAƒjƒ[ƒVƒ‡ƒ“ƒJƒEƒ“ƒ^
-	int mnInterval;   // ƒeƒNƒXƒ`ƒƒØ‚è‘Ö‚¦‚ÌƒtƒŒ[ƒ€”
-	int mnCurrentNum;  // ‰½”Ô–Ú‚ÌƒeƒNƒXƒ`ƒƒ‚ğ•\¦‚·‚é‚©
-	int* mnHandleList; // •ªŠ„‚³‚ê‚½ƒeƒNƒXƒ`ƒƒ‚Ìƒnƒ“ƒhƒ‹ƒŠƒXƒg
-	int mnAllNum;      // ƒeƒNƒXƒ`ƒƒ•ªŠ„”
+	VECTOR mvPosition; // ãƒã‚¸ã‚·ãƒ§ãƒ³
+	int mnCounter;     // ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚«ã‚¦ãƒ³ã‚¿
+	int mnInterval;   // ãƒ†ã‚¯ã‚¹ãƒãƒ£åˆ‡ã‚Šæ›¿ãˆã®ãƒ•ãƒ¬ãƒ¼ãƒ æ•°
+	int mnCurrentNum;  // ä½•ç•ªç›®ã®ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚’è¡¨ç¤ºã™ã‚‹ã‹
+	int* mnHandleList; // åˆ†å‰²ã•ã‚ŒãŸãƒ†ã‚¯ã‚¹ãƒãƒ£ã®ãƒãƒ³ãƒ‰ãƒ«ãƒªã‚¹ãƒˆ
+	int mnAllNum;      // ãƒ†ã‚¯ã‚¹ãƒãƒ£åˆ†å‰²æ•°
 
-	float mfRadius;    // ”¼Œa
+	float mfRadius;    // åŠå¾„
 
-	// ƒƒ“ƒo•Ï”‚Ì’Ç‰Á
+	// ãƒ¡ãƒ³ãƒå¤‰æ•°ã®è¿½åŠ 
 	int mnxNum;
 	int mnyNum;
 
