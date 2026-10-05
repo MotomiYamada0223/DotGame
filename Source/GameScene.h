@@ -22,6 +22,8 @@ public:
 	virtual void Draw() override;
 	virtual void Finalize() override;
 
+	void SetTextUpdate();// テキストの更新を行う関数
+
 private:
 	TutorialTextManager mTutorialText;
 

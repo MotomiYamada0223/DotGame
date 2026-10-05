@@ -21,7 +21,7 @@ Saint::Saint(VECTOR initPos)
 
 Saint::~Saint()
 {
-	for (int i = 0; i < 3; ++i)
+	for (int i = 0; i < MAX_STATE; ++i)
 	{
 		if (graphHandles[i] != -1)
 		{
@@ -90,14 +90,19 @@ void Saint::Update()
 
 void Saint::Draw()
 {
-	if (currentState >= 0 && currentState < 3)
+	if (currentState >= 0 && currentState < MAX_STATE)
 	{
 		int handle = graphHandles[currentState];
 		if (handle != -1)
 		{
-			// 中心基準で 3倍(3.0) のサイズに拡大して描画する
-			
-			DrawRotaGraph(static_cast<int>(mvPosition.x), static_cast<int>(mvPosition.y), 3.0, 0.0, handle, TRUE);
+			// 中心基準で 7倍(7.0) のサイズに拡大して描画する
+			DrawRotaGraph(
+				static_cast<int>(mvPosition.x),
+				static_cast<int>(mvPosition.y),
+				7.0,
+				0.0,
+				handle,
+				TRUE);
 		}
 	}
 }

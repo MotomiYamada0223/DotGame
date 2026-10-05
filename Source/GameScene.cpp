@@ -99,19 +99,7 @@ void GameScene::Update()
 	}
 
 
-	// チュートリアルテキストの更新
-	mpPlayer->PlayerMove(mBlockMap);
-	// プレイヤーの死亡状態の確認
-	bool isPlayerDead = mpPlayer->GetIsDead();
-	// 死亡した瞬間
-	if (isPlayerDead && !mbWasPlayerDead)
-	{
-		mTutorialText.OnPlayerDead();
-	}
-	// 今フレームの死亡状態を保存
-	mbWasPlayerDead = isPlayerDead;
-	mTutorialText.Update(1.0f / 60.0f);
-
+	SetTextUpdate(); // テキスト更新の呼び出し
 
 
 	if (mpPlayer)
@@ -140,6 +128,31 @@ void GameScene::Update()
 	Scene::Update();
 }
 
+void GameScene::SetTextUpdate()
+{
+	// チュートリアルテキストの更新
+	mpPlayer->PlayerMove(mBlockMap);
+	// プレイヤーの死亡状態の確認
+	bool isPlayerDead = mpPlayer->GetIsDead();
+
+
+	// 死亡した瞬間
+	if (isPlayerDead && !mbWasPlayerDead)
+	{
+		mTutorialText.OnPlayerDead();
+	}
+	// 復活した瞬間
+	else if (!isPlayerDead && mbWasPlayerDead)
+	{
+		mTutorialText.OnPlayerRevive();
+	}
+
+
+	// 今フレームの死亡状態を保存
+	mbWasPlayerDead = isPlayerDead;
+	mTutorialText.Update(1.0f / 60.0f);
+}
+
 void GameScene::Draw()
 {
 	if (!mbIsLoaded) { return; }
@@ -147,7 +160,6 @@ void GameScene::Draw()
 	// オブジェクトの描画
 	mBackground.Draw(); // スクロール背景
 	mBlockMap.Draw(); // ブロックマップの描画
-	mTutorialText.Draw(); // チュートリアルの描画
 
 	// クラスのDraw呼び出し
 	Scene::Draw();
@@ -159,6 +171,7 @@ void GameScene::Draw()
 	// デバッグ系
 	mpPlayer->DebugDraw(); // ブロックデバッグ
 	mBlockMap.DebugDraw(); // ブロックマップデバッグ表示
+	mTutorialText.Draw(); // チュートリアルの描画
 	mTutorialText.DebugDraw(); // テキスト
 
 

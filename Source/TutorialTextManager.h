@@ -17,12 +17,13 @@ public:
 	void Update(float dt);
 	void Draw();
 	void DebugDraw();
-
 	// ステップの変更
 	void ChangeStep(int nextID);
 
 	// プレイヤー死亡時
 	void OnPlayerDead();
+	// プレイヤー復活時
+	void OnPlayerRevive();
 
 	// 現在のステップを返す
 	const StepData* GetCurrentStep() const;
@@ -39,6 +40,7 @@ private:
 	int mnCurrentID = 1; // 現在のステップID
 	int mnPreviousID = 1; // 死亡する前の通常チュートリアルID
 	bool mbIsDeathTutorial = false; // 現在、死亡時チュートリアルを表示しているか
+	bool mbIsDeathTextFinished = false; // 死亡チュートリアルの表示が最後まで終わったか
 
 	int mnDisplayByteCount = 0; // 画面に表示する文字列のバイト数
 

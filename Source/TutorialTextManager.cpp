@@ -59,6 +59,7 @@ void TutorialTextManager::Initialize(
 	mnPreviousID = 1;
 
 	mbIsDeathTutorial = false;
+	mbIsDeathTextFinished = false;
 
 	mfIdelTimer = 0.0f;
 	mfCharSpeed = 0.05f;
@@ -85,8 +86,28 @@ void TutorialTextManager::OnPlayerDead()
 	// 死亡チュートリアルへ切り替える
 	mbIsDeathTutorial = true;
 
+	// 死亡テキストはまだ終了していない
+	mbIsDeathTextFinished = false;
+
 	// 死亡CSVの最初のIDから開始
 	mnCurrentID = 1;
+
+	// 表示状態をリセット
+	mfIdelTimer = 0.0f;
+	mfCharTimer = 0.0f;
+	mnDisplayByteCount = 0;
+}
+
+
+// プレイヤーが復活したときの処理
+void TutorialTextManager::OnPlayerRevive()
+{
+	// 通常チュートリアルへ戻る
+	mbIsDeathTutorial = false;
+	mbIsDeathTextFinished = false;
+
+	// 死亡前に保存しておいたIDへ戻る
+	mnCurrentID = mnPreviousID;
 
 	// 表示状態をリセット
 	mfIdelTimer = 0.0f;
@@ -98,6 +119,11 @@ void TutorialTextManager::OnPlayerDead()
 // 更新処理
 void TutorialTextManager::Update(float dt)
 {
+	if (mbIsDeathTextFinished && mbIsDeathTutorial)
+	{
+		return;
+	}
+
 	// 現在のステップを取得する
 	const StepData* step = GetCurrentStep();
 
@@ -150,17 +176,7 @@ void TutorialTextManager::ChangeStep(int nextID)
 	// 死亡チュートリアルが終了した場合
 	if (mbIsDeathTutorial && nextID == 0)
 	{
-		// 通常チュートリアルへ戻る
-		mbIsDeathTutorial = false;
-
-		// 死亡前に保存しておいたIDへ戻る
-		mnCurrentID = mnPreviousID;
-
-		// 表示状態をリセット
-		mfIdelTimer = 0.0f;
-		mfCharTimer = 0.0f;
-		mnDisplayByteCount = 0;
-
+		mbIsDeathTextFinished = true;
 		return;
 	}
 
@@ -209,11 +225,14 @@ void TutorialTextManager::Draw()
 		return;
 	}
 
-	// 表示時間を越していたら表示しない
-	if (mfIdelTimer >= step->completeValue)
+	// 通常のテキストは表示時間を越したら表示しない
+	// ただし、死亡テキスト終了後は最後のテキストを表示し続ける
+	if (!(mbIsDeathTutorial && mbIsDeathTextFinished) &&
+		mfIdelTimer >= step->completeValue)
 	{
 		return;
 	}
+
 
 	// 現在表示すべきバイト数分だけ文字列を切り出す処理
 	// 先頭の文字から出すべきバイト数まで。

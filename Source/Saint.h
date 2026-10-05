@@ -20,4 +20,6 @@ private:
 	int blinkTimer;
 	int blinkInterval;
 	bool isBlinking;
+
+	const int MAX_STATE = 3; // 目閉・口閉(0), 目開・口閉(1), 目開・口開(2)
 };
