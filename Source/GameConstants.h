@@ -77,13 +77,13 @@ namespace BlockMapGraphPath
 // スクロール背景のパス
 namespace ScrollGraphPath
 {
-	static const char* Stage1 = "Resource/Background/stage1_background.png";
+	static const char* Stage1 = "Resource/Backgrounds/stage1_background.png";
 }
 
 // 読み込むCSVパス
 namespace CsvPath
 {
-	static const std::string TutorialText = "Resource/TutorialText/tutorialTextData.csv"; // チュートリアルテキストのCSV
+	static const std::string TutorialText = "Resource/TutorialTexts/tutorialTextData.csv"; // チュートリアルテキストのCSV
 }
 
 // よく使う色
@@ -152,4 +152,7 @@ namespace MapScrollConstants
 	static constexpr int ScrollStartRightX = 1000;
 	// プレイヤーがこの画面X座標より左に行ったらスクロール
 	static constexpr int ScrollStartLeftX = 600;
+
+	// 背景を少し遅くさせるための倍率
+	static constexpr float BackgroundScrollSpeedScale = 0.3f;
 }

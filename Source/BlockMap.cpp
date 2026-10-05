@@ -11,9 +11,11 @@ BlockMap::BlockMap()
     , mnCollisionHeight(0)
     , mCollisionData()
     , mbIsLoaded(false)
-    , mBackgroundWidth(0)
-    , mBackgroundHeight(0)
-    , mScrollX(0)
+    , mnBackgroundWidth(0)
+    , mnBackgroundHeight(0)
+    , mnScrollX(0)
+    , mbIsScrolling(false)
+    , mfMoveDirection(0.0f)
 {
     //mSpawnPos = initPos;
 }
@@ -45,8 +47,8 @@ bool BlockMap::Load(
     // 背景画像のサイズを取得
     GetGraphSize(
         mnBackgroundGraph,
-        &mBackgroundWidth,
-        &mBackgroundHeight
+        &mnBackgroundWidth,
+        &mnBackgroundHeight
     );
 
 
@@ -172,7 +174,7 @@ void BlockMap::Draw()
     DrawRectGraph(
         0,                  // 画面上のX
         0,                  // 画面上のY
-        mScrollX,           // 元画像から切り出すX
+        mnScrollX,           // 元画像から切り出すX
         0,                  // 元画像から切り出すY
         ScreenSize::ScrrenWidth,       // 切り出す幅
         ScreenSize::ScrrenHeight,      // 切り出す高さ
@@ -208,7 +210,7 @@ void BlockMap::DebugDraw()
         200,
         GetColor(255, 255, 255),
         "ScrollX: %d",
-        mScrollX
+        mnScrollX
     );
 }
 
@@ -216,38 +218,52 @@ void BlockMap::DebugDraw()
 void BlockMap::Move(int playerScreenX, float moveDirection, float currentSpeed)
 {
     if (!mbIsLoaded) { return; }
+    mfMoveDirection = moveDirection;
 
     if (CheckHitKey(KEY_INPUT_1))
     {
-        mScrollX = 0;
+        mnScrollX = 0;
     }
 
+    // スクロールしたかを比較で判断するため
+    int oldScrollPos = mnScrollX;
     // 右側の線を超えていて、右に移動中
     if (playerScreenX > MapScrollConstants::ScrollStartRightX &&
         moveDirection > 0.0f)
     {
-        mScrollX += static_cast<int>(currentSpeed);
+        mnScrollX += static_cast<int>(currentSpeed);
     }
 
     // 左側の線を超えていて、左に移動中
     else if (playerScreenX < MapScrollConstants::ScrollStartLeftX &&
         moveDirection < 0.0f)
     {
-        mScrollX -= static_cast<int>(currentSpeed);
+        mnScrollX -= static_cast<int>(currentSpeed);
     }
 
     // 左端
-    if (mScrollX < 0)
+    if (mnScrollX < 0)
     {
-        mScrollX = 0;
+        mnScrollX = 0;
     }
 
     // 右端
     int maxScrollX =
-        mBackgroundWidth - ScreenSize::ScrrenWidth;
+        mnBackgroundWidth - ScreenSize::ScrrenWidth;
 
     if (maxScrollX < 0) { maxScrollX = 0; }
-    if (mScrollX > maxScrollX) { mScrollX = maxScrollX; }
+    if (mnScrollX > maxScrollX) { mnScrollX = maxScrollX; }
+
+
+
+    if (oldScrollPos != mnScrollX)
+    {
+        mbIsScrolling = true;
+    }
+    else
+    {
+        mbIsScrolling = false;
+    }
 }
 
 
@@ -274,7 +290,7 @@ BlockMap::CollisionType BlockMap::GetCollisionType(
 // スクリーン座標をマップ座標に変換
 int BlockMap::ScreenToMapX(int screenX) const
 {
-    return screenX + mScrollX;
+    return screenX + mnScrollX;
 }
 
 int BlockMap::ScreenToMapY(int screenY) const

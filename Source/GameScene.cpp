@@ -10,6 +10,7 @@
 
 GameScene::GameScene()
 	:Scene()
+	, mProgress()
 {
 	spawnTimer = 0;
 	mpPlayer = nullptr;
@@ -29,10 +30,15 @@ void GameScene::Initialize()
 	mTutorialText.Initialize(CsvPath::TutorialText);
 
 	// 背景画像と当たり判定画像を読み込む
-	mBlockMap.Load(
+	if (!mBlockMap.Load(
 		BlockMapGraphPath::Background,
 		BlockMapGraphPath::Collision
-	);
+	))
+	{
+		return;
+	}
+
+	mBackground.Load(ScrollGraphPath::Stage1);
 
 
 	// プレイヤーの生成
@@ -96,6 +102,10 @@ void GameScene::Update()
 	// チュートリアルテキストの更新
 	mTutorialText.Update(1.0f / 60.0f);
 	mpPlayer->PlayerMove(mBlockMap);
+	if (mpPlayer)
+	{
+		mBackground.Move(static_cast<int>(mpPlayer->GetCurrentSpeed()), mBlockMap.GetIsScrolling(), mBlockMap.GetScrollDirection());
+	}
 
 
 	// シーン上に存在するすべての敵をオブジェクトマネージャー経由で一括取得
@@ -121,20 +131,24 @@ void GameScene::Update()
 void GameScene::Draw()
 {
 	if (!mbIsLoaded) { return; }
+	
+	// オブジェクトの描画
+	mBackground.Draw(); // スクロール背景
+	mBlockMap.Draw(); // ブロックマップの描画
+	mTutorialText.Draw(); // チュートリアルの描画
 
 	// クラスのDraw呼び出し
 	Scene::Draw();
+
+	// 一番手前に描画したいもの
+	mpPlayer->DrawFallDeath(); // 死亡時テキスト
+
 
 	// デバッグ系
 	mpPlayer->DebugDraw(); // ブロックデバッグ
 	mBlockMap.DebugDraw(); // ブロックマップデバッグ表示
 	mTutorialText.DebugDraw(); // テキスト
 
-	// オブジェクトの描画
-	mBlockMap.Draw(); // ブロックマップの描画
-	mTutorialText.Draw(); // チュートリアルの描画
-
-	mpPlayer->DrawFallDeath(); // 死亡時テキスト
 
 	// デバッグ表示: 現在の進行度
 	const char* progStr = (mProgress == GameProgress::Tutorial1) ? "Tutorial1 (Death)" : "Tutorial2 (Immune)";
@@ -145,3 +159,6 @@ void GameScene::Finalize()
 {
 
 }
+
+
+
