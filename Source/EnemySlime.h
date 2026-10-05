@@ -21,6 +21,16 @@ private:
     float mCurrentMoveDirection;
     int mActionTimer;
     bool mIsFacingRight;
+    bool mIsChasing;
+    float mVisionLength;
+    float mVisionBaseHeight;
+    float mVisionAngle;
+
+    bool mIsAttacking;
+    int mAttackCooldownTimer;
+    VECTOR mTargetPlayerPos;
+    bool mHasJumped;
+    float mJumpSpeedX;
 
 protected:
     float mMoveSpeed;

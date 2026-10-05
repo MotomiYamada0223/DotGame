@@ -22,11 +22,16 @@ public:
 
 	// セッター関数 // 
 	// ポジション設定
+	void SetInterval(int interval) { mnInterval = interval; }
 	void SetPosition(VECTOR centerPosition) { mvPosition = centerPosition; }
 
 	// ゲッター関数 //
 	// ポジション取得
 	VECTOR GetPosition() { return mvPosition; }
+
+	// アニメーション制御
+	int GetCurrentFrame() const { return mnCurrentNum; }
+	void ResetAnimation() { mnCurrentNum = 0; mnCounter = 0; }
 
 
 	// プレイヤーで使うため
