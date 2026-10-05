@@ -27,12 +27,26 @@ namespace PlayerConstants
 	static const int PlayerAttackWidth = 60; // プレイヤーの攻撃範囲の幅
 	static const int PlayerAttackHeight = 40; // プレイヤーの攻撃範囲の高さ
 
-	static const int MaxLive = 5; // プレイヤーの最大残機
+	static const int MaxLive = 3; // プレイヤーの最大残機
 
 	// 落下でプレイヤーが死亡する位置
 	static const int PlayerDeathHeight = ScreenSize::ScrrenHeight + 100;
 }
 
+// UI画像
+namespace UIGraphPath
+{
+	static const std::string SaintFrame = "Resource/Frames/saint_frame.png"; // 天使のフレーム画像
+	static const std::string TextFrame = "Resource/Frames/text_frame.png"; // テキストのフレーム画像
+}
+
+// UI画像位置
+namespace UIGraphPosition
+{
+	static const int SaintFramePosX = 300; // 天使のフレーム位置
+	static const int TextFramePosX = 530; // テキストのフレーム位置
+	static const int FramePosY = 50; // フレーム位置Y
+}
 
 // キャラクター画像関係
 namespace CharacterGraphPath
@@ -77,13 +91,14 @@ namespace BlockMapGraphPath
 // スクロール背景のパス
 namespace ScrollGraphPath
 {
-	static const char* Stage1 = "Resource/Backgrounds/stage1_background.png";
+	static const char* Stage1 = "Resource/Backgrounds/stage1-1_background.png";
 }
 
 // 読み込むCSVパス
 namespace CsvPath
 {
 	static const std::string TutorialText = "Resource/TutorialTexts/tutorialTextData.csv"; // チュートリアルテキストのCSV
+	static const std::string TutorialDeathText = "Resource/TutorialTexts/tutorialDeathTextData.csv"; // 死亡テキストのCSV
 }
 
 // よく使う色
@@ -128,6 +143,14 @@ namespace PlayerBlockCollision
 	static constexpr float CollisionThickness = 1.0f;
 }
 
+// 天使の位置
+namespace SainController
+{
+	static const int PosX = 395; // 天使の位置X
+	static const int PosY = 140; // 天使の位置Y
+	static constexpr float Scale = 5.5f; // 画像の拡大率
+}
+
 // 表示するテキストの位置
 namespace TextPosition
 {
@@ -140,8 +163,13 @@ namespace TextPosition
 	static const int LivesY = FallDeathY + 200;
 }
 
-namespace TextTimer
+// チュートリアルテキストの表示関係
+namespace TutorialTextControll
 {
+	static const int TextX = 600;
+	static const int TextY = 75;
+	static const int TextSize = 45;
+
 	static constexpr float MaxFallDeathTimer = 180.0f;
 }
 

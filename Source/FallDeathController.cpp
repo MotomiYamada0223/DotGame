@@ -27,7 +27,7 @@ void FallDeathController::Update(VECTOR playerPos, int playerLive)
 	{
 		mActive = true;
 		mIsPressEnter = false;
-		mReviveTimer = TextTimer::MaxFallDeathTimer;
+		mReviveTimer = TutorialTextControll::MaxFallDeathTimer;
 	}
 
 	if (mActive)
@@ -106,7 +106,7 @@ void FallDeathController::Reset()
 {
 	mActive = false;
 	mIsPressEnter = false;
-	mReviveTimer = TextTimer::MaxFallDeathTimer;
+	mReviveTimer = TutorialTextControll::MaxFallDeathTimer;
 }
 
 

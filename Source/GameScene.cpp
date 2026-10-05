@@ -27,7 +27,7 @@ void GameScene::Initialize()
 {
 	// CSVのファイル読み込み
 	// チュートリアルテキストとブロックマップのタイル
-	mTutorialText.Initialize(CsvPath::TutorialText);
+	mTutorialText.Initialize(CsvPath::TutorialText, CsvPath::TutorialDeathText);
 
 	// 背景画像と当たり判定画像を読み込む
 	if (!mBlockMap.Load(
@@ -99,14 +99,12 @@ void GameScene::Update()
 		Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_LOSERESULT);
 	}
 
-	// チュートリアルテキストの更新
-	mTutorialText.Update(1.0f / 60.0f);
-	mpPlayer->PlayerMove(mBlockMap);
+	SetTextUpdate(); // テキスト更新の呼び出し
+
 	if (mpPlayer)
 	{
 		mBackground.Move(static_cast<int>(mpPlayer->GetCurrentSpeed()), mBlockMap.GetIsScrolling(), mBlockMap.GetScrollDirection());
 	}
-
 
 	// シーン上に存在するすべての敵をオブジェクトマネージャー経由で一括取得
 	/// 個別のコードを追加することなく共通の移動処理を実行するため
@@ -128,6 +126,31 @@ void GameScene::Update()
 	Scene::Update();
 }
 
+void GameScene::SetTextUpdate()
+{
+	// チュートリアルテキストの更新
+	mpPlayer->PlayerMove(mBlockMap);
+	// プレイヤーの死亡状態の確認
+	bool isPlayerDead = mpPlayer->GetIsDead();
+
+
+	// 死亡した瞬間
+	if (isPlayerDead && !mbWasPlayerDead)
+	{
+		mTutorialText.OnPlayerDead();
+	}
+	// 復活した瞬間
+	else if (!isPlayerDead && mbWasPlayerDead)
+	{
+		mTutorialText.OnPlayerRevive();
+	}
+
+
+	// 今フレームの死亡状態を保存
+	mbWasPlayerDead = isPlayerDead;
+	mTutorialText.Update(1.0f / 60.0f);
+}
+
 void GameScene::Draw()
 {
 	if (!mbIsLoaded) { return; }
@@ -135,18 +158,17 @@ void GameScene::Draw()
 	// オブジェクトの描画
 	mBackground.Draw(); // スクロール背景
 	mBlockMap.Draw(); // ブロックマップの描画
-	mTutorialText.Draw(); // チュートリアルの描画
 
-	// クラスのDraw呼び出し
-	Scene::Draw();
 
 	// 一番手前に描画したいもの
 	mpPlayer->DrawFallDeath(); // 死亡時テキスト
-
-
+	mDrawFrame.Draw(); // フレーム描画
+	Scene::Draw();
+	
 	// デバッグ系
 	mpPlayer->DebugDraw(); // ブロックデバッグ
 	mBlockMap.DebugDraw(); // ブロックマップデバッグ表示
+	mTutorialText.Draw(); // チュートリアルの描画
 	mTutorialText.DebugDraw(); // テキスト
 
 
