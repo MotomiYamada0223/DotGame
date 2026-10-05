@@ -4,6 +4,11 @@
 
 Saint::Saint(VECTOR initPos)
 	: Object2D(initPos)
+	, currentState(1)
+	, talkTimer(0)
+	, blinkTimer(0)
+	, isBlinking(false)
+	, mfScale(SainController::Scale)
 {
 	SetTag(Object2D::Tag::FrontMap);
 
@@ -11,11 +16,6 @@ Saint::Saint(VECTOR initPos)
 	graphHandles[1] = LoadGraph(CharacterGraphPath::SaintClosedAndOpen.c_str()); // 目を開けて口を閉じたやつ
 	graphHandles[2] = LoadGraph(CharacterGraphPath::SaintOpen.c_str()); // 両方空いてるやつ
 
-	currentState = 1; // 初期状態
-	
-	talkTimer = 0;
-	blinkTimer = 0;
-	isBlinking = false;
 	blinkInterval = 180 + GetRand(60); // 次の瞬きまで 3〜4秒(180〜240フレーム)
 }
 
@@ -62,17 +62,14 @@ void Saint::Update()
 		}
 
 		// しゃべる処理（瞬きしていない時だけ口を動かす）
-		
 		talkTimer++;
 
 		// 0.3秒(18フレーム)間隔で切り替え
-		
 		if (talkTimer >= 18) 
 		{
 			talkTimer = 0;
 
 			// 目開口閉(1) と 両方開(2) を交互に切り替える
-			
 			if (currentState == 1) 
 			{
 				currentState = 2;
@@ -94,11 +91,11 @@ void Saint::Draw()
 		int handle = graphHandles[currentState];
 		if (handle != -1)
 		{
-			// 中心基準で 7倍(7.0) のサイズに拡大して描画する
+			// 中心基準で指定のサイズに拡大して描画する
 			DrawRotaGraph(
-				static_cast<int>(mvPosition.x),
-				static_cast<int>(mvPosition.y),
-				7.0,
+				SainController::PosX,
+				SainController::PosY,
+				mfScale,
 				0.0,
 				handle,
 				TRUE);

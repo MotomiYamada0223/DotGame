@@ -241,9 +241,9 @@ void TutorialTextManager::Draw()
 
 	// 切り出したテキストを指定位置に描画する
 	Master::mpGameManager->GetFontManager()->DrawDotString(
-		50,
-		50,
-		100,
+		TutorialTextControll::TextX,
+		TutorialTextControll::TextY,
+		TutorialTextControll::TextSize,
 		color,
 		"%s",
 		displayText.c_str());

@@ -98,15 +98,12 @@ void GameScene::Update()
 		Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_LOSERESULT);
 	}
 
-
 	SetTextUpdate(); // テキスト更新の呼び出し
-
 
 	if (mpPlayer)
 	{
 		mBackground.Move(static_cast<int>(mpPlayer->GetCurrentSpeed()), mBlockMap.GetIsScrolling(), mBlockMap.GetScrollDirection());
 	}
-
 
 	// シーン上に存在するすべての敵をオブジェクトマネージャー経由で一括取得
 	/// 個別のコードを追加することなく共通の移動処理を実行するため
@@ -161,14 +158,12 @@ void GameScene::Draw()
 	mBackground.Draw(); // スクロール背景
 	mBlockMap.Draw(); // ブロックマップの描画
 
-	// クラスのDraw呼び出し
-	Scene::Draw();
-	mDrawFrame.Draw(); // フレーム描画
 
 	// 一番手前に描画したいもの
 	mpPlayer->DrawFallDeath(); // 死亡時テキスト
-
-
+	mDrawFrame.Draw(); // フレーム描画
+	Scene::Draw();
+	
 	// デバッグ系
 	mpPlayer->DebugDraw(); // ブロックデバッグ
 	mBlockMap.DebugDraw(); // ブロックマップデバッグ表示
