@@ -34,7 +34,6 @@ Saint::~Saint()
 void Saint::Update()
 {
 	// 瞬き処理
-	
 	if (isBlinking)
 	{
 		blinkTimer++;

@@ -163,6 +163,7 @@ void GameScene::Draw()
 
 	// クラスのDraw呼び出し
 	Scene::Draw();
+	mDrawFrame.Draw(); // フレーム描画
 
 	// 一番手前に描画したいもの
 	mpPlayer->DrawFallDeath(); // 死亡時テキスト
