@@ -16,6 +16,8 @@ public:
 
 	bool IsPlayerDead(); // プレイヤーが死亡しているかの判定
 
+
+
 private:
     TextureAnimation* mpAnimIdle;
     TextureAnimation* mpAnimMove;

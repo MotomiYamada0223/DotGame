@@ -342,6 +342,8 @@ void EnemySlime::EnemyMove(BlockMap& blockMap)
         mMoveSpeed,
         mCurrentMoveDirection
     );
+
+    LimitPositionX(blockMap, mfEnemyHeight); // 左右制限の呼び出し
 }
 
 void EnemySlime::UpdateStatusByProgress(GameProgress progress)
