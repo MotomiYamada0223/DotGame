@@ -1,14 +1,14 @@
 ﻿#pragma once
 #include "Object2D.h"
 
-class Saint : public Object2D
+class Saint
 {
 public:
 	Saint(VECTOR initPos);
 	virtual ~Saint();
 
-	virtual void Update() override;
-	virtual void Draw() override;
+	 void Update();
+	 void Draw();
 
 private:
 	int graphHandles[3]; 

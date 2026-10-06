@@ -711,14 +711,22 @@ void Player::Draw()
 		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 	}
 
+	DrawLife();
+}
+
+
+// 体力はあとの描画
+void Player::DrawLife()
+{
 	// UI（ハート）の描画（右上）
 	if (mMaxHp > 0)
 	{
 		int hpLevel = (mHp * 6) / mMaxHp;
 		if (mHp > 0 && hpLevel == 0) hpLevel = 1;
 
-		int drawX = ScreenSize::ScrrenWidth - 150; // 右上に配置
-		int drawY = 20;
+		int drawX = UIGraphController::LifePosX; // 左上に配置
+		int drawY = UIGraphController::LifePosY;
+		int Distance = UIGraphController::LifeDistance; // ハートの間隔
 		for (int i = 0; i < 3; i++)
 		{
 			int heartState = hpLevel - (i * 2);
@@ -728,11 +736,19 @@ void Player::Draw()
 
 			if (graph != -1)
 			{
-				DrawGraph(drawX + i * 40, drawY, graph, TRUE);
+				// 拡大するために描画方法を変更した
+				DrawRotaGraph(
+					drawX + i * Distance,
+					drawY,
+					UIGraphController::LifeScale,
+					0.0f,
+					graph,
+					TRUE);
 			}
 		}
 	}
 }
+
 
 // デバッグ表示をしている関数
 // GameSceneで呼び出している
