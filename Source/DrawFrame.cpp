@@ -22,15 +22,15 @@ void DrawFrame::Draw()
 {
 	// 天使のフレームを描画
 	DrawGraph(
-		UIGraphPosition::SaintFramePosX,
-		UIGraphPosition::FramePosY,
+		UIGraphController::SaintFramePosX,
+		UIGraphController::FramePosY,
 		mnSaintFrameHandle,
 		true
 	);
 	// テキストのフレームを描画
 	DrawGraph(
-		UIGraphPosition::TextFramePosX,
-		UIGraphPosition::FramePosY,
+		UIGraphController::TextFramePosX,
+		UIGraphController::FramePosY,
 		mnTextFrameHandle,
 		true
 	);

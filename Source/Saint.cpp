@@ -3,15 +3,12 @@
 #include "Utility.h"
 
 Saint::Saint(VECTOR initPos)
-	: Object2D(initPos)
-	, currentState(1)
+	: currentState(1)
 	, talkTimer(0)
 	, blinkTimer(0)
 	, isBlinking(false)
 	, mfScale(SainController::Scale)
 {
-	SetTag(Object2D::Tag::FrontMap);
-
 	graphHandles[0] = LoadGraph(CharacterGraphPath::SaintClosed.c_str()); // 目と口を閉じたやつ（瞬き）
 	graphHandles[1] = LoadGraph(CharacterGraphPath::SaintClosedAndOpen.c_str()); // 目を開けて口を閉じたやつ
 	graphHandles[2] = LoadGraph(CharacterGraphPath::SaintOpen.c_str()); // 両方空いてるやつ
@@ -80,8 +77,6 @@ void Saint::Update()
 			}
 		}
 	}
-
-	Object2D::Update();
 }
 
 void Saint::Draw()

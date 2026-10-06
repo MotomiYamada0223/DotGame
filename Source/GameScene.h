@@ -5,6 +5,7 @@
 #include"BlockMap.h"
 #include "Background.h"
 #include "DrawFrame.h"
+#include "Saint.h"
 
 // 前方宣言
 class Player;
@@ -30,10 +31,14 @@ private:
 
 	int spawnTimer; 
 	Player* mpPlayer;
+
+
 	GameProgress mProgress; // プレイヤーの座標を参照するために保持
-	BlockMap mBlockMap;
+	BlockMap mBlockMap; // 当たり判定のアル地面マップ
 	Background mBackground; // スクロール背景
 	DrawFrame mDrawFrame; // フレーム描画用
+	Saint mSaint; // 天使のキャラクター画像
+
 
 	bool mbIsLoaded = false; // マップがロードされたかどうかのフラグ
 	bool mbWasPlayerDead = false; // 前フレームのプレイヤーの死亡状態を保持するフラグ

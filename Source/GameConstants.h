@@ -40,12 +40,26 @@ namespace UIGraphPath
 	static const std::string TextFrame = "Resource/Frames/text_frame.png"; // テキストのフレーム画像
 }
 
-// UI画像位置
-namespace UIGraphPosition
+// UI画像関係
+namespace UIGraphController
 {
-	static const int SaintFramePosX = 300; // 天使のフレーム位置
-	static const int TextFramePosX = 530; // テキストのフレーム位置
-	static const int FramePosY = 50; // フレーム位置Y
+	static const int SaintFramePosX = 500; // 天使のフレーム位置
+	static const int TextFramePosX = 695; // テキストのフレーム位置
+	static const int FramePosY = 35; // フレーム位置Y
+
+	static const int LifePosX = 120; // 体力はーとの位置X
+	static const int LifePosY = 120; // 体力はーとの位置Y
+	static const int LifeDistance = 130; // ハートの間隔
+	static constexpr float LifeScale = 4.5f; // ハートの拡大率
+}
+
+
+// 天使の位置
+namespace SainController
+{
+	static const int PosX = UIGraphController::SaintFramePosX + 95; // 天使の位置X
+	static const int PosY = UIGraphController::FramePosY + 90; // 天使の位置Y
+	static constexpr float Scale = 5.5f; // 画像の拡大率
 }
 
 // キャラクター画像関係
@@ -140,14 +154,6 @@ namespace PlayerBlockCollision
 	static constexpr float WallCheckMargin = 20.0f;
 	// 壁や床、天井の判定を行う際の厚み
 	static constexpr float CollisionThickness = 1.0f;
-}
-
-// 天使の位置
-namespace SainController
-{
-	static const int PosX = 395; // 天使の位置X
-	static const int PosY = 140; // 天使の位置Y
-	static constexpr float Scale = 5.5f; // 画像の拡大率
 }
 
 // 表示するテキストの位置
