@@ -155,7 +155,7 @@ void StageSelectScene::Update()
 	{
 		Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_GAME);
 	}
-
+	
 	if (InputManager::CheckDownKey(KEY_INPUT_SPACE))
 	{
 		Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_TEST);

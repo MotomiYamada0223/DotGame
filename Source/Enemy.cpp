@@ -11,8 +11,6 @@ Enemy::Enemy(const std::string& graphPath, VECTOR initPos)
 {
 	SetTag(Object2D::Enemy2D);
 
-
-	
 	// CharacterPhysics用
 	mbIsJumping = false;
 	isGrounded = false;
@@ -35,6 +33,21 @@ Enemy::Enemy(const std::string& graphPath, VECTOR initPos)
 	// アニメーション関連
 	mnCurrentFrame = 0;
 	mnFrameTimer = 0;
+}
+
+void Enemy::LimitPositionX(const BlockMap& blockMap, float collisionWidth)
+{
+	if (mvPosition.x <= collisionWidth)
+	{
+		mvPosition.x = collisionWidth;
+	}
+
+	if (mvPosition.x >=
+		static_cast<float>(blockMap.GetCurrentWidth()) - collisionWidth)
+	{
+		mvPosition.x =
+			static_cast<float>(blockMap.GetCurrentWidth()) - collisionWidth;
+	}
 }
 
 

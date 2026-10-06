@@ -21,12 +21,14 @@ public:
 
 	void DebugDraw(); // デバッグ用の描画関数
 
-	// Mapを受け取って位置を更新する処理
-	void PlayerMove(BlockMap& blockMap);
+	void PlayerMove(BlockMap& blockMap); // Mapを受け取って位置を更新する処理
 
 	float GetMoveDirection() const { return mfMoveDirection; }
-	// 死亡テキストの呼び出し
-	void DrawFallDeath();
+	void DrawFallDeath(); // 死亡テキストの呼び出し
+
+
+	// 冗長コードにならなために関数分けしているもの
+	void DrawLife(); // 体力はあとの描画
 
 public:
 	bool GetIsDead() const { return isDead; } // 死亡判定かの処理

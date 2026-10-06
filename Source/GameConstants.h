@@ -27,12 +27,40 @@ namespace PlayerConstants
 	static const int PlayerAttackWidth = 60; // プレイヤーの攻撃範囲の幅
 	static const int PlayerAttackHeight = 40; // プレイヤーの攻撃範囲の高さ
 
-	static const int MaxLive = 5; // プレイヤーの最大残機
+	static const int MaxLive = 3; // プレイヤーの最大残機
 
 	// 落下でプレイヤーが死亡する位置
 	static const int PlayerDeathHeight = ScreenSize::ScrrenHeight + 100;
 }
 
+// UI画像
+namespace UIGraphPath
+{
+	static const std::string SaintFrame = "Resource/Frames/saint_frame.png"; // 天使のフレーム画像
+	static const std::string TextFrame = "Resource/Frames/text_frame.png"; // テキストのフレーム画像
+}
+
+// UI画像関係
+namespace UIGraphController
+{
+	static const int SaintFramePosX = 500; // 天使のフレーム位置
+	static const int TextFramePosX = 695; // テキストのフレーム位置
+	static const int FramePosY = 35; // フレーム位置Y
+
+	static const int LifePosX = 120; // 体力はーとの位置X
+	static const int LifePosY = 120; // 体力はーとの位置Y
+	static const int LifeDistance = 130; // ハートの間隔
+	static constexpr float LifeScale = 4.5f; // ハートの拡大率
+}
+
+
+// 天使の位置
+namespace SainController
+{
+	static const int PosX = UIGraphController::SaintFramePosX + 95; // 天使の位置X
+	static const int PosY = UIGraphController::FramePosY + 90; // 天使の位置Y
+	static constexpr float Scale = 5.5f; // 画像の拡大率
+}
 
 // キャラクター画像関係
 namespace CharacterGraphPath
@@ -44,6 +72,7 @@ namespace CharacterGraphPath
 	static const std::string Skeleton = "Resource/Image/SampleSkeleton.png"; // スケルトン画像
 	static const std::string Dragon = "Resource/Image/enemy_dragon_move.png"; // dragon画像
 	static const std::string Needle = "Resource/Image/Needle.png"; // 針の罠画像
+
 
 	// 天使の画像
 	static const std::string SaintClosed = "Resource/Image/saint_close1.png";
@@ -80,13 +109,14 @@ namespace BlockMapGraphPath
 // スクロール背景のパス
 namespace ScrollGraphPath
 {
-	static const char* Stage1 = "Resource/Backgrounds/stage1_background.png";
+	static const char* Stage1 = "Resource/Backgrounds/stage1-1_background.png";
 }
 
 // 読み込むCSVパス
 namespace CsvPath
 {
 	static const std::string TutorialText = "Resource/TutorialTexts/tutorialTextData.csv"; // チュートリアルテキストのCSV
+	static const std::string TutorialDeathText = "Resource/TutorialTexts/tutorialDeathTextData.csv"; // 死亡テキストのCSV
 }
 
 // よく使う色
@@ -135,7 +165,7 @@ namespace PlayerBlockCollision
 namespace TextPosition
 {
 	// 落ちた時のGAMEOVER文字
-	static const int FallDeathX =  200;
+	static const int FallDeathX = 200;
 	static const int FallDeathY = ScreenSize::CenterY - 150;
 
 	// 残機表示
@@ -143,8 +173,13 @@ namespace TextPosition
 	static const int LivesY = FallDeathY + 200;
 }
 
-namespace TextTimer
+// チュートリアルテキストの表示関係
+namespace TutorialTextControll
 {
+	static const int TextX = UIGraphController::SaintFramePosX + 300;
+	static const int TextY = UIGraphController::FramePosY + 30;
+	static const int TextSize = 45;
+
 	static constexpr float MaxFallDeathTimer = 180.0f;
 }
 
@@ -158,4 +193,9 @@ namespace MapScrollConstants
 
 	// 背景を少し遅くさせるための倍率
 	static constexpr float BackgroundScrollSpeedScale = 0.3f;
+}
+
+namespace TextTimer
+{
+	static constexpr float MaxFallDeathTimer = 180.0f;
 }

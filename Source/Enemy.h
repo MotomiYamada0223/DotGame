@@ -19,6 +19,9 @@ public:
 	// UŒ‚‚ğó‚¯‚½Û‚ÉŒÄ‚Î‚ê‚éˆ—
 	void OnDamaged();
 
+	// ¶‰E‚ÌˆÚ“®§ŒÀ‚ğ‚³‚¹‚éŠÖ”
+	void LimitPositionX(const BlockMap& blockMap, float collisionWidth);
+
 protected:
 	// ˆÚ“®E•¨—ŠÖ˜A
 	
