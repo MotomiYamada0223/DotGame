@@ -3,15 +3,10 @@
 #include "Utility.h"
 
 Saint::Saint(VECTOR initPos)
-<<<<<<< HEAD
-	: Object2D(initPos)
-=======
 	: currentState(1)
 	, talkTimer(0)
 	, blinkTimer(0)
 	, isBlinking(false)
-	, mfScale(SainController::Scale)
->>>>>>> A_Text
 {
 	graphHandles[0] = LoadGraph(CharacterGraphPath::SaintClosed.c_str()); // 目と口を閉じたやつ（瞬き）
 	graphHandles[1] = LoadGraph(CharacterGraphPath::SaintClosedAndOpen.c_str()); // 目を開けて口を閉じたやつ
@@ -100,7 +95,6 @@ void Saint::Draw()
 		if (handle != -1)
 		{
 			// 中心基準で 3倍(3.0) のサイズに拡大して描画する
-			
 			DrawRotaGraph(static_cast<int>(mvPosition.x), static_cast<int>(mvPosition.y), 3.0, 0.0, handle, TRUE);
 		}
 	}

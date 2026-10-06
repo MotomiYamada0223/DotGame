@@ -25,24 +25,9 @@ public:    // enum, struct, 定数の定義
 		
 		// Titleシーンでつかわれるタグ（1000～）
 
-<<<<<<< HEAD
 		// Gameシーンでつかわれるタグ（2000～）
-		BattleMap2D  = 2200,    // マップ
-		FrontMap  = 2201,    // マップ
 		Player2D = 2300,  // プレイヤー
 		Enemy2D = 2350,         // 敵
-
-
-		PlayerBullet2D = 3000,      // プレイヤーの弾
-		HomingEnemyBullet2D = 3100, // ホーミングしてくる敵の弾
-		BulletUP2D = 3200,          // プレイヤーの上向きの弾
-		HomingBullet2D = 3300,      // ホーミング弾（使ってない）
-
-=======
-		// Game�V�[���ł�����^�O�i2000�`�j
-		Player2D = 2300,  // �v���C���[
-		Enemy2D = 2350,         // �G
->>>>>>> A_Text
 	};
 
 

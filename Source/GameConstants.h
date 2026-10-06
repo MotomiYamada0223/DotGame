@@ -33,8 +33,6 @@ namespace PlayerConstants
 	static const int PlayerDeathHeight = ScreenSize::ScrrenHeight + 100;
 }
 
-<<<<<<< HEAD
-=======
 // UI画像
 namespace UIGraphPath
 {
@@ -63,7 +61,6 @@ namespace SainController
 	static const int PosY = UIGraphController::FramePosY + 90; // 天使の位置Y
 	static constexpr float Scale = 5.5f; // 画像の拡大率
 }
->>>>>>> A_Text
 
 // キャラクター画像関係
 namespace CharacterGraphPath
