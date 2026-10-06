@@ -24,6 +24,9 @@ public:
 	virtual void Draw() override;
 	virtual void Finalize() override;
 
+	void SetTextUpdate(); // チュートリアルテキストの更新
+
+
 private:
 	TutorialTextManager mTutorialText;
 
@@ -38,4 +41,5 @@ private:
 	Saint mSaint; // 天使のキャラクター画像
 
 	bool mbIsLoaded = false; // マップがロードされたかどうかのフラグ
+	bool mbWasPlayerDead = false; // 前フレームのプレイヤーの死亡状態を保持するフラグ
 };

@@ -27,7 +27,7 @@ namespace PlayerConstants
 	static const int PlayerAttackWidth = 60; // プレイヤーの攻撃範囲の幅
 	static const int PlayerAttackHeight = 40; // プレイヤーの攻撃範囲の高さ
 
-	static const int MaxLive = 5; // プレイヤーの最大残機
+	static const int MaxLive = 3; // プレイヤーの最大残機
 
 	// 落下でプレイヤーが死亡する位置
 	static const int PlayerDeathHeight = ScreenSize::ScrrenHeight + 100;
@@ -73,6 +73,7 @@ namespace CharacterGraphPath
 	static const std::string Dragon = "Resource/Image/enemy_dragon_move.png"; // dragon画像
 	static const std::string Needle = "Resource/Image/Needle.png"; // 針の罠画像
 
+
 	// 天使の画像
 	static const std::string SaintClosed = "Resource/Image/saint_close1.png";
 	static const std::string SaintClosedAndOpen = "Resource/Image/saint_close2.png";
@@ -105,13 +106,14 @@ namespace BlockMapGraphPath
 // スクロール背景のパス
 namespace ScrollGraphPath
 {
-	static const char* Stage1 = "Resource/Backgrounds/stage1_background.png";
+	static const char* Stage1 = "Resource/Backgrounds/stage1-1_background.png";
 }
 
 // 読み込むCSVパス
 namespace CsvPath
 {
 	static const std::string TutorialText = "Resource/TutorialTexts/tutorialTextData.csv"; // チュートリアルテキストのCSV
+	static const std::string TutorialDeathText = "Resource/TutorialTexts/tutorialDeathTextData.csv"; // 死亡テキストのCSV
 }
 
 // よく使う色
@@ -160,7 +162,7 @@ namespace PlayerBlockCollision
 namespace TextPosition
 {
 	// 落ちた時のGAMEOVER文字
-	static const int FallDeathX =  200;
+	static const int FallDeathX = 200;
 	static const int FallDeathY = ScreenSize::CenterY - 150;
 
 	// 残機表示
@@ -168,8 +170,13 @@ namespace TextPosition
 	static const int LivesY = FallDeathY + 200;
 }
 
-namespace TextTimer
+// チュートリアルテキストの表示関係
+namespace TutorialTextControll
 {
+	static const int TextX = 600;
+	static const int TextY = 75;
+	static const int TextSize = 45;
+
 	static constexpr float MaxFallDeathTimer = 180.0f;
 }
 
@@ -183,4 +190,9 @@ namespace MapScrollConstants
 
 	// 背景を少し遅くさせるための倍率
 	static constexpr float BackgroundScrollSpeedScale = 0.3f;
+}
+
+namespace TextTimer
+{
+	static constexpr float MaxFallDeathTimer = 180.0f;
 }
