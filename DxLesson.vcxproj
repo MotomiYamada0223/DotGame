@@ -147,6 +147,7 @@
     <ClCompile Include="Source\FontManager.cpp" />
     <ClCompile Include="Source\GameManager.cpp" />
     <ClCompile Include="Source\GameScene.cpp" />
+    <ClCompile Include="Source\HiddenBlock.cpp" />
     <ClCompile Include="Source\InputManager.cpp" />
     <ClCompile Include="Source\LoseResultScene.cpp" />
     <ClCompile Include="Source\Main.cpp" />
@@ -188,6 +189,7 @@
     <ClInclude Include="Source\GameConstants.h" />
     <ClInclude Include="Source\GameManager.h" />
     <ClInclude Include="Source\GameScene.h" />
+    <ClInclude Include="Source\HiddenBlock.h" />
     <ClInclude Include="Source\InputManager.h" />
     <ClInclude Include="Source\LoseResultScene.h" />
     <ClInclude Include="Source\Master.h" />

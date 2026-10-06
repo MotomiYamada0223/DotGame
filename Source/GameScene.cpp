@@ -53,6 +53,8 @@ void GameScene::Initialize()
 		// 画面左側 (X=0 付近)、Yはプレイヤーと同じ高さで生成
 				EnemySlime* slime = new EnemySlime(VGet(1000.0f, mpPlayer->GetPosition().y - 500, 0.0f));
 		slime->UpdateStatusByProgress(mProgress);
+				EnemySlime* slime1 = new EnemySlime(VGet(1200.0f, mpPlayer->GetPosition().y - 500, 0.0f));
+		slime1->UpdateStatusByProgress(mProgress);
 	}
 
 	spawnTimer = 0;

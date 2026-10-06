@@ -8,6 +8,7 @@
 #include "EnemySlime.h" 
 #include "Saint.h"
 #include "GameConstants.h"
+#include "HiddenBlock.h"
 
 TestScene::TestScene()
 	:Scene()
@@ -40,6 +41,8 @@ void TestScene::Initialize()
 
 	// Saint（しゃべるキャラクター）を画面上部に配置
 	new Saint(VGet(Utility::SCREEN_WIDTH / 2.0f, 150.0f, 0.0f));
+
+	new HiddenBlock(VGet(3100, 100.0f, 0.0f), &mBlockMap);
 
 	// 敵の生成
 	if (mpPlayer != nullptr)
@@ -127,21 +130,21 @@ void TestScene::Draw()
 {
 	if (!mbIsLoaded) { return; }
 
-	// クラスのDraw呼び出し
+	// クラスのDraw呼び出し (キャラクターなどは意図的にマップより奥に描画)
 	Scene::Draw();
 
-	// デバッグ系
-	mpPlayer->DebugDraw(); // ブロックデバッグ
-	mBlockMap.DebugDraw(); // ブロックマップデバッグ表示
-	mTutorialText.DebugDraw(); // テキスト
+	// デバッグ表示
+	mpPlayer->DebugDraw();
+	mBlockMap.DebugDraw();
+	mTutorialText.DebugDraw();
 
-	// オブジェクトの描画
-	mBlockMap.Draw(); // ブロックマップの描画
-	mTutorialText.Draw(); // チュートリアルの描画
+	// オブジェクトの描画 (マップを手前に描画)
+	mBlockMap.Draw();
+	mTutorialText.Draw();
 
-	mpPlayer->DrawFallDeath(); // 死亡時テキスト
+	mpPlayer->DrawFallDeath();
 
-	// デバッグ表示: 現在の進行度
+	// デバッグ表示：現在の進行度
 	const char* progStr = (mProgress == GameProgress::Tutorial1) ? "Tutorial1 (Death)" : "Tutorial2 (Immune)";
 	DrawFormatString(10, 30, GetColor(0, 255, 0), "Progress: %s  [Press P to toggle]", progStr);
 }

@@ -50,6 +50,9 @@ namespace CharacterGraphPath
 	static const std::string SaintClosedAndOpen = "Resource/Image/saint_close2.png";
 	static const std::string SaintOpen = "Resource/Image/saint_open2.png";
 
+	// ギミックの画像
+	static const std::string HiddenBlock = "Resource/Image/Block.png";
+
 	// ハートの画像
 	static const std::string HeartFull = "Resource/Image/heart_full.png";
 	static const std::string HeartHalf = "Resource/Image/heart_half.png";
