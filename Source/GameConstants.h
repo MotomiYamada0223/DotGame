@@ -33,6 +33,37 @@ namespace PlayerConstants
 	static const int PlayerDeathHeight = ScreenSize::ScrrenHeight + 100;
 }
 
+<<<<<<< HEAD
+=======
+// UI画像
+namespace UIGraphPath
+{
+	static const std::string SaintFrame = "Resource/Frames/saint_frame.png"; // 天使のフレーム画像
+	static const std::string TextFrame = "Resource/Frames/text_frame.png"; // テキストのフレーム画像
+}
+
+// UI画像関係
+namespace UIGraphController
+{
+	static const int SaintFramePosX = 500; // 天使のフレーム位置
+	static const int TextFramePosX = 695; // テキストのフレーム位置
+	static const int FramePosY = 35; // フレーム位置Y
+
+	static const int LifePosX = 120; // 体力はーとの位置X
+	static const int LifePosY = 120; // 体力はーとの位置Y
+	static const int LifeDistance = 130; // ハートの間隔
+	static constexpr float LifeScale = 4.5f; // ハートの拡大率
+}
+
+
+// 天使の位置
+namespace SainController
+{
+	static const int PosX = UIGraphController::SaintFramePosX + 95; // 天使の位置X
+	static const int PosY = UIGraphController::FramePosY + 90; // 天使の位置Y
+	static constexpr float Scale = 5.5f; // 画像の拡大率
+}
+>>>>>>> A_Text
 
 // キャラクター画像関係
 namespace CharacterGraphPath

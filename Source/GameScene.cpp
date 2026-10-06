@@ -5,12 +5,13 @@
 #include "Player.h" 
 #include "Enemy.h"
 #include "EnemySlime.h" 
-#include "Saint.h"
 #include "GameConstants.h"
 
 GameScene::GameScene()
 	:Scene()
 	, mProgress()
+	, mSaint(VGet(Utility::SCREEN_WIDTH / 2.0f, 150.0f, 0.0f)) // 天使の作成
+
 {
 	spawnTimer = 0;
 	mpPlayer = nullptr;
@@ -43,9 +44,6 @@ void GameScene::Initialize()
 
 	// プレイヤーの生成
 	mpPlayer = new Player(VGet(ScreenSize::CenterX - 6000, 600, 0.0f));
-
-	// Saint（しゃべるキャラクター）を画面上部に配置
-	new Saint(VGet(Utility::SCREEN_WIDTH / 2.0f, 150.0f, 0.0f));
 
 	// 敵の生成
 	if (mpPlayer != nullptr)
@@ -99,9 +97,15 @@ void GameScene::Update()
 		Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_LOSERESULT);
 	}
 
+<<<<<<< HEAD
 	// チュートリアルテキストの更新
 	mTutorialText.Update(1.0f / 60.0f);
 	mpPlayer->PlayerMove(mBlockMap);
+=======
+	SetTextUpdate(); // テキスト更新の呼び出し
+	mSaint.Update(); // 天使の更新
+
+>>>>>>> A_Text
 	if (mpPlayer)
 	{
 		mBackground.Move(static_cast<int>(mpPlayer->GetCurrentSpeed()), mBlockMap.GetIsScrolling(), mBlockMap.GetScrollDirection());
@@ -128,6 +132,32 @@ void GameScene::Update()
 	Scene::Update();
 }
 
+<<<<<<< HEAD
+=======
+void GameScene::SetTextUpdate()
+{
+	// チュートリアルテキストの更新
+	mpPlayer->PlayerMove(mBlockMap);
+	// プレイヤーの死亡状態の確認
+	bool isPlayerDead = mpPlayer->GetIsDead();
+
+	// 死亡した瞬間
+	if (isPlayerDead && !mbWasPlayerDead)
+	{
+		mTutorialText.OnPlayerDead();
+	}
+	// 復活した瞬間
+	else if (!isPlayerDead && mbWasPlayerDead)
+	{
+		mTutorialText.OnPlayerRevive();
+	}
+
+	// 今フレームの死亡状態を保存
+	mbWasPlayerDead = isPlayerDead;
+	mTutorialText.Update(1.0f / 60.0f);
+}
+
+>>>>>>> A_Text
 void GameScene::Draw()
 {
 	if (!mbIsLoaded) { return; }
@@ -140,10 +170,18 @@ void GameScene::Draw()
 	// クラスのDraw呼び出し
 	Scene::Draw();
 
+	Scene::Draw();
+
 	// 一番手前に描画したいもの
 	mpPlayer->DrawFallDeath(); // 死亡時テキスト
+<<<<<<< HEAD
 
 
+=======
+	mDrawFrame.Draw(); // フレーム描画
+	mSaint.Draw(); // 天使の描画
+	
+>>>>>>> A_Text
 	// デバッグ系
 	mpPlayer->DebugDraw(); // ブロックデバッグ
 	mBlockMap.DebugDraw(); // ブロックマップデバッグ表示
