@@ -1,4 +1,4 @@
-#include "BlockMap.h"
+ï»¿#include "BlockMap.h"
 #include "Master.h"
 #include "GameConstants.h"
 #include <iostream>
@@ -25,14 +25,14 @@ BlockMap::~BlockMap()
 }
 
 
-// ƒ}ƒbƒv“Ç‚İ‚İ
+// ãƒãƒƒãƒ—èª­ã¿è¾¼ã¿
 bool BlockMap::Load(
     const std::string& backgroundPath,
     const std::string& collisionPath)
 {
     if (mbIsLoaded) { return true; }
 
-    // ”wŒi‰æ‘œ‚Ì“Ç‚İ‚İ
+    // èƒŒæ™¯ç”»åƒã®èª­ã¿è¾¼ã¿
     mnBackgroundGraph =
         Master::mpGameManager
         ->GetResourceManager()
@@ -40,11 +40,11 @@ bool BlockMap::Load(
 
     if (mnBackgroundGraph == -1)
     {
-        std::cout<< "ƒuƒƒbƒN‚Ì”wŒi‰æ‘œ‚ªŠJ‚¯‚Ü‚¹‚ñ‚Å‚µ‚½B" << std::endl;
+        std::cout<< "ãƒ–ãƒ­ãƒƒã‚¯ã®èƒŒæ™¯ç”»åƒãŒé–‹ã‘ã¾ã›ã‚“ã§ã—ãŸã€‚" << std::endl;
         return false;
     }
 
-    // ”wŒi‰æ‘œ‚ÌƒTƒCƒY‚ğæ“¾
+    // èƒŒæ™¯ç”»åƒã®ã‚µã‚¤ã‚ºã‚’å–å¾—
     GetGraphSize(
         mnBackgroundGraph,
         &mnBackgroundWidth,
@@ -52,7 +52,7 @@ bool BlockMap::Load(
     );
 
 
-    // “–‚½‚è”»’è‰æ‘œ‚ğ“Ç‚İ‚Ş
+    // å½“ãŸã‚Šåˆ¤å®šç”»åƒã‚’èª­ã¿è¾¼ã‚€
     mnCollisionSoftImage =
         LoadSoftImage(
             collisionPath.c_str()
@@ -60,36 +60,36 @@ bool BlockMap::Load(
 
     if (mnCollisionSoftImage == -1)
     {
-        std::cout<< "ƒuƒƒbƒN‚Ì“–‚½‚è”»’è‰æ‘œ‚ªŠJ‚¯‚Ü‚¹‚ñ‚Å‚µ‚½B" << std::endl;
+        std::cout<< "ãƒ–ãƒ­ãƒƒã‚¯ã®å½“ãŸã‚Šåˆ¤å®šç”»åƒãŒé–‹ã‘ã¾ã›ã‚“ã§ã—ãŸã€‚" << std::endl;
         return false;
     }
 
 
-    // “–‚½‚è”»’è‰æ‘œ‚ÌƒTƒCƒY‚ğæ“¾
+    // å½“ãŸã‚Šåˆ¤å®šç”»åƒã®ã‚µã‚¤ã‚ºã‚’å–å¾—
     GetSoftImageSize(
         mnCollisionSoftImage,
         &mnCollisionWidth,
         &mnCollisionHeight
     );
 
-    // CollisionTypeƒf[ƒ^‚ğŠm•Û ‘S‚ÄNONE‚É‚µ‚Ä‚¢‚é
+    // CollisionTypeãƒ‡ãƒ¼ã‚¿ã‚’ç¢ºä¿ å…¨ã¦NONEã«ã—ã¦ã„ã‚‹
     mCollisionData.resize(
         mnCollisionWidth * mnCollisionHeight,
         CollisionType::None
     );
 
-    // “–‚½‚è”»’è‰æ‘œ‚ğ1ƒsƒNƒZƒ‹‚¸‚Â’²‚×‚é
+    // å½“ãŸã‚Šåˆ¤å®šç”»åƒã‚’1ãƒ”ã‚¯ã‚»ãƒ«ãšã¤èª¿ã¹ã‚‹
     for (int y = 0; y < mnCollisionHeight; y++)
     {
         for (int x = 0; x < mnCollisionWidth; x++)
         {
-            // RGBA‚ğó‚¯æ‚é•Ï”
+            // RGBAã‚’å—ã‘å–ã‚‹å¤‰æ•°
             int r = 0;
             int g = 0;
             int b = 0;
             int a = 0;
 
-            // Œ»İ‚ÌƒsƒNƒZƒ‹‚ÌF‚ğæ“¾
+            // ç¾åœ¨ã®ãƒ”ã‚¯ã‚»ãƒ«ã®è‰²ã‚’å–å¾—
             int result =
                 GetPixelSoftImage(
                     mnCollisionSoftImage,
@@ -102,7 +102,7 @@ bool BlockMap::Load(
                 );
             if (result != 0) { continue; }
 
-            // “§–¾‚È‚çNone
+            // é€æ˜ãªã‚‰None
             if (a == 0)
             {
                 mCollisionData[
@@ -112,7 +112,7 @@ bool BlockMap::Load(
             }
 
 
-            // Ô‚È‚çBlock
+            // èµ¤ãªã‚‰Block
             if (r == BlockCollisionColor::BLOCK_R &&
                 g == BlockCollisionColor::BLOCK_G &&
                 b == BlockCollisionColor::BLOCK_B)
@@ -124,7 +124,7 @@ bool BlockMap::Load(
                 continue;
             }
 
-            // Â‚È‚çDeath
+            // é’ãªã‚‰Death
             if (r == BlockCollisionColor::DEATH_R &&
                 g == BlockCollisionColor::DEATH_G &&
                 b == BlockCollisionColor::DEATH_B)
@@ -136,7 +136,7 @@ bool BlockMap::Load(
             }
 
 
-            // —Î‚È‚çGoal
+            // ç·‘ãªã‚‰Goal
             if (r == BlockCollisionColor::GOAL_R &&
                 g == BlockCollisionColor::GOAL_G &&
                 b == BlockCollisionColor::GOAL_B)
@@ -147,14 +147,14 @@ bool BlockMap::Load(
                 continue;
             }
 
-            // ‚»‚êˆÈŠO‚ÍNone
+            // ãã‚Œä»¥å¤–ã¯None
             mCollisionData[
                 GetCollisionIndex(x, y)
             ] = CollisionType::None;
         }
     }
 
-    // Œ³‚Ì‰æ‘œƒf[ƒ^‚Í‚à‚¤•K—v‚È‚¢
+    // å…ƒã®ç”»åƒãƒ‡ãƒ¼ã‚¿ã¯ã‚‚ã†å¿…è¦ãªã„
     DeleteSoftImage(
         mnCollisionSoftImage
     );
@@ -165,29 +165,29 @@ bool BlockMap::Load(
 }
 
 
-// ”wŒi•`‰æ
+// èƒŒæ™¯æç”»
 void BlockMap::Draw()
 {
     if (!mbIsLoaded) { return; }
 
-    // ”wŒi‰æ‘œ‚ğ•`‰æ
+    // èƒŒæ™¯ç”»åƒã‚’æç”»
     DrawRectGraph(
-        0,                  // ‰æ–Êã‚ÌX
-        0,                  // ‰æ–Êã‚ÌY
-        mnScrollX,           // Œ³‰æ‘œ‚©‚çØ‚èo‚·X
-        0,                  // Œ³‰æ‘œ‚©‚çØ‚èo‚·Y
-        ScreenSize::ScrrenWidth,       // Ø‚èo‚·•
-        ScreenSize::ScrrenHeight,      // Ø‚èo‚·‚‚³
+        0,                  // ç”»é¢ä¸Šã®X
+        0,                  // ç”»é¢ä¸Šã®Y
+        mnScrollX,           // å…ƒç”»åƒã‹ã‚‰åˆ‡ã‚Šå‡ºã™X
+        0,                  // å…ƒç”»åƒã‹ã‚‰åˆ‡ã‚Šå‡ºã™Y
+        ScreenSize::ScrrenWidth,       // åˆ‡ã‚Šå‡ºã™å¹…
+        ScreenSize::ScrrenHeight,      // åˆ‡ã‚Šå‡ºã™é«˜ã•
         mnBackgroundGraph,
         TRUE
     );
 }
 
-// ƒfƒoƒbƒO•`‰æ‚Ü‚Æ‚ß
+// ãƒ‡ãƒãƒƒã‚°æç”»ã¾ã¨ã‚
 void BlockMap::DebugDraw()
 {
-    // ƒfƒoƒbƒO•\¦
-    // ¶ƒXƒNƒ[ƒ‹ŠJnˆÊ’u
+    // ãƒ‡ãƒãƒƒã‚°è¡¨ç¤º
+    // å·¦ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«é–‹å§‹ä½ç½®
     DrawLine(
         MapScrollConstants::ScrollStartLeftX,
         0,
@@ -196,7 +196,7 @@ void BlockMap::DebugDraw()
         GetColor(0, 255, 0)
     );
 
-    // ‰EƒXƒNƒ[ƒ‹ŠJnˆÊ’u
+    // å³ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«é–‹å§‹ä½ç½®
     DrawLine(
         MapScrollConstants::ScrollStartRightX,
         0,
@@ -214,7 +214,7 @@ void BlockMap::DebugDraw()
     );
 }
 
-// ƒ}ƒbƒv‚ÌƒXƒNƒ[ƒ‹ˆ—
+// ãƒãƒƒãƒ—ã®ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«å‡¦ç†
 void BlockMap::Move(int playerScreenX, float moveDirection, float currentSpeed)
 {
     if (!mbIsLoaded) { return; }
@@ -225,29 +225,29 @@ void BlockMap::Move(int playerScreenX, float moveDirection, float currentSpeed)
         mnScrollX = 0;
     }
 
-    // ƒXƒNƒ[ƒ‹‚µ‚½‚©‚ğ”äŠr‚Å”»’f‚·‚é‚½‚ß
+    // ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ã—ãŸã‹ã‚’æ¯”è¼ƒã§åˆ¤æ–­ã™ã‚‹ãŸã‚
     int oldScrollPos = mnScrollX;
-    // ‰E‘¤‚Ìü‚ğ’´‚¦‚Ä‚¢‚ÄA‰E‚ÉˆÚ“®’†
+    // å³å´ã®ç·šã‚’è¶…ãˆã¦ã„ã¦ã€å³ã«ç§»å‹•ä¸­
     if (playerScreenX > MapScrollConstants::ScrollStartRightX &&
         moveDirection > 0.0f)
     {
         mnScrollX += static_cast<int>(currentSpeed);
     }
 
-    // ¶‘¤‚Ìü‚ğ’´‚¦‚Ä‚¢‚ÄA¶‚ÉˆÚ“®’†
+    // å·¦å´ã®ç·šã‚’è¶…ãˆã¦ã„ã¦ã€å·¦ã«ç§»å‹•ä¸­
     else if (playerScreenX < MapScrollConstants::ScrollStartLeftX &&
         moveDirection < 0.0f)
     {
         mnScrollX -= static_cast<int>(currentSpeed);
     }
 
-    // ¶’[
+    // å·¦ç«¯
     if (mnScrollX < 0)
     {
         mnScrollX = 0;
     }
 
-    // ‰E’[
+    // å³ç«¯
     int maxScrollX =
         mnBackgroundWidth - ScreenSize::ScrrenWidth;
 
@@ -268,16 +268,16 @@ void BlockMap::Move(int playerScreenX, float moveDirection, float currentSpeed)
 
 
 
-// CollisionTypeæ“¾ x‚Æy‚Íƒ[ƒ‹ƒhÀ•W
+// CollisionTypeå–å¾— xã¨yã¯ãƒ¯ãƒ¼ãƒ«ãƒ‰åº§æ¨™
 BlockMap::CollisionType BlockMap::GetCollisionType(
     int x,
     int y) const
 {
-    // ƒ}ƒbƒvŠO
+    // ãƒãƒƒãƒ—å¤–
     if (x < 0 || x >= mnCollisionWidth ||
         y < 0 || y >= mnCollisionHeight)
     {
-        // ƒ}ƒbƒvŠO‚Í‰½‚à‚È‚¢ˆµ‚¢
+        // ãƒãƒƒãƒ—å¤–ã¯ä½•ã‚‚ãªã„æ‰±ã„
         return CollisionType::None;
     }
 
@@ -287,7 +287,7 @@ BlockMap::CollisionType BlockMap::GetCollisionType(
 }
 
 
-// ƒXƒNƒŠ[ƒ“À•W‚ğƒ}ƒbƒvÀ•W‚É•ÏŠ·
+// ã‚¹ã‚¯ãƒªãƒ¼ãƒ³åº§æ¨™ã‚’ãƒãƒƒãƒ—åº§æ¨™ã«å¤‰æ›
 int BlockMap::ScreenToMapX(int screenX) const
 {
     return screenX + mnScrollX;
@@ -296,4 +296,18 @@ int BlockMap::ScreenToMapX(int screenX) const
 int BlockMap::ScreenToMapY(int screenY) const
 {
     return screenY;
+}
+
+void BlockMap::SetCollisionBlock(int startX, int startY, int width, int height, CollisionType type)
+{
+    for (int y = startY; y < startY + height; ++y)
+    {
+        for (int x = startX; x < startX + width; ++x)
+        {
+            if (x >= 0 && x < mnCollisionWidth && y >= 0 && y < mnCollisionHeight)
+            {
+                mCollisionData[GetCollisionIndex(x, y)] = type;
+            }
+        }
+    }
 }

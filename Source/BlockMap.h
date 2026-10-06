@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "DxLib.h"
 #include <string>
@@ -8,20 +8,20 @@ class BlockMap
 {
 public:
 
-    // “–‚½‚è”»’è‚ÌF‚É‚æ‚Á‚Äƒ^ƒCƒv‚ğ•ª‚¯‚é
+    // å½“ãŸã‚Šåˆ¤å®šã®è‰²ã«ã‚ˆã£ã¦ã‚¿ã‚¤ãƒ—ã‚’åˆ†ã‘ã‚‹
 	enum class CollisionType
 	{
-		None = 0, // “–‚½‚è”»’è‚È‚µ
-		Block,  // “–‚½‚è”»’è‚ ‚è
-		Death, // €–S”»’è‚ ‚è
-		Goal,  // ƒS[ƒ‹”»’è‚ ‚è
+		None = 0, // å½“ãŸã‚Šåˆ¤å®šãªã—
+		Block,  // å½“ãŸã‚Šåˆ¤å®šã‚ã‚Š
+		Death, // æ­»äº¡åˆ¤å®šã‚ã‚Š
+		Goal,  // ã‚´ãƒ¼ãƒ«åˆ¤å®šã‚ã‚Š
 	};
 
 
     BlockMap();
     ~BlockMap();
 
-    // ”wŒi‰æ‘œ‚Æ“–‚½‚è”»’è‰æ‘œ‚ğ“Ç‚İ‚Ş
+    // èƒŒæ™¯ç”»åƒã¨å½“ãŸã‚Šåˆ¤å®šç”»åƒã‚’èª­ã¿è¾¼ã‚€
     bool Load(
         const std::string& backgroundPath,
         const std::string& collisionPath
@@ -31,48 +31,50 @@ public:
     void Draw();
     void DebugDraw();
 
-	// êŠ‚Ìí—Ş‚ğæ“¾‚·‚é
+	// å ´æ‰€ã®ç¨®é¡ã‚’å–å¾—ã™ã‚‹
 	CollisionType GetCollisionType(int x, int y) const;
+	// æŒ‡å®šã—ãŸçŸ©å½¢ç¯„å›²ã®å½“ãŸã‚Šåˆ¤å®šã‚’ä¸€æ‹¬ã§ä¸Šæ›¸ãã™ã‚‹ï¼ˆéš ã—ãƒ–ãƒ­ãƒƒã‚¯ç­‰ç”¨ï¼‰
+	void SetCollisionBlock(int startX, int startY, int width, int height, CollisionType type);
     int ScreenToMapX(int screenX, int scrollX) const { return screenX + scrollX; }
 
-    // ˆÊ’u‚ÌƒQƒbƒ^[ƒZƒbƒ^[
+    // ä½ç½®ã®ã‚²ãƒƒã‚¿ãƒ¼ã‚»ãƒƒã‚¿ãƒ¼
     int ScreenToMapX(int screenX) const;
     int ScreenToMapY(int screenY) const;
     int GetScrollX() const { return mnScrollX; }
-    // ƒXƒNƒ[ƒ‹ˆÊ’u‚ğƒŠƒZƒbƒg‚·‚é
+    // ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ä½ç½®ã‚’ãƒªã‚»ãƒƒãƒˆã™ã‚‹
     void ResetScroll() { mnScrollX = 0; }
 
-    // ”wŒi‰æ‘œ‚ÌŒ³‚Ì’·‚³‚ğæ“¾‚·‚é ƒvƒŒƒCƒ„[‚ÌˆÚ“®—Ìˆæ‚Ì‚½‚ß
+    // èƒŒæ™¯ç”»åƒã®å…ƒã®é•·ã•ã‚’å–å¾—ã™ã‚‹ ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ç§»å‹•é ˜åŸŸã®ãŸã‚
     int GetCurrentWidth() const { return mnBackgroundWidth; }
 
-    // ƒXƒNƒ[ƒ‹’†‚©‚Ì”»’f
+    // ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ä¸­ã‹ã®åˆ¤æ–­
     bool GetIsScrolling() const { return mbIsScrolling; }
     float GetScrollDirection() const { return mfMoveDirection; }
 
 private:
-    int mnBackgroundGraph;   // ”wŒi‰æ‘œ
-    int mnCollisionSoftImage; // “–‚½‚è”»’è‰æ‘œ (•`‰æ‚Í‚µ‚È‚¢)
+    int mnBackgroundGraph;   // èƒŒæ™¯ç”»åƒ
+    int mnCollisionSoftImage; // å½“ãŸã‚Šåˆ¤å®šç”»åƒ (æç”»ã¯ã—ãªã„)
 
-    // “–‚½‚è”»’è‰æ‘œ‚ÌƒTƒCƒY
+    // å½“ãŸã‚Šåˆ¤å®šç”»åƒã®ã‚µã‚¤ã‚º
     int mnCollisionWidth;
     int mnCollisionHeight;
 
-    // ƒ^ƒCƒv‚Ìƒf[ƒ^‚ğ‚Ìƒƒ“ƒo•Ï”
+    // ã‚¿ã‚¤ãƒ—ã®ãƒ‡ãƒ¼ã‚¿ã‚’ã®ãƒ¡ãƒ³ãƒå¤‰æ•°
     std::vector<CollisionType> mCollisionData;
 
-    // “Ç‚İ‚İÏ‚İ‚©‚Ìƒtƒ‰ƒO
+    // èª­ã¿è¾¼ã¿æ¸ˆã¿ã‹ã®ãƒ•ãƒ©ã‚°
     bool mbIsLoaded;
 
-    // ”z—ñ‚ÌƒCƒ“ƒfƒbƒNƒX‚ğæ“¾
-    // 2ŸŒ³À•W‚ğ1ŸŒ³”z—ñ‚Ì”Ô†‚É•ÏŠ·‚·‚éB
+    // é…åˆ—ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã‚’å–å¾—
+    // 2æ¬¡å…ƒåº§æ¨™ã‚’1æ¬¡å…ƒé…åˆ—ã®ç•ªå·ã«å¤‰æ›ã™ã‚‹ã€‚
     int GetCollisionIndex(int x, int y) const { return y * mnCollisionWidth + x; }
 
 
-private: // ƒXƒNƒ[ƒ‹ŠÖŒW
-    // ‰æ–Ê‚Ì¶’[‚ªƒ}ƒbƒv‰æ‘œ‚Ì‰½px–Ú‚È‚Ì‚©
+private: // ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«é–¢ä¿‚
+    // ç”»é¢ã®å·¦ç«¯ãŒãƒãƒƒãƒ—ç”»åƒã®ä½•pxç›®ãªã®ã‹
     int mnScrollX;
     int mnBackgroundWidth;
     int mnBackgroundHeight;
-    bool mbIsScrolling; // ƒXƒNƒ[ƒ‹’†‚©‚ğ”»’f
-    float mfMoveDirection; // ƒXƒNƒ[ƒ‹•ûŒü
+    bool mbIsScrolling; // ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ä¸­ã‹ã‚’åˆ¤æ–­
+    float mfMoveDirection; // ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«æ–¹å‘
 };

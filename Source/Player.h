@@ -32,7 +32,9 @@ public:
 
 public:
 	bool GetIsDead() const { return isDead; } // 死亡判定かの処理
-	float GetCurrentSpeed() const { return mfCurrentSpeed; } // 現在の速さ
+	float GetCurrentSpeed() const { return mfCurrentSpeed; }
+	float GetVelocityY() const { return velocityY; } // ジャンプ中かどうかの判定用に追加
+	void SetVelocityY(float vy) { velocityY = vy; }  // 頭をぶつけた時の落下処理用に追加 // 現在の速さ
 
 private:
 	CharacterPhysics mCharacterPhysics; // 物理計算用のインスタンス
