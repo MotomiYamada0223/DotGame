@@ -14,6 +14,8 @@ public:
     virtual void EnemyMove(BlockMap& blockMap) override;
     virtual void UpdateStatusByProgress(GameProgress progress) override;
 
+	bool IsPlayerDead(); // プレイヤーが死亡しているかの判定
+
 private:
     TextureAnimation* mpAnimIdle;
     TextureAnimation* mpAnimMove;
