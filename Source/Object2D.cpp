@@ -151,10 +151,8 @@ int  Object2D::GetSizeY()
 	 {
          return mpTextureAnimation->GetSizeY();
 	 }
-	
 	return 0; // 上二つが生成されていない場合
 }
-
 
 
 //ブロックマップが存在しない場合の安全対策として、スクロール量を引いたスクリーン座標を算出するため

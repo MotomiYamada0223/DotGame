@@ -137,6 +137,7 @@
     <ClCompile Include="Source\BossEnemyDragon.cpp" />
     <ClCompile Include="Source\BossEnemySnake.cpp" />
     <ClCompile Include="Source\BossEnemyTree.cpp" />
+    <ClCompile Include="Source\Camera.cpp" />
     <ClCompile Include="Source\CharacterPhysics.cpp" />
     <ClCompile Include="Source\Collision.cpp" />
     <ClCompile Include="Source\DrawFrame.cpp" />
@@ -180,6 +181,7 @@
     <ClInclude Include="Source\BossEnemyDragon.h" />
     <ClInclude Include="Source\BossEnemySnake.h" />
     <ClInclude Include="Source\BossEnemyTree.h" />
+    <ClInclude Include="Source\Camera.h" />
     <ClInclude Include="Source\Collision.h" />
     <ClInclude Include="Source\DrawFrame.h" />
     <ClInclude Include="Source\Enemy.h" />

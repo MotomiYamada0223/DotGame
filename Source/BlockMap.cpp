@@ -2,6 +2,7 @@
 #include "Master.h"
 #include "GameConstants.h"
 #include <iostream>
+#include "Camera.h"
 
 
 BlockMap::BlockMap()
@@ -13,9 +14,8 @@ BlockMap::BlockMap()
     , mbIsLoaded(false)
     , mnBackgroundWidth(0)
     , mnBackgroundHeight(0)
-    , mnScrollX(0)
-    , mbIsScrolling(false)
     , mfMoveDirection(0.0f)
+    , mbIsScrolling(false)
 {
     //mSpawnPos = initPos;
 }
@@ -173,8 +173,8 @@ void BlockMap::Draw()
     // 背景画像を描画
     DrawRectGraph(
         0,                  // 画面上のX
-        0,                  // 画面上のY
-        mnScrollX,           // 元画像から切り出すX
+        mCamera.GetScrollY(),                  // 画面上のY
+        mCamera.GetScrollX(),           // 元画像から切り出すX
         0,                  // 元画像から切り出すY
         ScreenSize::ScrrenWidth,       // 切り出す幅
         ScreenSize::ScrrenHeight,      // 切り出す高さ
@@ -210,7 +210,7 @@ void BlockMap::DebugDraw()
         200,
         GetColor(255, 255, 255),
         "ScrollX: %d",
-        mnScrollX
+        mCamera.GetScrollX()
     );
 }
 
@@ -220,50 +220,13 @@ void BlockMap::Move(int playerScreenX, float moveDirection, float currentSpeed)
     if (!mbIsLoaded) { return; }
     mfMoveDirection = moveDirection;
 
-    if (CheckHitKey(KEY_INPUT_1))
-    {
-        mnScrollX = 0;
-    }
-
-    // スクロールしたかを比較で判断するため
-    int oldScrollPos = mnScrollX;
-    // 右側の線を超えていて、右に移動中
-    if (playerScreenX > MapScrollConstants::ScrollStartRightX &&
-        moveDirection > 0.0f)
-    {
-        mnScrollX += static_cast<int>(currentSpeed);
-    }
-
-    // 左側の線を超えていて、左に移動中
-    else if (playerScreenX < MapScrollConstants::ScrollStartLeftX &&
-        moveDirection < 0.0f)
-    {
-        mnScrollX -= static_cast<int>(currentSpeed);
-    }
-
-    // 左端
-    if (mnScrollX < 0)
-    {
-        mnScrollX = 0;
-    }
-
-    // 右端
-    int maxScrollX =
-        mnBackgroundWidth - ScreenSize::ScrrenWidth;
-
-    if (maxScrollX < 0) { maxScrollX = 0; }
-    if (mnScrollX > maxScrollX) { mnScrollX = maxScrollX; }
-
-
-
-    if (oldScrollPos != mnScrollX)
-    {
-        mbIsScrolling = true;
-    }
-    else
-    {
-        mbIsScrolling = false;
-    }
+    mCamera.Update(
+        playerScreenX,
+        moveDirection,
+        currentSpeed,
+        mnBackgroundWidth,
+        ScreenSize::ScrrenWidth
+    );
 }
 
 
@@ -290,7 +253,7 @@ BlockMap::CollisionType BlockMap::GetCollisionType(
 // スクリーン座標をマップ座標に変換
 int BlockMap::ScreenToMapX(int screenX) const
 {
-    return screenX + mnScrollX;
+    return screenX + mCamera.GetScrollX();
 }
 
 int BlockMap::ScreenToMapY(int screenY) const
@@ -310,4 +273,9 @@ void BlockMap::SetCollisionBlock(int startX, int startY, int width, int height, 
             }
         }
     }
+}
+
+void BlockMap::ResetScroll()
+{
+    mCamera.SetScrollX(0);
 }
