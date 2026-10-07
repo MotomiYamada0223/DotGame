@@ -1,11 +1,23 @@
 ﻿#include "UnitStatus.h"
 
 UnitStatus::UnitStatus()
-    : mMaxHp(0), mHp(0), mAttack(0), mDefense(0), mMagic(0)
-    , mIsBlinkWallDeathImmune(false), mAttackReachLevel(0), mIsAttackFlashy(false)
-    , mBlinkCooldownLevel(0), mIsPoisonImmune(false), mIsPetrificationImmune(false)
+    : mMaxHp(0)
+    , mHp(0)
+    , mlives(0)
+    , mAttack(0)
+    , mDefense(0)
+    , mMagic(0)
+    , mIsBlinkWallDeathImmune(false)
+    , mAttackReachLevel(0)
+    , mIsAttackFlashy(false)
+    , mBlinkCooldownLevel(0)
+    , mIsPoisonImmune(false)
+    , mIsPetrificationImmune(false)
     , mIsFireImmune(false)
-    , mHasInstantKillAttack(false), mIgnoresInvincibility(false), mIsGiantInvincible(false), mUseCounterTeleport(false)
+    , mHasInstantKillAttack(false)
+    , mIgnoresInvincibility(false)
+    , mIsGiantInvincible(false)
+    , mUseCounterTeleport(false)
 {
 }
 
