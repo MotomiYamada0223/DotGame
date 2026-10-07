@@ -28,7 +28,7 @@ public:
         const std::string& collisionPath
     );
 
-    void Move(int playerScreenX, float moveDirection, float currentSpeed);
+    void Move(int playerScreenX, int playerScreenY, float moveDirection, float currentSpeed);
     void Draw();
     void DebugDraw();
 
@@ -42,6 +42,7 @@ public:
     int ScreenToMapX(int screenX) const;
     int ScreenToMapY(int screenY) const;
     int GetScrollX() const { return mCamera.GetScrollX(); }
+    int GetScrollY() const { return mCamera.GetScrollY(); }
 
     // 背景画像の元の長さを取得する プレイヤーの移動領域のため
     int GetCurrentWidth() const { return mnBackgroundWidth; }

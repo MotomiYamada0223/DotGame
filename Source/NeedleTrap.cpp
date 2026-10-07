@@ -64,7 +64,7 @@ void NeedleTrap::Draw()
     if (mGraphHandle != -1 && mpBlockMap != nullptr)
     {
         int drawX = static_cast<int>(ConvertToScreenX(mvPosition.x, mpBlockMap));
-        int drawY = static_cast<int>(mvPosition.y);
+        int drawY = static_cast<int>(ConvertToScreenY(mvPosition.y, mpBlockMap));
 
         DrawRotaGraph(drawX, drawY, 3.0, 0.0, mGraphHandle, TRUE);
     }
@@ -123,3 +123,10 @@ void NeedleTrap::EnemyMove(BlockMap& blockMap)
         }
     }
 }
+
+
+
+
+
+
+

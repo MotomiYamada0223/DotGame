@@ -161,3 +161,10 @@ float Object2D::ConvertToScreenX(float worldX, const BlockMap* blockMap) const
 	float scrollX = (blockMap != nullptr) ? static_cast<float>(blockMap->GetScrollX()) : 0.0f;
 	return worldX - scrollX;
 }
+
+
+float Object2D::ConvertToScreenY(float worldY, const BlockMap* blockMap) const
+{
+	float scrollY = (blockMap != nullptr) ? static_cast<float>(blockMap->GetScrollY()) : 0.0f;
+	return worldY - scrollY;
+}

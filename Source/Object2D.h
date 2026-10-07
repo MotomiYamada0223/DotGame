@@ -92,6 +92,8 @@ protected:
 	// ワールド座標をスクリーン座標に変換する共通関数
 	// プレイヤーや敵など、複数のオブジェクトで共通のスクロール計算を行てコードの重複を防ぐため
 	float ConvertToScreenX(float worldX, const BlockMap* blockMap) const;
+
+	float ConvertToScreenY(float worldY, const BlockMap* blockMap) const;
 };
 
 /*

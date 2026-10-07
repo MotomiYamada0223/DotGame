@@ -173,9 +173,9 @@ void BlockMap::Draw()
     // 背景画像を描画
     DrawRectGraph(
         0,                  // 画面上のX
-        mCamera.GetScrollY(),                  // 画面上のY
+        0,                  // 画面上のY
         mCamera.GetScrollX(),           // 元画像から切り出すX
-        0,                  // 元画像から切り出すY
+        mCamera.GetScrollY(),                  // 元画像から切り出すY
         ScreenSize::ScrrenWidth,       // 切り出す幅
         ScreenSize::ScrrenHeight,      // 切り出す高さ
         mnBackgroundGraph,
@@ -205,6 +205,26 @@ void BlockMap::DebugDraw()
         GetColor(255, 0, 0)
     );
 
+    // 上スクロール
+    DrawLine(
+        0,
+        MapScrollConstants::ScrollStartUpY,
+        ScreenSize::ScrrenWidth,
+        MapScrollConstants::ScrollStartUpY,
+        GetColor(255, 0, 0)
+    );
+
+    // 下スクロール
+    DrawLine(
+        0,
+        MapScrollConstants::ScrollStartDownY,
+        ScreenSize::ScrrenWidth,
+        MapScrollConstants::ScrollStartDownY,
+        GetColor(255, 0, 0)
+    );
+
+
+
     DrawFormatString(
         20,
         200,
@@ -215,13 +235,14 @@ void BlockMap::DebugDraw()
 }
 
 // マップのスクロール処理
-void BlockMap::Move(int playerScreenX, float moveDirection, float currentSpeed)
+void BlockMap::Move(int playerScreenX, int playerScreenY, float moveDirection, float currentSpeed)
 {
     if (!mbIsLoaded) { return; }
     mfMoveDirection = moveDirection;
 
     mCamera.Update(
         playerScreenX,
+        playerScreenY,
         moveDirection,
         currentSpeed,
         mnBackgroundWidth,

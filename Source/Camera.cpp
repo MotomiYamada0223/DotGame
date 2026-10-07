@@ -19,6 +19,7 @@ void Camera::Update(int playerScreenX, int playerScreenY, float moveDirection, f
 	if (CheckHitKey(KEY_INPUT_1))
 	{
 		mScrollX = 0;
+		mScrollY = 0;
 	}
 
 	int oldScrollPos = mScrollX;
@@ -34,18 +35,35 @@ void Camera::Update(int playerScreenX, int playerScreenY, float moveDirection, f
 		mScrollX -= static_cast<int>(currentSpeed);
 	}
 
-	//if (playerScreenY > MapScrollConstants::ScrollStartUpY)
-
 	// マップの左端を超えないようにするため
 	if (mScrollX < 0)
 	{
 		mScrollX = 0;
 	}
-
 	// マップの右端を超えないようにするため
 	int maxScrollX = backgroundWidth - screenWidth;
 	if (maxScrollX < 0) { maxScrollX = 0; }
 	if (mScrollX > maxScrollX) { mScrollX = maxScrollX; }
+
+
+
+	// プレイヤーが画面上の一定のライン
+	if (playerScreenY < MapScrollConstants::ScrollStartUpY)
+	{
+		// プレイヤーが上に上がった分だけ、カメラを上に動かす
+		int diffY = static_cast<int>(playerScreenY - MapScrollConstants::ScrollStartUpY * MapScrollConstants::BlockMapSpeedScale);
+		mScrollY += diffY;
+	}
+	else if (playerScreenY > MapScrollConstants::ScrollStartDownY)
+	{
+		int diffY = static_cast<int>(playerScreenY - MapScrollConstants::ScrollStartDownY * MapScrollConstants::BlockMapSpeedScale);
+		mScrollY += diffY;
+	}
+	// マップの左端を超えないようにするため
+	if (mScrollY > 0)
+	{
+		mScrollY = 0;
+	}
 
 	mIsScrolling = (oldScrollPos != mScrollX);
 }
