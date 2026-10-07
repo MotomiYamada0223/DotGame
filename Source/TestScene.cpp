@@ -12,6 +12,9 @@
 
 TestScene::TestScene()
 	:Scene()
+	, mProgress()
+	, mSaint(VGet(Utility::SCREEN_WIDTH / 2.0f, 150.0f, 0.0f)) // 天使の作成
+
 {
 	spawnTimer = 0;
 	mpPlayer = nullptr;
@@ -30,17 +33,17 @@ void TestScene::Initialize()
 	mTutorialText.Initialize(CsvPath::TutorialText, CsvPath::TutorialDeathText);
 
 	// 背景画像と当たり判定画像を読み込む
-		mBlockMap.Load(
-		BlockMapGraphPath::TestBackground,
-		BlockMapGraphPath::TestCollision
-	);
-
+	if (!mBlockMap.Load(
+	BlockMapGraphPath::TestBackground,
+	BlockMapGraphPath::TestCollision
+	))
+	{
+		return;
+	}
+	mBackground.Load(ScrollGraphPath::Stage1);
 
 	// プレイヤーの生成
 	mpPlayer = new Player(VGet(ScreenSize::CenterX - 6000, 00, 0.0f));
-
-	// Saint（しゃべるキャラクター）を画面上部に配置
-	new Saint(VGet(Utility::SCREEN_WIDTH / 2.0f, 150.0f, 0.0f));
 
 	new HiddenBlock(VGet(3100, 100.0f, 0.0f), &mBlockMap);
 
@@ -100,10 +103,13 @@ void TestScene::Update()
 		Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_LOSERESULT);
 	}
 
-	// チュートリアルテキストの更新
-	if (!mpPlayer->GetIsDead()) mTutorialText.Update(1.0f / 60.0f);
-	
-	mpPlayer->PlayerMove(mBlockMap);
+	SetTextUpdate(); // テキスト更新の呼び出し
+	mSaint.Update(); // 天使の更新
+
+	if (mpPlayer)
+	{
+		mBackground.Move(static_cast<int>(mpPlayer->GetCurrentSpeed()), mBlockMap.GetIsScrolling(), mBlockMap.GetScrollDirection());
+	}
 
 
 	// シーン上に存在するすべての敵をオブジェクトマネージャー経由で一括取得
@@ -126,23 +132,53 @@ void TestScene::Update()
 	Scene::Update();
 }
 
+void TestScene::SetTextUpdate()
+{
+	// チュートリアルテキストの更新
+	mpPlayer->PlayerMove(mBlockMap);
+	// プレイヤーの死亡状態の確認
+	bool isPlayerDead = mpPlayer->GetIsDead();
+
+	// 死亡した瞬間
+	if (isPlayerDead && !mbWasPlayerDead)
+	{
+		mTutorialText.OnPlayerDead();
+	}
+	// 復活した瞬間
+	else if (!isPlayerDead && mbWasPlayerDead)
+	{
+		mTutorialText.OnPlayerRevive();
+	}
+
+	// 今フレームの死亡状態を保存
+	mbWasPlayerDead = isPlayerDead;
+	mTutorialText.Update(1.0f / 60.0f);
+}
+
+
 void TestScene::Draw()
 {
 	if (!mbIsLoaded) { return; }
 
-	// クラスのDraw呼び出し (キャラクターなどは意図的にマップより奥に描画)
+	// オブジェクトの描画
+	mBackground.Draw(); // スクロール背景
+
 	Scene::Draw();
 
-	// デバッグ表示
-	mpPlayer->DebugDraw();
-	mBlockMap.DebugDraw();
-	mTutorialText.DebugDraw();
+	mBlockMap.Draw(); // ブロックマップの描画
+
+	// 一番手前に描画したいもの
+	mpPlayer->DrawFallDeath(); // 死亡時テキスト
+	mDrawFrame.Draw(); // フレーム描画
+	mSaint.Draw(); // 天使の描画
+
+	// デバッグ系
+	mpPlayer->DebugDraw(); // ブロックデバッグ
+	mBlockMap.DebugDraw(); // ブロックマップデバッグ表示
+	mTutorialText.DebugDraw(); // テキスト
 
 	// オブジェクトの描画 (マップを手前に描画)
-	mBlockMap.Draw();
 	mTutorialText.Draw();
-
-	mpPlayer->DrawFallDeath();
 
 	// デバッグ表示：現在の進行度
 	const char* progStr = (mProgress == GameProgress::Tutorial1) ? "Tutorial1 (Death)" : "Tutorial2 (Immune)";

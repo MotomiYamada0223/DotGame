@@ -37,7 +37,6 @@ void GameScene::Initialize()
 	{
 		return;
 	}
-
 	mBackground.Load(ScrollGraphPath::Stage1);
 
 
@@ -155,10 +154,10 @@ void GameScene::Draw()
 
 	// オブジェクトの描画
 	mBackground.Draw(); // スクロール背景
-	mBlockMap.Draw(); // ブロックマップの描画
-
 
 	Scene::Draw();
+
+	mBlockMap.Draw(); // ブロックマップの描画
 
 	// 一番手前に描画したいもの
 	mpPlayer->DrawFallDeath(); // 死亡時テキスト
@@ -168,9 +167,9 @@ void GameScene::Draw()
 	// デバッグ系
 	mpPlayer->DebugDraw(); // ブロックデバッグ
 	mBlockMap.DebugDraw(); // ブロックマップデバッグ表示
-	mTutorialText.Draw(); // チュートリアルの描画
 	mTutorialText.DebugDraw(); // テキスト
 
+	mTutorialText.Draw(); // チュートリアルの描画
 
 	// デバッグ表示: 現在の進行度
 	const char* progStr = (mProgress == GameProgress::Tutorial1) ? "Tutorial1 (Death)" : "Tutorial2 (Immune)";
