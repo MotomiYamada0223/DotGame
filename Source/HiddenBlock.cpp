@@ -72,7 +72,7 @@ void HiddenBlock::Update()
         bool isIntersectX = (pLeft < bRight) && (pRight > bLeft);
         
         // 下から突き上げる判定: プレイヤーの頭(pTop)がブロックの底(bBottom)より上に行き、
-        // かつプレイヤーの底(pBottom)がブロックの底(bBottom)より下にある状態（下からめり込んでいる状態）
+        // かつプレイヤーの底(pBottom)がブロックの底(bBottom)より下にある状態
         bool isIntersectY = (pTop < bBottom) && (pBottom > bBottom);
 
         if (isIntersectX && isIntersectY)

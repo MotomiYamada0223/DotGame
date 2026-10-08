@@ -19,6 +19,7 @@ Player::Player(VECTOR initPos)
 	SetTag(Object2D::Player2D);
 	mbIsJumping = false;
 	isGrounded = true;
+	mForceGroundedThisFrame = false;
 	velocityY = 0.0f;
 	isFacingRight = true;
 	isAttacking = false;
@@ -178,6 +179,14 @@ void Player::PlayerMove(BlockMap& blockMap)
 			currentSpeed,
 			mfMoveDirection
 		);
+
+	// 動く床などによって強制接地フラグが立っている場合は、地形の判定を上書きする
+	if (mForceGroundedThisFrame) {
+		isGrounded = true;
+		mbIsJumping = false;
+		velocityY = 0.0f;
+		mForceGroundedThisFrame = false; // 消費
+	}
 
 	if (isBlinking && !mIsBlinkWallDeathImmune)
 	{
