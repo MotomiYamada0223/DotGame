@@ -28,6 +28,12 @@
     <Filter Include="ソース ファイル\Controller系">
       <UniqueIdentifier>{40826dca-7f30-4305-bcc2-bb876c196539}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\Enemy系">
+      <UniqueIdentifier>{3a0c94db-7b9b-4edb-880d-d9250a699416}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Gimmick系">
+      <UniqueIdentifier>{30629378-bfe3-4b0f-8dc5-b8f93369e038}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Collision.cpp">
@@ -75,9 +81,6 @@
     <ClCompile Include="Source\StepLoader.cpp">
       <Filter>ソース ファイル\Text関係</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Enemy.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="Source\GameScene.cpp">
       <Filter>ソース ファイル\Scene系</Filter>
     </ClCompile>
@@ -86,9 +89,6 @@
     </ClCompile>
     <ClCompile Include="Source\StageSelectScene.cpp">
       <Filter>ソース ファイル\Scene系</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\ResourceManager.cpp">
-      <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Source\Saint.cpp">
       <Filter>ソース ファイル</Filter>
@@ -105,27 +105,6 @@
     <ClCompile Include="Source\BlockAction.cpp">
       <Filter>ソース ファイル\Manager系\Map関係</Filter>
     </ClCompile>
-    <ClCompile Include="Source\BossEnemyDragon.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\BossEnemySnake.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\BossEnemyTree.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\EnemySkeleton.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\EnemySlime.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\EnemyWolf.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\UnitStatus.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="Source\FallDeathController.cpp">
       <Filter>ソース ファイル\Controller系</Filter>
     </ClCompile>
@@ -135,20 +114,53 @@
     <ClCompile Include="Source\Player.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\PlayerAnimState.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="Source\TestScene.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\NeedleTrap.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Source\Background.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\HiddenBlock.cpp">
+    <ClCompile Include="Source\Camera.cpp">
       <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\BossEnemyDragon.cpp">
+      <Filter>ソース ファイル\Enemy系</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\BossEnemySnake.cpp">
+      <Filter>ソース ファイル\Enemy系</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\BossEnemyTree.cpp">
+      <Filter>ソース ファイル\Enemy系</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Enemy.cpp">
+      <Filter>ソース ファイル\Enemy系</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\EnemySkeleton.cpp">
+      <Filter>ソース ファイル\Enemy系</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\EnemySlime.cpp">
+      <Filter>ソース ファイル\Enemy系</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\EnemyWolf.cpp">
+      <Filter>ソース ファイル\Enemy系</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\NeedleTrap.cpp">
+      <Filter>ソース ファイル\Gimmick系</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\HiddenBlock.cpp">
+      <Filter>ソース ファイル\Gimmick系</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\DrawFrame.cpp">
+      <Filter>ソース ファイル\Controller系</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\UnitStatus.cpp">
+      <Filter>ソース ファイル\Controller系</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ResourceManager.cpp">
+      <Filter>ソース ファイル\Manager系</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\PlayerAnimState.cpp">
+      <Filter>ソース ファイル\Controller系</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -257,9 +269,6 @@
     <ClInclude Include="Source\GameManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\FallDeathController.h">
-      <Filter>ソース ファイル\Controller系</Filter>
-    </ClInclude>
     <ClInclude Include="Source\LoseResultScene.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -276,6 +285,15 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\HiddenBlock.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Camera.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\DrawFrame.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\FallDeathController.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
