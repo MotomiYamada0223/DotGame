@@ -9,6 +9,9 @@
 #include "Saint.h"
 #include "GameConstants.h"
 #include "HiddenBlock.h"
+#include "MovingFloor.h"
+#include "FloorSpawner.h"
+#include "ObjectManager.h"
 
 TestScene::TestScene()
 	:Scene()
@@ -45,7 +48,47 @@ void TestScene::Initialize()
 	// プレイヤーの生成
 	mpPlayer = new Player(VGet(ScreenSize::CenterX - 6000, 00, 0.0f));
 
+	// 隠しブロックの生成
 	new HiddenBlock(VGet(3100, 100.0f, 0.0f), &mBlockMap);
+
+	
+	// 上から下へ無限に降ってくる足場のスポナーを配置
+	new FloorSpawner(
+		VGet(6300.0f, 1180.0f, 0.0f),
+		VGet(0.0f, -3.0f, 0.0f),
+		120,
+		mpPlayer,
+		&mBlockMap,
+		FloorFeature::Normal,
+		CharacterGraphPath::MoveFloorBig // ここで画像パスを指定
+	);
+
+	new FloorSpawner(
+		VGet(6575.0f, -100.0f, 0.0f),
+		VGet(0.0f, 3.0f, 0.0f),
+		120,
+		mpPlayer,
+		&mBlockMap,
+		FloorFeature::SpeedUpOnRide,
+		CharacterGraphPath::MoveFloorBig
+		);
+
+	new FloorSpawner(
+		VGet(6850.0f, 1180.0f, 0.0f),
+		VGet(0.0f, -3.0f, 0.0f),
+		120,
+		mpPlayer,
+		&mBlockMap,
+		FloorFeature::Normal,
+		CharacterGraphPath::MoveFloorBig 
+	);
+
+
+	// 例1: 左右に往復する基本の動く床
+	MovingFloor* floor1 = new MovingFloor(
+		VGet(900.0f, 200.0f,0.0f), VGet(1800.0f, 200.0f, 0.0f),
+		2.0f, MovePattern::Loop, FloorFeature::SpeedUpOnRide, mpPlayer, &mBlockMap
+	);	
 
 	// 敵の生成
 	if (mpPlayer != nullptr)

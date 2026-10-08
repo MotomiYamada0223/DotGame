@@ -81,6 +81,8 @@ namespace CharacterGraphPath
 
 	// ギミックの画像
 	static const std::string HiddenBlock = "Resource/Image/Block.png";
+	static const std::string MoveFloor = "Resource/Image/MoveFloor.png";
+	static const std::string MoveFloorBig = "Resource/Image/MoveFloorBig.png";
 
 	// ハートの画像
 	static const std::string HeartFull = "Resource/Image/heart_full.png";
@@ -201,4 +203,18 @@ namespace MapScrollConstants
 namespace TextTimer
 {
 	static constexpr float MaxFallDeathTimer = 180.0f;
+}
+
+// 動く床関係
+namespace MovingFloorConstants
+{
+	// プレイヤーが床に乗る判定の許容判定距離
+	static constexpr float RideMarginTop = 10.0f;    // 上側の許容範囲（めり込み許容）
+	static constexpr float RideMarginBottom = 30.0f; // 下側の許容範囲（高速落下時のすり抜け防止）
+
+	// 乗ったら速度が上がる罠で上昇する速度の倍率
+	static constexpr float SpeedUpMultiplier = 3.0f;
+
+	// 一定方向に移動し続けるタイプで画面外と判定して破棄するまでの距離（高さのみ）
+	static constexpr float DestroyMarginY = 200.0f;
 }

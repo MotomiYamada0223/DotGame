@@ -32,7 +32,12 @@ public: // アクセサ
 	bool GetIsDead() const { return isDead; } // 死亡判定かの処理
 	float GetCurrentSpeed() const { return mfCurrentSpeed; }
 	float GetVelocityY() const { return velocityY; } // ジャンプ中かどうかの判定用に追加
-	void SetVelocityY(float vy) { velocityY = vy; }  // 頭をぶつけた時の落下処理用に追加 // 現在の速さ
+	void SetVelocityY(float vy) { velocityY = vy; }
+
+	// 動く床などのオブジェクトに乗った際に接地状態を強制するためのSetter
+	void SetForceGrounded() { 
+		mForceGroundedThisFrame = true;
+	}  // 頭をぶつけた時の落下処理用に追加 // 現在の速さ
 
 private:
 	// インスタンスで持っているもの
@@ -57,6 +62,7 @@ private:
 	const float gravity = 0.3f; // 元0.5
 	const float jumpPower = -15.0f; // 元12
 	bool isGrounded; // 地面に接地しているかどうか
+	bool mForceGroundedThisFrame; // 外部オブジェクトにより強制接地させるフラグ
 
 	// 移動関連
 	const float moveSpeed = 5.0f;
