@@ -55,7 +55,6 @@ void Camera::Update(int playerScreenX, int playerScreenY, float moveDirection, f
 		mScrollY += diffY;
 	}
 
-
 	// マップの左端を超えないようにするため
 	if (mScrollY > 0)
 	{
