@@ -225,8 +225,14 @@ void MovingFloor::Draw()
 {
     if (IsDeleteFlag()) return;
 
-    VECTOR pos = GetPosition();
-    float screenX = ConvertToScreenX(pos.x, mpBlockMap);
-    
-    DrawRotaGraph(static_cast<int>(screenX), static_cast<int>(pos.y), 1.0, 0.0, mImageHandle, TRUE);
+    if ( mpBlockMap != nullptr)
+    {
+        VECTOR pos = GetPosition();
+        float screenX = ConvertToScreenX(pos.x, mpBlockMap);
+
+        int drawX = static_cast<int>(ConvertToScreenX(mvPosition.x, mpBlockMap));
+        int drawY = static_cast<int>(ConvertToScreenY(mvPosition.y, mpBlockMap));
+
+        DrawRotaGraph(static_cast<int>(drawX), static_cast<int>(drawY), 1.0, 0.0, mImageHandle, TRUE);
+    }
 }

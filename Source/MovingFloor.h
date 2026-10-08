@@ -33,6 +33,9 @@ public:
 
 public:
     static std::list<MovingFloor*> s_AllMovingFloors;
+    FloorFeature GetFeature() const { return mFeature; }
+    bool IsSpedUp() const { return mIsSpedUp; }
+    VECTOR GetVelocity() const { return mVelocity; }
 
 private:
     bool mIsSpedUp;

@@ -1,4 +1,5 @@
 ﻿#include "FloorSpawner.h"
+#include "GameConstants.h"
 #include "MovingFloor.h"
 #include "Player.h"
 #include "BlockMap.h"
@@ -24,7 +25,23 @@ void FloorSpawner::Update()
 {
     if (IsDeleteFlag()) return;
 
-    mTimer++;
+
+    int timerAdd = 1;
+    
+    // スポナー自身が SpeedUpOnRide の場合、同じ系統の床がすでに加速済みかチェックする
+    if (mFeature == FloorFeature::SpeedUpOnRide) {
+        for (MovingFloor* floor : MovingFloor::s_AllMovingFloors) {
+            if (floor->GetFeature() == FloorFeature::SpeedUpOnRide && floor->IsSpedUp() &&
+                floor->GetVelocity().x == mVelocity.x && floor->GetVelocity().y == mVelocity.y) {
+                // 加速済みなら、床の速度が上がった倍率と同じだけタイマーの進みも速くする
+                timerAdd = static_cast<int>(MovingFloorConstants::SpeedUpMultiplier);
+                break;
+            }
+        }
+    }
+
+    mTimer += timerAdd;
+
     
     // 指定されたフレーム数（間隔）に達したら床を生成する
     if (mTimer >= mSpawnIntervalFrames)

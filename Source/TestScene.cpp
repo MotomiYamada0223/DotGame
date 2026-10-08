@@ -64,7 +64,7 @@ void TestScene::Initialize()
 	);
 
 	new FloorSpawner(
-		VGet(6600.0f, -100.0f, 0.0f),
+		VGet(6575.0f, -100.0f, 0.0f),
 		VGet(0.0f, 3.0f, 0.0f),
 		120,
 		mpPlayer,
