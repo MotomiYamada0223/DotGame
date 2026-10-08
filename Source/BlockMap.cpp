@@ -214,17 +214,6 @@ void BlockMap::DebugDraw()
         GetColor(255, 0, 0)
     );
 
-    // 下スクロール
-    DrawLine(
-        0,
-        MapScrollConstants::ScrollStartDownY,
-        ScreenSize::ScrrenWidth,
-        MapScrollConstants::ScrollStartDownY,
-        GetColor(255, 0, 0)
-    );
-
-
-
     DrawFormatString(
         20,
         200,

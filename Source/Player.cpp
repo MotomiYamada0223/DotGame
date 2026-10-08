@@ -916,9 +916,35 @@ void Player::DeadProcess()
 // 復活した時に位置とHPを戻す処理
 void Player::Revive()
 {
+	// 位置のリセット
 	mvPosition = mSpawnPos;
 	mvPosition = mSpawnPos;
-	mHp = mMaxHp; // 復活時にHPをリセット
+	mHp = mMaxHp;
+
+	// ジャンプ状態をリセット
+	mbIsJumping = false;
+	isGrounded = true;
+	velocityY = 0.0f;
+
+	// ブリンク状態をリセット
+	isBlinking = false;
+	blinkTimer = 0;
+	blinkCooldownTimer = 0;
+	blinkDirection = 0.0f;
+	mAfterimages.clear();
+
+	// 攻撃状態をリセット
+	isAttacking = false;
+	attackTimer = 0;
+	mHitEnemies.clear();
+
+	// ダメージ状態をリセット
+	isHitDamage = false;
+	mInvincibleTimer = 0;
+
+	// 移動状態をリセット
+	mfMoveDirection = 0.0f;
+	mfCurrentSpeed = moveSpeed;
 
 	// マップのスクロール位置を一番左に戻す
 	if (mpBlockMap != nullptr)

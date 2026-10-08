@@ -54,11 +54,8 @@ void Camera::Update(int playerScreenX, int playerScreenY, float moveDirection, f
 		int diffY = static_cast<int>(playerScreenY - MapScrollConstants::ScrollStartUpY * MapScrollConstants::BlockMapSpeedScale);
 		mScrollY += diffY;
 	}
-	else if (playerScreenY > MapScrollConstants::ScrollStartDownY)
-	{
-		int diffY = static_cast<int>(playerScreenY - MapScrollConstants::ScrollStartDownY * MapScrollConstants::BlockMapSpeedScale);
-		mScrollY += diffY;
-	}
+
+
 	// マップの左端を超えないようにするため
 	if (mScrollY > 0)
 	{
