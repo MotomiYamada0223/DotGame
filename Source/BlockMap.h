@@ -3,6 +3,7 @@
 #include "DxLib.h"
 #include <string>
 #include <vector>
+#include "Camera.h"
 
 class BlockMap
 {
@@ -27,7 +28,7 @@ public:
         const std::string& collisionPath
     );
 
-    void Move(int playerScreenX, float moveDirection, float currentSpeed);
+    void Move(int playerScreenX, int playerScreenY, float moveDirection, float currentSpeed);
     void Draw();
     void DebugDraw();
 
@@ -40,16 +41,18 @@ public:
     // 位置のゲッターセッター
     int ScreenToMapX(int screenX) const;
     int ScreenToMapY(int screenY) const;
-    int GetScrollX() const { return mnScrollX; }
-    // スクロール位置をリセットする
-    void ResetScroll() { mnScrollX = 0; }
+    int GetScrollX() const { return mCamera.GetScrollX(); }
+    int GetScrollY() const { return mCamera.GetScrollY(); }
 
     // 背景画像の元の長さを取得する プレイヤーの移動領域のため
     int GetCurrentWidth() const { return mnBackgroundWidth; }
 
     // スクロール中かの判断
-    bool GetIsScrolling() const { return mbIsScrolling; }
+    bool GetIsScrolling() const { return mCamera.GetIsScroll(); }
     float GetScrollDirection() const { return mfMoveDirection; }
+
+    // スクロールリセット
+    void ResetScroll();
 
 private:
     int mnBackgroundGraph;   // 背景画像
@@ -61,6 +64,7 @@ private:
 
     // タイプのデータをのメンバ変数
     std::vector<CollisionType> mCollisionData;
+    Camera mCamera; // カメラのインスタンス
 
     // 読み込み済みかのフラグ
     bool mbIsLoaded;
@@ -72,7 +76,6 @@ private:
 
 private: // スクロール関係
     // 画面の左端がマップ画像の何px目なのか
-    int mnScrollX;
     int mnBackgroundWidth;
     int mnBackgroundHeight;
     bool mbIsScrolling; // スクロール中かを判断

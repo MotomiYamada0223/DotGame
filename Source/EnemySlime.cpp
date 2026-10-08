@@ -71,7 +71,7 @@ void EnemySlime::Draw()
     if (mpBlockMap != nullptr)
     {
         const float screenX = ConvertToScreenX(mvPosition.x, mpBlockMap);
-        const float screenY = mvPosition.y;
+        const float screenY = ConvertToScreenY(mvPosition.y, mpBlockMap);
 
         // --- 視界の扇状(台形)デバッグ表示 ---
         float baseHalfY = mVisionBaseHeight / 2.0f;

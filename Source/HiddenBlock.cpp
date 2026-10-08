@@ -99,7 +99,7 @@ void HiddenBlock::Draw()
     if (mpBlockMap != nullptr)
     {
         float screenX = ConvertToScreenX(mvPosition.x, mpBlockMap);
-        float screenY = mvPosition.y;
+        float screenY = ConvertToScreenY(mvPosition.y, mpBlockMap);
 
         if (!mIsRevealed)
         {

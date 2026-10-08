@@ -151,10 +151,8 @@ int  Object2D::GetSizeY()
 	 {
          return mpTextureAnimation->GetSizeY();
 	 }
-	
 	return 0; // 上二つが生成されていない場合
 }
-
 
 
 //ブロックマップが存在しない場合の安全対策として、スクロール量を引いたスクリーン座標を算出するため
@@ -162,4 +160,11 @@ float Object2D::ConvertToScreenX(float worldX, const BlockMap* blockMap) const
 {
 	float scrollX = (blockMap != nullptr) ? static_cast<float>(blockMap->GetScrollX()) : 0.0f;
 	return worldX - scrollX;
+}
+
+
+float Object2D::ConvertToScreenY(float worldY, const BlockMap* blockMap) const
+{
+	float scrollY = (blockMap != nullptr) ? static_cast<float>(blockMap->GetScrollY()) : 0.0f;
+	return worldY - scrollY;
 }

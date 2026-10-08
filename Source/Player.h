@@ -23,14 +23,12 @@ public:
 
 	void PlayerMove(BlockMap& blockMap); // Mapを受け取って位置を更新する処理
 
-	float GetMoveDirection() const { return mfMoveDirection; }
 	void DrawFallDeath(); // 死亡テキストの呼び出し
-
-
-	// 冗長コードにならなために関数分けしているもの
 	void DrawLife(); // 体力はあとの描画
 
-public:
+
+public: // アクセサ
+	float GetMoveDirection() const { return mfMoveDirection; }
 	bool GetIsDead() const { return isDead; } // 死亡判定かの処理
 	float GetCurrentSpeed() const { return mfCurrentSpeed; }
 	float GetVelocityY() const { return velocityY; } // ジャンプ中かどうかの判定用に追加
@@ -42,8 +40,16 @@ public:
 	}  // 頭をぶつけた時の落下処理用に追加 // 現在の速さ
 
 private:
+	// インスタンスで持っているもの
 	CharacterPhysics mCharacterPhysics; // 物理計算用のインスタンス
 	FallDeathController mFallDeath; // 落下処理
+	PlayerAnimState mPlayerState;
+	BlockAction mBlockAction;
+
+	// ポインタで持っているもの
+	BlockMap* mpBlockMap;
+
+
 	float mfMoveDirection;
 
 	// プレイヤーの当たり判定サイズ
@@ -54,15 +60,14 @@ private:
 	bool mbIsJumping;
 	float velocityY;
 	const float gravity = 0.3f; // 元0.5
-	const float jumpPower = -16.0f; // 元12
+	const float jumpPower = -15.0f; // 元12
 	bool isGrounded; // 地面に接地しているかどうか
 	bool mForceGroundedThisFrame; // 外部オブジェクトにより強制接地させるフラグ
 
 	// 移動関連
 	const float moveSpeed = 5.0f;
-
 	float mfCurrentSpeed = moveSpeed; // 合計の今の速さ
-	bool isFacingRight;
+	bool isFacingRight; // 右向きかどうか
 
 	// 攻撃関連
 	bool isAttacking;
@@ -70,12 +75,11 @@ private:
 	std::vector<Object2D*> mHitEnemies;
 	const int attackDuration = 15;
 
+
 	// 被ダメージ（衝突）フラグ
 	bool isHitDamage;
 	int mInvincibleTimer;
 
-	// アニメーション関連
-	PlayerAnimState mPlayerState;
 
 	// 死亡処理関連
 	// ブリンク関連
@@ -86,6 +90,7 @@ private:
 	const float blinkSpeed = 15.0f;
 	float blinkDirection;
 
+	// ブリンクの時に必要な処理
 	struct BlinkAfterimage
 	{
 		VECTOR pos;
@@ -106,8 +111,6 @@ private:
 	std::vector<PlayerFragment> mFragments;
 	VECTOR mSpawnPos;
 	int mDeadState;
-	BlockMap* mpBlockMap;
-	BlockAction mBlockAction;
 
 	bool isDead;
 	int deadTimer;

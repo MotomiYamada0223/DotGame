@@ -107,20 +107,8 @@ void Enemy::Draw()
 		}
 
 		// スクリーン座標へ変換
-		const int screenX =
-			static_cast<int>(
-				ConvertToScreenX(
-					mvPosition.x,
-					mpBlockMap
-				)
-				- FRAME_WIDTH / 2
-				);
-
-		const int screenY =
-			static_cast<int>(
-				mvPosition.y
-				- FRAME_HEIGHT / 2
-				);
+		const int screenX =static_cast<int>(ConvertToScreenX(mvPosition.x,mpBlockMap) - FRAME_WIDTH / 2);
+		const int screenY =static_cast<int>(ConvertToScreenY(mvPosition.y, mpBlockMap) - FRAME_HEIGHT / 2);
 
 		// 敵を描画
 		DrawRectGraph(
