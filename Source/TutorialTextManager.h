@@ -4,8 +4,10 @@
 
 #include "StepData.h"
 #include "StepLoader.h"
+#include "DeathReason.h"
+#include <DxLib.h>
 
-class TutorialTextManager
+class  TutorialTextManager
 {
 public:
 
@@ -20,10 +22,11 @@ public:
 	// ステップの変更
 	void ChangeStep(int nextID);
 
-	// プレイヤー死亡時
-	void OnPlayerDead();
 	// プレイヤー復活時
 	void OnPlayerRevive();
+
+	// プレイヤー死亡時
+	void OnPlayerDead(DeathReason::DeathType reason);
 
 	// 現在のステップを返す
 	const StepData* GetCurrentStep() const;

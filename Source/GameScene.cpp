@@ -11,6 +11,7 @@ GameScene::GameScene()
 	:Scene()
 	, mProgress()
 	, mSaint(VGet(Utility::SCREEN_WIDTH / 2.0f, 150.0f, 0.0f)) // 天使の作成
+	, mbWasPlayerDead(false)
 
 {
 	spawnTimer = 0;
@@ -135,7 +136,7 @@ void GameScene::SetTextUpdate()
 	// 死亡した瞬間
 	if (isPlayerDead && !mbWasPlayerDead)
 	{
-		mTutorialText.OnPlayerDead();
+		mTutorialText.OnPlayerDead(mpPlayer->GetDeathReason());
 	}
 	// 復活した瞬間
 	else if (!isPlayerDead && mbWasPlayerDead)

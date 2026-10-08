@@ -22,9 +22,6 @@
     <Filter Include="ソース ファイル\Text関係">
       <UniqueIdentifier>{de72453d-964a-4bc1-9a97-d3b8512c2a28}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ソース ファイル\Manager系\Map関係">
-      <UniqueIdentifier>{571b8c62-aa7d-4336-9f42-5e50d9ce1513}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ソース ファイル\Controller系">
       <UniqueIdentifier>{40826dca-7f30-4305-bcc2-bb876c196539}</UniqueIdentifier>
     </Filter>
@@ -33,6 +30,9 @@
     </Filter>
     <Filter Include="ソース ファイル\Gimmick系">
       <UniqueIdentifier>{30629378-bfe3-4b0f-8dc5-b8f93369e038}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Map関係">
+      <UniqueIdentifier>{571b8c62-aa7d-4336-9f42-5e50d9ce1513}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -97,13 +97,13 @@
       <Filter>ソース ファイル\Manager系</Filter>
     </ClCompile>
     <ClCompile Include="Source\BlockMap.cpp">
-      <Filter>ソース ファイル\Manager系\Map関係</Filter>
+      <Filter>ソース ファイル\Map関係</Filter>
     </ClCompile>
     <ClCompile Include="Source\CharacterPhysics.cpp">
-      <Filter>ソース ファイル\Manager系\Map関係</Filter>
+      <Filter>ソース ファイル\Map関係</Filter>
     </ClCompile>
     <ClCompile Include="Source\BlockAction.cpp">
-      <Filter>ソース ファイル\Manager系\Map関係</Filter>
+      <Filter>ソース ファイル\Map関係</Filter>
     </ClCompile>
     <ClCompile Include="Source\FallDeathController.cpp">
       <Filter>ソース ファイル\Controller系</Filter>
@@ -160,6 +160,9 @@
       <Filter>ソース ファイル\Manager系</Filter>
     </ClCompile>
     <ClCompile Include="Source\PlayerAnimState.cpp">
+      <Filter>ソース ファイル\Controller系</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\DeathReason.cpp">
       <Filter>ソース ファイル\Controller系</Filter>
     </ClCompile>
   </ItemGroup>
@@ -295,6 +298,9 @@
     </ClInclude>
     <ClInclude Include="Source\FallDeathController.h">
       <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\DeathReason.h">
+      <Filter>ソース ファイル\Controller系</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

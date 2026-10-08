@@ -1,6 +1,8 @@
 ﻿#include "TutorialTextManager.h"
 #include "Master.h"
 #include "GameConstants.h"
+#include "DeathReason.h"
+
 
 
 // ステップの取得処理を共通化
@@ -49,7 +51,6 @@ static int GetCharByteCount(const std::string& text, int index)
 	return 1;
 }
 
-
 void TutorialTextManager::Initialize(
 	const std::string& csvPath,
 	const std::string& deathCsvPath)
@@ -75,7 +76,8 @@ void TutorialTextManager::Initialize(
 
 
 // プレイヤーが死亡したときの処理
-void TutorialTextManager::OnPlayerDead()
+// 判別するために引数を取得
+void TutorialTextManager::OnPlayerDead(DeathReason::DeathType type)
 {
 	// 通常チュートリアル中なら、現在のIDを保存する
 	if (!mbIsDeathTutorial)
@@ -89,8 +91,10 @@ void TutorialTextManager::OnPlayerDead()
 	// 死亡テキストはまだ終了していない
 	mbIsDeathTextFinished = false;
 
+
 	// 死亡CSVの最初のIDから開始
-	mnCurrentID = 1;
+	DeathReason deathReason;
+	mnCurrentID = deathReason.GetDeathStartID(type);
 
 	// 表示状態をリセット
 	mfIdelTimer = 0.0f;

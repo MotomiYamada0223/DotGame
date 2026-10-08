@@ -8,6 +8,7 @@
 #include "FallDeathController.h"
 #include "PlayerAnimState.h"
 #include "UnitStatus.h"
+#include "DeathReason.h"
 
 class Player : public Object2D, public UnitStatus
 {
@@ -33,6 +34,9 @@ public: // アクセサ
 	float GetCurrentSpeed() const { return mfCurrentSpeed; }
 	float GetVelocityY() const { return velocityY; } // ジャンプ中かどうかの判定用に追加
 	void SetVelocityY(float vy) { velocityY = vy; }  // 頭をぶつけた時の落下処理用に追加 // 現在の速さ
+	// 死亡理由を取得
+	DeathReason::DeathType GetDeathReason() const { return mDeathReason;}
+
 
 private:
 	// インスタンスで持っているもの
@@ -40,6 +44,8 @@ private:
 	FallDeathController mFallDeath; // 落下処理
 	PlayerAnimState mPlayerState;
 	BlockAction mBlockAction;
+	DeathReason::DeathType mDeathReason;
+
 
 	// ポインタで持っているもの
 	BlockMap* mpBlockMap;
