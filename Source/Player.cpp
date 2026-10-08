@@ -426,6 +426,11 @@ void Player::Update()
 			{
 				int dmg = enemyStatus ? enemyStatus->mAttack : 0;
 				if (enemyStatus && enemyStatus->mHasInstantKillAttack) dmg = mHp;
+				if (mHp - dmg <= 0)
+				{
+					// ニードルに当たった時に表示するもの
+					mDeathReason = DeathReason::DeathType::NeedleTrapHit;
+				}
 				TakeDamage(dmg);
 			}
 			else if (isBlinking)

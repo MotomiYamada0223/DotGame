@@ -12,7 +12,7 @@ public:
 		WallHit,
 		EnemyHit,
 		Fall,
-		GimmickHit,
+		NeedleTrapHit,
 	};
 
 	// 死亡原因と番号をセットするための構造体
