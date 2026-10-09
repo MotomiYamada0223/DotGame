@@ -13,8 +13,8 @@ TitleLogo::TitleLogo()
 	, mfScrollCloudX(0.0f)
 	, mnMenuCursor(0)
 	, mLogoPieces()
-	, mfAnimtionTimer(0)
-	, mfLogoY(LogoInitialY)
+	, mfAnimtionTimer(0.0f)
+	, mfLogoY(ScreenSize::CenterY)
 {
 	mnBackGroundHandle = LoadGraph("Resource/SceneBackground/background_noclouds.png");
 	mnfScrollCloudHandle = LoadGraph("Resource/SceneBackground/cloud_seamless.png");
@@ -87,55 +87,17 @@ void TitleLogo::Draw()
 }
 
 
-
 void TitleLogo::UpdateLogoAnimation()
 {
-	// ロゴの移動速度を保持する
-	static float velocity = 0.0f;
-
 	// アニメーション時間を進める
 	mfAnimtionTimer += LogoMoveSpeed;
 
 	// ロゴの基本となるY座標を設定する
-	float baseY =
-		(Utility::SCREEN_HEIGHT / 2) +
-		LogoBaseYOffset;
+	float baseY = ScreenSize::CenterY;
 
-	// sin波を利用してロゴの目標Y座標を上下に変化させる
-	float targetY =
+	// sin波を利用してロゴの目標Y座標を上下
+	mfLogoY =
 		baseY +
 		sinf(mfAnimtionTimer) *
 		LogoSwingSize;
-
-	// バネ演出に使用する各パラメータを取得する
-	float gravity = Gravity;       // 重力の強さ
-	float power = SpringPower;     // バネの引き戻す強さ
-	float damping = Damping;       // 速度の減衰率
-
-	// 重力を加えてロゴの速度を変化させる
-	velocity += gravity;
-
-	// 現在位置と目標位置の差からバネの力を計算する
-	float force = (targetY - mfLogoY) * power;
-
-	// バネの力を速度に加える
-	velocity += force;
-
-	// 速度を減衰させて動きを調整する
-	velocity *= damping;
-
-	// 計算した速度を現在のY座標に反映する
-	mfLogoY += velocity;
-
-	// ロゴの速度と目標位置との差が十分に小さい場合、位置を補正する
-	if (fabs(velocity) < VelocityStop &&
-		fabs(targetY - mfLogoY) <
-		TargetStopDistance)
-	{
-		// ロゴを目標位置に合わせる
-		mfLogoY = targetY;
-
-		// 速度をゼロにする
-		velocity = 0.0f;
-	}
 }
