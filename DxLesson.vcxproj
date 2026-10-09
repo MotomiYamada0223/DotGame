@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -170,12 +170,14 @@
     <ClCompile Include="Source\StepLoader.cpp" />
     <ClCompile Include="Source\Texture.cpp" />
     <ClCompile Include="Source\TextureAnimation.cpp" />
+    <ClCompile Include="Source\TitleLogo.cpp" />
     <ClCompile Include="Source\TitleScene.cpp" />
     <ClCompile Include="Source\TutorialTextManager.cpp" />
     <ClCompile Include="Source\UnitStatus.cpp" />
     <ClCompile Include="Source\WinResultScene.cpp" />
     <ClCompile Include="Source\TestScene.cpp" />
-  <ClCompile Include="Source\FloorSpawner.cpp" /></ItemGroup>
+    <ClCompile Include="Source\FloorSpawner.cpp" />
+  </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Background.h" />
     <ClInclude Include="Source\BlockAction.h" />
@@ -217,13 +219,15 @@
     <ClInclude Include="Source\StepLoader.h" />
     <ClInclude Include="Source\Texture.h" />
     <ClInclude Include="Source\TextureAnimation.h" />
+    <ClInclude Include="Source\TitleLogo.h" />
     <ClInclude Include="Source\TitleScene.h" />
     <ClInclude Include="Source\TutorialTextManager.h" />
     <ClInclude Include="Source\UnitStatus.h" />
     <ClInclude Include="Source\Utility.h" />
     <ClInclude Include="Source\WinResultScene.h" />
     <ClInclude Include="Source\TestScene.h" />
-  <ClInclude Include="Source\FloorSpawner.h" /></ItemGroup>
+    <ClInclude Include="Source\FloorSpawner.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -7,6 +7,7 @@
 
 TitleScene::TitleScene()
 	: Scene()     // 基底クラスのコンストラクタを呼び出しておく
+	, mTitleLogo()
 {
 }
 
@@ -21,6 +22,7 @@ void TitleScene::Initialize()
 	// プレイヤーの生成 などをここで行う
 	// タイトル画面で必要なオブジェクトをここで生成する
 
+
 	// BGM再生
 	//Master::mpSoundManager->PlayBGM(SoundManager::BGM_TITLE);
 }
@@ -33,6 +35,8 @@ void TitleScene::Update()
 	{
 		Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_TYPE::SCENE_STAGESELECT);
 	}
+
+	mTitleLogo.Update();
 
 	// 基底クラスの更新処理を呼びだす
 	Scene::Update();
@@ -48,6 +52,8 @@ void TitleScene::Draw()
 			GetColor(255, 255, 255),
 			"タイトル　才能の原石\n\n Enterでゲームシーン"
 		);
+
+		mTitleLogo.Draw();
 
 	// 基底クラスの更新処理を呼びだす
 	Scene::Draw();

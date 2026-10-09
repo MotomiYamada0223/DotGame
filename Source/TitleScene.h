@@ -1,14 +1,13 @@
 #pragma once
-
 #include "Scene.h" // シーン継承したいからインクルード
+#include "TitleLogo.h"
+
 
 class TitleScene : public Scene
 {
 
 public:
-
 	TitleScene();
-
 	virtual ~TitleScene();
 
 	// 初期化
@@ -21,4 +20,5 @@ public:
 	virtual void Finalize() override;
 
 private:
+	TitleLogo mTitleLogo;
 };
