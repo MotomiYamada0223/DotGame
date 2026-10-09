@@ -8,7 +8,8 @@ namespace
 		{ DeathReason::DeathType::WallHit,		 1 },
 		{ DeathReason::DeathType::EnemyHit,		 2 },
 		{ DeathReason::DeathType::Fall,			 3 },
-		{ DeathReason::DeathType::NeedleTrapHit,	 4 },
+		{ DeathReason::DeathType::NeedleTrapHit, 4 },
+		{ DeathReason::DeathType::DeathBlock, 5 },
 	};
 }
 

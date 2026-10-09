@@ -13,6 +13,7 @@ public:
 		EnemyHit,
 		Fall,
 		NeedleTrapHit,
+		DeathBlock,
 	};
 
 	// 死亡原因と番号をセットするための構造体

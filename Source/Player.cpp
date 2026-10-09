@@ -216,6 +216,11 @@ void Player::PlayerMove(BlockMap& blockMap)
 	// 特殊地形の処理
 	mBlockAction.SetCollisionType(collisionType);
 	mBlockAction.ExecuteDeath(mHp);
+	if (mBlockAction.GetHitDeathBlock())
+	{
+		// 死亡判定のアルブロックに重なったら
+		mDeathReason = DeathReason::DeathType::DeathBlock;
+	}
 	mBlockAction.ExecuteGoal();
 
 
@@ -978,6 +983,7 @@ void Player::Revive()
 	{
 		mpBlockMap->ResetScroll();
 		mFallDeath.Reset();
+		mBlockAction.SetHitDeathBlock(false);
 	}
 
 	isDead = false;

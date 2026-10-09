@@ -5,6 +5,7 @@
 
 BlockAction::BlockAction()
 	: mCurrentCollisionType(BlockMap::CollisionType::None)
+	, mbHitDeathBlock(false)
 {
 }
 
@@ -23,6 +24,7 @@ void BlockAction::ExecuteDeath(int& inHp)
 {
 	if (mCurrentCollisionType == BlockMap::CollisionType::Death)
 	{
+		SetHitDeathBlock(true);
 		inHp = 0;
 	}
 }

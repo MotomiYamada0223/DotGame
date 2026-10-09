@@ -12,14 +12,20 @@ public:
 	// 接触した地形の情報を設定する
 	void SetCollisionType(BlockMap::CollisionType collisionType);
 
-
 	// 設定された地形に応じて死亡処理を実行する
 	void ExecuteDeath(int& inHp);
 
 	// 設定された地形に応じてゴール処理を実行する
 	void ExecuteGoal();
 
+
+	// アクセサ
+	bool GetHitDeathBlock() { return mbHitDeathBlock; }
+	void SetHitDeathBlock(bool death) { mbHitDeathBlock = death; }
+
 private:
 	// 現在接触している地形の状態を保持する
 	BlockMap::CollisionType mCurrentCollisionType;
+
+	bool mbHitDeathBlock;
 };
