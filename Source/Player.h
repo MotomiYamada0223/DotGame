@@ -8,6 +8,7 @@
 #include "FallDeathController.h"
 #include "PlayerAnimState.h"
 #include "UnitStatus.h"
+#include "DeathReason.h"
 
 class Player : public Object2D, public UnitStatus
 {
@@ -32,12 +33,19 @@ public: // アクセサ
 	bool GetIsDead() const { return isDead; } // 死亡判定かの処理
 	float GetCurrentSpeed() const { return mfCurrentSpeed; }
 	float GetVelocityY() const { return velocityY; } // ジャンプ中かどうかの判定用に追加
+<<<<<<< HEAD
 	void SetVelocityY(float vy) { velocityY = vy; }
 
 	// 動く床などのオブジェクトに乗った際に接地状態を強制するためのSetter
 	void SetForceGrounded() { 
 		mForceGroundedThisFrame = true;
 	}  // 頭をぶつけた時の落下処理用に追加 // 現在の速さ
+=======
+	void SetVelocityY(float vy) { velocityY = vy; }  // 頭をぶつけた時の落下処理用に追加 // 現在の速さ
+	// 死亡理由を取得
+	DeathReason::DeathType GetDeathReason() const { return mDeathReason;}
+
+>>>>>>> CameraTest-ayame
 
 private:
 	// インスタンスで持っているもの
@@ -45,6 +53,8 @@ private:
 	FallDeathController mFallDeath; // 落下処理
 	PlayerAnimState mPlayerState;
 	BlockAction mBlockAction;
+	DeathReason::DeathType mDeathReason;
+
 
 	// ポインタで持っているもの
 	BlockMap* mpBlockMap;
