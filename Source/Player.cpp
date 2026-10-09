@@ -15,6 +15,7 @@
 Player::Player(VECTOR initPos)
 // TextureAnimationは使わず一枚絵としてロード
 	: Object2D(CharacterGraphPath::PlayerAnimation, initPos)
+	, mDeathReason(DeathReason::DeathType::None)
 {
 	SetTag(Object2D::Player2D);
 	mbIsJumping = false;
@@ -124,6 +125,8 @@ void Player::PlayerMove(BlockMap& blockMap)
 
 	if (!mbFallDeath && mvPosition.y >= PlayerConstants::PlayerDeathHeight)
 	{
+		// 死因を設定してからHPを0にする
+		mDeathReason = DeathReason::DeathType::Fall;
 		mHp = 0;
 		mbFallDeath = true;
 	}
@@ -193,6 +196,8 @@ void Player::PlayerMove(BlockMap& blockMap)
 		// X軸方向の移動がほとんどできなかった場合、壁に激突したとみなして即死
 		if (abs(mvPosition.x - prevX) < 1.0f)
 		{
+			// 壁激突で即死とする
+			mDeathReason = DeathReason::DeathType::WallHit;
 			TakeDamage(mHp);
 		}
 	}
@@ -430,6 +435,11 @@ void Player::Update()
 			{
 				int dmg = enemyStatus ? enemyStatus->mAttack : 0;
 				if (enemyStatus && enemyStatus->mHasInstantKillAttack) dmg = mHp;
+				if (mHp - dmg <= 0)
+				{
+					// ニードルに当たった時に表示するもの
+					mDeathReason = DeathReason::DeathType::NeedleTrapHit;
+				}
 				TakeDamage(dmg);
 			}
 			else if (isBlinking)
@@ -437,6 +447,7 @@ void Player::Update()
 				if (!mIsBlinkWallDeathImmune)
 				{
 					TakeDamage(mHp);
+					mDeathReason = DeathReason::DeathType::EnemyHit;
 				}
 			}
 			else
@@ -449,6 +460,11 @@ void Player::Update()
 					{
 						int dmg = enemyStatus->mAttack;
 						if (enemyStatus->mHasInstantKillAttack) dmg = mHp;
+
+						if (mHp - dmg <= 0)
+						{
+							mDeathReason = DeathReason::DeathType::EnemyHit;
+						}
 						TakeDamage(dmg);
 					}
 				}
@@ -925,6 +941,8 @@ void Player::DeadProcess()
 // 復活した時に位置とHPを戻す処理
 void Player::Revive()
 {
+	mDeathReason = DeathReason::DeathType::None;
+
 	// 位置のリセット
 	mvPosition = mSpawnPos;
 	mvPosition = mSpawnPos;

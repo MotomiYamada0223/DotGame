@@ -140,6 +140,7 @@
     <ClCompile Include="Source\Camera.cpp" />
     <ClCompile Include="Source\CharacterPhysics.cpp" />
     <ClCompile Include="Source\Collision.cpp" />
+    <ClCompile Include="Source\DeathReason.cpp" />
     <ClCompile Include="Source\DrawFrame.cpp" />
     <ClCompile Include="Source\Enemy.cpp" />
     <ClCompile Include="Source\EnemySkeleton.cpp" />
@@ -184,6 +185,7 @@
     <ClInclude Include="Source\BossEnemyTree.h" />
     <ClInclude Include="Source\Camera.h" />
     <ClInclude Include="Source\Collision.h" />
+    <ClInclude Include="Source\DeathReason.h" />
     <ClInclude Include="Source\DrawFrame.h" />
     <ClInclude Include="Source\Enemy.h" />
     <ClInclude Include="Source\EnemySkeleton.h" />

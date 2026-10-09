@@ -185,7 +185,7 @@ void TestScene::SetTextUpdate()
 	// 死亡した瞬間
 	if (isPlayerDead && !mbWasPlayerDead)
 	{
-		mTutorialText.OnPlayerDead();
+		mTutorialText.OnPlayerDead(mpPlayer->GetDeathReason());
 	}
 	// 復活した瞬間
 	else if (!isPlayerDead && mbWasPlayerDead)

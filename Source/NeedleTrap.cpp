@@ -8,8 +8,9 @@
 #include <cmath>
 
 NeedleTrap::NeedleTrap(VECTOR initPos, TrapType type)
-    : Enemy(CharacterGraphPath::Needle, initPos),
-      UnitStatus()
+    : Enemy(CharacterGraphPath::Needle, initPos)
+    , UnitStatus()
+    , mTargetY(0)
 {
     mType = type;
     mState = TrapState::Waiting;
