@@ -22,6 +22,7 @@ private:
     int mTimer;
     std::string mImagePath;
 	FloorFeature mFeature;
+    bool mIsReversed;
     
     Player* mpPlayer;
     BlockMap* mpBlockMap;

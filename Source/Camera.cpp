@@ -1,4 +1,4 @@
-#include "Camera.h"
+ï»¿#include "Camera.h"
 #include "GameConstants.h"
 #include <DxLib.h>
 
@@ -13,7 +13,7 @@ Camera::~Camera()
 {
 }
 
-// ƒvƒŒƒCƒ„[‚ÌˆÊ’u‚âˆÚ“®•ûŒü‚É‰‚¶‚ÄƒJƒƒ‰‚ÌƒXƒNƒ[ƒ‹ˆÊ’u‚ğŒvZ‚·‚é‚½‚ß
+// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ä½ç½®ã‚„ç§»å‹•æ–¹å‘ã«å¿œã˜ã¦ã‚«ãƒ¡ãƒ©ã®ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ä½ç½®ã‚’è¨ˆç®—ã™ã‚‹ãŸã‚
 void Camera::Update(int playerScreenX, int playerScreenY, float moveDirection, float currentSpeed, int backgroundWidth, int screenWidth)
 {
 	if (CheckHitKey(KEY_INPUT_1))
@@ -23,39 +23,39 @@ void Camera::Update(int playerScreenX, int playerScreenY, float moveDirection, f
 	}
 
 	int oldScrollPos = mScrollX;
-
-	// ‰E‘¤‚Ìü‚ğ’´‚¦‚Ä‚¢‚ÄA‰E‚ÉˆÚ“®’†‚È‚ç‰E‚ÖƒXƒNƒ[ƒ‹‚·‚é‚½‚ß
-	if (playerScreenX > MapScrollConstants::ScrollStartRightX && moveDirection > 0.0f)
+	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒå³ã®ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«å¢ƒç•Œã‚’è¶ŠãˆãŸã‚‰ã€è¶ŠãˆãŸåˆ†ã ã‘ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ã‚’åŠ ç®—ã™ã‚‹
+	// (moveDirectionã‚„currentSpeedã«ä¾å­˜ã—ãªã„ãŸã‚ã€å‹•ãåºŠã«ä¹—ã£ã¦ã„ã‚‹å—å‹•çš„ãªç§»å‹•ã§ã‚‚æ­£ã—ãè¿½å¾“ã™ã‚‹)
+	if (playerScreenX > MapScrollConstants::ScrollStartRightX)
 	{
-		mScrollX += static_cast<int>(currentSpeed);
+		mScrollX += (playerScreenX - MapScrollConstants::ScrollStartRightX);
 	}
-	// ¶‘¤‚Ìü‚ğ’´‚¦‚Ä‚¢‚ÄA¶‚ÉˆÚ“®’†‚È‚ç¶‚ÖƒXƒNƒ[ƒ‹‚·‚é‚½‚ß
-	else if (playerScreenX < MapScrollConstants::ScrollStartLeftX && moveDirection < 0.0f)
+	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒå·¦ã®ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«å¢ƒç•Œã‚’è¶ŠãˆãŸã‚‰ã€è¶ŠãˆãŸåˆ†ã ã‘ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ã‚’æ¸›ç®—ã™ã‚‹
+	else if (playerScreenX < MapScrollConstants::ScrollStartLeftX)
 	{
-		mScrollX -= static_cast<int>(currentSpeed);
+		mScrollX += (playerScreenX - MapScrollConstants::ScrollStartLeftX);
 	}
 
-	// ƒ}ƒbƒv‚Ì¶’[‚ğ’´‚¦‚È‚¢‚æ‚¤‚É‚·‚é‚½‚ß
+	// ãƒãƒƒãƒ—ã®å·¦ç«¯ã‚’è¶…ãˆãªã„ã‚ˆã†ã«ã™ã‚‹ãŸã‚
 	if (mScrollX < 0)
 	{
 		mScrollX = 0;
 	}
-	// ƒ}ƒbƒv‚Ì‰E’[‚ğ’´‚¦‚È‚¢‚æ‚¤‚É‚·‚é‚½‚ß
+	// ãƒãƒƒãƒ—ã®å³ç«¯ã‚’è¶…ãˆãªã„ã‚ˆã†ã«ã™ã‚‹ãŸã‚
 	int maxScrollX = backgroundWidth - screenWidth;
 	if (maxScrollX < 0) { maxScrollX = 0; }
 	if (mScrollX > maxScrollX) { mScrollX = maxScrollX; }
 
 
 
-	// ƒvƒŒƒCƒ„[‚ª‰æ–Êã‚Ìˆê’è‚Ìƒ‰ƒCƒ“
+	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒç”»é¢ä¸Šã®ä¸€å®šã®ãƒ©ã‚¤ãƒ³
 	if (playerScreenY < MapScrollConstants::ScrollStartUpY)
 	{
-		// ƒvƒŒƒCƒ„[‚ªã‚Éã‚ª‚Á‚½•ª‚¾‚¯AƒJƒƒ‰‚ğã‚É“®‚©‚·
+		// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒä¸Šã«ä¸ŠãŒã£ãŸåˆ†ã ã‘ã€ã‚«ãƒ¡ãƒ©ã‚’ä¸Šã«å‹•ã‹ã™
 		int diffY = static_cast<int>(playerScreenY - MapScrollConstants::ScrollStartUpY * MapScrollConstants::BlockMapSpeedScale);
 		mScrollY += diffY;
 	}
 
-	// ƒ}ƒbƒv‚Ì¶’[‚ğ’´‚¦‚È‚¢‚æ‚¤‚É‚·‚é‚½‚ß
+	// ãƒãƒƒãƒ—ã®å·¦ç«¯ã‚’è¶…ãˆãªã„ã‚ˆã†ã«ã™ã‚‹ãŸã‚
 	if (mScrollY > 0)
 	{
 		mScrollY = 0;

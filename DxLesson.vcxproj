@@ -156,6 +156,7 @@
     <ClCompile Include="Source\Main.cpp" />
     <ClCompile Include="Source\Master.cpp" />
     <ClCompile Include="Source\MovingFloor.cpp" />
+    <ClCompile Include="Source\FeintFloor.cpp" />
     <ClCompile Include="Source\NeedleTrap.cpp" />
     <ClCompile Include="Source\Object2D.cpp" />
     <ClCompile Include="Source\ObjectManager.cpp" />
@@ -203,6 +204,7 @@
     <ClInclude Include="Source\LoseResultScene.h" />
     <ClInclude Include="Source\Master.h" />
     <ClInclude Include="Source\MovingFloor.h" />
+    <ClInclude Include="Source\FeintFloor.h" />
     <ClInclude Include="Source\NeedleTrap.h" />
     <ClInclude Include="Source\Object2D.h" />
     <ClInclude Include="Source\ObjectManager.h" />

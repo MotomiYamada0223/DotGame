@@ -12,6 +12,9 @@ public:
     virtual void Update() override;
     virtual void Draw() override;
 
+    // ゲッター
+    bool IsRevealed() const { return mIsRevealed; }
+
 private:
     bool mIsRevealed;
     bool mIsBouncing;

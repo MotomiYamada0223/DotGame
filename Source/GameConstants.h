@@ -83,6 +83,7 @@ namespace CharacterGraphPath
 	static const std::string HiddenBlock = "Resource/Image/Block.png";
 	static const std::string MoveFloor = "Resource/Image/MoveFloor.png";
 	static const std::string MoveFloorBig = "Resource/Image/MoveFloorBig.png";
+	static const std::string FeintFloor = "Resource/Image/FeintFloor.png";
 
 	// ハートの画像
 	static const std::string HeartFull = "Resource/Image/heart_full.png";
@@ -217,4 +218,19 @@ namespace MovingFloorConstants
 
 	// 一定方向に移動し続けるタイプで画面外と判定して破棄するまでの距離（高さのみ）
 	static constexpr float DestroyMarginY = 200.0f;
+
+	// 追加: ReverseAndDash用の定数
+	static constexpr float ReverseDashMultiplier = 10.0f;
+	static constexpr float SpawnYTop = -100.0f;
+	static constexpr float SpawnYBottom = 1180.0f;
+}
+
+// フェイント床（避け罠）用の定数
+namespace FeintFloorConstants
+{
+	static constexpr float TriggerDistanceX = 80.0f;  // 反応するX軸の距離
+	static constexpr float TriggerDistanceY = 155.0f; // 反応するY軸の高さ
+	static constexpr float EvadeSpeed = 20.0f;        // 避ける時のスライド速度
+	static constexpr float MaxEvadeDistance = 160.0f; // 避ける総距離
+	static constexpr float CollisionTopOffset = 30.0f; // 当たり判定の上面を削る量
 }

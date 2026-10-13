@@ -15,8 +15,9 @@ enum class MovePattern {
 
 // 床の特殊効果・罠
 enum class FloorFeature {
-    Normal,         // 通常（常に同じ速度）
-    SpeedUpOnRide   // プレイヤーが乗っている間だけ速度が上昇する罠
+    Normal,
+    SpeedUpOnRide,
+    ReverseAndDash
 };
 
 class MovingFloor : public Object2D {

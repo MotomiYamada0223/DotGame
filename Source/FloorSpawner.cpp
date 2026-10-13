@@ -3,6 +3,8 @@
 #include "MovingFloor.h"
 #include "Player.h"
 #include "BlockMap.h"
+#include <algorithm>
+using namespace std;
 
 FloorSpawner::FloorSpawner(VECTOR spawnPos, VECTOR velocity, int spawnIntervalFrames, Player* player, BlockMap* blockMap, FloorFeature feature, std::string imagePath)
     : Object2D(spawnPos) // 画像を持たない見えないオブジェクトとして生成
@@ -14,6 +16,7 @@ FloorSpawner::FloorSpawner(VECTOR spawnPos, VECTOR velocity, int spawnIntervalFr
     , mpBlockMap(blockMap)
     , mImagePath(imagePath)
 	, mFeature(feature)
+    , mIsReversed(false)
 {
 }
 
@@ -39,6 +42,35 @@ void FloorSpawner::Update()
             }
         }
     }
+    // ReverseAndDash の場合
+    if (mFeature == FloorFeature::ReverseAndDash) {
+        // まだ反転していなければ、同系統の床が反転したかをチェック
+        if (!mIsReversed) {
+            VECTOR reversedVel = VScale(mVelocity, -1.0f);
+            for (MovingFloor* floor : MovingFloor::s_AllMovingFloors) {
+                if (floor->GetFeature() == FloorFeature::ReverseAndDash && floor->IsSpedUp() &&
+                    floor->GetVelocity().x == reversedVel.x && floor->GetVelocity().y == reversedVel.y) {
+                    
+                    mIsReversed = true;
+                    
+                    // スポナーの出現Y座標を反転する（TopにいたならBottomへ、BottomにいたならTopへ）
+                    if (mSpawnPos.y < 500.0f) {
+                        mSpawnPos.y = max(MovingFloorConstants::SpawnYTop, MovingFloorConstants::SpawnYBottom);
+                    } else {
+                        mSpawnPos.y = min(MovingFloorConstants::SpawnYTop, MovingFloorConstants::SpawnYBottom);
+                    }
+                    
+                    break;
+                }
+            }
+        }
+        
+        // 反転状態なら、タイマーの進みを速める
+        if (mIsReversed) {
+            timerAdd = static_cast<int>(MovingFloorConstants::ReverseDashMultiplier);
+        }
+    }
+
 
     mTimer += timerAdd;
 
