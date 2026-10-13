@@ -120,6 +120,7 @@ void TestScene::Initialize()
 	}
 
 	spawnTimer = 0;
+	MovingFloor::s_IsReverseAndDashTriggered = false;
 
 	mbIsLoaded = true;
 }
