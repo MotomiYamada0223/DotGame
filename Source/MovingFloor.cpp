@@ -50,6 +50,38 @@ MovingFloor::MovingFloor(VECTOR startPos, VECTOR endPos, float speed, MovePatter
                 break;
             }
         }
+
+    // ReverseAndDash: 他の同系統の床がすでに反転・超加速しているかチェック
+    // 反転しているので、速度ベクトルは VScale(this->mVelocity, -1.0f) になっているはず
+    if (mFeature == FloorFeature::ReverseAndDash) {
+        VECTOR reversedVel = VScale(this->mVelocity, -1.0f);
+        for (MovingFloor* floor : s_AllMovingFloors) {
+            if (floor != this && floor->mIsSpedUp && 
+                floor->mVelocity.x == reversedVel.x && floor->mVelocity.y == reversedVel.y) {
+                mVelocity = reversedVel;
+                mCurrentSpeed = mBaseSpeed * MovingFloorConstants::ReverseDashMultiplier;
+                mIsSpedUp = true;
+                break;
+            }
+        }
+    }
+
+    // ReverseAndDash: 他の同系統の床がすでに反転・超加速しているかチェック
+    // 反転しているので、速度ベクトルは VScale(this->mVelocity, -1.0f) になっているはず
+    if (mFeature == FloorFeature::ReverseAndDash) {
+        VECTOR reversedVel = VScale(this->mVelocity, -1.0f);
+        for (MovingFloor* floor : s_AllMovingFloors) {
+            if (floor != this && floor->mIsSpedUp && 
+                floor->mVelocity.x == reversedVel.x && floor->mVelocity.y == reversedVel.y) {
+                mVelocity = reversedVel;
+                mCurrentSpeed = mBaseSpeed * MovingFloorConstants::ReverseDashMultiplier;
+                mIsSpedUp = true;
+                break;
+            }
+        }
+    }
+
+
     }
 
 }
@@ -91,6 +123,22 @@ MovingFloor::MovingFloor(VECTOR startPos, VECTOR velocity, MovePattern pattern, 
             }
         }
     }
+
+    // ReverseAndDash: 他の同系統の床がすでに反転・超加速しているかチェック
+    // 反転しているので、速度ベクトルは VScale(this->mVelocity, -1.0f) になっているはず
+    if (mFeature == FloorFeature::ReverseAndDash) {
+        VECTOR reversedVel = VScale(this->mVelocity, -1.0f);
+        for (MovingFloor* floor : s_AllMovingFloors) {
+            if (floor != this && floor->mIsSpedUp && 
+                floor->mVelocity.x == reversedVel.x && floor->mVelocity.y == reversedVel.y) {
+                mVelocity = reversedVel;
+                mCurrentSpeed = mBaseSpeed * MovingFloorConstants::ReverseDashMultiplier;
+                mIsSpedUp = true;
+                break;
+            }
+        }
+    }
+
 }
 
 MovingFloor::~MovingFloor()
@@ -214,6 +262,26 @@ void MovingFloor::CheckPlayerRiding()
                 }
             }
         }
+
+        // 新属性：乗ると方向が逆転してとんでもなく加速する
+        if (mFeature == FloorFeature::ReverseAndDash && !mIsSpedUp) {
+            mIsSpedUp = true;
+            mVelocity = VScale(mVelocity, -1.0f); // 逆方向へ
+            mCurrentSpeed = mBaseSpeed * MovingFloorConstants::ReverseDashMultiplier;
+            
+            // 同系統の床も一斉に逆方向・超加速させる
+            // （同系統＝反転前の自分と同じ方向・速度を持っているもの）
+            VECTOR originalVel = VScale(mVelocity, -1.0f); // 今反転させたので、もう一度反転させれば元の速度
+            for (MovingFloor* floor : s_AllMovingFloors) {
+                if (floor != this && floor->mFeature == FloorFeature::ReverseAndDash && 
+                    floor->mVelocity.x == originalVel.x && floor->mVelocity.y == originalVel.y) {
+                    floor->mVelocity = VScale(floor->mVelocity, -1.0f);
+                    floor->mCurrentSpeed = floor->mBaseSpeed * MovingFloorConstants::ReverseDashMultiplier;
+                    floor->mIsSpedUp = true;
+                }
+            }
+        }
+
     } else {
         mIsPlayerRiding = false;
         

@@ -44,6 +44,8 @@ public: // アクセサ
 	DeathReason::DeathType GetDeathReason() const { return mDeathReason;}
 
 
+	bool IsBlinking() const { return isBlinking; } // ブリンク中かどうかの判定用
+
 private:
 	// インスタンスで持っているもの
 	CharacterPhysics mCharacterPhysics; // 物理計算用のインスタンス

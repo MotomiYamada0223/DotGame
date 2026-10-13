@@ -11,6 +11,7 @@
 #include "HiddenBlock.h"
 #include "MovingFloor.h"
 #include "FloorSpawner.h"
+#include "FeintFloor.h"
 #include "ObjectManager.h"
 
 TestScene::TestScene()
@@ -21,6 +22,7 @@ TestScene::TestScene()
 {
 	spawnTimer = 0;
 	mpPlayer = nullptr;
+
 	mbIsLoaded = false;
 }
 
@@ -55,6 +57,14 @@ void TestScene::Initialize()
 	// プレイヤーの生成
 	mpPlayer = new Player(VGet(ScreenSize::CenterX - 6000, 00, 0.0f));
 
+
+	// フェイント床の配置（4つの足場の一番下のところ）
+	new FeintFloor(
+		VGet(4920.0f, 625.0f, 0.0f),
+		mpPlayer,
+		&mBlockMap
+	);
+
 	// 隠しブロックの生成
 	new HiddenBlock(VGet(3100, 100.0f, 0.0f), &mBlockMap);
 
@@ -86,7 +96,7 @@ void TestScene::Initialize()
 		120,
 		mpPlayer,
 		&mBlockMap,
-		FloorFeature::Normal,
+		FloorFeature::ReverseAndDash,
 		CharacterGraphPath::MoveFloorBig 
 	);
 
