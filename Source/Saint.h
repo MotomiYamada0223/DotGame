@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "Object2D.h"
+#include <functional>
 
 class Saint
 {
@@ -13,6 +14,15 @@ public:
 	void Update();
 	void Draw();
 
+	void TalkUpdate(bool talk); // 話している時の処理
+
+	// テキスト完了を判定をする関数を外からセットするため
+	// コールバック関数
+	void SetIsTextCompletedChecker(std::function<bool()> checker)
+	{
+		mIsTextCompletedChecker = checker;
+	}
+
 private:
 	int graphHandles[3];
 	int currentState;
@@ -22,6 +32,8 @@ private:
 	int blinkTimer;
 	int blinkInterval;
 	bool isBlinking;
-
 	float mfScale;
+
+	std::function<bool()> mIsTextCompletedChecker;
 };
+

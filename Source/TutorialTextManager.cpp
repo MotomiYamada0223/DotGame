@@ -259,6 +259,7 @@ void TutorialTextManager::Draw()
 		color,
 		"%s",
 		displayText.c_str());
+
 }
 
 

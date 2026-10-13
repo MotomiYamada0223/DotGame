@@ -30,6 +30,12 @@ void GameScene::Initialize()
 	// チュートリアルテキストとブロックマップのタイル
 	mTutorialText.Initialize(CsvPath::TutorialText, CsvPath::TutorialDeathText);
 
+	// 天使のセッターとテキストのゲッターの紐づけをする
+	mSaint.SetIsTextCompletedChecker([this]()
+	{
+		return mTutorialText.GetIsTextCompleted();
+	});
+
 	// 背景画像と当たり判定画像を読み込む
 	if (!mBlockMap.Load(
 		BlockMapGraphPath::Background,

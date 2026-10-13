@@ -30,6 +30,16 @@ Saint::~Saint()
 
 void Saint::Update()
 {
+	// テキストの表示完了のチェック
+	bool isTextCompleted = false;
+	if (mIsTextCompletedChecker != nullptr)
+	{
+		// コールバック関数で状態取得
+		isTextCompleted = mIsTextCompletedChecker();
+	}
+	bool isTalking = !isTextCompleted; // 表示中なら画像動かす
+
+
 	// 瞬き処理
 	if (isBlinking)
 	{
@@ -50,17 +60,23 @@ void Saint::Update()
 	else
 	{
 		// 瞬きまでの時間をカウント
-
 		blinkTimer++;
 		if (blinkTimer >= blinkInterval)
 		{
 			isBlinking = true;
 			blinkTimer = 0;
 		}
+		TalkUpdate(isTalking);
+	}
+}
 
+
+void Saint::TalkUpdate(bool talk)
+{
+	if (talk)
+	{
 		// しゃべる処理（瞬きしていない時だけ口を動かす）
 		talkTimer++;
-
 		// 0.3秒(18フレーム)間隔で切り替え
 		if (talkTimer >= 18)
 		{
@@ -77,7 +93,14 @@ void Saint::Update()
 			}
 		}
 	}
+	else
+	{
+		// 喋っていない時は目開き・口閉じ(1)に固定
+		talkTimer = 0;
+		currentState = 1;
+	}
 }
+
 
 void Saint::Draw()
 {

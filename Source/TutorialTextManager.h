@@ -33,7 +33,7 @@ public:
 
 
 	// 全ての文字が表示されたかのアクセサ
-	bool GetIsTextCompleted() { return mbIsDeathTextFinished; }
+	bool GetIsTextCompleted() { return mbIsTextCompleted; }
 
 
 private:
