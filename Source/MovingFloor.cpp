@@ -5,6 +5,7 @@
 #include <cmath>
 
 std::list<MovingFloor*> MovingFloor::s_AllMovingFloors;
+bool MovingFloor::s_IsReverseAndDashTriggered = false;
 
 // パターンA：往復用（始点・終点を指定）
 MovingFloor::MovingFloor(VECTOR startPos, VECTOR endPos, float speed, MovePattern pattern, FloorFeature feature, Player* player, BlockMap* blockMap, std::string imagePath)
@@ -41,7 +42,7 @@ MovingFloor::MovingFloor(VECTOR startPos, VECTOR endPos, float speed, MovePatter
         mVelocity = VGet(0, 0, 0);
     }
     // もし同じ動き（Velocity）を持つ他の床がすでに加速済みなら、自分も最初から加速状態にする
-    if (mFeature == FloorFeature::SpeedUpOnRide) {
+        if (mFeature == FloorFeature::SpeedUpOnRide) {
         for (MovingFloor* floor : s_AllMovingFloors) {
             if (floor != this && floor->mIsSpedUp && 
                 floor->mVelocity.x == this->mVelocity.x && floor->mVelocity.y == this->mVelocity.y) {
@@ -50,40 +51,16 @@ MovingFloor::MovingFloor(VECTOR startPos, VECTOR endPos, float speed, MovePatter
                 break;
             }
         }
+    }
 
-    // ReverseAndDash: 他の同系統の床がすでに反転・超加速しているかチェック
-    // 反転しているので、速度ベクトルは VScale(this->mVelocity, -1.0f) になっているはず
+    // ReverseAndDash: すでに発動済みなら最初から反転・超加速状態でスポーンする
     if (mFeature == FloorFeature::ReverseAndDash) {
-        VECTOR reversedVel = VScale(this->mVelocity, -1.0f);
-        for (MovingFloor* floor : s_AllMovingFloors) {
-            if (floor != this && floor->mIsSpedUp && 
-                floor->mVelocity.x == reversedVel.x && floor->mVelocity.y == reversedVel.y) {
-                mVelocity = reversedVel;
-                mCurrentSpeed = mBaseSpeed * MovingFloorConstants::ReverseDashMultiplier;
-                mIsSpedUp = true;
-                break;
-            }
+        if (s_IsReverseAndDashTriggered) {
+            mVelocity = VScale(this->mVelocity, -1.0f);
+            mCurrentSpeed = mBaseSpeed * MovingFloorConstants::ReverseDashMultiplier;
+            mIsSpedUp = true;
         }
     }
-
-    // ReverseAndDash: 他の同系統の床がすでに反転・超加速しているかチェック
-    // 反転しているので、速度ベクトルは VScale(this->mVelocity, -1.0f) になっているはず
-    if (mFeature == FloorFeature::ReverseAndDash) {
-        VECTOR reversedVel = VScale(this->mVelocity, -1.0f);
-        for (MovingFloor* floor : s_AllMovingFloors) {
-            if (floor != this && floor->mIsSpedUp && 
-                floor->mVelocity.x == reversedVel.x && floor->mVelocity.y == reversedVel.y) {
-                mVelocity = reversedVel;
-                mCurrentSpeed = mBaseSpeed * MovingFloorConstants::ReverseDashMultiplier;
-                mIsSpedUp = true;
-                break;
-            }
-        }
-    }
-
-
-    }
-
 }
 
 // パターンB：一方向・無限移動用（始点・移動ベクトルを指定）
@@ -124,21 +101,14 @@ MovingFloor::MovingFloor(VECTOR startPos, VECTOR velocity, MovePattern pattern, 
         }
     }
 
-    // ReverseAndDash: 他の同系統の床がすでに反転・超加速しているかチェック
-    // 反転しているので、速度ベクトルは VScale(this->mVelocity, -1.0f) になっているはず
+        // ReverseAndDash: すでに発動済みなら最初から反転・超加速状態でスポーンする
     if (mFeature == FloorFeature::ReverseAndDash) {
-        VECTOR reversedVel = VScale(this->mVelocity, -1.0f);
-        for (MovingFloor* floor : s_AllMovingFloors) {
-            if (floor != this && floor->mIsSpedUp && 
-                floor->mVelocity.x == reversedVel.x && floor->mVelocity.y == reversedVel.y) {
-                mVelocity = reversedVel;
-                mCurrentSpeed = mBaseSpeed * MovingFloorConstants::ReverseDashMultiplier;
-                mIsSpedUp = true;
-                break;
-            }
+        if (s_IsReverseAndDashTriggered) {
+            mVelocity = VScale(this->mVelocity, -1.0f);
+            mCurrentSpeed = mBaseSpeed * MovingFloorConstants::ReverseDashMultiplier;
+            mIsSpedUp = true;
         }
     }
-
 }
 
 MovingFloor::~MovingFloor()
@@ -231,18 +201,20 @@ void MovingFloor::CheckPlayerRiding()
     float myRight = myPos.x + mWidth / 2.0f;
     float myTop = myPos.y - mHeight / 2.0f;
 
-    // プレイヤーが床の横幅に収まっているか
-    // X軸の判定（プレイヤーが床の幅に収まっているか）
-    bool inX = (pxRight > myLeft) && (pxLeft < myRight);
+    // 1. X軸の判定：
+    // 端っこが1pxかすめただけで乗ったと判定されるのを防ぐため、
+    // プレイヤーの中心（playerPos.x）が床の幅に入っているかを基準にする
+    bool inX = (playerPos.x >= myLeft) && (playerPos.x <= myRight);
     
-    // Y軸の判定（プレイヤーの足が床の上面付近にあるか）
-    // 落下速度が大きくて突き抜けるのを防ぐため、下方向の許容範囲を広く取る(+30.0f)
-    bool inY = (pyBottom >= myTop - MovingFloorConstants::RideMarginTop) && (pyBottom <= myTop + MovingFloorConstants::RideMarginBottom);
+    // 2. Y軸の判定：
+    // 下から昇ってくる床に対して30pxの判定は広すぎて足元に届く前に誤発動していたため、
+    // 実際に床の上面に足が触れる ±8px の適正なマージンにする
+    float marginY = 8.0f;
+    bool inY = (pyBottom >= myTop - marginY) && (pyBottom <= myTop + marginY);
 
     // 乗ったと判定する条件：
     // 1. X軸とY軸の範囲内にいる
     // 2. プレイヤーが「落下中（あるいは静止）」である（GetVelocityY() >= 0.0f）
-    // これにより下からジャンプで突き抜ける時に吸い付くのを防ぐ
     if (inX && inY && mpPlayer->GetVelocityY() >= 0.0f) {
         mIsPlayerRiding = true;
         // Player側で処理されるため削除
@@ -265,16 +237,14 @@ void MovingFloor::CheckPlayerRiding()
 
         // 新属性：乗ると方向が逆転してとんでもなく加速する
         if (mFeature == FloorFeature::ReverseAndDash && !mIsSpedUp) {
+            s_IsReverseAndDashTriggered = true; // グローバルフラグをONにし、以後に生成される床も反転・超加速させる
             mIsSpedUp = true;
             mVelocity = VScale(mVelocity, -1.0f); // 逆方向へ
             mCurrentSpeed = mBaseSpeed * MovingFloorConstants::ReverseDashMultiplier;
             
-            // 同系統の床も一斉に逆方向・超加速させる
-            // （同系統＝反転前の自分と同じ方向・速度を持っているもの）
-            VECTOR originalVel = VScale(mVelocity, -1.0f); // 今反転させたので、もう一度反転させれば元の速度
+            // 画面内に存在するすべての同系統の床を一斉に逆方向・超加速させる
             for (MovingFloor* floor : s_AllMovingFloors) {
-                if (floor != this && floor->mFeature == FloorFeature::ReverseAndDash && 
-                    floor->mVelocity.x == originalVel.x && floor->mVelocity.y == originalVel.y) {
+                if (floor != this && floor->mFeature == FloorFeature::ReverseAndDash && !floor->mIsSpedUp) {
                     floor->mVelocity = VScale(floor->mVelocity, -1.0f);
                     floor->mCurrentSpeed = floor->mBaseSpeed * MovingFloorConstants::ReverseDashMultiplier;
                     floor->mIsSpedUp = true;

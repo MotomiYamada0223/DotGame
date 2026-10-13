@@ -42,26 +42,17 @@ void FloorSpawner::Update()
             }
         }
     }
-    // ReverseAndDash の場合
+        // ReverseAndDash の場合
     if (mFeature == FloorFeature::ReverseAndDash) {
-        // まだ反転していなければ、同系統の床が反転したかをチェック
-        if (!mIsReversed) {
-            VECTOR reversedVel = VScale(mVelocity, -1.0f);
-            for (MovingFloor* floor : MovingFloor::s_AllMovingFloors) {
-                if (floor->GetFeature() == FloorFeature::ReverseAndDash && floor->IsSpedUp() &&
-                    floor->GetVelocity().x == reversedVel.x && floor->GetVelocity().y == reversedVel.y) {
-                    
-                    mIsReversed = true;
-                    
-                    // スポナーの出現Y座標を反転する（TopにいたならBottomへ、BottomにいたならTopへ）
-                    if (mSpawnPos.y < 500.0f) {
-                        mSpawnPos.y = max(MovingFloorConstants::SpawnYTop, MovingFloorConstants::SpawnYBottom);
-                    } else {
-                        mSpawnPos.y = min(MovingFloorConstants::SpawnYTop, MovingFloorConstants::SpawnYBottom);
-                    }
-                    
-                    break;
-                }
+        // まだ反転していなければ、罠が発動したかチェック
+        if (!mIsReversed && MovingFloor::s_IsReverseAndDashTriggered) {
+            mIsReversed = true;
+            
+            // スポナーの出現Y座標を反転する（TopにいたならBottomへ、BottomにいたならTopへ）
+            if (mSpawnPos.y < 500.0f) {
+                mSpawnPos.y = max(MovingFloorConstants::SpawnYTop, MovingFloorConstants::SpawnYBottom);
+            } else {
+                mSpawnPos.y = min(MovingFloorConstants::SpawnYTop, MovingFloorConstants::SpawnYBottom);
             }
         }
         
@@ -70,6 +61,8 @@ void FloorSpawner::Update()
             timerAdd = static_cast<int>(MovingFloorConstants::ReverseDashMultiplier);
         }
     }
+
+    
 
 
     mTimer += timerAdd;

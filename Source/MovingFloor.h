@@ -34,6 +34,7 @@ public:
 
 public:
     static std::list<MovingFloor*> s_AllMovingFloors;
+    static bool s_IsReverseAndDashTriggered;
     FloorFeature GetFeature() const { return mFeature; }
     bool IsSpedUp() const { return mIsSpedUp; }
     VECTOR GetVelocity() const { return mVelocity; }
