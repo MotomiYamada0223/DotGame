@@ -63,7 +63,7 @@ void TutorialTextManager::Initialize(
 	mbIsDeathTextFinished = false;
 
 	mfIdelTimer = 0.0f;
-	mfCharSpeed = 0.05f;
+	mfCharSpeed = CharSpeed;
 	mfCharTimer = 0.0f;
 	mnDisplayByteCount = 0;
 
@@ -141,7 +141,7 @@ void TutorialTextManager::Update(float dt)
 	mfCharTimer += dt;
 
 	// 指定の時間が経過したら1文字分のバイト数を進める
-	if (mfCharTimer >= mfCharSpeed)
+	while (mfCharTimer >= mfCharSpeed)
 	{
 		mfCharTimer -= mfCharSpeed;
 
@@ -156,11 +156,19 @@ void TutorialTextManager::Update(float dt)
 
 			mnDisplayByteCount += byteCount;
 		}
+		else
+		{
+			// 最後まで表示しきったらタイマーリセット
+			mfCharTimer = 0.0f;
+			return;
+		}
 	}
+
+	mbIsTextCompleted = (mnDisplayByteCount >= step->text.size());
 
 	// すべての文字が表示された後、
 	// 次のステップへ移行するまでの余韻時間を計測する
-	if (mnDisplayByteCount >= step->text.size())
+	if (mbIsTextCompleted)
 	{
 		mfIdelTimer += dt;
 

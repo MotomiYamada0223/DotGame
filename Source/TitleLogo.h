@@ -13,6 +13,7 @@ class TitleLogo
 {
 private:
 	static constexpr float LogoExrate = 1.8f; // ƒƒS‰æ‘œ‚ÌŠg‘å—¦
+	static constexpr int LogoLowY = 200; // ’†S‚©‚ç‚ÌƒƒS‚Ì‚‚³
 
 	// ƒƒS
 	static constexpr float LogoInitialY = -800.0f;

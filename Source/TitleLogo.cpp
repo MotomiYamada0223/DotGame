@@ -78,7 +78,7 @@ void TitleLogo::Draw()
 	{
 		DrawRotaGraph(
 			ScreenSize::CenterX,
-			static_cast<int>(mfLogoY),
+			static_cast<int>(mfLogoY) - LogoLowY,
 			LogoExrate,
 			0.0f, 
 			mnLogoHandle,

@@ -31,6 +31,11 @@ public:
 	// 現在のステップを返す
 	const StepData* GetCurrentStep() const;
 
+
+	// 全ての文字が表示されたかのアクセサ
+	bool GetIsTextCompleted() { return mbIsDeathTextFinished; }
+
+
 private:
 
 	// 通常チュートリアル用
@@ -38,6 +43,8 @@ private:
 	// 死亡時チュートリアル用
 	StepLoader deathLoader;
 
+	// 定数
+	static constexpr float CharSpeed = 0.1f; // 一文字表示にかける時間
 
 
 	int mnCurrentID = 1; // 現在のステップID
@@ -48,6 +55,8 @@ private:
 	int mnDisplayByteCount = 0; // 画面に表示する文字列のバイト数
 
 	float mfIdelTimer = 0.0f; // ステップが始まってからの経過時間
-	float mfCharSpeed = 0.05f; // 1文字を表示するのにかける時間
+	float mfCharSpeed = CharSpeed; // 1文字を表示するのにかける時間
 	float mfCharTimer = 0.0f; // 1文字表示するまでの時間
+
+	bool mbIsTextCompleted = false; // 全ての文字が表示されたかのフラグ
 };
