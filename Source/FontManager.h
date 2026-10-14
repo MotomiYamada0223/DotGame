@@ -24,11 +24,12 @@ public:
         ...
     );
 
-private:
     // 指定されたサイズのドットフォントハンドルを取得する
     // まだ存在しなければ新しく作成する
     int GetDotFontHandle(int size);
 
+private:
+   
     // ドットフォントを作成する
     int CreateDotFont(int size);
 

@@ -288,4 +288,5 @@ void BlockMap::SetCollisionBlock(int startX, int startY, int width, int height, 
 void BlockMap::ResetScroll()
 {
     mCamera.SetScrollX(0);
+    mCamera.SetScrollY(0);
 }

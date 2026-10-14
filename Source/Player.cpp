@@ -11,6 +11,7 @@
 #include "GameConstants.h"
 #include "BlockAction.h"
 #include "InputManager.h"
+#include "PlayerActionState.h"
 
 Player::Player(VECTOR initPos)
 // TextureAnimationは使わず一枚絵としてロード
@@ -146,11 +147,13 @@ void Player::PlayerMove(BlockMap& blockMap)
 	mfMoveDirection = 0.0f;
 	if (CheckHitKey(KEY_INPUT_A) == 1)
 	{
+		mActionState.move = true;
 		mfMoveDirection = -1.0f;
 		isFacingRight = false;
 	}
 	else if (CheckHitKey(KEY_INPUT_D) == 1)
 	{
+		mActionState.move = true;
 		mfMoveDirection = 1.0f;
 		isFacingRight = true;
 	}
@@ -230,6 +233,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 	bool eKeyIsDown = (CheckHitKey(KEY_INPUT_E) == 1);
 	if (eKeyIsDown && !eKeyWasDown && !isBlinking && blinkCooldownTimer <= 0 && mfMoveDirection != 0.0f)
 	{
+		mActionState.blink = true;
 		isBlinking = true;
 		blinkTimer = blinkDuration;
 		blinkDirection = isFacingRight ? 1.0f : -1.0f;
@@ -242,6 +246,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 	if (CheckHitKey(KEY_INPUT_SPACE) == 1 &&
 		isGrounded)
 	{
+		mActionState.jump = true;
 		mbIsJumping = true;
 		isGrounded = false;
 		velocityY = jumpPower;
@@ -251,12 +256,14 @@ void Player::PlayerMove(BlockMap& blockMap)
 	if (CheckHitKey(KEY_INPUT_F) == 1 &&
 		!isAttacking)
 	{
+		mActionState.attack = true;
 		isAttacking = true;
 		attackTimer = attackDuration;
 		mPlayerState.SetAttack();
 		mHitEnemies.clear();
 	}
 
+	
 
 
 	// 攻撃エフェクト更新
@@ -947,6 +954,7 @@ void Player::DeadProcess()
 void Player::Revive()
 {
 	mDeathReason = DeathReason::DeathType::None;
+	
 
 	// 位置のリセット
 	mvPosition = mSpawnPos;

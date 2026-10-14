@@ -148,11 +148,13 @@ void GameScene::SetTextUpdate()
 	else if (!isPlayerDead && mbWasPlayerDead)
 	{
 		mTutorialText.OnPlayerRevive();
+		mTutorialText.Reset();
 	}
 
 	// 今フレームの死亡状態を保存
 	mbWasPlayerDead = isPlayerDead;
-	mTutorialText.Update(1.0f / 60.0f);
+	mTutorialText.Update(1.0f / 60.0f, mpPlayer->GetPosition().x);
+	mTutorialText.SetActionState(mpPlayer->GetActionState());
 }
 
 void GameScene::Draw()

@@ -25,12 +25,12 @@ void Camera::Update(int playerScreenX, int playerScreenY, float moveDirection, f
 	int oldScrollPos = mScrollX;
 
 	// 右側の線を超えていて、右に移動中なら右へスクロールするため
-	if (playerScreenX > MapScrollConstants::ScrollStartRightX && moveDirection > 0.0f)
+	if (playerScreenX > MapScrollConstants::ScrollStartRightX)
 	{
 		mScrollX += static_cast<int>(currentSpeed);
 	}
 	// 左側の線を超えていて、左に移動中なら左へスクロールするため
-	else if (playerScreenX < MapScrollConstants::ScrollStartLeftX && moveDirection < 0.0f)
+	else if (playerScreenX < MapScrollConstants::ScrollStartLeftX)
 	{
 		mScrollX -= static_cast<int>(currentSpeed);
 	}
