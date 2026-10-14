@@ -22,7 +22,6 @@ const StepData* TutorialTextManager::GetCurrentStep() const
 
 	// 通常チュートリアル
 	auto itr = loader.steps.find(mnCurrentID);
-
 	if (itr == loader.steps.end())
 	{
 		return nullptr;
@@ -223,49 +222,47 @@ void TutorialTextManager::Update(float dt, float playerX)
 	}
 
 	// プレイヤーのX座標に応じたステップの発生条件をチェックして切り替えるため
-	{
-		int bestID = 0;
-		float bestX = mfCurrentTriggerX;
+	int bestID = 0;
+	float bestX = mfCurrentTriggerX;
 
+	for (const auto& pair : loader.steps)
+	{
+		const StepData& s = pair.second;
+		bool isAvailable = (IsXTriggerType(s.completeType) && CheckCondition(s.completeType) &&
+			mCompletedXStepIDs.find(s.id) == mCompletedXStepIDs.end());
+
+		if (isAvailable)
+		{
+			if (playerX >= s.completeValue && s.completeValue > mfCurrentTriggerX)
+			{
+				if (s.completeValue > bestX || (s.completeValue == bestX && (bestID == 0 || s.id < bestID)))
+				{
+					bestX = s.completeValue;
+					bestID = s.id;
+				}
+			}
+		}
+	}
+
+	if (bestID != 0)
+	{
+		mfCurrentTriggerX = bestX;
+
+		// 同じX座標にある別の分岐行も完了扱いに登録して二重発生条件を防ぐため
 		for (const auto& pair : loader.steps)
 		{
 			const StepData& s = pair.second;
-			bool isAvailable = (IsXTriggerType(s.completeType) && CheckCondition(s.completeType) &&
-				mCompletedXStepIDs.find(s.id) == mCompletedXStepIDs.end());
-
-			if (isAvailable)
+			if (IsXTriggerType(s.completeType) && s.completeValue == bestX)
 			{
-				if (playerX >= s.completeValue && s.completeValue > mfCurrentTriggerX)
+				if (!CheckCondition(s.completeType))
 				{
-					if (s.completeValue > bestX || (s.completeValue == bestX && (bestID == 0 || s.id < bestID)))
-					{
-						bestX = s.completeValue;
-						bestID = s.id;
-					}
+					mCompletedXStepIDs.insert(s.id);
 				}
 			}
 		}
 
-		if (bestID != 0)
-		{
-			mfCurrentTriggerX = bestX;
-
-			// 同じX座標にある別の分岐行も完了扱いに登録して二重発生条件を防ぐため
-			for (const auto& pair : loader.steps)
-			{
-				const StepData& s = pair.second;
-				if (IsXTriggerType(s.completeType) && s.completeValue == bestX)
-				{
-					if (!CheckCondition(s.completeType))
-					{
-						mCompletedXStepIDs.insert(s.id);
-					}
-				}
-			}
-
-			mCompletedXStepIDs.insert(bestID);
-			ChangeStep(bestID);
-		}
+		mCompletedXStepIDs.insert(bestID);
+		ChangeStep(bestID);
 	}
 
 	// 現在のステップを取得する
@@ -309,7 +306,6 @@ void TutorialTextManager::Update(float dt, float playerX)
 					step->text,
 					mnDisplayByteCount
 				);
-
 				mnDisplayByteCount += byteCount;
 			}
 
@@ -513,11 +509,12 @@ void TutorialTextManager::Draw()
 		return;
 	}
 
-	if (!(mbIsDeathTutorial && mbIsDeathTextFinished) &&
+	// 
+	/*if (!(mbIsDeathTutorial && mbIsDeathTextFinished) &&
 		mfIdelTimer >= step->completeValue)
 	{
 		return;
-	}
+	}*/
 
 	std::string displayText =
 		step->text.substr(0, mnDisplayByteCount);
@@ -545,13 +542,14 @@ void TutorialTextManager::Draw()
 		{
 			if (chunk.empty()) return;
 
-			DrawStringToHandle(
-				curX,
-				curY,
-				chunk.c_str(),
-				color,
-				fontHandle
-			);
+			Master::mpGameManager->GetFontManager()
+				->DrawDotString(
+					curX,
+					curY,
+					fontSize,
+					color,
+					chunk.c_str()
+				);
 
 			// 描画した文字列の幅だけ次の描画位置を右へ移動
 			curX += GetDrawStringWidthToHandle(
