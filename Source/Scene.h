@@ -13,7 +13,7 @@ class Scene
 {
 public:
 	Scene();
-	~Scene();
+	virtual ~Scene();
 	
 	// ƒˆ‰¼‘zŠÖ”
 

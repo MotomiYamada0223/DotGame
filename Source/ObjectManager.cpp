@@ -9,7 +9,7 @@ ObjectManager::ObjectManager()
 // デストラクタ
 ObjectManager::~ObjectManager()
 {
-
+	DeleteAll2D();
 }
 
 // 更新
