@@ -58,6 +58,7 @@ private:
 	// 現在のステップの進行条件を満たしているかを判定するため
 	bool CheckCondition(const std::string& type) const;
 
+
 	// 条件分岐に応じて次に進むべきステップのIDを解決するため
 	int ResolveNextStepID(int candidateID, float playerX) const;
 

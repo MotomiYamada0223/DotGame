@@ -93,13 +93,15 @@ bool TutorialTextManager::CheckCondition(const std::string& type) const
 	if (cond == "NoAttack") return !mbUsedAttack;
 	if (cond == "Move")     return mbUsedMove;
 	if (cond == "NoMove")   return !mbUsedMove;
+
+
 	return true;
 }
 
 void TutorialTextManager::SetActionState(const PlayerActionState& state)
 {
 	mbUsedMove |= state.move;
-	mbUsedBlink |= state.move;
+	mbUsedBlink |= state.blink;
 	mbUsedJump |= state.jump;
 	mbUsedAttack |= state.attack;
 }
