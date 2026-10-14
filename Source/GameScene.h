@@ -17,7 +17,7 @@ public:
 
 	GameScene();
 
-	virtual ~GameScene();
+	virtual ~GameScene() override;
 
 	virtual void Initialize() override;
 	virtual void Update() override;

@@ -21,7 +21,7 @@ SceneManager::SceneManager()
 
 SceneManager::~SceneManager()
 {
-
+	delete mpCurrentScene;
 }
 
 void SceneManager::Initialize()
