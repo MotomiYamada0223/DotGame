@@ -11,13 +11,16 @@ public:
 	enum class State
 	{
 		Inactive,          // 演出開始前
-		Walking,           // フェードイン＆中央へ歩行中
-		WaitBeforeWarning, // 中央到着後の待機
-		Warning,           // 警告表示中＆Eキー回避受付（QTE）
+		Walking,           // フェードイン＆歩行
+		WaitBeforeWarning, // 溜め待機
+		Warning,           // 警告表示・キー受付（QTE）
 		WarningFadeOut,    // 警告フェードアウト
-		BossFalling,       // キングスライム急降下中
-		BossLanding,       // 着地・逆再生中
-		IntroFinished,     // 出現演出完了
+		BossFalling,       // キングスライム急降下
+		BossLanding,       // 着地・逆再生
+		TitleWait,         // 揺れ収束後の待機
+		TitleDisplay,      // タイトル順次出現・縦揺れ波打ち
+		TitleFadeOut,      // タイトルフェードアウト
+		IntroFinished,     // 演出完了
 		Ended              // 演出終了
 	};
 
@@ -39,15 +42,18 @@ public:
 
 private:
 	void DrawWarning(float screenX, float screenY, float fadeAlphaRatio) const;
+	void DrawTitle(float screenX, float screenY) const;
 
 private:
 	State mState;
-	int mFadeTimer;             // 黒帯フェード用タイマー
+	int mFadeTimer;             // 帯フェード用タイマー
 	int mStateTimer;            // 各ステートの待機・演出用タイマー
+	int mTitleTimer;            // タイトル演出用タイマー
+	int mTitleWaveTimer;        // タイトル縦揺れ用タイマー
 	float mCurrentTargetX;      // ボスエリア中央X座標
 	float mWarningX;            // 警告X座標（プレイヤー座標）
 	float mGroundY;             // 警告地面Y座標（足元）
-	BlockMap* mpBlockMap; // 画面座標変換用
+	BlockMap* mpBlockMap;       // 画面座標変換用
 	bool mHasEvaded;            // 回避成功フラグ
 	bool mEKeyWasDown;          // Eキー前回押下状態
 	BossEnemySlime* mpBossSlime;// スポーンしたキングスライム

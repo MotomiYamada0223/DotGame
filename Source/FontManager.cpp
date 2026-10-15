@@ -1,8 +1,9 @@
-#include "FontManager.h"
+ï»¿#include "FontManager.h"
 
 #include <DxLib.h>
 #include <cstdarg>
 #include <cstdio>
+#include <cstring>
 
 FontManager::FontManager()
 {
@@ -14,7 +15,7 @@ FontManager::~FontManager()
 
 void FontManager::Initialize()
 {
-    // Resource‚É‚ ‚éƒtƒHƒ“ƒg‚ğ“Ç‚İ‚ñ‚Åg—p‚Å‚«‚é‚æ‚¤‚É‚·‚é
+    // Resourceã«ã‚ã‚‹ãƒ•ã‚©ãƒ³ãƒˆã‚’èª­ã¿è¾¼ã‚“ã§ä½¿ç”¨ã§ãã‚‹ã‚ˆã†ã«ã™ã‚‹
     AddFontResourceEx(
         "Resource/Fonts/dotFont/maruMonica.ttf",
         FR_PRIVATE,
@@ -24,7 +25,7 @@ void FontManager::Initialize()
 
 void FontManager::Finalize()
 {
-    // ì¬‚µ‚½ƒtƒHƒ“ƒg‚ğ‚·‚×‚Äíœ‚·‚é
+    // ä½œæˆã—ãŸãƒ•ã‚©ãƒ³ãƒˆã‚’ã™ã¹ã¦å‰Šé™¤
     for (auto& font : mDotFontHandles)
     {
         DeleteFontToHandle(font.second);
@@ -35,16 +36,16 @@ void FontManager::Finalize()
 
 int FontManager::GetDotFontHandle(int size)
 {
-    // ‚·‚Å‚É“¯‚¶ƒTƒCƒY‚ÌƒtƒHƒ“ƒg‚ªì‚ç‚ê‚Ä‚¢‚é‚©Šm”F
+    // ã™ã§ã«åŒã˜ã‚µã‚¤ã‚ºã®ãƒ•ã‚©ãƒ³ãƒˆã‚’æŒã£ã¦ã„ã‚‹ã‹ç¢ºèª
     auto it = mDotFontHandles.find(size);
 
     if (it != mDotFontHandles.end())
     {
-        // ‚·‚Å‚É‘¶İ‚·‚é‚Ì‚ÅA‚»‚Ìƒnƒ“ƒhƒ‹‚ğ•Ô‚·
+        // ã™ã§ã«å­˜åœ¨ã™ã‚‹ã®ã§ã€ãã®ãƒãƒ³ãƒ‰ãƒ«ã‚’è¿”ã™
         return it->second;
     }
 
-    // ‚Ü‚¾‘¶İ‚µ‚È‚¢‚Ì‚ÅV‚µ‚­ì¬‚·‚é
+    // ã¾ã å­˜åœ¨ã—ãªã„ã®ã§æ–°è¦ä½œæˆ
     int handle = CreateDotFont(size);
 
     if (handle == -1)
@@ -52,7 +53,7 @@ int FontManager::GetDotFontHandle(int size)
         return -1;
     }
 
-    // ƒTƒCƒY‚ÆƒtƒHƒ“ƒgƒnƒ“ƒhƒ‹‚ğ•Û‘¶
+    // ã‚µã‚¤ã‚ºã¨ãƒ•ã‚©ãƒ³ãƒˆãƒãƒ³ãƒ‰ãƒ«ã‚’ä¿å­˜
     mDotFontHandles[size] = handle;
 
     return handle;
@@ -66,12 +67,12 @@ int FontManager::CreateDotFont(int size)
         5
     );
 
-    // ƒtƒHƒ“ƒg‚Ìì¬‚É¸”s‚µ‚½ê‡
+    // ãƒ•ã‚©ãƒ³ãƒˆã®ä½œæˆã«å¤±æ•—ã—ãŸå ´åˆ
     if (handle == -1)
     {
-        printfDx("ƒhƒbƒgƒtƒHƒ“ƒg‚Ìì¬‚É¸”s‚µ‚Ü‚µ‚½B\n");
+        printfDx("ãƒ‰ãƒƒãƒˆãƒ•ã‚©ãƒ³ãƒˆã®ä½œæˆã«å¤±æ•—ã—ã¾ã—ãŸã€‚\n");
 
-        // •W€ƒtƒHƒ“ƒg‚Å‘ã‘Ö
+        // æ¨™æº–ãƒ•ã‚©ãƒ³ãƒˆã§ä»£ç”¨
         handle = CreateFontToHandle(
             NULL,
             size,
@@ -80,6 +81,18 @@ int FontManager::CreateDotFont(int size)
     }
 
     return handle;
+}
+
+int FontManager::GetDotStringWidth(int size, const char* str)
+{
+    int fontHandle = GetDotFontHandle(size);
+
+    if (fontHandle == -1 || str == nullptr)
+    {
+        return 0;
+    }
+
+    return GetDrawStringWidthToHandle(str, static_cast<int>(strlen(str)), fontHandle);
 }
 
 void FontManager::DrawDotString(
@@ -91,7 +104,7 @@ void FontManager::DrawDotString(
     ...
     )
 {
-    // w’è‚³‚ê‚½ƒTƒCƒY‚ÌƒtƒHƒ“ƒg‚ğæ“¾
+    // æŒ‡å®šã•ã‚ŒãŸã‚µã‚¤ã‚ºã®ãƒ•ã‚©ãƒ³ãƒˆã‚’å–å¾—
     int fontHandle = GetDotFontHandle(size);
 
     if (fontHandle == -1)
@@ -99,7 +112,7 @@ void FontManager::DrawDotString(
         return;
     }
 
-    // printfŒ`®‚Å•¶š—ñ‚ğì¬‚·‚é
+    // printfå½¢å¼ã§æ–‡å­—åˆ—ã‚’ä½œæˆ
     char buffer[1024];
 
     va_list args;
@@ -114,7 +127,7 @@ void FontManager::DrawDotString(
 
     va_end(args);
 
-    // ì¬‚µ‚½•¶š—ñ‚ğ•`‰æ
+    // ä½œæˆã—ãŸæ–‡å­—åˆ—ã‚’æç”»
     DrawStringToHandle(
         x,
         y,

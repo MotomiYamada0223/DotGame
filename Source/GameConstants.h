@@ -292,3 +292,24 @@ namespace KingSlimeShakeConstants
 	static constexpr int   DurationFrames = 30;    // 揺らすフレーム数
 }
 
+// キングスライム登場演出のタイトル表示設定
+namespace KingSlimeTitleConstants
+{
+	static constexpr int   WaitFramesBeforeTitle  = 20;     // 画面揺れ収束後の待機フレーム
+	static constexpr int   CharRevealInterval     = 6;      // 1文字ごとの出現間隔フレーム
+	static constexpr int   HoldFramesAfterReveal  = 90;     // 全文字出現後の表示維持フレーム
+	static constexpr int   FadeOutFrames          = 25;     // 文字消滅のフェードアウトフレーム
+	static constexpr int   FontSize               = 84;     // タイトル文字のフォントサイズ
+	static constexpr int   CharSpacing            = 4;      // 文字間スペース
+	static constexpr float WaveAmplitude          = 8.0f;   // 縦揺れの振幅
+	static constexpr float WaveSpeed              = 0.08f;  // 縦揺れの周期速度
+	static constexpr float WavePhaseOffset        = 0.45f;  // 隣接文字間の波の位相差
+	static constexpr int   ColorGoldR             = 255;    // 「キング」金色 R
+	static constexpr int   ColorGoldG             = 215;    // 「キング」金色 G
+	static constexpr int   ColorGoldB             = 0;      // 「キング」金色 B
+	static constexpr int   ColorCyanR             = 30;     // 「スライミー」濃い水色 R
+	static constexpr int   ColorCyanG             = 160;    // 「スライミー」濃い水色 G
+	static constexpr int   ColorCyanB             = 240;    // 「スライミー」濃い水色 B
+	static constexpr int   CharCount              = 8;      // タイトル文字数（「キングスライミー」で8文字）
+}
+

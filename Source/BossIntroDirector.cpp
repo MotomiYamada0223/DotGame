@@ -3,6 +3,9 @@
 #include "BossEnemySlime.h"
 #include "GameConstants.h"
 #include "DxLib.h"
+#include "Master.h"
+#include "GameManager.h"
+#include "FontManager.h"
 #include <algorithm>
 #include <cmath>
 
@@ -10,6 +13,8 @@ BossIntroDirector::BossIntroDirector()
 	: mState(State::Inactive)
 	, mFadeTimer(0)
 	, mStateTimer(0)
+	, mTitleTimer(0)
+	, mTitleWaveTimer(0)
 	, mCurrentTargetX(0.0f)
 	, mWarningX(0.0f)
 	, mGroundY(0.0f)
@@ -32,7 +37,7 @@ void BossIntroDirector::Update(Player* player, BlockMap& blockMap)
 	switch (mState)
 	{
 	case State::Inactive:
-		// プレイヤー生存中にボスエリア接触（またはボスエリアX範囲到達）を検知したら演出開始
+		// プレイヤーにボスエリア接触（またはボスエリアX範囲到達）したら演出開始
 		if (!player->GetIsDead() && blockMap.HasBossArea())
 		{
 			bool entered = player->IsTouchingBossArea() ||
@@ -52,13 +57,13 @@ void BossIntroDirector::Update(Player* player, BlockMap& blockMap)
 		break;
 
 	case State::Walking:
-		// 黒帯フェードタイマー加算
+		// 帯フェードタイマー加算
 		if (mFadeTimer < BossIntroConstants::FadeFrames)
 		{
 			mFadeTimer++;
 		}
 
-		// プレイヤーが中央に到着したら待機ステートへ遷移し、カメラスクロールを固定
+		// プレイヤー中央到着で待機ステートへ遷移し、カメラスクロール固定
 		if (player->IsAutoWalkArrived())
 		{
 			mState = State::WaitBeforeWarning;
@@ -68,17 +73,17 @@ void BossIntroDirector::Update(Player* player, BlockMap& blockMap)
 		break;
 
 	case State::WaitBeforeWarning:
-		// 黒帯は最大値を維持
+		// 帯は最大値維持
 		if (mFadeTimer < BossIntroConstants::FadeFrames)
 		{
 			mFadeTimer++;
 		}
 
-		// 到着後の少しのタメ時間
+		// 最初の溜め
 		mStateTimer++;
 		if (mStateTimer >= KingSlimeIntroConstants::WaitFramesBeforeWarning)
 		{
-			// 警告発生：プレイヤーの足元とX座標を記録
+			// 警告：プレイヤーの足元X座標を記録
 			mWarningX = player->GetPosition().x;
 			mGroundY = player->GetPosition().y + player->GetPlayerHeight() * 0.5f;
 			mHasEvaded = false;
@@ -90,13 +95,13 @@ void BossIntroDirector::Update(Player* player, BlockMap& blockMap)
 		break;
 
 	case State::Warning:
-		// 黒帯は最大値を維持
+		// 帯は最大値維持
 		if (mFadeTimer < BossIntroConstants::FadeFrames)
 		{
 			mFadeTimer++;
 		}
 
-		// 警告表示中のみEキーの操作を受け付け（QTE）
+		// 警告表示中のみEキーの入力を受付（QTE）
 		{
 			bool eKeyIsDown = (CheckHitKey(KEY_INPUT_E) == 1);
 			if (eKeyIsDown && !mEKeyWasDown && !mHasEvaded)
@@ -116,13 +121,13 @@ void BossIntroDirector::Update(Player* player, BlockMap& blockMap)
 		break;
 
 	case State::WarningFadeOut:
-		// 黒帯は最大値を維持
+		// 帯は最大値維持
 		if (mFadeTimer < BossIntroConstants::FadeFrames)
 		{
 			mFadeTimer++;
 		}
 
-		// フェードアウト中もギリギリまでEキー回避可能
+		// フェードアウトギリギリまでEキー回避可能
 		{
 			bool eKeyIsDown = (CheckHitKey(KEY_INPUT_E) == 1);
 			if (eKeyIsDown && !mEKeyWasDown && !mHasEvaded)
@@ -137,14 +142,14 @@ void BossIntroDirector::Update(Player* player, BlockMap& blockMap)
 		if (mStateTimer <= 0)
 		{
 			mState = State::BossFalling;
-			// 画面上空から急降下開始（4倍化に伴い地面Yから1200px上空から落下開始）
+			// 画面上空から急降下開始（4倍に伴い地面Yの1200px上空から落下開始）
 			const float startY = mGroundY - 1200.0f;
 			mpBossSlime = new BossEnemySlime(VGet(mWarningX, startY, 0.0f), mGroundY, player);
 		}
 		break;
 
 	case State::BossFalling:
-		// 黒帯は維持
+		// 帯は維持
 		if (mFadeTimer < BossIntroConstants::FadeFrames)
 		{
 			mFadeTimer++;
@@ -157,7 +162,7 @@ void BossIntroDirector::Update(Player* player, BlockMap& blockMap)
 		break;
 
 	case State::BossLanding:
-		// 黒帯は維持
+		// 帯は維持
 		if (mFadeTimer < BossIntroConstants::FadeFrames)
 		{
 			mFadeTimer++;
@@ -165,12 +170,65 @@ void BossIntroDirector::Update(Player* player, BlockMap& blockMap)
 
 		if (mpBossSlime != nullptr && mpBossSlime->IsSpawnFinished())
 		{
+			mState = State::TitleWait;
+			mTitleTimer = 0;
+		}
+		break;
+
+	case State::TitleWait:
+		// 帯は維持
+		if (mFadeTimer < BossIntroConstants::FadeFrames)
+		{
+			mFadeTimer++;
+		}
+
+		mTitleTimer++;
+		if (mTitleTimer >= KingSlimeTitleConstants::WaitFramesBeforeTitle)
+		{
+			mState = State::TitleDisplay;
+			mTitleTimer = 0;
+			mTitleWaveTimer = 0;
+		}
+		break;
+
+	case State::TitleDisplay:
+		// 帯は維持
+		if (mFadeTimer < BossIntroConstants::FadeFrames)
+		{
+			mFadeTimer++;
+		}
+
+		mTitleTimer++;
+		mTitleWaveTimer++;
+
+		{
+			const int totalRevealTime = KingSlimeTitleConstants::CharCount * KingSlimeTitleConstants::CharRevealInterval;
+			if (mTitleTimer >= totalRevealTime + KingSlimeTitleConstants::HoldFramesAfterReveal)
+			{
+				mState = State::TitleFadeOut;
+				mTitleTimer = 0;
+			}
+		}
+		break;
+
+	case State::TitleFadeOut:
+		// 帯は維持
+		if (mFadeTimer < BossIntroConstants::FadeFrames)
+		{
+			mFadeTimer++;
+		}
+
+		mTitleTimer++;
+		mTitleWaveTimer++;
+
+		if (mTitleTimer >= KingSlimeTitleConstants::FadeOutFrames)
+		{
 			mState = State::IntroFinished;
 		}
 		break;
 
 	case State::IntroFinished:
-		// 演出完了後も黒帯はアクティブのまま維持
+		// 演出帯はアクティブのまま維持
 		if (mFadeTimer < BossIntroConstants::FadeFrames)
 		{
 			mFadeTimer++;
@@ -205,7 +263,7 @@ void BossIntroDirector::Draw() const
 	{
 		SetDrawBlendMode(DX_BLENDMODE_ALPHA, currentAlpha);
 
-		// 画面上部黒帯
+		// 画面上部
 		DrawBox(
 			0,
 			0,
@@ -215,7 +273,7 @@ void BossIntroDirector::Draw() const
 			TRUE
 		);
 
-		// 画面下部黒帯
+		// 画面下部
 		DrawBox(
 			0,
 			ScreenSize::ScrrenHeight - currentHeight,
@@ -247,6 +305,122 @@ void BossIntroDirector::Draw() const
 
 		DrawWarning(screenX, screenY, fadeRatio);
 	}
+
+	// 3. ボス名タイトル「キングスライミー」の描画
+	if (mState == State::TitleDisplay || mState == State::TitleFadeOut)
+	{
+		float scrollX = (mpBlockMap != nullptr) ? static_cast<float>(mpBlockMap->GetScrollX()) : 0.0f;
+		float scrollY = (mpBlockMap != nullptr) ? static_cast<float>(mpBlockMap->GetScrollY()) : 0.0f;
+
+		float screenX = mWarningX - scrollX;
+		float screenY = mGroundY - scrollY;
+
+		DrawTitle(screenX, screenY);
+	}
+}
+
+void BossIntroDirector::DrawTitle(float screenX, float screenY) const
+{
+	if (!Master::mpGameManager) return;
+	FontManager* fontMgr = Master::mpGameManager->GetFontManager();
+	if (!fontMgr) return;
+
+	static const char* const kTitleChars[KingSlimeTitleConstants::CharCount] = {
+		"キ", "ン", "グ", "ス", "ラ", "イ", "ミ", "ー"
+	};
+
+	// 表示文字数の算出
+	int revealedCount = 0;
+	if (mState == State::TitleDisplay)
+	{
+		revealedCount = (mTitleTimer / KingSlimeTitleConstants::CharRevealInterval) + 1;
+		if (revealedCount > KingSlimeTitleConstants::CharCount)
+		{
+			revealedCount = KingSlimeTitleConstants::CharCount;
+		}
+	}
+	else if (mState == State::TitleFadeOut)
+	{
+		revealedCount = KingSlimeTitleConstants::CharCount;
+	}
+
+	if (revealedCount <= 0) return;
+
+	// 透明度（フェードアウト時）
+	int alpha = 255;
+	if (mState == State::TitleFadeOut)
+	{
+		float fadeRatio = 1.0f - (static_cast<float>(mTitleTimer) / static_cast<float>(KingSlimeTitleConstants::FadeOutFrames));
+		if (fadeRatio < 0.0f) fadeRatio = 0.0f;
+		if (fadeRatio > 1.0f) fadeRatio = 1.0f;
+		alpha = static_cast<int>(255.0f * fadeRatio);
+	}
+	if (alpha <= 0) return;
+
+	// 各文字の描画幅を計測し全体の横幅を算出
+	int charWidths[KingSlimeTitleConstants::CharCount] = { 0 };
+	int totalWidth = 0;
+	for (int i = 0; i < KingSlimeTitleConstants::CharCount; i++)
+	{
+		charWidths[i] = fontMgr->GetDotStringWidth(KingSlimeTitleConstants::FontSize, kTitleChars[i]);
+		totalWidth += charWidths[i];
+		if (i < KingSlimeTitleConstants::CharCount - 1)
+		{
+			totalWidth += KingSlimeTitleConstants::CharSpacing;
+		}
+	}
+
+	// 垂直方向の位置計算
+	// 上端限界: 天使セリフ枠の下 (FramePosY + 190)
+	// 下端限界: キングスライム頭頂部 (screenY - 84 * Scale)
+	const float topLimit = static_cast<float>(UIGraphController::FramePosY + 190);
+	const float bottomLimit = screenY - (84.0f * KingSlimeIntroConstants::Scale);
+	const float centerY = (topLimit + bottomLimit) * 0.5f;
+	const float baseY = centerY - (static_cast<float>(KingSlimeTitleConstants::FontSize) * 0.5f);
+
+	// 水平方向の中央揃え開始X
+	float currentX = screenX - (static_cast<float>(totalWidth) * 0.5f);
+
+	SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
+
+	for (int i = 0; i < KingSlimeTitleConstants::CharCount; i++)
+	{
+		if (i < revealedCount)
+		{
+			// 位相差を持たせた緩やかなサイン波による縦揺れ
+			float waveOffset = std::sin(static_cast<float>(mTitleWaveTimer) * KingSlimeTitleConstants::WaveSpeed + static_cast<float>(i) * KingSlimeTitleConstants::WavePhaseOffset) * KingSlimeTitleConstants::WaveAmplitude;
+			int drawX = static_cast<int>(currentX);
+			int drawY = static_cast<int>(baseY + waveOffset);
+
+			// ドロップシャドウ（黒、3pxオフセット）
+			fontMgr->DrawDotString(
+				drawX + 3,
+				drawY + 3,
+				KingSlimeTitleConstants::FontSize,
+				GetColor(0, 0, 0),
+				"%s",
+				kTitleChars[i]
+			);
+
+			// 文字色：「キング」（i = 0, 1, 2）は金色、「スライミー」（i = 3..7）は濃い水色
+			unsigned int charColor = (i < 3)
+				? GetColor(KingSlimeTitleConstants::ColorGoldR, KingSlimeTitleConstants::ColorGoldG, KingSlimeTitleConstants::ColorGoldB)
+				: GetColor(KingSlimeTitleConstants::ColorCyanR, KingSlimeTitleConstants::ColorCyanG, KingSlimeTitleConstants::ColorCyanB);
+
+			fontMgr->DrawDotString(
+				drawX,
+				drawY,
+				KingSlimeTitleConstants::FontSize,
+				charColor,
+				"%s",
+				kTitleChars[i]
+			);
+		}
+
+		currentX += static_cast<float>(charWidths[i] + KingSlimeTitleConstants::CharSpacing);
+	}
+
+	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 }
 
 void BossIntroDirector::DrawWarning(float screenX, float screenY, float fadeAlphaRatio) const
@@ -260,7 +434,7 @@ void BossIntroDirector::DrawWarning(float screenX, float screenY, float fadeAlph
 	const int bottom = static_cast<int>(screenY);
 	const int top = static_cast<int>(screenY - height);
 
-	// 1. 縦方向グラデーション（下側が濃く、上側に行くほど透明）
+	// 1. 縦グラデーション
 	const int sliceCount = 15;
 	const float sliceHeight = height / static_cast<float>(sliceCount);
 
@@ -270,9 +444,7 @@ void BossIntroDirector::DrawWarning(float screenX, float screenY, float fadeAlph
 		int stripBottom = static_cast<int>(top + (i + 1) * sliceHeight);
 		if (i == sliceCount - 1) stripBottom = bottom;
 
-		// v: 0.0(上端) 〜 1.0(下端)
 		float v = static_cast<float>(i + 1) / static_cast<float>(sliceCount);
-		// 下側ほど濃くなる2乗カーブ
 		int alpha = static_cast<int>(140.0f * (v * v) * fadeAlphaRatio);
 		if (alpha <= 0) continue;
 
@@ -280,7 +452,7 @@ void BossIntroDirector::DrawWarning(float screenX, float screenY, float fadeAlph
 		DrawBox(left, stripTop, right, stripBottom, GetColor(255, 30, 30), TRUE);
 	}
 
-	// 2. 左右端のエッジライン（左右端がより赤い、4倍化に合わせて太さ調整）
+	// 2. 左右のエッジライン
 	const int edgeThickness = 6;
 	for (int i = 0; i < sliceCount; i++)
 	{
@@ -293,13 +465,11 @@ void BossIntroDirector::DrawWarning(float screenX, float screenY, float fadeAlph
 		if (borderAlpha <= 0) continue;
 
 		SetDrawBlendMode(DX_BLENDMODE_ALPHA, borderAlpha);
-		// 左端ライン
 		DrawBox(left, stripTop, left + edgeThickness, stripBottom, GetColor(255, 0, 0), TRUE);
-		// 右端ライン
 		DrawBox(right - edgeThickness, stripTop, right, stripBottom, GetColor(255, 0, 0), TRUE);
 	}
 
-	// 接地下面ライン
+	// 接地面ライン
 	int groundLineAlpha = static_cast<int>(240.0f * fadeAlphaRatio);
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, groundLineAlpha);
 	DrawBox(left, bottom - 6, right, bottom, GetColor(255, 60, 60), TRUE);
@@ -308,29 +478,15 @@ void BossIntroDirector::DrawWarning(float screenX, float screenY, float fadeAlph
 	int midX = static_cast<int>(screenX);
 	int midY = static_cast<int>(screenY - height * 0.45f);
 
-	// 警告マークの鼓動（パルス）エフェクト
 	float pulse = 1.0f + 0.1f * std::sin(static_cast<float>(mStateTimer) * 0.2f);
-	int circleRadius = static_cast<int>(36.0f * pulse);
-
-	//// 背景丸（暗めの赤）
-	//int markBgAlpha = static_cast<int>(220.0f * fadeAlphaRatio);
-	//SetDrawBlendMode(DX_BLENDMODE_ALPHA, markBgAlpha);
-	//DrawCircle(midX, midY, circleRadius, GetColor(180, 20, 20), TRUE);
-	//
-	//// 外枠丸（警告の黄色）
-	//int markOutlineAlpha = static_cast<int>(255.0f * fadeAlphaRatio);
-	//SetDrawBlendMode(DX_BLENDMODE_ALPHA, markOutlineAlpha);
-	//DrawCircle(midX, midY, circleRadius, GetColor(255, 230, 0), FALSE);
 
 	// 「！」マーク本体（赤）
 	int markBodyAlpha = static_cast<int>(255.0f * fadeAlphaRatio);
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, markBodyAlpha);
-	// 上の縦棒
 	int barWidth = 6;
 	int barTop = midY - static_cast<int>(30.0f * pulse);
 	int barBottom = midY + static_cast<int>(8.0f * pulse);
 	DrawBox(midX - barWidth, barTop, midX + barWidth + 1, barBottom, GetColor(255, 0, 0), TRUE);
-	// 下の点
 	int dotTop = midY + static_cast<int>(16.0f * pulse);
 	int dotBottom = midY + static_cast<int>(28.0f * pulse);
 	DrawBox(midX - barWidth, dotTop, midX + barWidth + 1, dotBottom, GetColor(255, 0, 0), TRUE);
@@ -357,6 +513,8 @@ void BossIntroDirector::Reset()
 	mState = State::Inactive;
 	mFadeTimer = 0;
 	mStateTimer = 0;
+	mTitleTimer = 0;
+	mTitleWaveTimer = 0;
 	mCurrentTargetX = 0.0f;
 	mWarningX = 0.0f;
 	mGroundY = 0.0f;
