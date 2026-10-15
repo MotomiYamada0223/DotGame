@@ -6,6 +6,14 @@ Camera::Camera()
 	: mScrollX(0)
 	, mScrollY(0)
 	, mIsScrolling(false)
+	, mShakePower(0.0f)
+	, mShakeRatioX(0.0f)
+	, mShakeRatioY(0.0f)
+	, mShakeDuration(0)
+	, mShakeTimer(0)
+	, mShakeOffsetX(0)
+	, mShakeOffsetY(0)
+	, mIsLocked(false)
 {
 }
 
@@ -16,10 +24,12 @@ Camera::~Camera()
 // プレイヤーの位置や移動方向に応じてカメラのスクロール位置を計算するため
 void Camera::Update(int playerScreenX, int playerScreenY, float moveDirection, float currentSpeed, int backgroundWidth, int screenWidth)
 {
-	if (CheckHitKey(KEY_INPUT_1))
+	// スクロールがロックされている場合は位置を更新せず、画面揺れのみ処理
+	if (mIsLocked)
 	{
-		mScrollX = 0;
-		mScrollY = 0;
+		mIsScrolling = false;
+		UpdateShake();
+		return;
 	}
 
 	int oldScrollPos = mScrollX;
@@ -45,8 +55,6 @@ void Camera::Update(int playerScreenX, int playerScreenY, float moveDirection, f
 	if (maxScrollX < 0) { maxScrollX = 0; }
 	if (mScrollX > maxScrollX) { mScrollX = maxScrollX; }
 
-
-
 	// プレイヤーが画面上の一定のライン
 	if (playerScreenY < MapScrollConstants::ScrollStartUpY)
 	{
@@ -62,4 +70,40 @@ void Camera::Update(int playerScreenX, int playerScreenY, float moveDirection, f
 	}
 
 	mIsScrolling = (oldScrollPos != mScrollX);
+
+	// 画面揺れの更新
+	UpdateShake();
+}
+
+void Camera::StartShake(float power, float ratioX, float ratioY, int durationFrames)
+{
+	mShakePower = power;
+	mShakeRatioX = ratioX;
+	mShakeRatioY = ratioY;
+	mShakeDuration = (durationFrames > 0) ? durationFrames : 1;
+	mShakeTimer = mShakeDuration;
+	UpdateShake();
+}
+
+void Camera::UpdateShake()
+{
+	if (mShakeTimer > 0)
+	{
+		float progress = 1.0f - static_cast<float>(mShakeTimer) / static_cast<float>(mShakeDuration);
+		float decay = 1.0f - progress; // 残り時間に応じた減衰 (1.0 -> 0.0)
+
+		// -1.0f 〜 +1.0f の不規則振動
+		float randX = static_cast<float>(GetRand(200) - 100) / 100.0f;
+		float randY = static_cast<float>(GetRand(200) - 100) / 100.0f;
+
+		mShakeOffsetX = static_cast<int>(randX * mShakePower * mShakeRatioX * decay);
+		mShakeOffsetY = static_cast<int>(randY * mShakePower * mShakeRatioY * decay);
+
+		mShakeTimer--;
+	}
+	else
+	{
+		mShakeOffsetX = 0;
+		mShakeOffsetY = 0;
+	}
 }

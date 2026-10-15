@@ -12,7 +12,11 @@ TextureAnimation::TextureAnimation(
 	, mnCounter(0)
 	, mnInterval(interval)
 	, mnCurrentNum(0)
-	,mnAllNum(allNum)
+	, mnAllNum(allNum)
+	, mfScale(1.0f)
+	, mbReverse(false)
+	, mbLoop(true)
+	, mbFinished(false)
 {
 	mnHandleList = new int[allNum];
 
@@ -58,30 +62,73 @@ TextureAnimation::~TextureAnimation()
 
 void TextureAnimation::Update()// 更新
 {
+	if (mbFinished) return;
+
 	// カウンタをインクリメント
 	mnCounter++;
 	if (mnCounter % mnInterval == 0)
 	{
 		mnCounter = 0;  // カウンタを戻す
-		mnCurrentNum++; // テクスチャ番号を進める
-		if (mnCurrentNum >= mnAllNum)
+		if (mbReverse)
 		{
-			mnCurrentNum = 0;  // ループさせる
+			mnCurrentNum--; // テクスチャ番号を戻す（逆再生）
+			if (mnCurrentNum < 0)
+			{
+				if (mbLoop)
+				{
+					mnCurrentNum = mnAllNum - 1;
+				}
+				else
+				{
+					mnCurrentNum = 0;
+					mbFinished = true;
+				}
+			}
 		}
-
+		else
+		{
+			mnCurrentNum++; // テクスチャ番号を進める
+			if (mnCurrentNum >= mnAllNum)
+			{
+				if (mbLoop)
+				{
+					mnCurrentNum = 0;  // ループさせる
+				}
+				else
+				{
+					mnCurrentNum = mnAllNum - 1;
+					mbFinished = true;
+				}
+			}
+		}
 	}
 }
 
 void TextureAnimation::Draw(bool turnFlag)// 描画
 {
-	int x = static_cast<int>(mvPosition.x - (mnxNum / 2));
-	int y = static_cast<int>(mvPosition.y - (mnyNum / 2));
-	if (turnFlag)
+	if (mfScale != 1.0f)
 	{
-		DrawTurnGraph(x, y, mnHandleList[mnCurrentNum], true);
+		DrawRotaGraph(
+			static_cast<int>(mvPosition.x),
+			static_cast<int>(mvPosition.y),
+			static_cast<double>(mfScale),
+			0.0,
+			mnHandleList[mnCurrentNum],
+			TRUE,
+			turnFlag ? TRUE : FALSE
+		);
 	}
 	else
 	{
-		DrawGraph(x, y, mnHandleList[mnCurrentNum], true);
+		int x = static_cast<int>(mvPosition.x - (mnxNum / 2));
+		int y = static_cast<int>(mvPosition.y - (mnyNum / 2));
+		if (turnFlag)
+		{
+			DrawTurnGraph(x, y, mnHandleList[mnCurrentNum], true);
+		}
+		else
+		{
+			DrawGraph(x, y, mnHandleList[mnCurrentNum], true);
+		}
 	}
 }

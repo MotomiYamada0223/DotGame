@@ -14,6 +14,10 @@ PlayerAnimState::PlayerAnimState()
 // 今表示しているYを返す
 int PlayerAnimState::GetSrcY() const
 {
+	if (mState == State::SwordReady)
+	{
+		return ATTACK_POS; // y=384
+	}
 	return static_cast<int>(mState) * FRAME_HEIGHT;
 }
 
@@ -70,6 +74,17 @@ void PlayerAnimState::SetAttack()
 
 	mPlayType = PlayType::Once;
 	mStopFrame = TOTAL_FRAMES - 1;
+}
+
+// 剣を構える一枚絵 (x384, y128)
+void PlayerAnimState::SetSwordReady()
+{
+	SetState(State::SwordReady);
+
+	mPlayType = PlayType::StopFrame;
+	mCurrentFrame = 1; // 4列目 (3 * 128 = 384)
+	mStopFrame = 1;
+	mIsFinished = true;
 }
 
 // アニメーションを1フレーム進める

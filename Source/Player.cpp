@@ -144,19 +144,59 @@ void Player::PlayerMove(BlockMap& blockMap)
 
 	// 左右移動
 	mfMoveDirection = 0.0f;
-	if (CheckHitKey(KEY_INPUT_A) == 1)
+	float currentSpeed = moveSpeed;
+
+	if (mbIsEvading)
 	{
+		// 回避中は背中側（左: -1.0f）へ高速移動しつつ、向きは右向きを維持
 		mfMoveDirection = -1.0f;
-		isFacingRight = false;
-	}
-	else if (CheckHitKey(KEY_INPUT_D) == 1)
-	{
-		mfMoveDirection = 1.0f;
+		currentSpeed = KingSlimeIntroConstants::EvasionSpeedX;
 		isFacingRight = true;
+	}
+	else if (mbAutoWalking)
+	{
+		currentSpeed = BossIntroConstants::AutoWalkSpeed;
+		float diffX = mAutoWalkTargetX - mvPosition.x;
+		if (std::abs(diffX) <= currentSpeed)
+		{
+			mvPosition.x = mAutoWalkTargetX;
+			mfMoveDirection = 0.0f;
+			mbAutoWalking = false;
+			mbAutoWalkArrived = true;
+		}
+		else
+		{
+			if (diffX > 0.0f)
+			{
+				mfMoveDirection = 1.0f;
+				isFacingRight = true;
+			}
+			else
+			{
+				mfMoveDirection = -1.0f;
+				isFacingRight = false;
+			}
+		}
+	}
+	else if (!mbAutoWalkArrived)
+	{
+		if (CheckHitKey(KEY_INPUT_A) == 1)
+		{
+			mfMoveDirection = -1.0f;
+			isFacingRight = false;
+		}
+		else if (CheckHitKey(KEY_INPUT_D) == 1)
+		{
+			mfMoveDirection = 1.0f;
+			isFacingRight = true;
+		}
+	}
+	else
+	{
+		mfMoveDirection = 0.0f;
 	}
 
 	// キャラクターの物理処理
-	float currentSpeed = moveSpeed;
 	float currentGravity = gravity;
 	if (isBlinking)
 	{
@@ -182,6 +222,9 @@ void Player::PlayerMove(BlockMap& blockMap)
 			currentSpeed,
 			mfMoveDirection
 		);
+
+	// ボスエリア接触判定の更新
+	mbTouchingBossArea = (collisionType == BlockMap::CollisionType::BossArea);
 
 	// 動く床などによって強制接地フラグが立っている場合は、地形の判定を上書きする
 	if (mForceGroundedThisFrame) {
@@ -228,7 +271,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 	// Blink (Eキー)
 	static bool eKeyWasDown = false;
 	bool eKeyIsDown = (CheckHitKey(KEY_INPUT_E) == 1);
-	if (eKeyIsDown && !eKeyWasDown && !isBlinking && blinkCooldownTimer <= 0 && mfMoveDirection != 0.0f)
+	if (!mbAutoWalking && !mbAutoWalkArrived && eKeyIsDown && !eKeyWasDown && !isBlinking && blinkCooldownTimer <= 0 && mfMoveDirection != 0.0f)
 	{
 		isBlinking = true;
 		blinkTimer = blinkDuration;
@@ -239,7 +282,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 
 
 	// ジャンプ開始
-	if (CheckHitKey(KEY_INPUT_SPACE) == 1 &&
+	if (!mbAutoWalking && !mbAutoWalkArrived && CheckHitKey(KEY_INPUT_SPACE) == 1 &&
 		isGrounded)
 	{
 		mbIsJumping = true;
@@ -248,7 +291,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 	}
 
 	// 攻撃 F
-	if (CheckHitKey(KEY_INPUT_F) == 1 &&
+	if (!mbAutoWalking && !mbAutoWalkArrived && CheckHitKey(KEY_INPUT_F) == 1 &&
 		!isAttacking)
 	{
 		isAttacking = true;
@@ -274,7 +317,15 @@ void Player::PlayerMove(BlockMap& blockMap)
 	// アニメーション状態を更新   
 	if (!isAttacking)
 	{
-		if (mbIsJumping)
+		if (mbIsEvading)
+		{
+			mPlayerState.SetJump();
+		}
+		else if (mbSwordReadyStance)
+		{
+			mPlayerState.SetSwordReady();
+		}
+		else if (mbIsJumping)
 		{
 			mPlayerState.SetJump();
 		}
@@ -295,7 +346,15 @@ void Player::PlayerMove(BlockMap& blockMap)
 		isAttacking = false;
 		attackTimer = 0;
 
-		if (mbIsJumping)
+		if (mbIsEvading)
+		{
+			mPlayerState.SetJump();
+		}
+		else if (mbSwordReadyStance)
+		{
+			mPlayerState.SetSwordReady();
+		}
+		else if (mbIsJumping)
 		{
 			mPlayerState.SetJump();
 		}
@@ -362,6 +421,27 @@ void Player::Update()
 		}
 	}
 
+	// 演出用回避中の残像生成と着地判定
+	if (mbIsEvading)
+	{
+		mEvasionTimer--;
+		if (mEvasionTimer % 2 == 0)
+		{
+			BlinkAfterimage img;
+			img.pos = mvPosition;
+			img.facingRight = isFacingRight;
+			img.alpha = 150.0f;
+			mAfterimages.push_back(img);
+		}
+
+		if (mEvasionTimer <= 0 && isGrounded)
+		{
+			mbIsEvading = false;
+			mfMoveDirection = 0.0f;
+			mPlayerState.SetSwordReady();
+		}
+	}
+
 	ObjectManager* objManager = Master::mpGameManager->GetSceneManager()->GetCurrentScene()->GetObjectManager();
 	std::vector<Object2D*> enemyList = objManager->GetObject2DListByTag(Object2D::Enemy2D);
 
@@ -410,8 +490,8 @@ void Player::Update()
 		if (!enemy) continue;
 
 		// 敵の当たり判定
-		float enemyWidth = enemy->GetSizeX() / 6.0f;
-		float enemyHeight = enemy->GetSizeY() / 6.0f;
+		float enemyWidth = enemy->GetCollisionWidth();
+		float enemyHeight = enemy->GetCollisionHeight();
 		int eneLeft = static_cast<int>(
 			enemy->GetPosition().x - enemyWidth / 2.0f
 			);
@@ -665,6 +745,10 @@ void Player::Draw()
 		{
 			srcY = PlayerAnimState::WALK_POS;
 		}
+		else if (animState == PlayerAnimState::State::SwordReady)
+		{
+			srcY = PlayerAnimState::ATTACK_POS;
+		}
 
 		// ダメージ中なら赤く変色させる
 		if (isHitDamage)
@@ -828,8 +912,8 @@ void Player::DebugDraw()
 			if (!enemy) continue;
 
 			// 実際の当たり判定と同じサイズ
-			float enemyWidth = enemy->GetSizeX() / 6.0f;
-			float enemyHeight = enemy->GetSizeY() / 6.0f;
+			float enemyWidth = enemy->GetCollisionWidth();
+			float enemyHeight = enemy->GetCollisionHeight();
 
 			float divide = 2.0f;
 
@@ -986,6 +1070,67 @@ void Player::Revive()
 		mBlockAction.SetHitDeathBlock(false);
 	}
 
+	// ボス演出・自動歩行状態をリセット
+	mbAutoWalking = false;
+	mbAutoWalkArrived = false;
+	mAutoWalkTargetX = 0.0f;
+	mbTouchingBossArea = false;
+	mbIsEvading = false;
+	mbEvadedBossSpawn = false;
+	mEvasionTimer = 0;
+	mbSwordReadyStance = false;
+
 	isDead = false;
 	mbFallDeath = false;
 }
+
+void Player::StartAutoWalk(float targetX)
+{
+	mbAutoWalking = true;
+	mbAutoWalkArrived = false;
+	mAutoWalkTargetX = targetX;
+}
+
+void Player::StopAutoWalk()
+{
+	mbAutoWalking = false;
+	mbAutoWalkArrived = false;
+	mfMoveDirection = 0.0f;
+}
+
+void Player::TriggerCinematicEvasion()
+{
+	if (mbEvadedBossSpawn) return;
+	mbEvadedBossSpawn = true;
+	mbIsEvading = true;
+	mEvasionTimer = KingSlimeIntroConstants::EvasionDurationFrames;
+
+	// 右向きのまま背中側（左）へジャンプ飛び退き
+	isFacingRight = true;
+	velocityY = KingSlimeIntroConstants::EvasionJumpSpeedY;
+	isGrounded = false;
+	mbIsJumping = true;
+	mPlayerState.SetJump();
+
+	// 残像を即座に1つ生成
+	BlinkAfterimage img;
+	img.pos = mvPosition;
+	img.facingRight = isFacingRight;
+	img.alpha = 150.0f;
+	mAfterimages.push_back(img);
+}
+
+void Player::ResetBossIntroState()
+{
+	mbAutoWalking = false;
+	mbAutoWalkArrived = false;
+	mAutoWalkTargetX = 0.0f;
+	mbTouchingBossArea = false;
+	mbIsEvading = false;
+	mbEvadedBossSpawn = false;
+	mEvasionTimer = 0;
+	mbSwordReadyStance = false;
+	mfMoveDirection = 0.0f;
+	mPlayerState.SetIdle();
+}
+
