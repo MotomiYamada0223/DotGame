@@ -90,10 +90,16 @@ BlockMap::CollisionType CharacterPhysics::UpdateMoveAndCollision(
 				&wallY
 			);
 
-		// Blockなら壁なので移動しない
-		if (wallType == BlockMap::CollisionType::Block)
+		// BlockまたはBossAreaなら壁なので移動しない
+		if (wallType == BlockMap::CollisionType::Block || wallType == BlockMap::CollisionType::BossArea)
 		{
 			isHittingWall = true;
+			if (wallType == BlockMap::CollisionType::BossArea &&
+				detectedSpecialType != BlockMap::CollisionType::Death &&
+				detectedSpecialType != BlockMap::CollisionType::Goal)
+			{
+				detectedSpecialType = wallType;
+			}
 		}
 		else
 		{
@@ -137,7 +143,7 @@ BlockMap::CollisionType CharacterPhysics::UpdateMoveAndCollision(
 
 		if (floorType != BlockMap::CollisionType::None)
 		{
-			if (floorType == BlockMap::CollisionType::Block)
+			if (floorType == BlockMap::CollisionType::Block || floorType == BlockMap::CollisionType::BossArea)
 			{
 				const float floorY = static_cast<float>(collisionY);
 
@@ -154,6 +160,13 @@ BlockMap::CollisionType CharacterPhysics::UpdateMoveAndCollision(
 					position.y = nextY;
 					isGrounded = false;
 					isJumping = true;
+				}
+
+				if (floorType == BlockMap::CollisionType::BossArea &&
+					detectedSpecialType != BlockMap::CollisionType::Death &&
+					detectedSpecialType != BlockMap::CollisionType::Goal)
+				{
+					detectedSpecialType = floorType;
 				}
 			}
 			else
@@ -191,7 +204,7 @@ BlockMap::CollisionType CharacterPhysics::UpdateMoveAndCollision(
 
 		if (ceilingType != BlockMap::CollisionType::None)
 		{
-			if (ceilingType == BlockMap::CollisionType::Block)
+			if (ceilingType == BlockMap::CollisionType::Block || ceilingType == BlockMap::CollisionType::BossArea)
 			{
 				const float ceilingY =
 					static_cast<float>(collisionY);
@@ -200,6 +213,13 @@ BlockMap::CollisionType CharacterPhysics::UpdateMoveAndCollision(
 					ceilingY + PlayerBlockCollision::CollisionThickness + halfHeight;
 
 				velocityY = 0.0f;
+
+				if (ceilingType == BlockMap::CollisionType::BossArea &&
+					detectedSpecialType != BlockMap::CollisionType::Death &&
+					detectedSpecialType != BlockMap::CollisionType::Goal)
+				{
+					detectedSpecialType = ceilingType;
+				}
 			}
 			else
 			{

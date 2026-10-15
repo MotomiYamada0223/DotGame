@@ -46,6 +46,25 @@ public: // アクセサ
 
 	bool IsBlinking() const { return isBlinking; } // ブリンク中かどうかの判定用
 
+	// ボス演出・自動歩行関連
+	void StartAutoWalk(float targetX);
+	void StopAutoWalk();
+	bool IsAutoWalking() const { return mbAutoWalking; }
+	bool IsAutoWalkArrived() const { return mbAutoWalkArrived; }
+	bool IsTouchingBossArea() const { return mbTouchingBossArea; }
+
+	// キングスライム出現演出用回避
+	void TriggerCinematicEvasion();
+	bool HasEvadedBossSpawn() const { return mbEvadedBossSpawn; }
+	bool IsCinematicEvading() const { return mbIsEvading; }
+	float GetPlayerWidth() const { return mfPlayerWidth; }
+	float GetPlayerHeight() const { return mfPlayerHeight; }
+	void SetDeathReason(DeathReason::DeathType type) { mDeathReason = type; }
+	void ResetBossIntroState();
+	void SetSwordReadyStance(bool active) { mbSwordReadyStance = active; }
+	bool IsSwordReadyStance() const { return mbSwordReadyStance; }
+
+
 private:
 	// インスタンスで持っているもの
 	CharacterPhysics mCharacterPhysics; // 物理計算用のインスタンス
@@ -134,4 +153,16 @@ private:
 private: // 復活処理関係
 	void Revive();
 	bool mbFallDeath = false; // 死亡判定
+
+	// ボス演出・自動歩行関連
+	bool mbAutoWalking = false;
+	bool mbAutoWalkArrived = false;
+	float mAutoWalkTargetX = 0.0f;
+	bool mbTouchingBossArea = false;
+
+	// キングスライム出現演出・回避関連
+	bool mbIsEvading = false;
+	bool mbEvadedBossSpawn = false;
+	int mEvasionTimer = 0;
+	bool mbSwordReadyStance = false;
 };

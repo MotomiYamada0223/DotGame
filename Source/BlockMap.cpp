@@ -12,6 +12,9 @@ BlockMap::BlockMap()
     , mnCollisionHeight(0)
     , mCollisionData()
     , mbIsLoaded(false)
+    , mbHasBossArea(false)
+    , mnBossAreaLeft(0)
+    , mnBossAreaRight(0)
     , mnBackgroundWidth(0)
     , mnBackgroundHeight(0)
     , mfMoveDirection(0.0f)
@@ -77,6 +80,10 @@ bool BlockMap::Load(
         mnCollisionWidth * mnCollisionHeight,
         CollisionType::None
     );
+
+    mbHasBossArea = false;
+    mnBossAreaLeft = 0;
+    mnBossAreaRight = 0;
 
     // 当たり判定画像を1ピクセルずつ調べる
     for (int y = 0; y < mnCollisionHeight; y++)
@@ -147,6 +154,29 @@ bool BlockMap::Load(
                 continue;
             }
 
+            // 黄色ならBossArea
+            if (r == BlockCollisionColor::BOSSAREA_R &&
+                g == BlockCollisionColor::BOSSAREA_G &&
+                b == BlockCollisionColor::BOSSAREA_B)
+            {
+                mCollisionData[
+                    GetCollisionIndex(x, y)
+                ] = CollisionType::BossArea;
+
+                if (!mbHasBossArea)
+                {
+                    mbHasBossArea = true;
+                    mnBossAreaLeft = x;
+                    mnBossAreaRight = x;
+                }
+                else
+                {
+                    if (x < mnBossAreaLeft) { mnBossAreaLeft = x; }
+                    if (x > mnBossAreaRight) { mnBossAreaRight = x; }
+                }
+                continue;
+            }
+
             // それ以外はNone
             mCollisionData[
                 GetCollisionIndex(x, y)
@@ -172,12 +202,12 @@ void BlockMap::Draw()
 
     // 背景画像を描画
     DrawRectGraph(
-        0,                  // 画面上のX
-        0,                  // 画面上のY
-        mCamera.GetScrollX(),           // 元画像から切り出すX
-        mCamera.GetScrollY(),                  // 元画像から切り出すY
-        ScreenSize::ScrrenWidth,       // 切り出す幅
-        ScreenSize::ScrrenHeight,      // 切り出す高さ
+        0,                              // 画面上のX
+        0,                              // 画面上のY
+        mCamera.GetDrawScrollX(),       // 元画像から切り出すX (画面揺れ適用)
+        mCamera.GetDrawScrollY(),       // 元画像から切り出すY (画面揺れ適用)
+        ScreenSize::ScrrenWidth,        // 切り出す幅
+        ScreenSize::ScrrenHeight,       // 切り出す高さ
         mnBackgroundGraph,
         TRUE
     );
@@ -288,4 +318,6 @@ void BlockMap::SetCollisionBlock(int startX, int startY, int width, int height, 
 void BlockMap::ResetScroll()
 {
     mCamera.SetScrollX(0);
+    mCamera.SetScrollY(0);
+    mCamera.SetLocked(false);
 }

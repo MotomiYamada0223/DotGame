@@ -1,9 +1,9 @@
-#pragma once
+ï»¿#pragma once
 #include <string>
 
 /// <summary>
-/// ”wŒi‰æ‘œ‚ÌƒXƒNƒ[ƒ‹‚ğ‚·‚éƒNƒ‰ƒX
-/// ˆê–‡‚Ì‰æ‘œ‚ğA•`‰æ•û–@‚ğ”½“]‚µ‚Äƒ‹[ƒv‚³‚¹‚éB
+/// èƒŒæ™¯ç”»åƒã®ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ã‚’ã™ã‚‹ã‚¯ãƒ©ã‚¹
+/// ä¸€æšã®ç”»åƒã‚’ã€æç”»æ–¹æ³•ã‚’åè»¢ã—ã¦ãƒ«ãƒ¼ãƒ—ã•ã›ã‚‹ã€‚
 /// </summary>
 class Background
 {
@@ -11,16 +11,16 @@ public:
 	Background();
 	~Background();
 
-	// ”wŒi“Ç‚İ‚İ
+	// èƒŒæ™¯èª­ã¿è¾¼ã¿
 	bool Load(const std::string& image_path);
 
 	void Move(int speed, bool scrolling, float blockMap_moveDirection);
-	void Draw();
+	void Draw(int shakeX = 0, int shakeY = 0);
 	int GetScrollX() const;
 
 private:
 	int mnBackgroundGraph;
 	int mnScrollX;
-	bool mbIsLoaded; // “Ç‚İ‚İÏ‚İ‚©
+	bool mbIsLoaded; // èª­ã¿è¾¼ã¿æ¸ˆã¿ã‹
 	float mfScrollSpeed;
 };

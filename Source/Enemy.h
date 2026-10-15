@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "Object2D.h"
 #include "BlockMap.h"
@@ -13,37 +13,41 @@ public:
 	virtual void Update() override;
 	virtual void Draw() override;
 
-	// “G‚ÌˆÚ“®ˆ—
+	// æ•µã®ç§»å‹•å‡¦ç†
 	virtual void EnemyMove(BlockMap& blockMap) {}
 
-	// UŒ‚‚ğó‚¯‚½Û‚ÉŒÄ‚Î‚ê‚éˆ—
+	// æ”»æ’ƒã‚’å—ã‘ãŸéš›ã«å‘¼ã°ã‚Œã‚‹å‡¦ç†
 	void OnDamaged();
 
-	// ¶‰E‚ÌˆÚ“®§ŒÀ‚ğ‚³‚¹‚éŠÖ”
+	// å·¦å³ã®ç§»å‹•åˆ¶é™ã‚’ã•ã›ã‚‹é–¢æ•°
 	void LimitPositionX(const BlockMap& blockMap, float collisionWidth);
 
+	// å½“ãŸã‚Šåˆ¤å®šã‚µã‚¤ã‚ºã®å–å¾—
+	virtual float GetCollisionWidth() const { return mfEnemyWidth; }
+	virtual float GetCollisionHeight() const { return mfEnemyHeight; }
+
 protected:
-	// ˆÚ“®E•¨—ŠÖ˜A
+	// ç§»å‹•ãƒ»ç‰©ç†é–¢é€£
 	
-	// CharacterPhysics—p
+	// CharacterPhysicsç”¨
 	bool mbIsJumping;
 	bool isGrounded;
 	float velocityY;
 
-	// d—Í
+	// é‡åŠ›
 	float gravity;
 
-	// “G‚Ì“–‚½‚è”»’èƒTƒCƒY
+	// æ•µã®å½“ãŸã‚Šåˆ¤å®šã‚µã‚¤ã‚º
 	float mfEnemyWidth;
 	float mfEnemyHeight;
 
 
-	// ƒ_ƒ[ƒWŠÖ˜A
+	// ãƒ€ãƒ¡ãƒ¼ã‚¸é–¢é€£
 	bool isDamaged;
 	int damageTimer;
 
 
-	// ƒAƒjƒ[ƒVƒ‡ƒ“ŠÖ˜A
+	// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³é–¢é€£
 	int mnCurrentFrame;
 	int mnFrameTimer;
 
@@ -53,10 +57,10 @@ protected:
 	static const int FRAME_INTERVAL = 13;
 
 
-	// ƒ}ƒbƒv
+	// ãƒãƒƒãƒ—
 	BlockMap* mpBlockMap;
 
 
-	// •¨—ŒvZ
+	// ç‰©ç†è¨ˆç®—
 	CharacterPhysics mCharacterPhysics;
 };

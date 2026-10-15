@@ -1,4 +1,4 @@
-#include <DxLib.h>
+ï»¿#include <DxLib.h>
 #include <iostream>
 #include "Background.h"
 #include "Master.h"
@@ -25,7 +25,7 @@ bool Background::Load(const std::string& image_path)
 
 	if (mnBackgroundGraph == -1)
 	{
-		printfDx("”wŒi‰æ‘œ‚Ì“Ç‚İ‚İ¸”s");
+		printfDx("èƒŒæ™¯ç”»åƒã®èª­ã¿è¾¼ã¿å¤±æ•—");
 		return false;
 	}
 
@@ -33,7 +33,7 @@ bool Background::Load(const std::string& image_path)
 	return true;
 }
 
-// ”wŒi‰æ‘œ‚ÌˆÚ“®ˆ—
+// èƒŒæ™¯ç”»åƒã®ç§»å‹•å‡¦ç†
 void Background::Move(int speed, bool scrolling, float blockMap_moveDirection)
 {
 	if (!mbIsLoaded) { return; }
@@ -41,7 +41,7 @@ void Background::Move(int speed, bool scrolling, float blockMap_moveDirection)
 
 	int scrollSpeed = static_cast<int>(speed * MapScrollConstants::BackgroundScrollSpeedScale);
 
-	// BlockMap‚Ì•ûŒü‚Å”»’f‚·‚é
+	// BlockMapã®æ–¹å‘ã§åˆ¤æ–­ã™ã‚‹
 	if (blockMap_moveDirection > 0.0f) { mnScrollX += scrollSpeed; }
 	else if (blockMap_moveDirection < 0.0f) { mnScrollX -= scrollSpeed; }
 	
@@ -56,23 +56,23 @@ void Background::Move(int speed, bool scrolling, float blockMap_moveDirection)
 	}
 }
 
-void Background::Draw()
+void Background::Draw(int shakeX, int shakeY)
 {
 	if (!mbIsLoaded) { return; }
-	int scrollx = static_cast<int>(mnScrollX);
+	int scrollx = static_cast<int>(mnScrollX) - shakeX;
 
-	// 1–‡–Ú‚ÌƒXƒNƒ[ƒ‹
+	// 1æšç›®ã®ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«
 	DrawGraph(
 		-scrollx,
-		0,
+		shakeY,
 		mnBackgroundGraph,
 		TRUE
 	);
 
-	// 2–‡–Ú‚ÌƒXƒNƒ[ƒ‹
+	// 2æšç›®ã®ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«
 	DrawGraph(
 		ScreenSize::ScrrenWidth - scrollx,
-		0,
+		shakeY,
 		mnBackgroundGraph,
 		TRUE
 	);

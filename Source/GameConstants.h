@@ -70,8 +70,20 @@ namespace CharacterGraphPath
 
 	// 敵画像
 	static const std::string Skeleton = "Resource/Image/SampleSkeleton.png"; // スケルトン画像
-	static const std::string Dragon = "Resource/Image/enemy_dragon_move.png"; // dragon画像
-	static const std::string Needle = "Resource/Image/Needle.png"; // 針の罠画像
+	static const std::string Dragon = "Resource/Enemy/Dragon/enemy_dragon_move.png"; // dragon画像
+	static const std::string Needle = "Resource/Enemy/Trap/Needle.png"; // 針の罠画像
+
+	// スライム画像
+	static const std::string Slime = "Resource/Enemy/Slime/slime_idle.png"; // スライム画像
+	static const std::string SlimeIdle = "Resource/Enemy/Slime/slime_idle.png";
+	static const std::string SlimeMove = "Resource/Enemy/Slime/slime_move.png";
+	static const std::string SlimeAttack = "Resource/Enemy/Slime/slime_attack.png";
+
+	// キングスライム画像
+	static const std::string KingSlimeIdle = "Resource/Enemy/KingSlime/kingSlime_idle.png";
+	static const std::string KingSlimeMove = "Resource/Enemy/KingSlime/kingSlime_move.png";
+	static const std::string KingSlimeJump = "Resource/Enemy/KingSlime/kingSlime_jump.png";
+	static const std::string KingSlimeAttack = "Resource/Enemy/KingSlime/kingSlime_attack.png";
 
 
 	// 天使の画像
@@ -153,6 +165,11 @@ namespace BlockCollisionColor
 	static constexpr int GOAL_R = 0;
 	static constexpr int GOAL_G = 255;
 	static constexpr int GOAL_B = 0;
+
+	// 黄 BossArea
+	static constexpr int BOSSAREA_R = 255;
+	static constexpr int BOSSAREA_G = 255;
+	static constexpr int BOSSAREA_B = 0;
 }
 
 // プレイヤーがブロックマップとの当たり判定で使用するサイズ
@@ -234,3 +251,65 @@ namespace FeintFloorConstants
 	static constexpr float MaxEvadeDistance = 160.0f; // 避ける総距離
 	static constexpr float CollisionTopOffset = 30.0f; // 当たり判定の上面を削る量
 }
+
+// スライム用の定数
+namespace SlimeConstants
+{
+	static constexpr float CollisionWidth = 70.0f;  // 当たり判定の横幅（見た目110pxに対して適正化）
+	static constexpr float CollisionHeight = 65.0f; // 当たり判定の縦幅（見た目105pxに対して適正化）
+}
+
+// ボス戦開始演出用の定数
+namespace BossIntroConstants
+{
+	static constexpr int LetterboxHeight = 50;   // 黒帯の最大高さ(px)
+	static constexpr int LetterboxAlpha  = 255;  // 黒帯の最大不透明度
+	static constexpr int FadeFrames      = 60;   // 黒帯フェードインのフレーム数（約1秒）
+	static constexpr float AutoWalkSpeed = 3.0f; // 演出中の自動歩行速度
+}
+
+// キングスライム出現演出・警告用定数
+namespace KingSlimeIntroConstants
+{
+	static constexpr float Scale                 = 4.0f;  // キングスライムの拡大率
+	static constexpr float HitBoxScale			 = 3.0f;  // キングスライムの当たり判定の拡大率
+	static constexpr int WaitFramesBeforeWarning = 45;    // 到着後の待機フレーム（約0.75秒）
+	static constexpr int WarningDurationFrames   = 75;    // 警告表示フレーム（約1.25秒）
+	static constexpr int WarningFadeOutFrames    = 15;    // 警告フェードアウトフレーム（約0.25秒）
+	static constexpr float WarningWidth          = 80.0f * Scale; // 警告の横幅（キングスライム当たり判定幅準拠: 320.0f）
+	static constexpr float WarningHeight         = 450.0f;// 警告の縦幅
+	static constexpr float EvasionSpeedX         = 8.0f; // 回避ジャンプの水平移動速度
+	static constexpr float EvasionJumpSpeedY     = -10.0f;// 回避ジャンプの初速Y（上方向）
+	static constexpr int EvasionDurationFrames   = 22;    // 回避ジャンプの持続フレーム数
+}
+
+// キングスライム着地時の画面揺れ用定数
+namespace KingSlimeShakeConstants
+{
+	static constexpr float ShakePower     = 30.0f; // 揺れの最大強度（ピクセル）
+	static constexpr float RatioY         = 0.8f;  // 縦方向の揺れ割合（8割）
+	static constexpr float RatioX         = 0.2f;  // 横方向の揺れ割合（2割）
+	static constexpr int   DurationFrames = 30;    // 揺らすフレーム数
+}
+
+// キングスライム登場演出のタイトル表示設定
+namespace KingSlimeTitleConstants
+{
+	static constexpr int   WaitFramesBeforeTitle  = 20;     // 画面揺れ収束後の待機フレーム
+	static constexpr int   CharRevealInterval     = 6;      // 1文字ごとの出現間隔フレーム
+	static constexpr int   HoldFramesAfterReveal  = 90;     // 全文字出現後の表示維持フレーム
+	static constexpr int   FadeOutFrames          = 25;     // 文字消滅のフェードアウトフレーム
+	static constexpr int   FontSize               = 84;     // タイトル文字のフォントサイズ
+	static constexpr int   CharSpacing            = 4;      // 文字間スペース
+	static constexpr float WaveAmplitude          = 8.0f;   // 縦揺れの振幅
+	static constexpr float WaveSpeed              = 0.08f;  // 縦揺れの周期速度
+	static constexpr float WavePhaseOffset        = 0.45f;  // 隣接文字間の波の位相差
+	static constexpr int   ColorGoldR             = 255;    // 「キング」金色 R
+	static constexpr int   ColorGoldG             = 215;    // 「キング」金色 G
+	static constexpr int   ColorGoldB             = 0;      // 「キング」金色 B
+	static constexpr int   ColorCyanR             = 30;     // 「スライミー」濃い水色 R
+	static constexpr int   ColorCyanG             = 160;    // 「スライミー」濃い水色 G
+	static constexpr int   ColorCyanB             = 240;    // 「スライミー」濃い水色 B
+	static constexpr int   CharCount              = 8;      // タイトル文字数（「キングスライミー」で8文字）
+}
+

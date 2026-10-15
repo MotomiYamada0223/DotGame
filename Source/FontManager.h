@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include <map>
 
@@ -11,10 +11,13 @@ public:
     void Initialize();
     void Finalize();
 
-    // ƒhƒbƒgƒtƒHƒ“ƒg‚Å•¶š‚ğ•`‰æ‚·‚é
-    // size : ƒtƒHƒ“ƒgƒTƒCƒY
-    // color : •¶šF
-    // format : printf‚Æ“¯‚¶‚æ‚¤‚Éw’è
+    // ãƒ‰ãƒƒãƒˆãƒ•ã‚©ãƒ³ãƒˆã«ãŠã‘ã‚‹æ–‡å­—åˆ—ã®æç”»å¹…(px)ã‚’å–å¾—ã™ã‚‹
+    int GetDotStringWidth(int size, const char* str);
+
+    // ãƒ‰ãƒƒãƒˆãƒ•ã‚©ãƒ³ãƒˆã§æ–‡å­—åˆ—ã‚’æç”»ã™ã‚‹
+    // size : ãƒ•ã‚©ãƒ³ãƒˆã‚µã‚¤ã‚º
+    // color : è‰²
+    // format : printfã¨åŒæ§˜ã«æŒ‡å®š
     void DrawDotString(
         int x,
         int y,
@@ -25,15 +28,15 @@ public:
     );
 
 private:
-    // w’è‚³‚ê‚½ƒTƒCƒY‚ÌƒhƒbƒgƒtƒHƒ“ƒgƒnƒ“ƒhƒ‹‚ğæ“¾‚·‚é
-    // ‚Ü‚¾‘¶İ‚µ‚È‚¯‚ê‚ÎV‚µ‚­ì¬‚·‚é
+    // æŒ‡å®šã•ã‚ŒãŸã‚µã‚¤ã‚ºã®ãƒ‰ãƒƒãƒˆãƒ•ã‚©ãƒ³ãƒˆãƒãƒ³ãƒ‰ãƒ«ã‚’å–å¾—
+    // ã¾ã å­˜åœ¨ã—ãªã‘ã‚Œã°æ–°è¦ä½œæˆ
     int GetDotFontHandle(int size);
 
-    // ƒhƒbƒgƒtƒHƒ“ƒg‚ğì¬‚·‚é
+    // ãƒ‰ãƒƒãƒˆãƒ•ã‚©ãƒ³ãƒˆã‚’ä½œæˆ
     int CreateDotFont(int size);
 
 private:
-    // key   : ƒtƒHƒ“ƒgƒTƒCƒY
-    // value : ƒtƒHƒ“ƒgƒnƒ“ƒhƒ‹
+    // key   : ãƒ•ã‚©ãƒ³ãƒˆã‚µã‚¤ã‚º
+    // value : ãƒ•ã‚©ãƒ³ãƒˆãƒãƒ³ãƒ‰ãƒ«
     std::map<int, int> mDotFontHandles;
 };

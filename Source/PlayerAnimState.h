@@ -8,7 +8,8 @@ public:
 		Idle,
 		Walk,
 		Jump,
-		Attack
+		Attack,
+		SwordReady // 剣を構える一枚絵 (x384, y128)
 	};
 
 	enum class PlayType
@@ -26,6 +27,7 @@ public:
 	void SetWalk();
 	void SetJump();
 	void SetAttack();
+	void SetSwordReady();
 
 	void Update();
 

@@ -127,6 +127,22 @@ void TestScene::Initialize()
 
 void TestScene::Update()
 {
+	// 1キーでプレイヤーの座標を (7200, 700) にワープ (デバッグ用)
+	static bool oneKeyWasDown = false;
+	bool oneKeyIsDown = (CheckHitKey(KEY_INPUT_1) == 1 || CheckHitKey(KEY_INPUT_NUMPAD1) == 1);
+	if (oneKeyIsDown && !oneKeyWasDown)
+	{
+		if (mpPlayer != nullptr)
+		{
+			mpPlayer->SetPosition(VGet(7200.0f, 700.0f, 0.0f));
+			mpPlayer->SetVelocityY(0.0f);
+			mpPlayer->ResetBossIntroState();
+			mBlockMap.SetCameraLocked(false);
+			mBossIntro.Reset();
+		}
+	}
+	oneKeyWasDown = oneKeyIsDown;
+
 	// Pキーで進行度切り替え (デバッグ用)
 	static bool pKeyWasDown = false;
 	bool pKeyIsDown = (CheckHitKey(KEY_INPUT_P) == 1);
@@ -165,6 +181,7 @@ void TestScene::Update()
 	}
 
 	SetTextUpdate(); // テキスト更新の呼び出し
+	mBossIntro.Update(mpPlayer, mBlockMap); // ボス戦開始演出の更新
 	mSaint.Update(); // 天使の更新
 
 	if (mpPlayer)
@@ -222,7 +239,7 @@ void TestScene::Draw()
 	if (!mbIsLoaded) { return; }
 
 	// オブジェクトの描画
-	mBackground.Draw(); // スクロール背景
+	mBackground.Draw(mBlockMap.GetShakeOffsetX(), mBlockMap.GetShakeOffsetY()); // スクロール背景
 
 	Scene::Draw();
 
@@ -232,6 +249,9 @@ void TestScene::Draw()
 	mpPlayer->DrawFallDeath(); // 死亡時テキスト
 	mDrawFrame.Draw(); // フレーム描画
 	mSaint.Draw(); // 天使の描画
+
+	// ボス演出の黒帯
+	mBossIntro.Draw();
 
 	// デバッグ系
 	mpPlayer->DebugDraw(); // ブロックデバッグ
@@ -244,6 +264,7 @@ void TestScene::Draw()
 	// デバッグ表示：現在の進行度
 	const char* progStr = (mProgress == GameProgress::Tutorial1) ? "Tutorial1 (Death)" : "Tutorial2 (Immune)";
 	DrawFormatString(10, 30, GetColor(0, 255, 0), "Progress: %s  [Press P to toggle]", progStr);
+	DrawFormatString(10, 50, GetColor(0, 255, 0), "[1]: Warp to Boss Area (7200, 700)");
 }
 
 void TestScene::Finalize()

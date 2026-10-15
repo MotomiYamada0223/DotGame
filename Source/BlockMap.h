@@ -16,6 +16,7 @@ public:
 		Block,  // 当たり判定あり
 		Death, // 死亡判定あり
 		Goal,  // ゴール判定あり
+		BossArea, // ボスエリア判定あり
 	};
 
 
@@ -43,6 +44,17 @@ public:
     int ScreenToMapY(int screenY) const;
     int GetScrollX() const { return mCamera.GetScrollX(); }
     int GetScrollY() const { return mCamera.GetScrollY(); }
+    int GetDrawScrollX() const { return mCamera.GetDrawScrollX(); }
+    int GetDrawScrollY() const { return mCamera.GetDrawScrollY(); }
+    int GetShakeOffsetX() const { return mCamera.GetShakeOffsetX(); }
+    int GetShakeOffsetY() const { return mCamera.GetShakeOffsetY(); }
+
+    void StartCameraShake(float power, float ratioX, float ratioY, int durationFrames) {
+        mCamera.StartShake(power, ratioX, ratioY, durationFrames);
+    }
+
+    void SetCameraLocked(bool locked) { mCamera.SetLocked(locked); }
+    bool IsCameraLocked() const { return mCamera.IsLocked(); }
 
     // 背景画像の元の長さを取得する プレイヤーの移動領域のため
     int GetCurrentWidth() const { return mnBackgroundWidth; }
@@ -53,6 +65,15 @@ public:
 
     // スクロールリセット
     void ResetScroll();
+
+    // ボスエリア関連
+    bool HasBossArea() const { return mbHasBossArea; }
+    float GetBossAreaCenterX() const {
+        if (!mbHasBossArea) return 0.0f;
+        return (static_cast<float>(mnBossAreaLeft) + static_cast<float>(mnBossAreaRight)) * 0.5f;
+    }
+    int GetBossAreaLeft() const { return mnBossAreaLeft; }
+    int GetBossAreaRight() const { return mnBossAreaRight; }
 
 private:
     int mnBackgroundGraph;   // 背景画像
@@ -68,6 +89,9 @@ private:
 
     // 読み込み済みかのフラグ
     bool mbIsLoaded;
+    bool mbHasBossArea;
+    int mnBossAreaLeft;
+    int mnBossAreaRight;
 
     // 配列のインデックスを取得
     // 2次元座標を1次元配列の番号に変換する。

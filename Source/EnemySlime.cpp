@@ -12,17 +12,17 @@
 #include "Player.h"
 
 EnemySlime::EnemySlime(VECTOR initPos)
-    : Enemy("Resource/Image/SampleSlime.png", initPos)
+    : Enemy(CharacterGraphPath::SlimeIdle, initPos)
 {
     mMoveSpeed = 1.0f; // スライムの移動速度
 
     // 敵のサイズ設定
-    mfEnemyWidth = 64.0f;
-    mfEnemyHeight = 64.0f;
+    mfEnemyWidth = SlimeConstants::CollisionWidth;
+    mfEnemyHeight = SlimeConstants::CollisionHeight;
 
-    mpAnimIdle = new TextureAnimation(initPos, "Resource/Image/slime_idle.png", 6, 6, 1, 8);
-    mpAnimMove = new TextureAnimation(initPos, "Resource/Image/slime_move.png", 6, 6, 1, 8);
-    mpAnimAttack = new TextureAnimation(initPos, "Resource/Image/slime_attack.png", 7, 7, 1, 8);
+    mpAnimIdle = new TextureAnimation(initPos, CharacterGraphPath::SlimeIdle, 6, 6, 1, 8);
+    mpAnimMove = new TextureAnimation(initPos, CharacterGraphPath::SlimeMove, 6, 6, 1, 8);
+    mpAnimAttack = new TextureAnimation(initPos, CharacterGraphPath::SlimeAttack, 7, 7, 1, 8);
 
     mCurrentMoveDirection = 1.0f;
     mActionTimer = 48;
@@ -133,6 +133,9 @@ void EnemySlime::EnemyMove(BlockMap& blockMap)
 {
     mpBlockMap = &blockMap;
 
+    // プレイヤーの死亡状態
+    const bool isPlayerDead = IsPlayerDead();
+
     ObjectManager* objManager = Master::mpGameManager->GetSceneManager()->GetCurrentScene()->GetObjectManager();
     Object2D* playerObj = objManager->GetObject2DByTag(Object2D::Tag::Player2D);
 
@@ -148,7 +151,7 @@ void EnemySlime::EnemyMove(BlockMap& blockMap)
 
 
 
-        if (!IsPlayerDead())
+        if (!isPlayerDead)
         {
             // 攻撃中の処理
             if (mIsAttacking)
@@ -288,6 +291,16 @@ void EnemySlime::EnemyMove(BlockMap& blockMap)
         }
     }
 
+    // プレイヤー死亡時は攻撃・追跡を中断して待機状態へ移行
+    if (isPlayerDead)
+    {
+        mIsAttacking = false;
+        mHasJumped = false;
+        mTargetPlayerPos = VGet(0, 0, 0);
+        mIsChasing = false;
+        mCurrentMoveDirection = 0.0f;
+    }
+
     // スピードの設定
     if (mIsAttacking)
     {
@@ -306,7 +319,8 @@ void EnemySlime::EnemyMove(BlockMap& blockMap)
     }
 
     // 追跡中でない場合(かつ攻撃中でもない場合)はランダム徘徊
-    if (!mIsChasing && !mIsAttacking)
+    // プレイヤー死亡時は徘徊させずに待機を維持する
+    if (!mIsChasing && !mIsAttacking && !isPlayerDead)
     {
         mActionTimer--;
         if (mActionTimer <= 0)

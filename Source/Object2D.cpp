@@ -1,94 +1,94 @@
-#include "Object2D.h"
+ï»¿#include "Object2D.h"
 #include "Texture.h"
-#include "Master.h"         //¡‚ÌƒV[ƒ“‚ª’N‚È‚Ì‚©’m‚è‚½‚¢
+#include "Master.h"         //ä»Šã®ã‚·ãƒ¼ãƒ³ãŒèª°ãªã®ã‹çŸ¥ã‚ŠãŸã„
 #include "ObjectManager.h"
 #include "Scene.h"
 #include "TextureAnimation.h"
 #include "BlockMap.h"
 
 
-// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 Object2D::Object2D(std::string filename, VECTOR initPos)
 	: mvPosition(initPos)
 	, mbDeleteFlag(false)
 	, mpTextureAnimation(nullptr)
 {
-	// Œ»İƒV[ƒ“‚ÌƒIƒuƒWƒFƒNƒgƒ}ƒl[ƒWƒWƒƒ[‚É©g (this) ‚ğ’Ç‰Á‚·‚é
+	// ç¾åœ¨ã‚·ãƒ¼ãƒ³ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆãƒãƒãƒ¼ã‚¸ã‚¸ãƒ£ãƒ¼ã«è‡ªèº« (this) ã‚’è¿½åŠ ã™ã‚‹
 	Master::mpGameManager->GetSceneManager()->GetCurrentScene()->GetObjectManager()->AddObject(this);
 
-	// ‰æ‘œ¶¬
+	// ç”»åƒç”Ÿæˆ
 	mpTexture = new Texture(filename, initPos, true);
 }
 
 
 
 
-// ƒRƒ“ƒXƒgƒ‰ƒNƒ^iƒAƒjƒ[ƒVƒ‡ƒ“—pj
+// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ï¼ˆã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ç”¨ï¼‰
 Object2D::Object2D(VECTOR initPos, std::string filename, int allNum, int numX, int numY, int interval)
 	: mvPosition(initPos)
 	,mbDeleteFlag(false)
-	,mpTexture(nullptr)  // ƒeƒNƒXƒ`ƒƒ[ƒAƒjƒ[ƒVƒ‡ƒ“‚Ìê‡‚Í‰æ‘œˆê–¡•\¦‚Ì–@‚Íg—p‚µ‚È‚¢
+	,mpTexture(nullptr)  // ãƒ†ã‚¯ã‚¹ãƒãƒ£ãƒ¼ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã®å ´åˆã¯ç”»åƒä¸€å‘³è¡¨ç¤ºã®æ³•ã¯ä½¿ç”¨ã—ãªã„
 {
-	// Œ»İ‚ÌƒV[ƒ“‚Ì ObjectManager ‚É©gijthis ‚ğ’Ç‰Á
+	// ç¾åœ¨ã®ã‚·ãƒ¼ãƒ³ã® ObjectManager ã«è‡ªèº«ï¼ˆï¼‰this ã‚’è¿½åŠ 
 	Master::mpGameManager->GetSceneManager()->GetCurrentScene()->GetObjectManager()->AddObject(this);
 
-	// ƒeƒNƒXƒ`ƒƒƒAƒjƒ[ƒVƒ‡ƒ“ì¬
+	// ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ä½œæˆ
 	mpTextureAnimation = new TextureAnimation(initPos, filename, allNum, numX, numY, interval);
 }
 
 
-// ƒRƒ“ƒXƒgƒ‰ƒNƒ^iƒAƒjƒ[ƒVƒ‡ƒ“—pj
+// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ï¼ˆã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ç”¨ï¼‰
 Object2D::Object2D(const VECTOR initPos)
 	: mvPosition(initPos)
 	,mbDeleteFlag(false)
-	,mpTexture(nullptr)  // ƒeƒNƒXƒ`ƒƒ[ƒAƒjƒ[ƒVƒ‡ƒ“‚Ìê‡‚Í‰æ‘œˆê–¡•\¦‚Ì–@‚Íg—p‚µ‚È‚¢
+	,mpTexture(nullptr)  // ãƒ†ã‚¯ã‚¹ãƒãƒ£ãƒ¼ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã®å ´åˆã¯ç”»åƒä¸€å‘³è¡¨ç¤ºã®æ³•ã¯ä½¿ç”¨ã—ãªã„
 {
-	// Œ»İ‚ÌƒV[ƒ“‚Ì ObjectManager ‚É©gijthis ‚ğ’Ç‰Á
+	// ç¾åœ¨ã®ã‚·ãƒ¼ãƒ³ã® ObjectManager ã«è‡ªèº«ï¼ˆï¼‰this ã‚’è¿½åŠ 
 	Master::mpGameManager->GetSceneManager()->GetCurrentScene()->GetObjectManager()->AddObject(this);
 }
 
-// ƒfƒXƒgƒ‰ƒNƒ^
+// ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 Object2D::~Object2D()
 {
 
-	// ‰æ‘œ”jŠü
+	// ç”»åƒç ´æ£„
 	if (mpTexture != nullptr)
 	{
 		delete mpTexture;
 	}
 
-	// ƒAƒjƒ[ƒVƒ‡ƒ“‰æ‘œ”jŠü
+	// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ç”»åƒç ´æ£„
 	if (mpTextureAnimation != nullptr)
 	{
 		delete mpTextureAnimation;
 	}
 }
 
-// XV
+// æ›´æ–°
 void Object2D::Update()
 {
 	if (mpTexture != nullptr)
 	{
 		mpTexture->Update();
 		
-		// À•Wİ’è
+		// åº§æ¨™è¨­å®š
 	     mpTexture->SetPosition(mvPosition);
 	}
 
-	// ƒeƒNƒXƒ`ƒƒƒAƒjƒ[ƒVƒ‡ƒ“‚ÌXV
+	// ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã®æ›´æ–°
 	if (mpTextureAnimation != nullptr)
 	{
 		mpTextureAnimation->Update();
 		
-		// À•Wİ’è
-		// ‚±‚Á‚¿‚Å‚àƒvƒŒƒCƒ„[‚Ì“z‚ğ‚â‚Á‚Ä‚¢‚é‚©‚ç
-		// ƒvƒŒƒCƒ„[‚ÌUp0date‚É‘‚©‚È‚­‚Ä‚àok
+		// åº§æ¨™è¨­å®š
+		// ã“ã£ã¡ã§ã‚‚ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®å¥´ã‚’ã‚„ã£ã¦ã„ã‚‹ã‹ã‚‰
+		// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®Up0dateã«æ›¸ã‹ãªãã¦ã‚‚ok
 		mpTextureAnimation->SetPosition(mvPosition);
 	}
 	
 }
 
-// •`‰æ
+// æç”»
 void Object2D::Draw()
 {
 	if (mpTexture != nullptr)
@@ -96,14 +96,14 @@ void Object2D::Draw()
 		mpTexture->Draw();
 	}
 
-	// ƒeƒNƒXƒ`ƒƒƒAƒjƒ[ƒVƒ‡ƒ“
+	// ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³
 	if (mpTextureAnimation != nullptr)
 	{
 		mpTextureAnimation->Draw();
 	}
 }
 
-// ”¼Œaæ“¾
+// åŠå¾„å–å¾—
 float Object2D::GetRadius()
 {
 	if (mpTexture != nullptr)
@@ -111,17 +111,17 @@ float Object2D::GetRadius()
      return mpTexture->GetRadius();
 	}
 
-	 // ƒeƒNƒXƒ`ƒƒƒAƒjƒ[ƒVƒ‡ƒ“
+	 // ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³
 	 if (mpTextureAnimation != nullptr)
 	 {
          return mpTextureAnimation->GetRadius();
 	 }
 
-	return 0.0f; // ã“ñ‚Â‚ª¶¬‚³‚ê‚Ä‚¢‚È‚¢ê‡
+	return 0.0f; // ä¸ŠäºŒã¤ãŒç”Ÿæˆã•ã‚Œã¦ã„ãªã„å ´åˆ
 }
 
 
-// ƒTƒCƒYX
+// ã‚µã‚¤ã‚ºX
 int  Object2D::GetSizeX()
 {
 	if (mpTexture != nullptr)
@@ -129,16 +129,16 @@ int  Object2D::GetSizeX()
        return mpTexture->GetSizeX();
 	}
 
-	 // ƒeƒNƒXƒ`ƒƒƒAƒjƒ[ƒVƒ‡ƒ“
+	 // ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³
 	 if (mpTextureAnimation != nullptr)
 	 {
          return mpTextureAnimation->GetSizeX();
 	 }
 	
-	return 0; // ã“ñ‚Â‚ª¶¬‚³‚ê‚Ä‚¢‚È‚¢ê‡
+	return 0; // ä¸ŠäºŒã¤ãŒç”Ÿæˆã•ã‚Œã¦ã„ãªã„å ´åˆ
 }
 
-// ƒTƒCƒYY
+// ã‚µã‚¤ã‚ºY
 int  Object2D::GetSizeY()
 {
 	if (mpTexture != nullptr)
@@ -146,25 +146,25 @@ int  Object2D::GetSizeY()
        return mpTexture->GetSizeY();
 	}
 
-	 // ƒeƒNƒXƒ`ƒƒƒAƒjƒ[ƒVƒ‡ƒ“
+	 // ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³
 	 if (mpTextureAnimation != nullptr)
 	 {
          return mpTextureAnimation->GetSizeY();
 	 }
-	return 0; // ã“ñ‚Â‚ª¶¬‚³‚ê‚Ä‚¢‚È‚¢ê‡
+	return 0; // ä¸ŠäºŒã¤ãŒç”Ÿæˆã•ã‚Œã¦ã„ãªã„å ´åˆ
 }
 
 
-//ƒuƒƒbƒNƒ}ƒbƒv‚ª‘¶İ‚µ‚È‚¢ê‡‚ÌˆÀ‘S‘Îô‚Æ‚µ‚ÄAƒXƒNƒ[ƒ‹—Ê‚ğˆø‚¢‚½ƒXƒNƒŠ[ƒ“À•W‚ğZo‚·‚é‚½‚ß
+//ãƒ–ãƒ­ãƒƒã‚¯ãƒãƒƒãƒ—ãŒå­˜åœ¨ã—ãªã„å ´åˆã®å®‰å…¨å¯¾ç­–ã¨ã—ã¦ã€ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«é‡ã‚’å¼•ã„ãŸã‚¹ã‚¯ãƒªãƒ¼ãƒ³åº§æ¨™ã‚’ç®—å‡ºã™ã‚‹ãŸã‚
 float Object2D::ConvertToScreenX(float worldX, const BlockMap* blockMap) const
 {
-	float scrollX = (blockMap != nullptr) ? static_cast<float>(blockMap->GetScrollX()) : 0.0f;
+	float scrollX = (blockMap != nullptr) ? static_cast<float>(blockMap->GetDrawScrollX()) : 0.0f;
 	return worldX - scrollX;
 }
 
 
 float Object2D::ConvertToScreenY(float worldY, const BlockMap* blockMap) const
 {
-	float scrollY = (blockMap != nullptr) ? static_cast<float>(blockMap->GetScrollY()) : 0.0f;
+	float scrollY = (blockMap != nullptr) ? static_cast<float>(blockMap->GetDrawScrollY()) : 0.0f;
 	return worldY - scrollY;
 }
