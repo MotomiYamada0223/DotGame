@@ -149,11 +149,9 @@ void Player::PlayerMove(BlockMap& blockMap)
 
 	if (mbIsEvading)
 	{
-<<<<<<< HEAD
 		// 回避中は背中側（左: -1.0f）へ高速移動しつつ、向きは右向きを維持
 		mfMoveDirection = -1.0f;
 		currentSpeed = KingSlimeIntroConstants::EvasionSpeedX;
-=======
 		mActionState.move = true;
 		mfMoveDirection = -1.0f;
 		isFacingRight = false;
@@ -162,7 +160,6 @@ void Player::PlayerMove(BlockMap& blockMap)
 	{
 		mActionState.move = true;
 		mfMoveDirection = 1.0f;
->>>>>>> ChangeText-ayame
 		isFacingRight = true;
 	}
 	else if (mbAutoWalking)
@@ -282,13 +279,8 @@ void Player::PlayerMove(BlockMap& blockMap)
 
 	// Blink (shiftキー)
 	static bool eKeyWasDown = false;
-<<<<<<< HEAD
-	bool eKeyIsDown = (CheckHitKey(KEY_INPUT_E) == 1);
-	if (!mbAutoWalking && !mbAutoWalkArrived && eKeyIsDown && !eKeyWasDown && !isBlinking && blinkCooldownTimer <= 0 && mfMoveDirection != 0.0f)
-=======
 	bool eKeyIsDown = ((CheckHitKey(KEY_INPUT_LSHIFT) == 1) || (CheckHitKey(KEY_INPUT_RSHIFT) == 1));
 	if (eKeyIsDown && !eKeyWasDown && !isBlinking && blinkCooldownTimer <= 0 && mfMoveDirection != 0.0f)
->>>>>>> ChangeText-ayame
 	{
 		mActionState.blink = true;
 		isBlinking = true;

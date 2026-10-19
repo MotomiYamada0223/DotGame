@@ -27,22 +27,13 @@ public:
         ...
     );
 
-<<<<<<< HEAD
-private:
     // 指定されたサイズのドットフォントハンドルを取得
     // まだ存在しなければ新規作成
     int GetDotFontHandle(int size);
 
-    // ドットフォントを作成
-=======
-    // �w�肳�ꂽ�T�C�Y�̃h�b�g�t�H���g�n���h�����擾����
-    // �܂����݂��Ȃ���ΐV�����쐬����
-    int GetDotFontHandle(int size);
-
 private:
-   
-    // �h�b�g�t�H���g���쐬����
->>>>>>> ChangeText-ayame
+    // 指定されたサイズのドットフォントハンドルを取得
+    // まだ存在しなければ新規作成
     int CreateDotFont(int size);
 
 private:

@@ -33,22 +33,12 @@ void Camera::Update(int playerScreenX, int playerScreenY, float moveDirection, f
 	}
 
 	int oldScrollPos = mScrollX;
-<<<<<<< HEAD
 	// プレイヤーが右のスクロール境界を越えたら、越えた分だけスクロールを加算する
-	// (moveDirectionやcurrentSpeedに依存しないため、動く床に乗っている受動的な移動でも正しく追従する)
-=======
-
-	// �E���̐��𒴂��Ă��āA�E�Ɉړ����Ȃ�E�փX�N���[�����邽��
->>>>>>> ChangeText-ayame
 	if (playerScreenX > MapScrollConstants::ScrollStartRightX)
 	{
 		mScrollX += (playerScreenX - MapScrollConstants::ScrollStartRightX);
 	}
-<<<<<<< HEAD
 	// プレイヤーが左のスクロール境界を越えたら、越えた分だけスクロールを減算する
-=======
-	// �����̐��𒴂��Ă��āA���Ɉړ����Ȃ獶�փX�N���[�����邽��
->>>>>>> ChangeText-ayame
 	else if (playerScreenX < MapScrollConstants::ScrollStartLeftX)
 	{
 		mScrollX += (playerScreenX - MapScrollConstants::ScrollStartLeftX);
