@@ -61,7 +61,7 @@ private:
 	bool IsTimeTriggerType(const std::string& type) const;
 
 	// 現在のステップの進行条件を満たしているかを判定するため
-	bool CheckCondition(const std::string& type) const;
+	bool CheckCondition(const std::string& type, float targetX, bool isCurrentlyTalking) const;
 
 
 	// 条件分岐に応じて次に進むべきステップのIDを解決するため
@@ -102,4 +102,11 @@ private:
 	bool mbUsedBlink = false;  // ブリンクを行ったか
 	bool mbUsedJump = false;   // ジャンプを行ったか
 	bool mbUsedAttack = false; // 攻撃を行ったか
+	bool mbInterruptedLastX = false; // 直前の説明の途中で現在のX座標に到達したか
+
+
+	// 特定のX座標のセリフが出た後に死んだかどうかを記録するセット
+	std::set<float> mVisitedXCoords;   // 1度でもセリフが表示されたX座標
+	std::set<float> mDiedAfterXCoords; // そのX座標のセリフが表示された後に1回以上死んだX座標
+
 };

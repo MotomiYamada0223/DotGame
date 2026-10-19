@@ -77,7 +77,7 @@ bool TutorialTextManager::IsTimeTriggerType(const std::string& type) const
 
 
 // プレイヤーの行動フラグなどに基づいてIF分岐条件を満たしているかを判定するため
-bool TutorialTextManager::CheckCondition(const std::string& type) const
+bool TutorialTextManager::CheckCondition(const std::string& type, float targetX, bool isCurrentlyTalking) const
 {
 	if (type == "X" || type == "Time") return true;
 
@@ -94,7 +94,19 @@ bool TutorialTextManager::CheckCondition(const std::string& type) const
 	if (cond == "Move")     return mbUsedMove;
 	if (cond == "NoMove")   return !mbUsedMove;
 
-
+	// 説明の途中で座標が変わった時
+	if (cond == "Skip" || cond == "Interrupt" || cond == "Talking" || cond == "途中")
+	{
+		return isCurrentlyTalking;
+	}
+	if (cond == "NoSkip" || cond == "NoInterrupt" || cond == "Listen" || cond == "完了")
+	{
+		return !isCurrentlyTalking;
+	}
+	// その座標（targetX）のセリフが出た後に1回以上死んだかどうか
+	bool diedAfterThisSpot = (mDiedAfterXCoords.find(targetX) != mDiedAfterXCoords.end());
+	if (cond == "Death")    return diedAfterThisSpot;
+	if (cond == "NoDeath")  return !diedAfterThisSpot;
 	return true;
 }
 
@@ -119,7 +131,7 @@ int TutorialTextManager::ResolveNextStepID(int candidateID, float playerX) const
 		const StepData& s = itr->second;
 		if (IsTimeTriggerType(s.completeType))
 		{
-			if (CheckCondition(s.completeType))
+			if (CheckCondition(s.completeType, mfCurrentTriggerX, mbInterruptedLastX))
 			{
 				return checkID;
 			}
@@ -131,7 +143,7 @@ int TutorialTextManager::ResolveNextStepID(int candidateID, float playerX) const
 			{
 				return 0;
 			}
-			if (CheckCondition(s.completeType))
+			if (CheckCondition(s.completeType, s.completeValue, mbInterruptedLastX))
 			{
 				return checkID;
 			}
@@ -229,28 +241,46 @@ void TutorialTextManager::Update(float dt, float playerX)
 	// プレイヤーのX座標に応じたステップの発生条件をチェックして切り替えるため
 	int bestID = 0;
 	float bestX = mfCurrentTriggerX;
+	bool bestHasCond = false; // 条件付きの処理をするかどうかのフラグ
+
+	// 現在セリフの再生中かどうか
+	bool isCurrentlyTalking = (mnCurrentID != 0 && !mbIsTextCompleted);
 
 	for (const auto& pair : loader.steps)
 	{
 		const StepData& s = pair.second;
-		bool isAvailable = (IsXTriggerType(s.completeType) && CheckCondition(s.completeType) &&
+		// CheckCondition に isCurrentlyTalking を渡して、条件を満たしているか判定する
+		bool isAvailable = (IsXTriggerType(s.completeType) &&
+			CheckCondition(s.completeType, s.completeValue, isCurrentlyTalking) &&
 			mCompletedXStepIDs.find(s.id) == mCompletedXStepIDs.end());
 
 		if (isAvailable)
 		{
-			if (mfPlayerX >= s.completeValue && s.completeValue > mfCurrentTriggerX)
+			if (mfPlayerX >= s.completeValue && s.completeValue >= mfCurrentTriggerX)
 			{
-				if (s.completeValue > bestX || (s.completeValue == bestX && (bestID == 0 || s.id < bestID)))
+				bool hasCond = (s.completeType.find("Skip") != std::string::npos ||
+					s.completeType.find("Interrupt") != std::string::npos ||
+					s.completeType.find("途中") != std::string::npos);
+
+				// より遠くのX座標、または同じX座標なら条件付きのものを優先的に選ぶ
+				if (s.completeValue > bestX ||
+					(s.completeValue == bestX && (bestID == 0 || (hasCond && !bestHasCond) || (hasCond == bestHasCond && s.id < bestID))))
 				{
 					bestX = s.completeValue;
 					bestID = s.id;
+					bestHasCond = hasCond;
 				}
 			}
 		}
 	}
 
+
 	if (bestID != 0)
 	{
+		// 現在セリフの再生中だったかどうかを保持しておくため
+		bool isCurrentlyTalking = (mnCurrentID != 0 && !mbIsTextCompleted);
+		mbInterruptedLastX = isCurrentlyTalking;
+
 		mfCurrentTriggerX = bestX;
 
 		// 同じX座標にある別の分岐行も完了扱いに登録して二重発生条件を防ぐため
@@ -259,7 +289,7 @@ void TutorialTextManager::Update(float dt, float playerX)
 			const StepData& s = pair.second;
 			if (IsXTriggerType(s.completeType) && s.completeValue == bestX)
 			{
-				if (!CheckCondition(s.completeType))
+				if (!CheckCondition(s.completeType, bestX, mbInterruptedLastX))
 				{
 					mCompletedXStepIDs.insert(s.id);
 				}
@@ -292,7 +322,7 @@ void TutorialTextManager::NextStepUpdate(bool mbCompleted)
 	// すべての文字が表示された後、
 	// 次のステップへ移行するまでの余韻時間を計測する
 	if (mbCompleted)
-	{
+	{ 
 		mfIdelTimer += mfDeltaTime;
 
 		float waitDuration = mStep->completeValue;
@@ -325,7 +355,7 @@ void TutorialTextManager::NextStepUpdate(bool mbCompleted)
 			for (const auto& pair : loader.steps)
 			{
 				const StepData& s = pair.second;
-				if (IsXTriggerType(s.completeType) && CheckCondition(s.completeType) &&
+				if (IsXTriggerType(s.completeType) && CheckCondition(s.completeType, s.completeValue, mbInterruptedLastX) &&
 					s.completeValue == mfCurrentTriggerX && mCompletedXStepIDs.find(s.id) == mCompletedXStepIDs.end())
 				{
 					if (sameXNextID == 0 || s.id < sameXNextID)
@@ -466,6 +496,7 @@ void TutorialTextManager::Reset()
 	mbUsedBlink = false;
 	mbUsedJump = false;
 	mbUsedAttack = false;
+	mbInterruptedLastX = false;
 }
 
 

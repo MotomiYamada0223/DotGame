@@ -228,9 +228,9 @@ void Player::PlayerMove(BlockMap& blockMap)
 
 
 
-	// Blink (Eキー)
+	// Blink (shiftキー)
 	static bool eKeyWasDown = false;
-	bool eKeyIsDown = (CheckHitKey(KEY_INPUT_E) == 1);
+	bool eKeyIsDown = ((CheckHitKey(KEY_INPUT_LSHIFT) == 1) || (CheckHitKey(KEY_INPUT_RSHIFT) == 1));
 	if (eKeyIsDown && !eKeyWasDown && !isBlinking && blinkCooldownTimer <= 0 && mfMoveDirection != 0.0f)
 	{
 		mActionState.blink = true;
