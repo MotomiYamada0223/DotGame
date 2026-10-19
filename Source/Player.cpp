@@ -584,6 +584,9 @@ void Player::DrawFallDeath()
 
 void Player::Draw()
 {
+
+	DrawLife();
+
 	if (isDead)
 	{
 		SetDrawBright(255, 255, 255); // 色をリセット
@@ -626,6 +629,7 @@ void Player::Draw()
 				);
 			}
 		}
+
 		return;
 	}
 
@@ -758,7 +762,6 @@ void Player::Draw()
 		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 	}
 
-	DrawLife();
 }
 
 
@@ -780,6 +783,12 @@ void Player::DrawLife()
 			int graph = mHeartEmptyGraph;
 			if (heartState >= 2) graph = mHeartFullGraph;
 			else if (heartState == 1) graph = mHeartHalfGraph;
+			
+
+			if (isDead)
+			{
+				graph = mHeartEmptyGraph;
+			}
 
 			if (graph != -1)
 			{

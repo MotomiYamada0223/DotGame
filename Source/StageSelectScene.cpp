@@ -218,7 +218,7 @@ void StageSelectScene::Update()
 			if (Master::gDeathCounts[Master::gCurrentStageIndex] == -1) {
 				Master::gDeathCounts[Master::gCurrentStageIndex] = 0;
 			}
-			Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_GAME);
+			Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_TEST);
 		}
 		return;
 	}
