@@ -95,7 +95,7 @@ namespace CharacterGraphPath
 // 背景画像の読み込み
 namespace BackGroundGraphPath
 {
-	static const std::string SelectStageMap = "Resource/Image/SampleStageMap.png";
+	static const std::string SelectStageMap = "Resource/Backgrounds/selectMap.png";
 }
 
 

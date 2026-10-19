@@ -13,24 +13,32 @@ public:
 	virtual void Draw() override;
 	virtual void Finalize() override;
 
+	void DrawStageString();
+	void Move();
+
 private:
 	int mapGraphHandle;
 
 	// プレイヤーの画像と座標
-	
-	int playerGraphHandle;
+	int playerGraphHandles[16];
+	int animCounter;
+	bool facingRight;
+	int caveTimer;
+	bool isHidden;
 	float playerX;
 	float playerY;
 	float playerSpeed;
 
 	// 目標座標と移動フラグ
-	
 	float targetX;
 	float targetY;
 	bool isMoving;
 
 	// デバッグ用：受け付けた入力信号
-	
 	std::string lastSignal;
+	bool mIsEnteringStage;
+	int mEnterTimer;
+	bool mIsReturningTitle;
+	int mReturnTimer;
 	
 };
