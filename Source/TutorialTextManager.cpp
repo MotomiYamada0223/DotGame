@@ -223,6 +223,9 @@ void TutorialTextManager::Update(float dt, float playerX)
 		return;
 	}
 
+	mfDeltaTime = dt;
+	mfPlayerX = playerX;
+
 	// プレイヤーのX座標に応じたステップの発生条件をチェックして切り替えるため
 	int bestID = 0;
 	float bestX = mfCurrentTriggerX;
@@ -235,7 +238,7 @@ void TutorialTextManager::Update(float dt, float playerX)
 
 		if (isAvailable)
 		{
-			if (playerX >= s.completeValue && s.completeValue > mfCurrentTriggerX)
+			if (mfPlayerX >= s.completeValue && s.completeValue > mfCurrentTriggerX)
 			{
 				if (s.completeValue > bestX || (s.completeValue == bestX && (bestID == 0 || s.id < bestID)))
 				{
@@ -268,16 +271,131 @@ void TutorialTextManager::Update(float dt, float playerX)
 	}
 
 	// 現在のステップを取得する
-	const StepData* step = GetCurrentStep();
+	mStep = GetCurrentStep();
 
 	// ステップが存在しない場合は何もしない
-	if (step == nullptr)
+	if (mStep == nullptr)
 	{
 		return;
 	}
+	// 文字の更新
+	UpdateString(mStep);
 
+	mbIsTextCompleted = (mnDisplayByteCount >= static_cast<int>(mStep->text.size()));
+	NextStepUpdate(mbIsTextCompleted);
+}
+
+
+
+void TutorialTextManager::NextStepUpdate(bool mbCompleted)
+{
+	// すべての文字が表示された後、
+	// 次のステップへ移行するまでの余韻時間を計測する
+	if (mbCompleted)
+	{
+		mfIdelTimer += mfDeltaTime;
+
+		float waitDuration = mStep->completeValue;
+		if (IsTimeTriggerType(mStep->completeType) && mStep->completeValue > 0.0f)
+		{
+			waitDuration = mStep->completeValue;
+		}
+		else if (mStep->nextID != 0)
+		{
+			waitDuration = 3.0f; // デフォルトの余韻時間
+		}
+
+		// 待ち時間が完了したら次のステップへ切り替える
+		if (mfIdelTimer >= waitDuration)
+		{
+			// 次のステップIDが指定されている場合、条件を満たす分岐先へ進むため
+			if (mStep->nextID != 0)
+			{
+				int resolvedID = ResolveNextStepID(mStep->nextID, mfPlayerX);
+				if (resolvedID != 0)
+				{
+					mCompletedXStepIDs.insert(resolvedID);
+					ChangeStep(resolvedID);
+					return;
+				}
+			}
+
+			// 同じX座標に設定された条件を満たす未表示の別行があれば自動で次へ進めるため
+			int sameXNextID = 0;
+			for (const auto& pair : loader.steps)
+			{
+				const StepData& s = pair.second;
+				if (IsXTriggerType(s.completeType) && CheckCondition(s.completeType) &&
+					s.completeValue == mfCurrentTriggerX && mCompletedXStepIDs.find(s.id) == mCompletedXStepIDs.end())
+				{
+					if (sameXNextID == 0 || s.id < sameXNextID)
+					{
+						sameXNextID = s.id;
+					}
+				}
+			}
+
+			if (sameXNextID != 0)
+			{
+				mCompletedXStepIDs.insert(sameXNextID);
+				ChangeStep(sameXNextID);
+				return;
+			}
+
+			// 次のステップへ進むか判定
+			if (mStep->nextID != 0)
+			{
+				bool waitForFutureX = false;
+
+				// nextID以降に、まだ到達していないXトリガーがあるか確認
+				for (int offset = 0; offset < 5; ++offset)
+				{
+					int checkID = mStep->nextID + offset;
+
+					auto itr = loader.steps.find(checkID);
+					if (itr == loader.steps.end()) break;
+
+					const StepData& nextCandidate = itr->second;
+
+					if (IsXTriggerType(nextCandidate.completeType) &&
+						nextCandidate.completeValue > mfPlayerX)
+					{
+						waitForFutureX = true;
+						break;
+					}
+				}
+
+				// 未来のX座標を待つ場合は、現在のテキストを維持する
+				if (waitForFutureX)
+				{
+					return;
+				}
+
+				// 次のステップが存在する場合のみ進む
+				auto itr = mbIsDeathTutorial
+					? deathLoader.steps.find(mStep->nextID)
+					: loader.steps.find(mStep->nextID);
+
+				const auto& steps = mbIsDeathTutorial
+					? deathLoader.steps
+					: loader.steps;
+
+				if (itr != steps.end())
+				{
+					ChangeStep(mStep->nextID);
+					return;
+				}
+			}
+			// 次のステップがない場合は、現在のテキストを維持する
+			return;
+		}
+	}
+}
+
+void TutorialTextManager::UpdateString(const StepData* step)
+{
 	// 一定速度で文字を進めるため、経過時間を加算する
-	mfCharTimer += dt;
+	mfCharTimer += mfDeltaTime;
 
 	// 指定の時間が経過したら1文字分のバイト数を進める
 	while (mfCharTimer >= mfCharSpeed)
@@ -330,111 +448,6 @@ void TutorialTextManager::Update(float dt, float playerX)
 			// 最後まで表示しきったらタイマーリセット
 			mfCharTimer = 0.0f;
 			break;
-		}
-	}
-	
-	mbIsTextCompleted = (mnDisplayByteCount >= static_cast<int>(step->text.size()));
-
-	// すべての文字が表示された後、
-	// 次のステップへ移行するまでの余韻時間を計測する
-	if (mbIsTextCompleted)
-	{
-		mfIdelTimer += dt;
-
-		float waitDuration = step->completeValue;
-		if (IsTimeTriggerType(step->completeType) && step->completeValue > 0.0f)
-		{
-			waitDuration = step->completeValue;
-		}
-		else if (step->nextID != 0)
-		{
-			waitDuration = 3.0f; // デフォルトの余韻時間
-		}
-
-		// 待ち時間が完了したら次のステップへ切り替える
-		if (mfIdelTimer >= waitDuration)
-		{
-			// 次のステップIDが指定されている場合、条件を満たす分岐先へ進むため
-			if (step->nextID != 0)
-			{
-				int resolvedID = ResolveNextStepID(step->nextID, playerX);
-				if (resolvedID != 0)
-				{
-					mCompletedXStepIDs.insert(resolvedID);
-					ChangeStep(resolvedID);
-					return;
-				}
-			}
-
-			// 同じX座標に設定された条件を満たす未表示の別行があれば自動で次へ進めるため
-			int sameXNextID = 0;
-			for (const auto& pair : loader.steps)
-			{
-				const StepData& s = pair.second;
-				if (IsXTriggerType(s.completeType) && CheckCondition(s.completeType) &&
-					s.completeValue == mfCurrentTriggerX && mCompletedXStepIDs.find(s.id) == mCompletedXStepIDs.end())
-				{
-					if (sameXNextID == 0 || s.id < sameXNextID)
-					{
-						sameXNextID = s.id;
-					}
-				}
-			}
-
-			if (sameXNextID != 0)
-			{
-				mCompletedXStepIDs.insert(sameXNextID);
-				ChangeStep(sameXNextID);
-				return;
-			}
-
-			// 次のステップへ進むか判定
-			if (step->nextID != 0)
-			{
-				bool waitForFutureX = false;
-
-				// nextID以降に、まだ到達していないXトリガーがあるか確認
-				for (int offset = 0; offset < 5; ++offset)
-				{
-					int checkID = step->nextID + offset;
-
-					auto itr = loader.steps.find(checkID);
-					if (itr == loader.steps.end()) break;
-
-					const StepData& nextCandidate = itr->second;
-
-					if (IsXTriggerType(nextCandidate.completeType) &&
-						nextCandidate.completeValue > playerX)
-					{
-						waitForFutureX = true;
-						break;
-					}
-				}
-
-				// 未来のX座標を待つ場合は、現在のテキストを維持する
-				if (waitForFutureX)
-				{
-					return;
-				}
-
-				// 次のステップが存在する場合のみ進む
-				auto itr = mbIsDeathTutorial
-					? deathLoader.steps.find(step->nextID)
-					: loader.steps.find(step->nextID);
-
-				const auto& steps = mbIsDeathTutorial
-					? deathLoader.steps
-					: loader.steps;
-
-				if (itr != steps.end())
-				{
-					ChangeStep(step->nextID);
-					return;
-				}
-			}
-
-			// 次のステップがない場合は、現在のテキストを維持する
-			return;
 		}
 	}
 }

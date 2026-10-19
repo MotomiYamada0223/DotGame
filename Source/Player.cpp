@@ -731,8 +731,8 @@ void Player::Draw()
 	// 攻撃エフェクトの描画
 	if (isAttacking)
 	{
-		int attackWidth = 60;
-		int attackHeight = 40;
+		int attackWidth = PlayerConstants::PlayerAttackWidth;
+		int attackHeight = PlayerConstants::PlayerAttackHeight;
 		int rectLeft, rectTop, rectRight, rectBottom;
 		int halfSizeX = PlayerAnimState::FRAME_WIDTH / 2;
 
@@ -985,6 +985,9 @@ void Player::Revive()
 	// 移動状態をリセット
 	mfMoveDirection = 0.0f;
 	mfCurrentSpeed = moveSpeed;
+
+	// 行動ステートのリセット
+	mActionState.blink = false;
 
 	// マップのスクロール位置を一番左に戻す
 	if (mpBlockMap != nullptr)

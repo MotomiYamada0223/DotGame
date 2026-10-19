@@ -27,6 +27,11 @@ public:
 	void Draw();
 	void DebugDraw();
 
+	// 文字を進める処理
+	void UpdateString(const StepData* step);
+	// 次のステップに進める
+	void NextStepUpdate(bool mbCompleted);
+
 	// ステップの変更
 	void ChangeStep(int nextID);
 
@@ -69,6 +74,8 @@ private:
 	// 死亡時チュートリアル用
 	StepLoader deathLoader;
 
+	const StepData* mStep;
+
 	int mnCurrentID = 1; // 現在のステップID
 	int mnPreviousID = 1; // 死亡する前の通常チュートリアルID
 	bool mbIsDeathTutorial = false; // 現在、死亡時チュートリアルを表示しているか
@@ -85,7 +92,9 @@ private:
 	float mfCharTimer = 0.0f; // 1文字表示するまでの時間
 	bool mbIsTextCompleted = false; // 全ての文字が表示されたかのフラグ
 
-
+	// Updateの保存メンバ
+	float mfDeltaTime = 0.0f;
+	float mfPlayerX = 0.0f;
 
 	// あとで別CPPに変更する
 	// チュートリアル中のIF分岐判定に用いるプレイヤーの行動フラグ

@@ -24,7 +24,7 @@ namespace PlayerConstants
 	static const int PlayerCollisionWidth = 32; // プレイヤーの幅
 	static const int PlayerCollisionHeight = 100; // プレイヤーの高さ
 
-	static const int PlayerAttackWidth = 60; // プレイヤーの攻撃範囲の幅
+	static const int PlayerAttackWidth = 600; // プレイヤーの攻撃範囲の幅
 	static const int PlayerAttackHeight = 40; // プレイヤーの攻撃範囲の高さ
 
 	static const int MaxLive = 3; // プレイヤーの最大残機
