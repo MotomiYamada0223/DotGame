@@ -55,7 +55,7 @@ void TestScene::Initialize()
 	mBackground.Load(ScrollGraphPath::Stage1);
 
 	// プレイヤーの生成
-	mpPlayer = new Player(VGet(ScreenSize::CenterX - 6000, 00, 0.0f));
+	mpPlayer = new Player(VGet(ScreenSize::CenterX - 6000, 300, 0.0f));
 
 
 	// フェイント床の配置（4つの足場の一番下のところ）
@@ -180,6 +180,8 @@ void TestScene::Update()
 		Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_LOSERESULT);
 	}
 
+	// チュートリアルテキストの更新
+	mpPlayer->PlayerMove(mBlockMap);
 	SetTextUpdate(); // テキスト更新の呼び出し
 	mBossIntro.Update(mpPlayer, mBlockMap); // ボス戦開始演出の更新
 	mSaint.Update(); // 天使の更新
@@ -212,11 +214,8 @@ void TestScene::Update()
 
 void TestScene::SetTextUpdate()
 {
-	// チュートリアルテキストの更新
-	mpPlayer->PlayerMove(mBlockMap);
 	// プレイヤーの死亡状態の確認
 	bool isPlayerDead = mpPlayer->GetIsDead();
-
 	// 死亡した瞬間
 	if (isPlayerDead && !mbWasPlayerDead)
 	{
@@ -226,11 +225,13 @@ void TestScene::SetTextUpdate()
 	else if (!isPlayerDead && mbWasPlayerDead)
 	{
 		mTutorialText.OnPlayerRevive();
+		mTutorialText.Reset();
 	}
 
 	// 今フレームの死亡状態を保存
 	mbWasPlayerDead = isPlayerDead;
-	mTutorialText.Update(1.0f / 60.0f);
+	mTutorialText.Update(1.0f / 60.0f, mpPlayer->GetPosition().x);
+	mTutorialText.SetActionState(mpPlayer->GetActionState());
 }
 
 

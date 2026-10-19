@@ -24,10 +24,10 @@ namespace PlayerConstants
 	static const int PlayerCollisionWidth = 32; // プレイヤーの幅
 	static const int PlayerCollisionHeight = 100; // プレイヤーの高さ
 
-	static const int PlayerAttackWidth = 60; // プレイヤーの攻撃範囲の幅
+	static const int PlayerAttackWidth = 600; // プレイヤーの攻撃範囲の幅
 	static const int PlayerAttackHeight = 40; // プレイヤーの攻撃範囲の高さ
 
-	static const int MaxLive = 3; // プレイヤーの最大残機
+	static const int MaxLive = 300; // プレイヤーの最大残機
 
 	// 落下でプレイヤーが死亡する位置
 	static const int PlayerDeathHeight = ScreenSize::ScrrenHeight + 100;
@@ -108,7 +108,7 @@ namespace CharacterGraphPath
 // 背景画像の読み込み
 namespace BackGroundGraphPath
 {
-	static const std::string SelectStageMap = "Resource/Image/SampleStageMap.png";
+	static const std::string SelectStageMap = "Resource/Backgrounds/selectMap.png";
 }
 
 

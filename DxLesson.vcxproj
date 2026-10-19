@@ -168,6 +168,7 @@
     <ClCompile Include="Source\Saint.cpp" />
     <ClCompile Include="Source\Scene.cpp" />
     <ClCompile Include="Source\SceneManager.cpp" />
+    <ClCompile Include="Source\ColorTagParser.cpp" />
     <ClCompile Include="Source\SoundManager.cpp" />
     <ClCompile Include="Source\StageSelectScene.cpp" />
     <ClCompile Include="Source\StepLoader.cpp" />
@@ -192,6 +193,7 @@
     <ClInclude Include="Source\BossIntroDirector.h" />
     <ClInclude Include="Source\Camera.h" />
     <ClInclude Include="Source\Collision.h" />
+    <ClInclude Include="Source\ColorTagParser.h" />
     <ClInclude Include="Source\DeathReason.h" />
     <ClInclude Include="Source\DrawFrame.h" />
     <ClInclude Include="Source\Enemy.h" />
@@ -214,6 +216,7 @@
     <ClInclude Include="Source\ObjectManager.h" />
     <ClInclude Include="Source\Player.h" />
     <ClInclude Include="Source\CharacterPhysics.h" />
+    <ClInclude Include="Source\PlayerActionState.h" />
     <ClInclude Include="Source\PlayerAnimState.h" />
     <ClInclude Include="Source\ResourceManager.h" />
     <ClInclude Include="Source\Saint.h" />

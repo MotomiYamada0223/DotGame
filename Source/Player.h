@@ -9,6 +9,7 @@
 #include "PlayerAnimState.h"
 #include "UnitStatus.h"
 #include "DeathReason.h"
+#include "PlayerActionState.h"
 
 class Player : public Object2D, public UnitStatus
 {
@@ -43,6 +44,9 @@ public: // アクセサ
 	// 死亡理由を取得
 	DeathReason::DeathType GetDeathReason() const { return mDeathReason;}
 
+	// 各シーンからプレイヤーの行動をセット取得するもの
+	const PlayerActionState &GetActionState() { return mActionState; }
+
 
 	bool IsBlinking() const { return isBlinking; } // ブリンク中かどうかの判定用
 
@@ -72,6 +76,7 @@ private:
 	PlayerAnimState mPlayerState;
 	BlockAction mBlockAction;
 	DeathReason::DeathType mDeathReason;
+	PlayerActionState mActionState;
 
 
 	// ポインタで持っているもの

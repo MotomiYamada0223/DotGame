@@ -14,11 +14,24 @@
 // こういったクラスを作る
 // 
 
+struct SaveSlot {
+	bool isUsed;
+	bool stageCleared[4];
+	int deathCounts[4];
+};
+
+
 class Master
 {
 public:
 
 	static ObjectManager* mpObjectManager;
 	static GameManager* mpGameManager; // ゲームマネージャーのポインタ
+
+
+	static bool gStageCleared[4];
+	static int gDeathCounts[4];
+	static int gCurrentStageRunDeathCount;
+	static int gCurrentStageIndex;
 
 };
