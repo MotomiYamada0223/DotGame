@@ -27,12 +27,22 @@ public:
         ...
     );
 
+<<<<<<< HEAD
 private:
     // æŒ‡å®šã•ã‚ŒãŸã‚µã‚¤ã‚ºã®ãƒ‰ãƒƒãƒˆãƒ•ã‚©ãƒ³ãƒˆãƒãƒ³ãƒ‰ãƒ«ã‚’å–å¾—
     // ã¾ã å­˜åœ¨ã—ãªã‘ã‚Œã°æ–°è¦ä½œæˆ
     int GetDotFontHandle(int size);
 
     // ãƒ‰ãƒƒãƒˆãƒ•ã‚©ãƒ³ãƒˆã‚’ä½œæˆ
+=======
+    // Žw’è‚³‚ê‚½ƒTƒCƒY‚ÌƒhƒbƒgƒtƒHƒ“ƒgƒnƒ“ƒhƒ‹‚ðŽæ“¾‚·‚é
+    // ‚Ü‚¾‘¶Ý‚µ‚È‚¯‚ê‚ÎV‚µ‚­ì¬‚·‚é
+    int GetDotFontHandle(int size);
+
+private:
+   
+    // ƒhƒbƒgƒtƒHƒ“ƒg‚ðì¬‚·‚é
+>>>>>>> ChangeText-ayame
     int CreateDotFont(int size);
 
 private:

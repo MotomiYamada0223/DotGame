@@ -11,6 +11,7 @@
 #include "GameConstants.h"
 #include "BlockAction.h"
 #include "InputManager.h"
+#include "PlayerActionState.h"
 
 Player::Player(VECTOR initPos)
 // TextureAnimationは使わず一枚絵としてロード
@@ -148,9 +149,20 @@ void Player::PlayerMove(BlockMap& blockMap)
 
 	if (mbIsEvading)
 	{
+<<<<<<< HEAD
 		// 回避中は背中側（左: -1.0f）へ高速移動しつつ、向きは右向きを維持
 		mfMoveDirection = -1.0f;
 		currentSpeed = KingSlimeIntroConstants::EvasionSpeedX;
+=======
+		mActionState.move = true;
+		mfMoveDirection = -1.0f;
+		isFacingRight = false;
+	}
+	else if (CheckHitKey(KEY_INPUT_D) == 1)
+	{
+		mActionState.move = true;
+		mfMoveDirection = 1.0f;
+>>>>>>> ChangeText-ayame
 		isFacingRight = true;
 	}
 	else if (mbAutoWalking)
@@ -268,11 +280,17 @@ void Player::PlayerMove(BlockMap& blockMap)
 
 
 
-	// Blink (Eキー)
+	// Blink (shiftキー)
 	static bool eKeyWasDown = false;
+<<<<<<< HEAD
 	bool eKeyIsDown = (CheckHitKey(KEY_INPUT_E) == 1);
 	if (!mbAutoWalking && !mbAutoWalkArrived && eKeyIsDown && !eKeyWasDown && !isBlinking && blinkCooldownTimer <= 0 && mfMoveDirection != 0.0f)
+=======
+	bool eKeyIsDown = ((CheckHitKey(KEY_INPUT_LSHIFT) == 1) || (CheckHitKey(KEY_INPUT_RSHIFT) == 1));
+	if (eKeyIsDown && !eKeyWasDown && !isBlinking && blinkCooldownTimer <= 0 && mfMoveDirection != 0.0f)
+>>>>>>> ChangeText-ayame
 	{
+		mActionState.blink = true;
 		isBlinking = true;
 		blinkTimer = blinkDuration;
 		blinkDirection = isFacingRight ? 1.0f : -1.0f;
@@ -285,6 +303,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 	if (!mbAutoWalking && !mbAutoWalkArrived && CheckHitKey(KEY_INPUT_SPACE) == 1 &&
 		isGrounded)
 	{
+		mActionState.jump = true;
 		mbIsJumping = true;
 		isGrounded = false;
 		velocityY = jumpPower;
@@ -294,12 +313,14 @@ void Player::PlayerMove(BlockMap& blockMap)
 	if (!mbAutoWalking && !mbAutoWalkArrived && CheckHitKey(KEY_INPUT_F) == 1 &&
 		!isAttacking)
 	{
+		mActionState.attack = true;
 		isAttacking = true;
 		attackTimer = attackDuration;
 		mPlayerState.SetAttack();
 		mHitEnemies.clear();
 	}
 
+	
 
 
 	// 攻撃エフェクト更新
@@ -657,6 +678,9 @@ void Player::DrawFallDeath()
 
 void Player::Draw()
 {
+
+	DrawLife();
+
 	if (isDead)
 	{
 		SetDrawBright(255, 255, 255); // 色をリセット
@@ -699,6 +723,7 @@ void Player::Draw()
 				);
 			}
 		}
+
 		return;
 	}
 
@@ -808,8 +833,8 @@ void Player::Draw()
 	// 攻撃エフェクトの描画
 	if (isAttacking)
 	{
-		int attackWidth = 60;
-		int attackHeight = 40;
+		int attackWidth = PlayerConstants::PlayerAttackWidth;
+		int attackHeight = PlayerConstants::PlayerAttackHeight;
 		int rectLeft, rectTop, rectRight, rectBottom;
 		int halfSizeX = PlayerAnimState::FRAME_WIDTH / 2;
 
@@ -835,7 +860,6 @@ void Player::Draw()
 		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 	}
 
-	DrawLife();
 }
 
 
@@ -857,6 +881,12 @@ void Player::DrawLife()
 			int graph = mHeartEmptyGraph;
 			if (heartState >= 2) graph = mHeartFullGraph;
 			else if (heartState == 1) graph = mHeartHalfGraph;
+			
+
+			if (isDead)
+			{
+				graph = mHeartEmptyGraph;
+			}
 
 			if (graph != -1)
 			{
@@ -1031,6 +1061,7 @@ void Player::DeadProcess()
 void Player::Revive()
 {
 	mDeathReason = DeathReason::DeathType::None;
+	
 
 	// 位置のリセット
 	mvPosition = mSpawnPos;
@@ -1061,6 +1092,9 @@ void Player::Revive()
 	// 移動状態をリセット
 	mfMoveDirection = 0.0f;
 	mfCurrentSpeed = moveSpeed;
+
+	// 行動ステートのリセット
+	mActionState.blink = false;
 
 	// マップのスクロール位置を一番左に戻す
 	if (mpBlockMap != nullptr)

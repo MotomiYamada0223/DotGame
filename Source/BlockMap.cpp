@@ -319,5 +319,8 @@ void BlockMap::ResetScroll()
 {
     mCamera.SetScrollX(0);
     mCamera.SetScrollY(0);
+<<<<<<< HEAD
     mCamera.SetLocked(false);
+=======
+>>>>>>> ChangeText-ayame
 }
