@@ -152,14 +152,6 @@ void Player::PlayerMove(BlockMap& blockMap)
 		// 回避中は背中側（左: -1.0f）へ高速移動しつつ、向きは右向きを維持
 		mfMoveDirection = -1.0f;
 		currentSpeed = KingSlimeIntroConstants::EvasionSpeedX;
-		mActionState.move = true;
-		mfMoveDirection = -1.0f;
-		isFacingRight = false;
-	}
-	else if (CheckHitKey(KEY_INPUT_D) == 1)
-	{
-		mActionState.move = true;
-		mfMoveDirection = 1.0f;
 		isFacingRight = true;
 	}
 	else if (mbAutoWalking)
@@ -191,11 +183,13 @@ void Player::PlayerMove(BlockMap& blockMap)
 	{
 		if (CheckHitKey(KEY_INPUT_A) == 1)
 		{
+			mActionState.move = true;
 			mfMoveDirection = -1.0f;
 			isFacingRight = false;
 		}
 		else if (CheckHitKey(KEY_INPUT_D) == 1)
 		{
+			mActionState.move = true;
 			mfMoveDirection = 1.0f;
 			isFacingRight = true;
 		}
@@ -280,7 +274,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 	// Blink (shiftキー)
 	static bool eKeyWasDown = false;
 	bool eKeyIsDown = ((CheckHitKey(KEY_INPUT_LSHIFT) == 1) || (CheckHitKey(KEY_INPUT_RSHIFT) == 1));
-	if (eKeyIsDown && !eKeyWasDown && !isBlinking && blinkCooldownTimer <= 0 && mfMoveDirection != 0.0f)
+	if (!mbAutoWalking && !mbAutoWalkArrived && eKeyIsDown && !eKeyWasDown && !isBlinking && blinkCooldownTimer <= 0 && mfMoveDirection != 0.0f)
 	{
 		mActionState.blink = true;
 		isBlinking = true;
@@ -509,7 +503,7 @@ void Player::Update()
 			enemy->GetPosition().x - enemyWidth / 2.0f
 			);
 		int eneTop = static_cast<int>(
-			enemy->GetPosition().y - enemyHeight / 2.0f
+			enemy->GetPosition().y + enemy->GetCollisionOffsetY() - enemyHeight / 2.0f
 			);
 
 		VECTOR enePos = VGet(
@@ -524,7 +518,8 @@ void Player::Update()
 		);
 
 		// 1. プレイヤー自身と敵の衝突判定 (ダメージで赤くする)
-		if (Collision::CheckRectToRect(myPos, mySize, enePos, eneSize))
+		if (Collision::CheckRectToRect(myPos, mySize, enePos, eneSize) ||
+			enemy->CheckAttackCollision(myPos, mySize))
 		{
 			UnitStatus* enemyStatus = dynamic_cast<UnitStatus*>(enemy);
 			bool ignoresInvincible = (enemyStatus && enemyStatus->mIgnoresInvincibility);
@@ -939,11 +934,13 @@ void Player::DebugDraw()
 
 			float divide = 2.0f;
 
+			float eneOffsetY = enemy->GetCollisionOffsetY();
+
 			// 敵のデバッグ描画でも共通関数を利用してスクロールを正確に合わせる
 			int eneLeft = static_cast<int>(ConvertToScreenX(enemy->GetPosition().x - enemyWidth / divide, mpBlockMap));
-			int eneTop = static_cast<int>(ConvertToScreenY(enemy->GetPosition().y - enemyHeight / divide, mpBlockMap));
+			int eneTop = static_cast<int>(ConvertToScreenY(enemy->GetPosition().y + eneOffsetY - enemyHeight / divide, mpBlockMap));
 			int eneRight = static_cast<int>(ConvertToScreenX(enemy->GetPosition().x + enemyWidth / divide, mpBlockMap));
-			int eneBottom = static_cast<int>(ConvertToScreenY(enemy->GetPosition().y + enemyHeight / divide, mpBlockMap));
+			int eneBottom = static_cast<int>(ConvertToScreenY(enemy->GetPosition().y + eneOffsetY + enemyHeight / divide, mpBlockMap));
 
 			DrawBox(
 				eneLeft,
@@ -1130,6 +1127,7 @@ void Player::TriggerCinematicEvasion()
 	mbEvadedBossSpawn = true;
 	mbIsEvading = true;
 	mEvasionTimer = KingSlimeIntroConstants::EvasionDurationFrames;
+	mActionState.blink = true;
 
 	// 右向きのまま背中側（左）へジャンプ飛び退き
 	isFacingRight = true;
@@ -1157,6 +1155,15 @@ void Player::ResetBossIntroState()
 	mEvasionTimer = 0;
 	mbSwordReadyStance = false;
 	mfMoveDirection = 0.0f;
+	mPlayerState.SetIdle();
+}
+
+void Player::EndBossIntroLock()
+{
+	mbAutoWalking = false;
+	mbAutoWalkArrived = false;
+	mbSwordReadyStance = false;
+	mbIsEvading = false;
 	mPlayerState.SetIdle();
 }
 

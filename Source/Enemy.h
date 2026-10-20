@@ -25,6 +25,10 @@ public:
 	// 当たり判定サイズの取得
 	virtual float GetCollisionWidth() const { return mfEnemyWidth; }
 	virtual float GetCollisionHeight() const { return mfEnemyHeight; }
+	virtual float GetCollisionOffsetY() const { return 0.0f; }
+
+	// 本体矩形以外の追加攻撃判定（ビーム等）との衝突チェック
+	virtual bool CheckAttackCollision(const VECTOR& targetPos, const VECTOR& targetSize) const { return false; }
 
 protected:
 	// 移動・物理関連

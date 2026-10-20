@@ -65,6 +65,7 @@ public: // アクセサ
 	float GetPlayerHeight() const { return mfPlayerHeight; }
 	void SetDeathReason(DeathReason::DeathType type) { mDeathReason = type; }
 	void ResetBossIntroState();
+	void EndBossIntroLock();
 	void SetSwordReadyStance(bool active) { mbSwordReadyStance = active; }
 	bool IsSwordReadyStance() const { return mbSwordReadyStance; }
 
