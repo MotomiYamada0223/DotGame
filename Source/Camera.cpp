@@ -32,6 +32,7 @@ void Camera::Update(int playerScreenX, int playerScreenY, float moveDirection, f
 		return;
 	}
 
+
 	int oldScrollPos = mScrollX;
 	// プレイヤーが右のスクロール境界を越えたら、越えた分だけスクロールを加算する
 	if (playerScreenX > MapScrollConstants::ScrollStartRightX)

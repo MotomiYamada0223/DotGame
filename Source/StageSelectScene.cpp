@@ -6,6 +6,7 @@
 #include "SceneManager.h"
 #include <math.h> 
 #include "GameConstants.h"
+#include "PlayerAnimState.h"
 
 // コンストラクタ：各種変数の初期化を行う
 StageSelectScene::StageSelectScene()
@@ -42,7 +43,8 @@ StageSelectScene::~StageSelectScene()
 void StageSelectScene::Initialize()
 {
 	mapGraphHandle = LoadGraph(BackGroundGraphPath::SelectStageMap.c_str());
-	LoadDivGraph(CharacterGraphPath::PlayerAnimation.c_str(), 16, 4, 4, 128, 128, playerGraphHandles);
+	LoadDivGraph(CharacterGraphPath::PlayerAnimation.c_str(),
+		16, 4, 4, 128, 128, playerGraphHandles);
 
 	playerX = 236.0f;
 	playerY = -100.0f;
@@ -310,10 +312,10 @@ void StageSelectScene::Draw()
 		DrawExtendGraph(0, 0, Utility::SCREEN_WIDTH, Utility::SCREEN_HEIGHT, mapGraphHandle, TRUE);
 	}
 
-	// プレイヤーキャラの描画（非表示状態でなければアニメーションフレームを計算して描画）
+	// プレイヤーキャラの描画
 	if (!isHidden && playerGraphHandles[0] != -1)
 	{
-		int baseFrame = facingRight ? 0 : 4;
+		int baseFrame = 4;
 		int currentFrame = baseFrame;
 
 		if (isMoving)
@@ -321,21 +323,27 @@ void StageSelectScene::Draw()
 			currentFrame = baseFrame + ((animCounter / 10) % 4);
 		}
 
-		DrawRotaGraph(static_cast<int>(playerX), static_cast<int>(playerY), 1.0, 0.0, playerGraphHandles[currentFrame], TRUE);
+		// 指定の場所だけ描画する   
+		// 親クラスの共通関数を使用してワールド座標からスクリーン座標へ変換する   
+		const int screenX = static_cast<int>((playerX) - PlayerAnimState::FRAME_WIDTH / 2);
+		const int screenY = static_cast<int>((playerY) - PlayerAnimState::FRAME_HEIGHT / 2);
+
+
+		DrawRectGraph(screenX, screenY, 1, 0,
+			PlayerAnimState::FRAME_WIDTH,
+			PlayerAnimState::FRAME_HEIGHT,
+			playerGraphHandles[currentFrame],
+			true,
+			!facingRight
+		);
 	}
 
 	// 停止中で非表示でなければ、ステージ詳細情報を描画する
 	if (!isMoving && !isHidden)
 	{
 		DrawStageString();
+		TitleDrawString();
 	}
-
-	// タイトルに戻る操作説明の描画
-	unsigned int returnColor = GetColor(255, 255, 255);
-	if (mIsReturningTitle) {
-		returnColor = (mReturnTimer % 10 < 5) ? GetColor(255, 255, 0) : GetColor(150, 150, 0);
-	}
-	Master::mpGameManager->GetFontManager()->DrawDotString(40, 40, 40, returnColor, "Q: タイトルに戻る");
 
 	// シーン遷移時のフェードアウト用黒画面の描画
 	if (mIsEnteringStage || mIsReturningTitle) {
@@ -350,6 +358,29 @@ void StageSelectScene::Draw()
 	Scene::Draw();
 }
 
+void StageSelectScene::TitleDrawString()
+{
+	// タイトルに戻る操作説明の描画
+	unsigned int returnColor = GetColor(255, 255, 255);
+	if (mIsReturningTitle) {
+		returnColor = (mReturnTimer % 10 < 5) ? GetColor(255, 255, 0) : GetColor(150, 150, 0);
+	}
+
+	// 背景のBoxの描画クラスの呼び出し
+	mBackgroundBox.DrawBackgroundBox(
+		TitleBoxPos,
+		TitleBoxPos,
+		TitleBoxWidth,
+		TitleBoxHeight,
+		GetColor(0, 0, 0),
+		GetColor(255, 255, 255),
+		200,
+		1
+	);
+	Master::mpGameManager->GetFontManager()->DrawDotString(
+		TitleStringX, TitleStringY, TitleStringSize, returnColor, "Q: タイトルに戻る");
+}
+
 // ステージ名や説明文、死亡回数などを記載したダイアログUIを描画する
 void StageSelectScene::DrawStageString()
 {
@@ -358,6 +389,7 @@ void StageSelectScene::DrawStageString()
 	bool locked = false;
 	int nodeIndex = 0;
 
+	
 	// プレイヤーの座標に応じてどのステージにいるかを判定する
 	if (playerX == 236.0f && playerY == 232.0f) {
 		nodeIndex = 0;
@@ -391,7 +423,7 @@ void StageSelectScene::DrawStageString()
 		int boxW = 860;
 		int boxH = 150; // 3行分のテキストが収まるように高さを拡張
 		int boxX = px - boxW / 2;
-		int boxY = py - 180;
+		int boxY = py - 300;
 
 		// 画面外にはみ出さないように描画位置を調整する
 		if (boxX < 30) boxX = 30;
@@ -399,7 +431,7 @@ void StageSelectScene::DrawStageString()
 		if (boxY < 20) boxY = py + 100;
 
 
-		//// 背景のBoxの描画クラスの呼び出し
+		// 背景のBoxの描画クラスの呼び出し
 		mBackgroundBox.DrawBackgroundBox(
 			boxX,
 			boxY,

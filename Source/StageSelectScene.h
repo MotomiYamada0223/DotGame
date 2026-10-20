@@ -5,6 +5,16 @@
 
 class StageSelectScene : public Scene
 {
+
+private:
+	const int TitleStringX = 40;
+	const int TitleStringY = 40;
+	const int TitleStringSize = 40;
+	const int TitleBoxPos = 20;
+	const int TitleBoxWidth = 380;
+	const int TitleBoxHeight = 100;
+
+
 public:
 	StageSelectScene();
 	virtual ~StageSelectScene();
@@ -16,6 +26,7 @@ public:
 
 	void DrawStageString();
 	void Move();
+	void TitleDrawString();
 
 
 private:
