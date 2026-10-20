@@ -55,7 +55,7 @@ void TestScene::Initialize()
 	mBackground.Load(ScrollGraphPath::Stage1);
 
 	// プレイヤーの生成
-	mpPlayer = new Player(VGet(ScreenSize::CenterX - 6000, 300, 0.0f));
+	mpPlayer = new Player(VGet(ScreenSize::CenterX - 6000, 10, 0.0f));
 
 
 	// フェイント床の配置（4つの足場の一番下のところ）

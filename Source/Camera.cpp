@@ -32,6 +32,7 @@ void Camera::Update(int playerScreenX, int playerScreenY, float moveDirection, f
 		return;
 	}
 
+
 	int oldScrollPos = mScrollX;
 	// プレイヤーが右のスクロール境界を越えたら、越えた分だけスクロールを加算する
 	if (playerScreenX > MapScrollConstants::ScrollStartRightX)
@@ -89,9 +90,9 @@ void Camera::UpdateShake()
 	if (mShakeTimer > 0)
 	{
 		float progress = 1.0f - static_cast<float>(mShakeTimer) / static_cast<float>(mShakeDuration);
-		float decay = 1.0f - progress; // 残り時間に応じた減衰 (1.0 -> 0.0)
+		float decay = 1.0f - progress; // 残り時間に応じた減衰
 
-		// -1.0f 〜 +1.0f の不規則振動
+		// -1.0f から +1.0f の不規則振動
 		float randX = static_cast<float>(GetRand(200) - 100) / 100.0f;
 		float randY = static_cast<float>(GetRand(200) - 100) / 100.0f;
 
