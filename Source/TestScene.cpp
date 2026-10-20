@@ -18,6 +18,9 @@ TestScene::TestScene()
 	:Scene()
 	, mProgress()
 	, mSaint(VGet(Utility::SCREEN_WIDTH / 2.0f, 150.0f, 0.0f)) // 天使の作成
+	, mIntroState(1)
+	, mIntroTimer(0)
+	, mIntroFlag(false)
 
 {
 	spawnTimer = 0;
@@ -127,6 +130,27 @@ void TestScene::Initialize()
 
 void TestScene::Update()
 {
+
+	if (mIntroState == 1)
+	{
+		mIntroTimer++;
+		if (mIntroTimer > 120)
+		{
+			mIntroState = 2;
+			mIntroTimer = 0;
+		}
+		return;
+	}
+	else if (mIntroState == 2)
+	{
+		mIntroTimer++;
+		if (mIntroTimer > 60)
+		{
+			mIntroState = 0;
+		}
+	}
+
+
 	// 1キーでプレイヤーの座標を (7200, 700) にワープ (デバッグ用)
 	static bool oneKeyWasDown = false;
 	bool oneKeyIsDown = (CheckHitKey(KEY_INPUT_1) == 1 || CheckHitKey(KEY_INPUT_NUMPAD1) == 1);
@@ -239,33 +263,74 @@ void TestScene::Draw()
 {
 	if (!mbIsLoaded) { return; }
 
-	// オブジェクトの描画
-	mBackground.Draw(mBlockMap.GetShakeOffsetX(), mBlockMap.GetShakeOffsetY()); // スクロール背景
+	if (mIntroFlag)
+	{
+		// オブジェクトの描画
+		mBackground.Draw(mBlockMap.GetShakeOffsetX(), mBlockMap.GetShakeOffsetY()); // スクロール背景
 
-	Scene::Draw();
+		Scene::Draw();
 
-	mBlockMap.Draw(); // ブロックマップの描画
+		mBlockMap.Draw(); // ブロックマップの描画
 
-	// 一番手前に描画したいもの
-	mpPlayer->DrawFallDeath(); // 死亡時テキスト
-	mDrawFrame.Draw(); // フレーム描画
-	mSaint.Draw(); // 天使の描画
+		// 一番手前に描画したいもの
+		mpPlayer->DrawFallDeath(); // 死亡時テキスト
+		mDrawFrame.Draw(); // フレーム描画
+		mSaint.Draw(); // 天使の描画
 
-	// ボス演出の黒帯
-	mBossIntro.Draw();
+		// ボス演出の黒帯
+		mBossIntro.Draw();
 
-	// デバッグ系
-	mpPlayer->DebugDraw(); // ブロックデバッグ
-	mBlockMap.DebugDraw(); // ブロックマップデバッグ表示
-	mTutorialText.DebugDraw(); // テキスト
+		// デバッグ系
+		mpPlayer->DebugDraw(); // ブロックデバッグ
+		mBlockMap.DebugDraw(); // ブロックマップデバッグ表示
+		mTutorialText.DebugDraw(); // テキスト
 
-	// オブジェクトの描画 (マップを手前に描画)
-	mTutorialText.Draw();
+		// オブジェクトの描画 (マップを手前に描画)
+		mTutorialText.Draw();
 
-	// デバッグ表示：現在の進行度
-	const char* progStr = (mProgress == GameProgress::Tutorial1) ? "Tutorial1 (Death)" : "Tutorial2 (Immune)";
-	DrawFormatString(10, 30, GetColor(0, 255, 0), "Progress: %s  [Press P to toggle]", progStr);
-	DrawFormatString(10, 50, GetColor(0, 255, 0), "[1]: Warp to Boss Area (7200, 700)");
+		// デバッグ表示：現在の進行度
+		const char* progStr = (mProgress == GameProgress::Tutorial1) ? "Tutorial1 (Death)" : "Tutorial2 (Immune)";
+		DrawFormatString(10, 30, GetColor(0, 255, 0), "Progress: %s  [Press P to toggle]", progStr);
+		DrawFormatString(10, 50, GetColor(0, 255, 0), "[1]: Warp to Boss Area (7200, 700)");
+	}
+
+
+	if (mIntroState == 1)
+	{
+		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+		DrawBox(0, 0, ScreenSize::ScrrenWidth, ScreenSize::ScrrenHeight, GetColor(0, 0, 0), TRUE);
+	}
+	else if (mIntroState == 2)
+	{
+		int cx = ScreenSize::CenterX;
+		int cy = ScreenSize::CenterY;
+		if (mpPlayer) {
+			cx = (int)(mpPlayer->GetPosition().x - mBlockMap.GetScrollX());
+			cy = (int)(mpPlayer->GetPosition().y - mBlockMap.GetScrollY());
+		}
+
+
+		float t = (float)mIntroTimer / 60.0f;
+		float radius = t * t * 1500.0f;
+
+
+		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+		mIntroFlag = true;
+		for (int i = 0; i < 60; i++) {
+			float a1 = i * (DX_PI_F * 2.0f / 60.0f);
+			float a2 = (i + 1) * (DX_PI_F * 2.0f / 60.0f);
+			int x1 = cx + (int)(cosf(a1) * radius);
+			int y1 = cy + (int)(sinf(a1) * radius);
+			int x2 = cx + (int)(cosf(a2) * radius);
+			int y2 = cy + (int)(sinf(a2) * radius);
+			int ox1 = cx + (int)(cosf(a1) * 3000.0f);
+			int oy1 = cy + (int)(sinf(a1) * 3000.0f);
+			int ox2 = cx + (int)(cosf(a2) * 3000.0f);
+			int oy2 = cy + (int)(sinf(a2) * 3000.0f);
+			DrawQuadrangle(x1, y1, x2, y2, ox2, oy2, ox1, oy1, GetColor(0, 0, 0), TRUE);
+		}
+	}
 }
 
 void TestScene::Finalize()

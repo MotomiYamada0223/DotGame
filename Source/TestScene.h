@@ -41,4 +41,9 @@ private:
 
 	bool mbIsLoaded = false; // マップがロードされたかどうかのフラグ
 	bool mbWasPlayerDead = false; // 前フレームのプレイヤーの死亡状態を保持するフラグ
+
+	// 円の描画
+	int mIntroState;
+	int mIntroTimer;
+	bool mIntroFlag;
 };
