@@ -10,6 +10,7 @@
 // コンストラクタ：各種変数の初期化を行う
 StageSelectScene::StageSelectScene()
 	: Scene()
+	, mBackgroundBox()
 {
 	mapGraphHandle = -1;
 	for (int i = 0; i < 16; i++) {
@@ -26,6 +27,10 @@ StageSelectScene::StageSelectScene()
 	targetY = 0.0f;
 	isMoving = false;
 	lastSignal = "None";
+	mEnterTimer = 0;
+	mIsEnteringStage = false;
+	mIsReturningTitle = false;
+	mReturnTimer = 0;
 }
 
 // デストラクタ
@@ -393,17 +398,25 @@ void StageSelectScene::DrawStageString()
 		if (boxX + boxW > Utility::SCREEN_WIDTH - 30) boxX = Utility::SCREEN_WIDTH - 30 - boxW;
 		if (boxY < 20) boxY = py + 100;
 
-		// 半透明の背景ボックスを描画
-		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 200);
-		DrawBox(boxX, boxY, boxX + boxW, boxY + boxH, GetColor(0, 0, 0), TRUE);
-		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 
-		DrawBox(boxX, boxY, boxX + boxW, boxY + boxH, GetColor(255, 255, 255), FALSE);
-		DrawBox(boxX + 1, boxY + 1, boxX + boxW - 1, boxY + boxH - 1, GetColor(255, 255, 255), FALSE);
+		//// 背景のBoxの描画クラスの呼び出し
+		mBackgroundBox.DrawBackgroundBox(
+			boxX,
+			boxY,
+			boxX + boxW,
+			boxY + boxH,
+			GetColor(0, 0, 0),
+			GetColor(255, 255, 255),
+			200,
+			1
+			);
 
 		// ロック状態に応じて枠線の色を変化させる（ロック中：赤、アンロック：灰色）
 		unsigned int borderColor = locked ? GetColor(255, 50, 50) : GetColor(200, 200, 200);
 		DrawBox(boxX + 3, boxY + 3, boxX + boxW - 3, boxY + boxH - 3, borderColor, FALSE);
+
+
+
 
 		// ステージタイトルの描画
 		Master::mpGameManager->GetFontManager()->DrawDotString(boxX + 25, boxY + 15, 36, GetColor(255, 255, 0), stageName);

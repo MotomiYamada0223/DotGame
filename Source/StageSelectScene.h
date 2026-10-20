@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "Scene.h"
 #include <string>
+#include "BackgroundBox.h"
 
 class StageSelectScene : public Scene
 {
@@ -16,7 +17,12 @@ public:
 	void DrawStageString();
 	void Move();
 
+
 private:
+	// 背景のBox描画のクラス
+	BackgroundBox mBackgroundBox;
+
+
 	int mapGraphHandle;
 
 	// プレイヤーの画像と座標
