@@ -84,6 +84,7 @@ namespace CharacterGraphPath
 	static const std::string KingSlimeMove = "Resource/Enemy/KingSlime/kingSlime_move.png";
 	static const std::string KingSlimeJump = "Resource/Enemy/KingSlime/kingSlime_jump.png";
 	static const std::string KingSlimeAttack = "Resource/Enemy/KingSlime/kingSlime_attack.png";
+	static const std::string KingSlimeLongRangeAttack = "Resource/Enemy/KingSlime/kingSlime_long_range_attack.png";
 
 
 	// 天使の画像
@@ -311,5 +312,53 @@ namespace KingSlimeTitleConstants
 	static constexpr int   ColorCyanG             = 160;    // 「スライミー」濃い水色 G
 	static constexpr int   ColorCyanB             = 240;    // 「スライミー」濃い水色 B
 	static constexpr int   CharCount              = 8;      // タイトル文字数（「キングスライミー」で8文字）
+}
+
+// キングスライムAI（ジャンプ攻撃・ビーム攻撃）用の定数
+namespace KingSlimeAIConstants
+{
+	// 待機・ターゲット選択関連
+	static constexpr int   IdleWaitFrames            = 60;     // 行動間の待機フレーム数（約1秒）
+	static constexpr float EdgeOffsetX               = 650.0f; // ボスエリア中央から左右端へのオフセット距離
+	static constexpr float CenterZoneHalfWidth       = 240.0f; // プレイヤーが中央付近にいると判定する半幅
+	static constexpr int   RandomTargetChancePercent = 20;     // ロジックを無視して別地点へランダムジャンプする確率(%)
+
+	// ジャンプ攻撃関連
+	static constexpr int   JumpPrepareAnimInterval   = 4;      // ジャンプ開始時のアニメーション間隔
+	static constexpr float JumpAscendSpeed           = 34.0f;  // 上空へ飛び上がる速度
+	static constexpr float JumpFallSpeed             = 26.0f;  // 急降下速度（登場演出と同速度）
+	static constexpr float JumpStartHeightOffset     = 1200.0f;// 落下開始高度（地面からの距離）
+	static constexpr int   JumpWarningDurationFrames = 50;     // 着地予測の赤警告表示フレーム数
+	static constexpr int   JumpWarningFadeOutFrames  = 15;     // 赤警告のフェードアウトフレーム数
+
+	// ビーム攻撃関連
+	static constexpr int   BeamMouthOpenInterval     = 5;      // 1〜3枚目（口を開けるまで）の再生間隔
+	static constexpr int   BeamChargeFrames          = 80;     // 3枚目停止中のエネルギーチャージ（タメ）フレーム数
+	static constexpr int   BeamConvergeFrames        = 36;     // 4〜9枚目再生＋エネルギー収束（攻撃直前演出）フレーム数
+	static constexpr int   BeamFireStartInterval     = 4;      // 10枚目から11枚目へ移行するフレーム数
+	static constexpr int   BeamFireHoldFrames        = 65;     // 11枚目停止中のレーザー照射持続フレーム数
+	static constexpr int   BeamRecoveryInterval      = 6;      // 12〜13枚目（照射終了モーション）の再生間隔
+
+	// ビーム座標・サイズ・演出関連
+	static constexpr float BeamMouthOffsetX          = 126.0f; // 中心Xから口元への水平オフセット（42px * Scale）
+	static constexpr float BeamMouthOffsetY          = 84.0f;  // 中心Yからのビーム高さオフセット（値を小さくすると上、大きくすると下へ移動）
+	static constexpr float BeamLength                = 1800.0f;// 反対側の端まで貫通するレーザー長
+	static constexpr float BeamHalfHeight            = 48.0f;  // レーザーの当たり判定・描画の半分の高さ（全高72px）
+	static constexpr float BeamOrbMaxRadius          = 44.0f;  // チャージ時の水色エネルギー球の最大半径
+	static constexpr float BeamOrbMinRadius          = 8.0f;   // 収束時のエネルギー球の最小半径
+	static constexpr int   BeamParticleCount         = 24;     // 吸い込まれる小粒子の数
+	static constexpr int   BeamDotPixelSize          = 4;      // ドット絵表現の1ドット単位サイズ(px)
+
+	// 当たり判定・見た目調整関連
+	static constexpr float HitBoxBottomExtend        = 36.0f;  // 当たり判定下部をさらに下へ伸ばす拡張量(px)
+
+	// 体当たり攻撃関連
+	static constexpr float TackleRangeMax            = 650.0f; // 体当たりを発動するプレイヤーとの最大距離(px)
+	static constexpr int   TackleChancePercent       = 40;     // 条件を満たした際に体当たりを発動する確率(%)
+	static constexpr int   TackleCooldownFrames      = 240;    // 体当たりのクールタイムフレーム数（約4秒）
+	static constexpr int   TackleAnimInterval        = 7;      // 体当たりアニメーションのフレーム間隔
+	static constexpr float TackleJumpSpeedY          = -7.0f;  // 体当たり時の小ジャンプ初速Y（上方向）
+	static constexpr float TackleGravity             = 0.5f;   // 体当たり時の重力加速度
+	static constexpr float TackleOvershootX          = 120.0f; // プレイヤーの目標座標を通り越す追加距離(px)
 }
 

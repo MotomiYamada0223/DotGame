@@ -101,15 +101,15 @@ void BossIntroDirector::Update(Player* player, BlockMap& blockMap)
 			mFadeTimer++;
 		}
 
-		// 警告表示中のみEキーの入力を受付（QTE）
+		// 警告表示中のみブリンク操作（Shift / Eキー）を受付
 		{
-			bool eKeyIsDown = (CheckHitKey(KEY_INPUT_E) == 1);
-			if (eKeyIsDown && !mEKeyWasDown && !mHasEvaded)
+			bool blinkKeyIsDown = (CheckHitKey(KEY_INPUT_LSHIFT) == 1 || CheckHitKey(KEY_INPUT_RSHIFT) == 1 || CheckHitKey(KEY_INPUT_E) == 1);
+			if (blinkKeyIsDown && !mEKeyWasDown && !mHasEvaded)
 			{
 				player->TriggerCinematicEvasion();
 				mHasEvaded = true;
 			}
-			mEKeyWasDown = eKeyIsDown;
+			mEKeyWasDown = blinkKeyIsDown;
 		}
 
 		mStateTimer++;
@@ -127,15 +127,15 @@ void BossIntroDirector::Update(Player* player, BlockMap& blockMap)
 			mFadeTimer++;
 		}
 
-		// フェードアウトギリギリまでEキー回避可能
+		// フェードアウト終了までブリンク回避可能
 		{
-			bool eKeyIsDown = (CheckHitKey(KEY_INPUT_E) == 1);
-			if (eKeyIsDown && !mEKeyWasDown && !mHasEvaded)
+			bool blinkKeyIsDown = (CheckHitKey(KEY_INPUT_LSHIFT) == 1 || CheckHitKey(KEY_INPUT_RSHIFT) == 1 || CheckHitKey(KEY_INPUT_E) == 1);
+			if (blinkKeyIsDown && !mEKeyWasDown && !mHasEvaded)
 			{
 				player->TriggerCinematicEvasion();
 				mHasEvaded = true;
 			}
-			mEKeyWasDown = eKeyIsDown;
+			mEKeyWasDown = blinkKeyIsDown;
 		}
 
 		mStateTimer--;
@@ -212,27 +212,35 @@ void BossIntroDirector::Update(Player* player, BlockMap& blockMap)
 		break;
 
 	case State::TitleFadeOut:
-		// 帯は維持
-		if (mFadeTimer < BossIntroConstants::FadeFrames)
-		{
-			mFadeTimer++;
-		}
-
 		mTitleTimer++;
 		mTitleWaveTimer++;
+
+		// 文字のフェードアウト進行度に合わせて上下黒帯もフェードアウト
+		{
+			float fadeRatio = 1.0f - (static_cast<float>(mTitleTimer) / static_cast<float>(KingSlimeTitleConstants::FadeOutFrames));
+			if (fadeRatio < 0.0f) fadeRatio = 0.0f;
+			if (fadeRatio > 1.0f) fadeRatio = 1.0f;
+			mFadeTimer = static_cast<int>(static_cast<float>(BossIntroConstants::FadeFrames) * fadeRatio);
+		}
 
 		if (mTitleTimer >= KingSlimeTitleConstants::FadeOutFrames)
 		{
 			mState = State::IntroFinished;
+			mFadeTimer = 0;
+			if (player != nullptr)
+			{
+				player->EndBossIntroLock();
+			}
+			if (mpBossSlime != nullptr)
+			{
+				mpBossSlime->StartBattle();
+			}
 		}
 		break;
 
 	case State::IntroFinished:
-		// 演出帯はアクティブのまま維持
-		if (mFadeTimer < BossIntroConstants::FadeFrames)
-		{
-			mFadeTimer++;
-		}
+		// 演出完了：黒帯は非表示
+		mFadeTimer = 0;
 		break;
 
 	case State::Ended:
