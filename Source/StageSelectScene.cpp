@@ -65,9 +65,11 @@ void StageSelectScene::Initialize()
 // 移動処理：プレイヤーの移動アニメーションや自動ルート分岐、キー入力による移動先の設定を行う
 void StageSelectScene::Move()
 {
+	// 待機モーションも動かしたいからifの外に移動した
+	animCounter++;
+
 	if (isMoving)
 	{
-		animCounter++;
 		float dx = targetX - playerX;
 		float dy = targetY - playerY;
 		float dist = sqrtf(dx * dx + dy * dy);
@@ -315,13 +317,8 @@ void StageSelectScene::Draw()
 	// プレイヤーキャラの描画
 	if (!isHidden && playerGraphHandles[0] != -1)
 	{
-		int baseFrame = 4;
-		int currentFrame = baseFrame;
-
-		if (isMoving)
-		{
-			currentFrame = baseFrame + ((animCounter / 10) % 4);
-		}
+		int baseFrame = isMoving ? 4 : 0;
+		int currentFrame = baseFrame + ((animCounter / 10) % 4);
 
 		// 指定の場所だけ描画する   
 		// 親クラスの共通関数を使用してワールド座標からスクリーン座標へ変換する   

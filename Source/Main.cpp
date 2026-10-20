@@ -29,7 +29,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 {
 	// ウインドウモードで起動  falseにすると全画面
 	ChangeWindowMode(true); 
-	SetBackgroundColor(50, 50, 50);
+	SetBackgroundColor(0, 0, 0);
 	// サイズを合わせる
 	SetGraphMode(Utility::SCREEN_WIDTH, Utility::SCREEN_HEIGHT, 0);  // モニター解像度に合わせる
 
