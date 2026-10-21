@@ -53,6 +53,7 @@ public:
 	void SetActionState(const PlayerActionState& state);
 
 
+
 private:
 	// トリガータイプが座標（X）によるものかを判定するため
 	bool IsXTriggerType(const std::string& type) const;
@@ -66,6 +67,9 @@ private:
 
 	// 条件分岐に応じて次に進むべきステップのIDを解決するため
 	int ResolveNextStepID(int candidateID, float playerX) const;
+
+	// 死亡回数によって表示テキストを分ける
+	void SelectDeathCountText();
 
 
 
@@ -109,4 +113,7 @@ private:
 	std::set<float> mVisitedXCoords;   // 1度でもセリフが表示されたX座標
 	std::set<float> mDiedAfterXCoords; // そのX座標のセリフが表示された後に1回以上死んだX座標
 
+	std::string mDisplayText;
 };
+
+

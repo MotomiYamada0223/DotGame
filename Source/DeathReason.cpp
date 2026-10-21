@@ -10,6 +10,7 @@ namespace
 		{ DeathReason::DeathType::Fall,			 3 },
 		{ DeathReason::DeathType::NeedleTrapHit, 4 },
 		{ DeathReason::DeathType::DeathBlock, 5 },
+		{ DeathReason::DeathType::Leaf, 6 },
 	};
 }
 

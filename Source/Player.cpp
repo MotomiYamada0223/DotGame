@@ -618,6 +618,19 @@ void Player::Update()
 		deadTimer = 0;
 		mFragments.clear();
 
+		int stageIndex = Master::gCurrentStageIndex;
+		if (stageIndex >= 0 && stageIndex < Master::MaxStageCount)
+		{
+			if (Master::gDeathCounts[stageIndex] == -1)
+			{
+				Master::gDeathCounts[Master::gCurrentStageIndex] = 1;
+			}
+			else
+			{
+				Master::gDeathCounts[Master::gCurrentStageIndex] += 1;
+			}
+		}
+
 		int fragSize = 16;
 		int srcBaseY = PlayerAnimState::IDLE_POS;
 
@@ -914,6 +927,29 @@ void Player::DebugDraw()
 	// HPのデバッグ
 	DrawFormatString(playerLeft, playerY + 10, ColorOption::White, "HP: %d\n残機: %d\nSP: %f", mHp, mlives, mfCurrentSpeed);
 	DrawFormatString(0, 600, ColorOption::White, "X:%2f, Y:%2f\n L:%d", mvPosition.x, mvPosition.y, playerLeft);
+	
+	
+	
+	char deathText[64];
+	int stageIndex = Master::gCurrentStageIndex;
+
+	if (stageIndex >= 0 && stageIndex < Master::MaxStageCount)
+	{
+		if (Master::gDeathCounts[stageIndex] == -1)
+		{
+			sprintf_s(deathText, "死亡回数: - 回");
+		}
+		else
+		{
+			sprintf_s(
+				deathText,
+				"死亡回数: %d 回",
+				Master::gDeathCounts[stageIndex]
+			);
+		}
+		DrawFormatString(500, 300, GetColor(255, 0, 0), "%s", deathText);
+	}
+
 
 	// シーン上のすべての敵の当たり判定をデバッグ表示（黄緑色）
 	ObjectManager* objManager = Master::mpGameManager->GetSceneManager()->GetCurrentScene()->GetObjectManager();

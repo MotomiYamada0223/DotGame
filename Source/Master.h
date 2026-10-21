@@ -28,6 +28,8 @@ public:
 	static ObjectManager* mpObjectManager;
 	static GameManager* mpGameManager; // ゲームマネージャーのポインタ
 
+	static const int MaxStageCount = 4;
+
 
 	static bool gStageCleared[4];
 	static int gDeathCounts[4];
