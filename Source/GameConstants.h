@@ -343,22 +343,49 @@ namespace KingSlimeAIConstants
 	static constexpr float BeamMouthOffsetX          = 126.0f; // 中心Xから口元への水平オフセット（42px * Scale）
 	static constexpr float BeamMouthOffsetY          = 84.0f;  // 中心Yからのビーム高さオフセット（値を小さくすると上、大きくすると下へ移動）
 	static constexpr float BeamLength                = 1800.0f;// 反対側の端まで貫通するレーザー長
-	static constexpr float BeamHalfHeight            = 48.0f;  // レーザーの当たり判定・描画の半分の高さ（全高72px）
+	static constexpr float BeamHalfHeight            = 48.0f;  // レーザーの当たり判定・描画の半分の高さ
 	static constexpr float BeamOrbMaxRadius          = 44.0f;  // チャージ時の水色エネルギー球の最大半径
 	static constexpr float BeamOrbMinRadius          = 8.0f;   // 収束時のエネルギー球の最小半径
 	static constexpr int   BeamParticleCount         = 24;     // 吸い込まれる小粒子の数
-	static constexpr int   BeamDotPixelSize          = 4;      // ドット絵表現の1ドット単位サイズ(px)
+	static constexpr int   BeamDotPixelSize          = 4;      // ドット絵表現の1ドット単位サイズ
 
 	// 当たり判定・見た目調整関連
-	static constexpr float HitBoxBottomExtend        = 36.0f;  // 当たり判定下部をさらに下へ伸ばす拡張量(px)
+	static constexpr float HitBoxBottomExtend        = 36.0f;  // 当たり判定下部をさらに下へ伸ばす拡張量
 
 	// 体当たり攻撃関連
-	static constexpr float TackleRangeMax            = 650.0f; // 体当たりを発動するプレイヤーとの最大距離(px)
+	static constexpr float TackleRangeMax            = 650.0f; // 体当たりを発動するプレイヤーとの最大距離
 	static constexpr int   TackleChancePercent       = 40;     // 条件を満たした際に体当たりを発動する確率(%)
-	static constexpr int   TackleCooldownFrames      = 240;    // 体当たりのクールタイムフレーム数（約4秒）
-	static constexpr int   TackleAnimInterval        = 7;      // 体当たりアニメーションのフレーム間隔
-	static constexpr float TackleJumpSpeedY          = -7.0f;  // 体当たり時の小ジャンプ初速Y（上方向）
+	static constexpr int   TackleCooldownFrames      = 180;    // 体当たりのクールタイムフレーム数（3秒）
+	static constexpr int   TackleAnimInterval        = 8;      // 体当たりアニメーションのフレーム間隔
+	static constexpr float TackleJumpSpeedY          = -8.0f;  // 体当たり時の小ジャンプ初速Y（上方向）
 	static constexpr float TackleGravity             = 0.5f;   // 体当たり時の重力加速度
-	static constexpr float TackleOvershootX          = 120.0f; // プレイヤーの目標座標を通り越す追加距離(px)
+	static constexpr float TackleOvershootX          = 0.0f; // プレイヤーの目標座標を通り越す追加距離
+	static constexpr int   TackleChargeFrames        = 26;     // 3枚目での溜め停止フレーム数（約0.43秒）
+	static constexpr float TackleShakePower          = 4.5f;   // 溜め時のスライムの震え（振動）の強さ(px)
+
+	// 着地時スライム液体弾関連
+	static constexpr int   DropletCount              = 10;     // まき散らす液体弾の個数
+	static constexpr float DropletSpeedMin           = 10.0f;  // 弾の初速（最小）
+	static constexpr float DropletSpeedMax           = 16.0f;  // 弾の初速（最大）
+	static constexpr float DropletGravity            = 0.28f;  // 弾の重力加速度
+	static constexpr float DropletRadiusMin          = 10.0f;  // 弾の半径（最小px）
+	static constexpr float DropletRadiusMax          = 16.0f;  // 弾の半径（最大px）
+	static constexpr int   DropletLifeFrames         = 180;    // 弾の最大生存フレーム数（約3秒）
+	static constexpr int   DropletSplashFrames       = 10;     // 床着地時のスプラッシュ演出フレーム数
+	static constexpr float DropletAngleRangeDeg      = 45.0f;  // 真上(0度)からの左右最大角度(±45度、計90度)
+	static constexpr float DropletSpawnSpreadX       = 35.0f;  // 出現位置の左右の絞り幅（±35px）
+	static constexpr float DropletSpawnOffsetY       = -75.0f; // 出現位置のY軸オフセット（スライム中心から上部へ）
+	static constexpr float DropletHpThresholdRatio   = 0.5f;   // 液体弾が発動するHP割合の閾値（最大HPの50%以下）
 }
 
+// キングスライムHPバー用定数
+namespace KingSlimeHpBarConstants
+{
+	static constexpr int   Width                = 800;   // HPバーの全幅(px)
+	static constexpr int   Height               = 24;    // HPバーの高さ(px)
+	static constexpr int   PosY                 = 980;   // HPバーのY座標（画面下部）
+	static constexpr int   BorderThickness      = 3;     // 白枠の太さ(px)
+	static constexpr int   Padding              = 2;     // 枠線と赤いバーの内側余白(px)
+	static constexpr int   YellowDelayFrames    = 25;    // ダメージ後に黄色バーが減少し始めるまでの待機フレーム数（約0.4秒）
+	static constexpr float YellowDrainSpeed     = 0.6f;  // 黄色バーが一定速度で減少する速度（1フレームあたりの減少量）
+}

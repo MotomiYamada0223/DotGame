@@ -26,9 +26,16 @@ BossEnemySlime::BossEnemySlime(VECTOR initPos, float groundY, Player* targetPlay
     , mCollisionOffsetY(0.0f)
     , mTackleCooldownTimer(60)
     , mHasTackleLaunched(false)
+    , mIsTackleCharging(false)
+    , mHasChargedThisTackle(false)
+    , mTackleChargeTimer(0)
     , mJumpSpeedX(0.0f)
     , mTackleVelocityY(0.0f)
     , mTargetPlayerX(initPos.x)
+    , mYellowHp(100.0f)
+    , mYellowDelayTimer(0)
+    , mHpBarDrawnThisFrame(false)
+    , mPrevHp(100)
 {
     // キングスライムの当たり判定サイズ
     const float baseHeight = 75.0f * KingSlimeIntroConstants::HitBoxScale;
@@ -76,6 +83,22 @@ void BossEnemySlime::StartBattle()
     mIsBattleActive = true;
     // 登場演出終了と同時に行動を開始できるよう待機タイマーを満たす
     mIdleTimer = KingSlimeAIConstants::IdleWaitFrames;
+    mYellowHp = static_cast<float>(mHp);
+    mYellowDelayTimer = 0;
+}
+
+void BossEnemySlime::TakeDamage(int damage)
+{
+    // ダメージ前のHPを記憶（黄色バーが既に減少中なら現在のmYellowHpを維持してそこから引く）
+    if (mYellowHp < static_cast<float>(mHp))
+    {
+        mYellowHp = static_cast<float>(mHp);
+    }
+
+    UnitStatus::TakeDamage(damage);
+
+    // ダメージを受けた分のバーが黄色く変化し、少ししたら一定速度で減少し始める
+    mYellowDelayTimer = KingSlimeHpBarConstants::YellowDelayFrames;
 }
 
 float BossEnemySlime::GetSlotWorldX(BossPositionSlot slot) const
@@ -259,6 +282,9 @@ void BossEnemySlime::StartTackleAttack()
     mState = KingSlimeState::Tackle;
     mPhaseTimer = 0;
     mHasTackleLaunched = false;
+    mIsTackleCharging = false;
+    mHasChargedThisTackle = false;
+    mTackleChargeTimer = 0;
     mJumpSpeedX = 0.0f;
     mTackleVelocityY = 0.0f;
     mTargetPlayerX = (mpPlayer != nullptr) ? mpPlayer->GetPosition().x : mvPosition.x;
@@ -321,6 +347,40 @@ void BossEnemySlime::UpdateChargeParticles(bool isConverging)
 void BossEnemySlime::Update()
 {
     Enemy::Update();
+
+    // 着地時スライム液体弾の更新
+    UpdateDroplets();
+
+    mHpBarDrawnThisFrame = false;
+
+    // HP減少の検知（TakeDamage以外で直接mHpが減った場合のセーフティ）
+    if (mHp < mPrevHp)
+    {
+        if (mYellowHp < static_cast<float>(mPrevHp))
+        {
+            mYellowHp = static_cast<float>(mPrevHp);
+        }
+        mYellowDelayTimer = KingSlimeHpBarConstants::YellowDelayFrames;
+    }
+    mPrevHp = mHp;
+
+    // 黄色バーの処理：待機時間後に一定速度でmHpに向けて減少
+    if (mYellowDelayTimer > 0)
+    {
+        mYellowDelayTimer--;
+    }
+    else if (mYellowHp > static_cast<float>(mHp))
+    {
+        mYellowHp -= KingSlimeHpBarConstants::YellowDrainSpeed;
+        if (mYellowHp < static_cast<float>(mHp))
+        {
+            mYellowHp = static_cast<float>(mHp);
+        }
+    }
+    else if (mYellowHp < static_cast<float>(mHp))
+    {
+        mYellowHp = static_cast<float>(mHp);
+    }
 
     if (mTackleCooldownTimer > 0)
     {
@@ -530,32 +590,76 @@ void BossEnemySlime::Update()
     {
         if (mpAnimAttack)
         {
-            mpAnimAttack->Update();
-            int currentFrame = mpAnimAttack->GetCurrentFrame();
-
-            // 2枚目（インデックス1）の時にプレイヤー座標を記録
-            if (currentFrame == 1 && mpPlayer != nullptr)
+            // 3枚目（インデックス2）での溜め処理（アニメーションを止めて震えながら力を溜める）
+            if (mIsTackleCharging)
             {
-                float px = mpPlayer->GetPosition().x;
-                float dir = (px > mvPosition.x) ? 1.0f : -1.0f;
-                mTargetPlayerX = px + dir * KingSlimeAIConstants::TackleOvershootX;
+                mTackleChargeTimer--;
 
-                // ボスエリア外に出ないようにクランプ
-                float minX = mBossAreaCenterX - KingSlimeAIConstants::EdgeOffsetX - 50.0f;
-                float maxX = mBossAreaCenterX + KingSlimeAIConstants::EdgeOffsetX + 50.0f;
-                if (mTargetPlayerX < minX) mTargetPlayerX = minX;
-                else if (mTargetPlayerX > maxX) mTargetPlayerX = maxX;
-                mIsFacingRight = (dir > 0.0f);
+                // 溜め中もプレイヤーの最新座標・向きを追跡して狙いを定める
+                if (mpPlayer != nullptr)
+                {
+                    float px = mpPlayer->GetPosition().x;
+                    float dir = (px > mvPosition.x) ? 1.0f : -1.0f;
+                    mTargetPlayerX = px + dir * KingSlimeAIConstants::TackleOvershootX;
+
+                    float minX = mBossAreaCenterX - KingSlimeAIConstants::EdgeOffsetX - 50.0f;
+                    float maxX = mBossAreaCenterX + KingSlimeAIConstants::EdgeOffsetX + 50.0f;
+                    if (mTargetPlayerX < minX) mTargetPlayerX = minX;
+                    else if (mTargetPlayerX > maxX) mTargetPlayerX = maxX;
+
+                    mIsFacingRight = (dir > 0.0f);
+                }
+
+                if (mTackleChargeTimer <= 0)
+                {
+                    mIsTackleCharging = false;
+
+                    // 溜め完了！ 4枚目（インデックス3）に進めて即座に小ジャンプ突進開始
+                    mpAnimAttack->SetCurrentFrame(3);
+                    mHasTackleLaunched = true;
+                    // 残り4コマ（3, 4, 5, 6） × interval
+                    float jumpFrames = 4.0f * static_cast<float>(KingSlimeAIConstants::TackleAnimInterval);
+                    mJumpSpeedX = (mTargetPlayerX - mvPosition.x) / jumpFrames;
+                    mTackleVelocityY = KingSlimeAIConstants::TackleJumpSpeedY;
+                }
             }
-
-            // 4枚目（インデックス3）になったら小ジャンプ突進開始
-            if (currentFrame >= 3 && !mHasTackleLaunched)
+            else
             {
-                mHasTackleLaunched = true;
-                // 残り4コマ（3, 4, 5, 6） × interval
-                float jumpFrames = 4.0f * static_cast<float>(KingSlimeAIConstants::TackleAnimInterval);
-                mJumpSpeedX = (mTargetPlayerX - mvPosition.x) / jumpFrames;
-                mTackleVelocityY = KingSlimeAIConstants::TackleJumpSpeedY;
+                // 通常のアニメーション進行
+                mpAnimAttack->Update();
+                int currentFrame = mpAnimAttack->GetCurrentFrame();
+
+                // 2枚目（インデックス1）の時にプレイヤー座標を初期記録
+                if (currentFrame == 1 && mpPlayer != nullptr)
+                {
+                    float px = mpPlayer->GetPosition().x;
+                    float dir = (px > mvPosition.x) ? 1.0f : -1.0f;
+                    mTargetPlayerX = px + dir * KingSlimeAIConstants::TackleOvershootX;
+
+                    float minX = mBossAreaCenterX - KingSlimeAIConstants::EdgeOffsetX - 50.0f;
+                    float maxX = mBossAreaCenterX + KingSlimeAIConstants::EdgeOffsetX + 50.0f;
+                    if (mTargetPlayerX < minX) mTargetPlayerX = minX;
+                    else if (mTargetPlayerX > maxX) mTargetPlayerX = maxX;
+
+                    mIsFacingRight = (dir > 0.0f);
+                }
+
+                // 3枚目（インデックス2）になったらアニメーションを止めて溜め（震え）を開始
+                if (currentFrame == 2 && !mHasTackleLaunched && !mHasChargedThisTackle)
+                {
+                    mIsTackleCharging = true;
+                    mHasChargedThisTackle = true;
+                    mTackleChargeTimer = KingSlimeAIConstants::TackleChargeFrames;
+                }
+
+                // 溜め完了後の4枚目（インデックス3）以降での小ジャンプ突進フォールバック
+                if (currentFrame >= 3 && !mHasTackleLaunched)
+                {
+                    mHasTackleLaunched = true;
+                    float jumpFrames = 4.0f * static_cast<float>(KingSlimeAIConstants::TackleAnimInterval);
+                    mJumpSpeedX = (mTargetPlayerX - mvPosition.x) / jumpFrames;
+                    mTackleVelocityY = KingSlimeAIConstants::TackleJumpSpeedY;
+                }
             }
 
             // モーション完了（最後まで再生）で待機へ移行
@@ -707,6 +811,12 @@ void BossEnemySlime::EnemyMove(BlockMap& blockMap)
                 mCurrentSlot = mTargetSlot;
                 mJumpPhase = JumpPhase::LandingReverse;
 
+                // 体力が半分以下になった後、すべてのジャンプ攻撃着地時に周囲へ円形液体弾を一斉散布
+                if (mHp <= static_cast<int>(static_cast<float>(mMaxHp) * KingSlimeAIConstants::DropletHpThresholdRatio))
+                {
+                    SpawnLandingDroplets(blockMap);
+                }
+
                 // 左右端に降りた場合は中央方向、中央に降りた場合はプレイヤー方向を向く
                 if (mCurrentSlot == BossPositionSlot::LeftEdge)
                 {
@@ -750,6 +860,7 @@ void BossEnemySlime::EnemyMove(BlockMap& blockMap)
 
 bool BossEnemySlime::CheckAttackCollision(const VECTOR& targetPos, const VECTOR& targetSize) const
 {
+    // 1. ビーム照射中の当たり判定
     if (mState == KingSlimeState::BeamAttack && mBeamPhase == BeamPhase::Firing)
     {
         const float dir = mIsFacingRight ? 1.0f : -1.0f;
@@ -762,8 +873,39 @@ bool BossEnemySlime::CheckAttackCollision(const VECTOR& targetPos, const VECTOR&
         VECTOR beamPos = VGet(beamLeft, beamTop, 0.0f);
         VECTOR beamSize = VGet(KingSlimeAIConstants::BeamLength, KingSlimeAIConstants::BeamHalfHeight * 2.0f, 0.0f);
 
-        return Collision::CheckRectToRect(targetPos, targetSize, beamPos, beamSize);
+        if (Collision::CheckRectToRect(targetPos, targetSize, beamPos, beamSize))
+        {
+            return true;
+        }
     }
+
+    // 2. 着地時に飛び散るスライム液体弾（ドロップレット）の当たり判定
+    bool hasHitDroplet = false;
+    for (auto& droplet : mSlimeDroplets)
+    {
+        if (droplet.isActive && !droplet.isSplashing)
+        {
+            float closestX = (droplet.pos.x < targetPos.x) ? targetPos.x :
+                ((droplet.pos.x > targetPos.x + targetSize.x) ? (targetPos.x + targetSize.x) : droplet.pos.x);
+            float closestY = (droplet.pos.y < targetPos.y) ? targetPos.y :
+                ((droplet.pos.y > targetPos.y + targetSize.y) ? (targetPos.y + targetSize.y) : droplet.pos.y);
+
+            float dx = droplet.pos.x - closestX;
+            float dy = droplet.pos.y - closestY;
+
+            if ((dx * dx + dy * dy) <= (droplet.radius * droplet.radius))
+            {
+                droplet.isSplashing = true;
+                droplet.splashTimer = KingSlimeAIConstants::DropletSplashFrames;
+                hasHitDroplet = true;
+            }
+        }
+    }
+    if (hasHitDroplet)
+    {
+        return true;
+    }
+
     return false;
 }
 
@@ -813,7 +955,20 @@ void BossEnemySlime::Draw()
 
         if (currentAnim != nullptr)
         {
-            currentAnim->SetPosition(VGet(screenX, screenY, 0.0f));
+            float drawScreenX = screenX;
+            float drawScreenY = screenY;
+
+            // 体当たり攻撃の3枚目溜め時：スライムを激しく震わせる（力を溜める演出）
+            if (mState == KingSlimeState::Tackle && mIsTackleCharging)
+            {
+                const float shakePower = KingSlimeAIConstants::TackleShakePower;
+                float shakeOffsetX = (static_cast<float>(GetRand(static_cast<int>(shakePower * 20.0f))) * 0.1f) - shakePower;
+                float shakeOffsetY = (static_cast<float>(GetRand(static_cast<int>(shakePower * 10.0f))) * 0.1f) - (shakePower * 0.5f);
+                drawScreenX += shakeOffsetX;
+                drawScreenY += shakeOffsetY;
+            }
+
+            currentAnim->SetPosition(VGet(drawScreenX, drawScreenY, 0.0f));
             currentAnim->Draw(mIsFacingRight);
         }
 
@@ -826,6 +981,18 @@ void BossEnemySlime::Draw()
             const float mouthScreenX = ConvertToScreenX(mvPosition.x + dir * KingSlimeAIConstants::BeamMouthOffsetX, mpBlockMap);
             const float mouthScreenY = ConvertToScreenY(mvPosition.y + KingSlimeAIConstants::BeamMouthOffsetY, mpBlockMap);
             DrawBeamEffect(mouthScreenX, mouthScreenY);
+        }
+
+        // 4. 着地時スライム液体弾（ドロップレット）の描画
+        DrawDroplets();
+
+        // 5. 体当たり判定距離のデバッグ視覚化
+        DrawTackleDebug();
+
+        // 5. HPバーの描画（最前面UIとしてBossIntroDirectorで未描画の場合のフォールバック）
+        if (!mHpBarDrawnThisFrame && mIsBattleActive)
+        {
+            DrawHpBar();
         }
     }
     else
@@ -1114,5 +1281,382 @@ void BossEnemySlime::UpdateStatusByProgress(GameProgress progress)
         mHasInstantKillAttack = false;
         break;
     }
+    mYellowHp = static_cast<float>(mHp);
+    mPrevHp = mHp;
 }
 
+void BossEnemySlime::DrawTackleDebug() const
+{
+    if (mpBlockMap == nullptr) return;
+    if (mState == KingSlimeState::SpawnFalling) return;
+
+    const float rangeMax = KingSlimeAIConstants::TackleRangeMax;
+    const float groundScreenY = ConvertToScreenY(mGroundY, mpBlockMap);
+    const float bossScreenX = ConvertToScreenX(mvPosition.x, mpBlockMap);
+    const float leftScreenX = ConvertToScreenX(mvPosition.x - rangeMax, mpBlockMap);
+    const float rightScreenX = ConvertToScreenX(mvPosition.x + rangeMax, mpBlockMap);
+
+    const int groundY = static_cast<int>(groundScreenY);
+    const int bX = static_cast<int>(bossScreenX);
+    const int lX = static_cast<int>(leftScreenX);
+    const int rX = static_cast<int>(rightScreenX);
+
+    float dist = 0.0f;
+    bool inRange = false;
+    int pX = bX;
+    if (mpPlayer != nullptr)
+    {
+        float px = mpPlayer->GetPosition().x;
+        dist = std::abs(px - mvPosition.x);
+        inRange = (dist <= rangeMax);
+        pX = static_cast<int>(ConvertToScreenX(px, mpBlockMap));
+    }
+
+    const bool onCooldown = (mTackleCooldownTimer > 0);
+
+    // 状態に応じたカラー決定
+    int areaColor;
+    int borderColor;
+    int areaAlpha;
+    const char* statusText;
+
+    if (mState == KingSlimeState::Tackle)
+    {
+        if (mIsTackleCharging)
+        {
+            areaColor = GetColor(255, 120, 40);
+            borderColor = GetColor(255, 140, 50);
+            areaAlpha = 80;
+            statusText = "CHARGING TACKLE (SHAKING)";
+        }
+        else
+        {
+            areaColor = GetColor(255, 30, 30);
+            borderColor = GetColor(255, 50, 50);
+            areaAlpha = 80;
+            statusText = "TACKLE ATTACKING (LEAPING)";
+        }
+    }
+    else if (inRange)
+    {
+        if (!onCooldown)
+        {
+            // 範囲内 ＆ クールタイム完了（発動可能：赤）
+            areaColor = GetColor(255, 50, 50);
+            borderColor = GetColor(255, 60, 60);
+            areaAlpha = 70;
+            statusText = "IN RANGE (TRIGGER READY: 40%)";
+        }
+        else
+        {
+            // 範囲内だがクールタイム中（黄橙）
+            areaColor = GetColor(255, 170, 30);
+            borderColor = GetColor(255, 190, 40);
+            areaAlpha = 55;
+            statusText = "IN RANGE (COOLDOWN)";
+        }
+    }
+    else
+    {
+        // 範囲外（青）
+        areaColor = GetColor(30, 150, 240);
+        borderColor = GetColor(60, 190, 255);
+        areaAlpha = 35;
+        statusText = "OUT OF RANGE";
+    }
+
+    // 1. 地面の判定エリア帯（左右650px = 計1300px）
+    const int bandTop = groundY - 28;
+    SetDrawBlendMode(DX_BLENDMODE_ALPHA, areaAlpha);
+    DrawBox(lX, bandTop, rX, groundY, areaColor, TRUE);
+
+    // 2. 判定エリアの境界線
+    SetDrawBlendMode(DX_BLENDMODE_ALPHA, 180);
+    // 上面ライン
+    DrawBox(lX, bandTop, rX, bandTop + 2, borderColor, TRUE);
+    // 左右の境界垂直ライン
+    DrawBox(lX - 1, groundY - 45, lX + 2, groundY, borderColor, TRUE);
+    DrawBox(rX - 1, groundY - 45, rX + 2, groundY, borderColor, TRUE);
+
+    // 境界ラインの距離マーカーラベル
+    SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+    DrawFormatString(lX - 28, groundY - 60, borderColor, "-%d", static_cast<int>(rangeMax));
+    DrawFormatString(rX - 8, groundY - 60, borderColor, "+%d", static_cast<int>(rangeMax));
+
+    // 3. ボスとプレイヤーを結ぶ距離ライン
+    if (mpPlayer != nullptr)
+    {
+        int lineY = groundY - 14;
+        int minPX = (bX < pX) ? bX : pX;
+        int maxPX = (bX > pX) ? bX : pX;
+
+        SetDrawBlendMode(DX_BLENDMODE_ALPHA, 200);
+        DrawBox(minPX, lineY - 1, maxPX, lineY + 2, borderColor, TRUE);
+        SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+        // プレイヤー位置のピン
+        DrawBox(pX - 2, groundY - 22, pX + 3, groundY - 6, GetColor(255, 255, 255), TRUE);
+        // ボス中心ピン
+        DrawBox(bX - 2, groundY - 22, bX + 3, groundY - 6, GetColor(255, 255, 0), TRUE);
+
+        // ライン中央付近に現在距離を表示
+        int textMidX = (bX + pX) / 2 - 25;
+        DrawFormatString(textMidX, lineY - 18, GetColor(255, 255, 255), "%.0fpx", dist);
+    }
+
+    // 4. 頭上のデバッグステータスウィンドウ
+    const float textureCenterY = mvPosition.y + (16.0f * KingSlimeIntroConstants::Scale);
+    const int bossHeadY = static_cast<int>(ConvertToScreenY(textureCenterY, mpBlockMap)) - 145;
+    const int infoWidth = 260;
+    const int infoHeight = 54;
+    const int infoLeft = bX - infoWidth / 2;
+    const int infoTop = (bossHeadY > 60) ? (bossHeadY - infoHeight) : (groundY - 120);
+
+    // 背景黒ボックス
+    SetDrawBlendMode(DX_BLENDMODE_ALPHA, 180);
+    DrawBox(infoLeft, infoTop, infoLeft + infoWidth, infoTop + infoHeight, GetColor(0, 0, 0), TRUE);
+    SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+    // 枠線
+    DrawBox(infoLeft, infoTop, infoLeft + infoWidth, infoTop + infoHeight, borderColor, FALSE);
+
+    // テキスト情報
+    DrawFormatString(infoLeft + 8, infoTop + 5, borderColor, "[Tackle Check] %s", statusText);
+    DrawFormatString(infoLeft + 8, infoTop + 21, GetColor(240, 240, 240), "Dist: %5.1f / Max: %5.1f", dist, rangeMax);
+    if (onCooldown)
+    {
+        DrawFormatString(infoLeft + 8, infoTop + 37, GetColor(255, 180, 50), "CD: %3dF (WAITING)", mTackleCooldownTimer);
+    }
+    else
+    {
+        DrawFormatString(infoLeft + 8, infoTop + 37, GetColor(80, 255, 120), "CD: READY (40%% CHANCE)");
+    }
+}
+void BossEnemySlime::DrawHpBar() const
+{
+    mHpBarDrawnThisFrame = true;
+
+    // 登場演出の黒帯が消えて戦闘開始するまでは非表示
+    if (!mIsBattleActive) return;
+
+    // バーの配置座標とサイズ（フェードやスムージングなしでそのまま表示）
+    const int totalWidth = KingSlimeHpBarConstants::Width;
+    const int totalHeight = KingSlimeHpBarConstants::Height;
+    const int borderThick = KingSlimeHpBarConstants::BorderThickness;
+    const int padding = KingSlimeHpBarConstants::Padding;
+
+    const int barLeft = (ScreenSize::ScrrenWidth - totalWidth) / 2;
+    const int barTop = KingSlimeHpBarConstants::PosY;
+    const int barRight = barLeft + totalWidth;
+    const int barBottom = barTop + totalHeight;
+
+    // ボス名テキスト「キングスライミー」
+    DrawFormatString(barLeft + 2, barTop - 22, GetColor(255, 255, 255), "キングスライミー");
+
+    // バーの内側背景（黒〜暗色のベーススロット）
+    DrawBox(barLeft, barTop, barRight, barBottom, GetColor(15, 15, 20), TRUE);
+
+    // バーの内側領域
+    const int innerLeft = barLeft + borderThick + padding;
+    const int innerRight = barRight - borderThick - padding;
+    const int innerTop = barTop + borderThick + padding;
+    const int innerBottom = barBottom - borderThick - padding;
+
+    if (innerRight > innerLeft)
+    {
+        const int maxInnerWidth = innerRight - innerLeft;
+
+        // 実際のHP比率（赤いバー）
+        float redRatio = (mMaxHp > 0) ? (static_cast<float>(mHp) / static_cast<float>(mMaxHp)) : 0.0f;
+        if (redRatio < 0.0f) redRatio = 0.0f;
+        if (redRatio > 1.0f) redRatio = 1.0f;
+
+        // ダメージを受けた分の黄色バー比率
+        float yellowRatio = (mMaxHp > 0) ? (mYellowHp / static_cast<float>(mMaxHp)) : 0.0f;
+        if (yellowRatio < 0.0f) yellowRatio = 0.0f;
+        if (yellowRatio > 1.0f) yellowRatio = 1.0f;
+
+        // 1. 黄色バー（受けたダメージ分のバー：少ししたら一定速度で減少）
+        int yellowWidth = static_cast<int>(static_cast<float>(maxInnerWidth) * yellowRatio);
+        int yellowRight = innerLeft + yellowWidth;
+        if (yellowRight > innerRight) yellowRight = innerRight;
+
+        if (yellowRight > innerLeft)
+        {
+            // 鮮やかな黄色
+            DrawBox(innerLeft, innerTop, yellowRight, innerBottom, GetColor(255, 205, 30), TRUE);
+            // 上部ハイライト
+            DrawBox(innerLeft, innerTop, yellowRight, innerTop + 2, GetColor(255, 240, 120), TRUE);
+        }
+
+        // 2. 赤いバー（現在の実HP：即座に減少位置へ）
+        int redWidth = static_cast<int>(static_cast<float>(maxInnerWidth) * redRatio);
+        int redRight = innerLeft + redWidth;
+        if (redRight > innerRight) redRight = innerRight;
+
+        if (redRight > innerLeft)
+        {
+            // 鮮やかな赤
+            DrawBox(innerLeft, innerTop, redRight, innerBottom, GetColor(230, 40, 40), TRUE);
+            // 上部ハイライト
+            DrawBox(innerLeft, innerTop, redRight, innerTop + 2, GetColor(255, 130, 130), TRUE);
+        }
+    }
+
+    // 白枠の描画（指定の「白枠」）
+    const int whiteColor = GetColor(255, 255, 255);
+    // 上枠
+    DrawBox(barLeft, barTop, barRight, barTop + borderThick, whiteColor, TRUE);
+    // 下枠
+    DrawBox(barLeft, barBottom - borderThick, barRight, barBottom, whiteColor, TRUE);
+    // 左枠
+    DrawBox(barLeft, barTop, barLeft + borderThick, barBottom, whiteColor, TRUE);
+    // 右枠
+    DrawBox(barRight - borderThick, barTop, barRight, barBottom, whiteColor, TRUE);
+}
+
+void BossEnemySlime::SpawnLandingDroplets(const BlockMap& blockMap)
+{
+    // 非アクティブな弾を整理
+    mSlimeDroplets.erase(
+        std::remove_if(mSlimeDroplets.begin(), mSlimeDroplets.end(), [](const SlimeDroplet& d) { return !d.isActive; }),
+        mSlimeDroplets.end()
+    );
+
+    const int count = KingSlimeAIConstants::DropletCount;
+    const float minSpeed = KingSlimeAIConstants::DropletSpeedMin;
+    const float maxSpeed = KingSlimeAIConstants::DropletSpeedMax;
+    const float minRadius = KingSlimeAIConstants::DropletRadiusMin;
+    const float maxRadius = KingSlimeAIConstants::DropletRadiusMax;
+
+    const float angleRangeDeg = KingSlimeAIConstants::DropletAngleRangeDeg;
+    const float spreadX = KingSlimeAIConstants::DropletSpawnSpreadX;
+    const float baseOffsetY = KingSlimeAIConstants::DropletSpawnOffsetY;
+
+    for (int i = 0; i < count; i++)
+    {
+        SlimeDroplet drop;
+
+        // キングスライム上部付近に絞って出現（左右±spreadX、上部オフセット±8px）
+        float offsetX = -spreadX + static_cast<float>(GetRand(static_cast<int>(spreadX * 20.0f))) * 0.1f;
+        float offsetY = baseOffsetY + static_cast<float>(GetRand(16) - 8);
+        drop.pos = VGet(mvPosition.x + offsetX, mvPosition.y + offsetY, 0.0f);
+
+        // 真上を0度として、-45度〜+45度（計90度）の範囲でランダムな角度
+        float angleDeg = -angleRangeDeg + static_cast<float>(GetRand(static_cast<int>(angleRangeDeg * 20.0f))) * 0.1f;
+        float angleRad = angleDeg * (3.14159265f / 180.0f);
+
+        // ランダムな初速
+        float speed = minSpeed + static_cast<float>(GetRand(static_cast<int>((maxSpeed - minSpeed) * 10.0f))) * 0.1f;
+        drop.vel.x = speed * std::sin(angleRad);
+        drop.vel.y = -speed * std::cos(angleRad);
+        drop.vel.z = 0.0f;
+
+        // ランダムな半径
+        drop.radius = minRadius + static_cast<float>(GetRand(static_cast<int>((maxRadius - minRadius) * 10.0f))) * 0.1f;
+        drop.lifeTime = KingSlimeAIConstants::DropletLifeFrames;
+        drop.isActive = true;
+        drop.isSplashing = false;
+        drop.splashTimer = 0;
+
+        mSlimeDroplets.push_back(drop);
+    }
+}
+
+void BossEnemySlime::UpdateDroplets()
+{
+    for (auto& droplet : mSlimeDroplets)
+    {
+        if (!droplet.isActive) continue;
+
+        if (droplet.isSplashing)
+        {
+            droplet.splashTimer--;
+            if (droplet.splashTimer <= 0)
+            {
+                droplet.isActive = false;
+            }
+            continue;
+        }
+
+        // 速度と重力適用
+        droplet.pos.x += droplet.vel.x;
+        droplet.vel.y += KingSlimeAIConstants::DropletGravity;
+        droplet.pos.y += droplet.vel.y;
+
+        droplet.lifeTime--;
+        if (droplet.lifeTime <= 0)
+        {
+            droplet.isActive = false;
+            continue;
+        }
+
+        // 床（地面）との着地判定（下方向に落下中のみ）
+        if (mpBlockMap != nullptr && droplet.vel.y > 0.0f)
+        {
+            float groundY = FindGroundY(*mpBlockMap, droplet.pos.x);
+            if (droplet.pos.y >= groundY - droplet.radius * 0.3f)
+            {
+                droplet.pos.y = groundY - droplet.radius * 0.3f;
+                droplet.isSplashing = true;
+                droplet.splashTimer = KingSlimeAIConstants::DropletSplashFrames;
+            }
+        }
+    }
+}
+
+void BossEnemySlime::DrawDroplets() const
+{
+    if (mpBlockMap == nullptr) return;
+
+    for (const auto& droplet : mSlimeDroplets)
+    {
+        if (!droplet.isActive) continue;
+
+        float screenX = ConvertToScreenX(droplet.pos.x, mpBlockMap);
+        float screenY = ConvertToScreenY(droplet.pos.y, mpBlockMap);
+        float r = droplet.radius;
+
+        // 画面外ならスキップ
+        if (screenX < -50.0f || screenX > ScreenSize::ScrrenWidth + 50.0f ||
+            screenY < -50.0f || screenY > ScreenSize::ScrrenHeight + 50.0f)
+        {
+            continue;
+        }
+
+        int scX = static_cast<int>(screenX);
+        int scY = static_cast<int>(screenY);
+
+        if (droplet.isSplashing)
+        {
+            // 着地スプラッシュ（横に広がってフェードアウト）
+            float splashProgress = 1.0f - static_cast<float>(droplet.splashTimer) / static_cast<float>(KingSlimeAIConstants::DropletSplashFrames);
+            int alpha = static_cast<int>(220.0f * (1.0f - splashProgress));
+            if (alpha <= 0) continue;
+
+            int ovalRx = static_cast<int>(r * (1.0f + splashProgress * 0.8f));
+            int ovalRy = static_cast<int>(r * (0.45f * (1.0f - splashProgress * 0.5f)));
+            if (ovalRy < 2) ovalRy = 2;
+
+            SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
+            DrawOval(scX, scY, ovalRx, ovalRy, GetColor(45, 175, 250), TRUE);
+            DrawOval(scX, scY, static_cast<int>(ovalRx * 0.65f), static_cast<int>(ovalRy * 0.65f), GetColor(140, 230, 255), TRUE);
+            SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+        }
+        else
+        {
+            // 飛翔中の円形液体弾
+            // 1. 外枠／濃い青の縁取り
+            DrawCircle(scX, scY, static_cast<int>(r + 2.0f), GetColor(20, 80, 200), TRUE);
+
+            // 2. メインの液体スライム色（鮮やかなスカイブルー）
+            DrawCircle(scX, scY, static_cast<int>(r), GetColor(45, 175, 250), TRUE);
+
+            // 3. 内側の液体コア（明るい水色）
+            DrawCircle(scX, static_cast<int>(scY - r * 0.15f), static_cast<int>(r * 0.65f), GetColor(130, 230, 255), TRUE);
+
+            // 4. ハイライト光沢（白色のドット光沢）
+            DrawCircle(static_cast<int>(scX - r * 0.3f), static_cast<int>(scY - r * 0.35f), static_cast<int>(r * 0.25f), GetColor(255, 255, 255), TRUE);
+        }
+    }
+}
