@@ -8,6 +8,7 @@
 #include "Saint.h"
 #include "BossIntroDirector.h"
 #include "CircleFade.h"
+#include "LeafCutter.h"
 
 // 前方宣言
 class Player;
@@ -31,6 +32,7 @@ public:
 private:
 	TutorialTextManager mTutorialText;
 	CircleFade mCircleFade;
+	LeafCutter mLeaf;
 
 	int spawnTimer; 
 	Player* mpPlayer;

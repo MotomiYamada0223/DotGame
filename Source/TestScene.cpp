@@ -131,6 +131,14 @@ void TestScene::Update()
 	// 円のフェード更新
 	mCircleFade.UpdateCircleFade();
 
+	mLeaf.LeafUpdate(mBlockMap, mpPlayer);
+
+	// デバッグ
+	if (InputManager::CheckDownKey(KEY_INPUT_RETURN))
+	{
+		Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_TYPE::SCENE_STAGESELECT);
+	}
+
 	// 1キーでプレイヤーの座標を (7200, 700) にワープ (デバッグ用)
 	static bool oneKeyWasDown = false;
 	bool oneKeyIsDown = (CheckHitKey(KEY_INPUT_1) == 1 || CheckHitKey(KEY_INPUT_NUMPAD1) == 1);
@@ -251,11 +259,13 @@ void TestScene::Draw()
 		Scene::Draw();
 
 		mBlockMap.Draw(); // ブロックマップの描画
+		mLeaf.LeafDraw(mBlockMap); // 落下してくる葉の描画
 
 		// 一番手前に描画したいもの
 		mpPlayer->DrawFallDeath(); // 死亡時テキスト
 		mDrawFrame.Draw(); // フレーム描画
 		mSaint.Draw(); // 天使の描画
+
 
 		// ボス演出の黒帯
 		mBossIntro.Draw();

@@ -206,6 +206,8 @@ void TutorialTextManager::OnPlayerDead(DeathReason::DeathType type)
 	mfIdelTimer = 0.0f;
 	mfCharTimer = 0.0f;
 	mnDisplayByteCount = 0;
+
+	SelectDeathCountText();
 }
 
 
@@ -308,10 +310,11 @@ void TutorialTextManager::Update(float dt, float playerX)
 	{
 		return;
 	}
+
 	// 文字の更新
 	UpdateString(mStep);
 
-	mbIsTextCompleted = (mnDisplayByteCount >= static_cast<int>(mStep->text.size()));
+	mbIsTextCompleted = (mnDisplayByteCount >= static_cast<int>(mDisplayText.size()));
 	NextStepUpdate(mbIsTextCompleted);
 }
 
@@ -433,12 +436,12 @@ void TutorialTextManager::UpdateString(const StepData* step)
 		mfCharTimer -= mfCharSpeed;
 
 		// すべての文字が表示しきっていない場合のみ処理する
-		if (mnDisplayByteCount < static_cast<int>(step->text.size()))
+		if (mnDisplayByteCount < static_cast<int>(mDisplayText.size()))
 		{
 			// 色タグ部分に差し掛かった場合は一瞬でスキップして進めるため
-			while (mnDisplayByteCount < static_cast<int>(step->text.size()))
+			while (mnDisplayByteCount < static_cast<int>(mDisplayText.size()))
 			{
-				int tagLen = GetTagLength(step->text, mnDisplayByteCount);
+				int tagLen = GetTagLength(mDisplayText, mnDisplayByteCount);
 				if (tagLen > 0)
 				{
 					mnDisplayByteCount += tagLen;
@@ -449,20 +452,20 @@ void TutorialTextManager::UpdateString(const StepData* step)
 				}
 			}
 
-			if (mnDisplayByteCount < static_cast<int>(step->text.size()))
+			if (mnDisplayByteCount < static_cast<int>(mDisplayText.size()))
 			{
 				// マルチバイト文字を考慮して次の文字のバイト数を取得する
 				int byteCount = GetCharByteCount(
-					step->text,
+					mDisplayText,
 					mnDisplayByteCount
 				);
 				mnDisplayByteCount += byteCount;
 			}
 
 			// 文字を進めた後も次の位置にタグがあればさらにスキップする
-			while (mnDisplayByteCount < static_cast<int>(step->text.size()))
+			while (mnDisplayByteCount < static_cast<int>(mDisplayText.size()))
 			{
-				int tagLen = GetTagLength(step->text, mnDisplayByteCount);
+				int tagLen = GetTagLength(mDisplayText, mnDisplayByteCount);
 				if (tagLen > 0)
 				{
 					mnDisplayByteCount += tagLen;
@@ -539,6 +542,8 @@ void TutorialTextManager::ChangeStep(int nextID)
 	// 文字送りもリセット
 	mfCharTimer = 0.0f;
 	mnDisplayByteCount = 0;
+
+	SelectDeathCountText();
 }
 
 
@@ -548,22 +553,16 @@ void TutorialTextManager::Draw()
 	const StepData* step = GetCurrentStep();
 
 	if (step == nullptr) return;
-	if (step->text == "none" ||
-		step->text == "0" ||
-		step->text.empty())
+	if (mDisplayText == "none" ||
+		mDisplayText == "0" ||
+		mDisplayText.empty())
 	{
 		return;
 	}
 
-	// 
-	/*if (!(mbIsDeathTutorial && mbIsDeathTextFinished) &&
-		mfIdelTimer >= step->completeValue)
-	{
-		return;
-	}*/
 
 	std::string displayText =
-		step->text.substr(0, mnDisplayByteCount);
+		mDisplayText.substr(0, mnDisplayByteCount);
 
 	// フォント設定
 	int fontSize = TutorialTextControll::TextSize;
@@ -672,4 +671,45 @@ void TutorialTextManager::DebugDraw()
 		mfIdelTimer,
 		step->completeValue
 	);
+}
+
+
+void TutorialTextManager::SelectDeathCountText()
+{
+	const StepData* step = GetCurrentStep();
+
+	if (step == nullptr)
+	{
+		mDisplayText.clear();
+		return;
+	}
+
+	// 死亡チュートリアルでは必ず text を使う
+	if (mbIsDeathTutorial)
+	{
+		mDisplayText = step->text;
+		return;
+	}
+
+	// ここから下は通常チュートリアル用
+	int stageIndex = Master::gCurrentStageIndex;
+
+	if (stageIndex < 0 ||
+		stageIndex >= Master::MaxStageCount)
+	{
+		mDisplayText = step->text;
+		return;
+	}
+
+	int deathCount = Master::gDeathCounts[stageIndex];
+
+	// 4回以上死亡していて、RetryTextがあれば表示
+	if (deathCount >= 4 && !step->repeatText.empty())
+	{
+		mDisplayText = step->repeatText;
+	}
+	else
+	{
+		mDisplayText = step->text;
+	}
 }

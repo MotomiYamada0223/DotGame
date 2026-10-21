@@ -63,6 +63,20 @@ void StepLoader::LoadCSV(const std::string& path)
         std::getline(ss, tmp, ',');
         data.nextID = std::stoi(tmp);
 
+
+        // RetryText
+        std::getline(ss, data.repeatText, ',');
+        // テキストの中の\nを改行に変換する処理
+        size_t repeatPos = 0;
+        while ((repeatPos = data.repeatText.find("\\n", repeatPos)) != std::string::npos)
+        {
+            // repeatPosの位置から2文字分を\nに置き換えるという処理
+            data.repeatText.replace(repeatPos, 2, "\n");
+            repeatPos += 1;
+        }
+
+
+
         // IDをキーにして保存
         data.id = data.id;
         steps[data.id] = data;

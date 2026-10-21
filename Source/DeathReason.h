@@ -14,6 +14,7 @@ public:
 		Fall,
 		NeedleTrapHit,
 		DeathBlock,
+		Leaf, // 葉っぱカッター
 	};
 
 	// 死亡原因と番号をセットするための構造体
