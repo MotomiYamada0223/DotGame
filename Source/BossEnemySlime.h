@@ -2,6 +2,7 @@
 #include "Enemy.h"
 #include "UnitStatus.h"
 #include "TextureAnimation.h"
+#include <vector>
 
 class Player;
 
@@ -55,6 +56,17 @@ public:
         float radius;
     };
 
+    struct SlimeDroplet
+    {
+        VECTOR pos;
+        VECTOR vel;
+        float radius;
+        int lifeTime;
+        bool isActive;
+        bool isSplashing;
+        int splashTimer;
+    };
+
     BossEnemySlime(VECTOR initPos, float groundY = 0.0f, Player* targetPlayer = nullptr);
     virtual ~BossEnemySlime();
 
@@ -64,6 +76,8 @@ public:
     virtual void UpdateStatusByProgress(GameProgress progress) override;
     virtual bool CheckAttackCollision(const VECTOR& targetPos, const VECTOR& targetSize) const override;
     virtual float GetCollisionOffsetY() const override { return mCollisionOffsetY; }
+    virtual void TakeDamage(int damage) override;
+    void DrawHpBar() const;
 
     KingSlimeState GetState() const { return mState; }
     bool IsSpawnFinished() const { return mState != KingSlimeState::SpawnFalling && mState != KingSlimeState::SpawnLandingReverse; }
@@ -88,6 +102,10 @@ private:
 
     void DrawJumpWarning(float screenX, float screenY, float fadeAlphaRatio) const;
     void DrawBeamEffect(float mouthScreenX, float mouthScreenY) const;
+    void DrawTackleDebug() const;
+    void SpawnLandingDroplets(const BlockMap& blockMap);
+    void UpdateDroplets();
+    void DrawDroplets() const;
 
 private:
     KingSlimeState mState;
@@ -119,8 +137,20 @@ private:
     // 体当たり関連メンバ変数
     int mTackleCooldownTimer;
     bool mHasTackleLaunched;
+    bool mIsTackleCharging;
+    bool mHasChargedThisTackle;
+    int mTackleChargeTimer;
     float mJumpSpeedX;
     float mTackleVelocityY;
     float mTargetPlayerX;
+
+    // HPバー関連メンバ変数（ダメージ黄色バー制御）
+    float mYellowHp;
+    int mYellowDelayTimer;
+    mutable bool mHpBarDrawnThisFrame;
+    int mPrevHp;
+
+    // 着地時スライム液体弾（ドロップレット）
+    mutable std::vector<SlimeDroplet> mSlimeDroplets;
 };
 

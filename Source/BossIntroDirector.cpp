@@ -325,6 +325,12 @@ void BossIntroDirector::Draw() const
 
 		DrawTitle(screenX, screenY);
 	}
+
+	// 4. キングスライムHPバーの描画（最前面UIとして描画）
+	if (mpBossSlime != nullptr)
+	{
+		mpBossSlime->DrawHpBar();
+	}
 }
 
 void BossIntroDirector::DrawTitle(float screenX, float screenY) const
