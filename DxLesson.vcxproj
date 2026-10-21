@@ -142,6 +142,7 @@
     <ClCompile Include="Source\BossIntroDirector.cpp" />
     <ClCompile Include="Source\Camera.cpp" />
     <ClCompile Include="Source\CharacterPhysics.cpp" />
+    <ClCompile Include="Source\CircleFade.cpp" />
     <ClCompile Include="Source\Collision.cpp" />
     <ClCompile Include="Source\DeathReason.cpp" />
     <ClCompile Include="Source\DrawFrame.cpp" />
@@ -194,6 +195,7 @@
     <ClInclude Include="Source\BossEnemyTree.h" />
     <ClInclude Include="Source\BossIntroDirector.h" />
     <ClInclude Include="Source\Camera.h" />
+    <ClInclude Include="Source\CircleFade.h" />
     <ClInclude Include="Source\Collision.h" />
     <ClInclude Include="Source\ColorTagParser.h" />
     <ClInclude Include="Source\DeathReason.h" />
