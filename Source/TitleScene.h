@@ -19,6 +19,13 @@ public:
 	// I—¹ˆ—
 	virtual void Finalize() override;
 
+	void DrawSelectString();
+	void UpdateSelectString();
+
 private:
 	TitleLogo mTitleLogo;
+
+	int mnSelectIndex;
+	const int MAX_SELECT = 2;
 };
+

@@ -8,6 +8,7 @@
 TitleScene::TitleScene()
 	: Scene()     // 基底クラスのコンストラクタを呼び出しておく
 	, mTitleLogo()
+	, mnSelectIndex(0)
 {
 }
 
@@ -30,10 +31,18 @@ void TitleScene::Initialize()
 
 void TitleScene::Update()
 {
+	UpdateSelectString();
 	// Enterでゲーム画面へ
 	if (InputManager::CheckDownKey(KEY_INPUT_RETURN))
 	{
-		Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_TYPE::SCENE_STAGESELECT);
+		if (mnSelectIndex == 0)
+		{
+			Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_TYPE::SCENE_STAGESELECT);
+		}
+		else
+		{
+			DxLib_End();
+		}
 	}
 
 	mTitleLogo.Update();
@@ -42,6 +51,49 @@ void TitleScene::Update()
 	Scene::Update();
 }
 
+void TitleScene::UpdateSelectString()
+{
+	if (InputManager::CheckDownKey(KEY_INPUT_W) || InputManager::CheckDownKey(KEY_INPUT_UP))
+	{
+		mnSelectIndex--;
+		if (mnSelectIndex < 0)
+		{
+			mnSelectIndex = 1; // 項目数に合わせて調整（全2項目なら 1）
+		}
+	}
+	if (InputManager::CheckDownKey(KEY_INPUT_S) || InputManager::CheckDownKey(KEY_INPUT_DOWN))
+	{
+		mnSelectIndex++;
+		if (mnSelectIndex > 1)
+		{
+			mnSelectIndex = 0; // 0に戻る
+		}
+	}
+}
+
+void TitleScene::DrawSelectString()
+{
+	// メニュー項目の座標基準
+	int menuX = ScreenSize::CenterX;
+	int menuStartY = ScreenSize::CenterY + 100;
+	int lineSpacing = 80; // 項目ごとの間隔
+	int fontSize = 70;
+
+	if (mnSelectIndex == 0)
+	{
+		Master::mpGameManager->GetFontManager()->DrawDotString(menuX - 50, menuStartY, 80, GetColor(255, 255, 255), ">");
+	}
+	Master::mpGameManager->GetFontManager()->DrawDotString(
+		menuX, menuStartY, fontSize,
+		GetColor(255, 255, 255), "Play");
+	if (mnSelectIndex == 1)
+	{
+		Master::mpGameManager->GetFontManager()->DrawDotString(menuX - 50, menuStartY + lineSpacing, 80, GetColor(255, 255, 255), ">");
+	}
+	Master::mpGameManager->GetFontManager()->DrawDotString(
+		menuX, menuStartY + lineSpacing, fontSize,
+		GetColor(255, 255, 255), "Continue");
+}
 
 void TitleScene::Draw()
 {
@@ -54,6 +106,8 @@ void TitleScene::Draw()
 		);
 
 		mTitleLogo.Draw();
+
+		DrawSelectString();
 
 	// 基底クラスの更新処理を呼びだす
 	Scene::Draw();
