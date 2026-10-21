@@ -134,7 +134,7 @@ void TestScene::Update()
 	mLeaf.LeafUpdate(mBlockMap, mpPlayer);
 
 	// デバッグ
-	if (InputManager::CheckDownKey(KEY_INPUT_RETURN))
+	if (InputManager::CheckDownKey(KEY_INPUT_9))
 	{
 		Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_TYPE::SCENE_STAGESELECT);
 	}

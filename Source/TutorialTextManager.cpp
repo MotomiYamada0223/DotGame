@@ -4,6 +4,7 @@
 #include "DeathReason.h"
 #include "ColorTagParser.h"
 
+
 // ステップの取得処理を共通化
 const StepData* TutorialTextManager::GetCurrentStep() const
 {
