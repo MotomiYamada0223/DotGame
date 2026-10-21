@@ -18,9 +18,7 @@ TestScene::TestScene()
 	:Scene()
 	, mProgress()
 	, mSaint(VGet(Utility::SCREEN_WIDTH / 2.0f, 150.0f, 0.0f)) // 天使の作成
-	, mIntroState(1)
-	, mIntroTimer(0)
-	, mIntroFlag(false)
+	, mbCircleFlag(false)
 
 {
 	spawnTimer = 0;
@@ -130,26 +128,8 @@ void TestScene::Initialize()
 
 void TestScene::Update()
 {
-
-	if (mIntroState == 1)
-	{
-		mIntroTimer++;
-		if (mIntroTimer > 120)
-		{
-			mIntroState = 2;
-			mIntroTimer = 0;
-		}
-		return;
-	}
-	else if (mIntroState == 2)
-	{
-		mIntroTimer++;
-		if (mIntroTimer > 60)
-		{
-			mIntroState = 0;
-		}
-	}
-
+	// 円のフェード更新
+	mCircleFade.UpdateCircleFade();
 
 	// 1キーでプレイヤーの座標を (7200, 700) にワープ (デバッグ用)
 	static bool oneKeyWasDown = false;
@@ -263,7 +243,7 @@ void TestScene::Draw()
 {
 	if (!mbIsLoaded) { return; }
 
-	if (mIntroFlag)
+	if (mbCircleFlag)
 	{
 		// オブジェクトの描画
 		mBackground.Draw(mBlockMap.GetShakeOffsetX(), mBlockMap.GetShakeOffsetY()); // スクロール背景
@@ -294,43 +274,11 @@ void TestScene::Draw()
 		DrawFormatString(10, 50, GetColor(0, 255, 0), "[1]: Warp to Boss Area (7200, 700)");
 	}
 
-
-	if (mIntroState == 1)
+	if (mCircleFade.GetStateFlag())
 	{
-		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
-		DrawBox(0, 0, ScreenSize::ScrrenWidth, ScreenSize::ScrrenHeight, GetColor(0, 0, 0), TRUE);
+		mbCircleFlag = true;
 	}
-	else if (mIntroState == 2)
-	{
-		int cx = ScreenSize::CenterX;
-		int cy = ScreenSize::CenterY;
-		if (mpPlayer) {
-			cx = (int)(mpPlayer->GetPosition().x - mBlockMap.GetScrollX());
-			cy = (int)(mpPlayer->GetPosition().y - mBlockMap.GetScrollY());
-		}
-
-
-		float t = (float)mIntroTimer / 60.0f;
-		float radius = t * t * 1500.0f;
-
-
-		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
-
-		mIntroFlag = true;
-		for (int i = 0; i < 60; i++) {
-			float a1 = i * (DX_PI_F * 2.0f / 60.0f);
-			float a2 = (i + 1) * (DX_PI_F * 2.0f / 60.0f);
-			int x1 = cx + (int)(cosf(a1) * radius);
-			int y1 = cy + (int)(sinf(a1) * radius);
-			int x2 = cx + (int)(cosf(a2) * radius);
-			int y2 = cy + (int)(sinf(a2) * radius);
-			int ox1 = cx + (int)(cosf(a1) * 3000.0f);
-			int oy1 = cy + (int)(sinf(a1) * 3000.0f);
-			int ox2 = cx + (int)(cosf(a2) * 3000.0f);
-			int oy2 = cy + (int)(sinf(a2) * 3000.0f);
-			DrawQuadrangle(x1, y1, x2, y2, ox2, oy2, ox1, oy1, GetColor(0, 0, 0), TRUE);
-		}
-	}
+	mCircleFade.DrawCircleFade(mpPlayer, mBlockMap);
 }
 
 void TestScene::Finalize()

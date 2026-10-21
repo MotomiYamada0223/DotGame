@@ -7,6 +7,7 @@
 #include "DrawFrame.h"
 #include "Saint.h"
 #include "BossIntroDirector.h"
+#include "CircleFade.h"
 
 // 前方宣言
 class Player;
@@ -29,6 +30,7 @@ public:
 
 private:
 	TutorialTextManager mTutorialText;
+	CircleFade mCircleFade;
 
 	int spawnTimer; 
 	Player* mpPlayer;
@@ -43,7 +45,5 @@ private:
 	bool mbWasPlayerDead = false; // 前フレームのプレイヤーの死亡状態を保持するフラグ
 
 	// 円の描画
-	int mIntroState;
-	int mIntroTimer;
-	bool mIntroFlag;
+	bool mbCircleFlag;
 };
