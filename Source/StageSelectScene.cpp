@@ -43,8 +43,15 @@ StageSelectScene::~StageSelectScene()
 void StageSelectScene::Initialize()
 {
 	mapGraphHandle = LoadGraph(BackGroundGraphPath::SelectStageMap.c_str());
-	LoadDivGraph(CharacterGraphPath::PlayerAnimation.c_str(),
-		16, 4, 4, 128, 128, playerGraphHandles);
+	LoadDivGraph(
+		CharacterGraphPath::PlayerAnimation.c_str(),
+		16,
+		4,
+		4,
+		128,
+		128,
+		playerGraphHandles
+	);
 
 	playerX = 236.0f;
 	playerY = -100.0f;
@@ -62,6 +69,12 @@ void StageSelectScene::Initialize()
 	isHidden = false;
 
 	Master::gPlayerLive = PlayerConstants::MaxLive;
+
+	// 現在のプレイ時の死亡回数だけリセットする
+	for (int i = 0; i < Master::MaxStageCount; ++i)
+	{
+		Master::gDeathCounts[i] = 0;
+	}
 }
 
 // 移動処理：プレイヤーの移動アニメーションや自動ルート分岐、キー入力による移動先の設定を行う
@@ -222,14 +235,26 @@ void StageSelectScene::Move()
 // 更新処理：ステージ移行フェード、タイトル帰還フェード、洞窟内のタイマー処理、キー入力を管理する
 void StageSelectScene::Update()
 {
+	// デバッグで解放している
+	if (InputManager::CheckDownKey(KEY_INPUT_8))
+	{
+		Master::gStageCleared[0] = true;
+		Master::gStageCleared[1] = true;
+		Master::gStageCleared[2] = true;
+	}
+
 	// ステージ突入時の演出タイマー処理
 	if (mIsEnteringStage) {
 		mEnterTimer++;
 		if (mEnterTimer > 60) {
-			if (Master::gDeathCounts[Master::gCurrentStageIndex] == -1) {
-				Master::gDeathCounts[Master::gCurrentStageIndex] = 0;
+			if (Master::gDeathCounts[Master::gCurrentStageIndex] == -1)
+			{
+
+
+				 Master::gTotalDeathCounts[Master::gCurrentStageIndex] += Master::gDeathCounts[Master::gCurrentStageIndex];
+				 Master::gDeathCounts[Master::gCurrentStageIndex] = 0;
 			}
-			Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_TEST);
+			Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_GAME);
 		}
 		return;
 	}
@@ -453,14 +478,21 @@ void StageSelectScene::DrawStageString()
 		Master::mpGameManager->GetFontManager()->DrawDotString(boxX + 25, boxY + 15, 36, GetColor(255, 255, 0), stageName);
 
 		// 死亡回数の描画
-		char deathText[64];
-		if (Master::gDeathCounts[nodeIndex] == -1) {
-			sprintf_s(deathText, "死亡回数: - 回");
-		}
-		else {
-			sprintf_s(deathText, "死亡回数: %d 回", Master::gDeathCounts[nodeIndex]);
-		}
-		Master::mpGameManager->GetFontManager()->DrawDotString(boxX + 25, boxY + 60, 24, GetColor(255, 100, 100), deathText);
+		char deathText[128];
+
+		sprintf_s(
+			deathText,
+			"今回の死亡回数: %d 回",
+			Master::gDeathCounts[nodeIndex]
+		);
+
+		Master::mpGameManager->GetFontManager()->DrawDotString(
+			boxX + 25,
+			boxY + 60,
+			24,
+			GetColor(255, 100, 100),
+			deathText
+		);
 
 		// ステージ説明文の描画
 		unsigned int descColor = locked ? GetColor(255, 100, 100) : GetColor(255, 255, 255);

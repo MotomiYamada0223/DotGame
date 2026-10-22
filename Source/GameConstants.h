@@ -139,6 +139,7 @@ namespace CsvPath
 // よく使う色
 namespace ColorOption
 {
+	static const int Red = GetColor(240, 10, 10);
 	static const int White = GetColor(240, 240, 240);
 	static const int Black = GetColor(0, 0, 0);
 }
@@ -187,11 +188,11 @@ namespace PlayerBlockCollision
 namespace TextPosition
 {
 	// 落ちた時のGAMEOVER文字
-	static const int FallDeathX = 200;
-	static const int FallDeathY = ScreenSize::CenterY - 150;
+	static const int FallDeathX = 600;
+	static const int FallDeathY = ScreenSize::CenterY + 200;
 
 	// 残機表示
-	static const int LivesX = ScreenSize::CenterX - 80;
+	static const int LivesX = ScreenSize::CenterX - 50;
 	static const int LivesY = FallDeathY + 200;
 }
 

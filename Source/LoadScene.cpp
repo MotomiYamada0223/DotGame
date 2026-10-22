@@ -33,12 +33,19 @@ void LoadScene::Draw()
 		0.0f,
 		mnHandle, TRUE);
 
+
+	int color = ColorOption::White;
+	if (Master::gPlayerLive <= 0)
+	{
+		color = ColorOption::Red;
+	}
+
 	Master::mpGameManager->GetFontManager()->DrawDotString(
 		ScreenSize::CenterX,
 		ScreenSize::CenterY,
 		120,
-		ColorOption::White,
-		"Žc‹@ ~ %d",
+		color,
+		"~ %d",
 		Master::gPlayerLive
 	);
 
@@ -62,8 +69,8 @@ void LoadScene::Update()
 
 	if (mbFlag)
 	{
-		// ƒ[ƒh‰æ–Ê‚É‚¢‚­‚æ‚¤‚É‚µ‚½
-		Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_TEST);
+		// ƒQ[ƒ€‰æ–Ê‚É‚¢‚­‚æ‚¤‚É‚µ‚½
+		Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_GAME);
 	}
 
 	Scene::Update();

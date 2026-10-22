@@ -152,6 +152,7 @@
     <ClCompile Include="Source\EnemyWolf.cpp" />
     <ClCompile Include="Source\DeathController.cpp" />
     <ClCompile Include="Source\FontManager.cpp" />
+    <ClCompile Include="Source\GameLoadData.cpp" />
     <ClCompile Include="Source\GameManager.cpp" />
     <ClCompile Include="Source\GameScene.cpp" />
     <ClCompile Include="Source\HiddenBlock.cpp" />
@@ -183,7 +184,6 @@
     <ClCompile Include="Source\TutorialTextManager.cpp" />
     <ClCompile Include="Source\UnitStatus.cpp" />
     <ClCompile Include="Source\WinResultScene.cpp" />
-    <ClCompile Include="Source\TestScene.cpp" />
     <ClCompile Include="Source\FloorSpawner.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -209,6 +209,7 @@
     <ClInclude Include="Source\DeathController.h" />
     <ClInclude Include="Source\FontManager.h" />
     <ClInclude Include="Source\GameConstants.h" />
+    <ClInclude Include="Source\GameLoadData.h" />
     <ClInclude Include="Source\GameManager.h" />
     <ClInclude Include="Source\GameScene.h" />
     <ClInclude Include="Source\HiddenBlock.h" />
@@ -242,7 +243,6 @@
     <ClInclude Include="Source\UnitStatus.h" />
     <ClInclude Include="Source\Utility.h" />
     <ClInclude Include="Source\WinResultScene.h" />
-    <ClInclude Include="Source\TestScene.h" />
     <ClInclude Include="Source\FloorSpawner.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

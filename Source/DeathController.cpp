@@ -8,8 +8,7 @@
 
 DeathController::DeathController()
 	: mActive(false)
-	, mIsPressEnter(false)
-	, mReviveTimer(0.0f)
+	, mIsPressKey(false)
 {
 
 }
@@ -19,44 +18,49 @@ DeathController::~DeathController()
 
 }
 
-void DeathController::Update(VECTOR playerPos, int playerLive, int playerHp)
+void DeathController::Update(
+	VECTOR playerPos,
+	int playerLive,
+	int playerHp)
 {
-	// プレイヤーが地点を超えたらかつ残機が１以上なら
 	if (!mActive &&
-		(playerPos.y >= PlayerConstants::PlayerDeathHeight || playerHp <= 0)
-		&& playerLive > 1)
-	{
+		(playerPos.y >= PlayerConstants::PlayerDeathHeight ||
+		 playerHp <= 0))
+	{	
 		mActive = true;
-		mIsPressEnter = false;
-		mReviveTimer = TextTimer::MaxFallDeathTimer;
+		mIsPressKey = false;
 	}
 
-	if (mActive)
+	if (!mActive || mIsPressKey)
 	{
-		// Enterが押されたら表示
-		if (InputManager::CheckDownKey(KEY_INPUT_RETURN) || mIsPressEnter)
-		{
-			mIsPressEnter = true;
-		}
+		return;
 	}
 
-	// 復活待機中はタイマーを減らす
-	if (mIsPressEnter)
+	// Retryか選択画面か
+	if (InputManager::CheckDownKey(KEY_INPUT_R))
 	{
-		mReviveTimer -= 1.0f;
-		if (mReviveTimer <= 0.0f)
-		{
-			mReviveTimer = 0.0f;
-		}
+		mIsPressKey = true;
+		Master::mpGameManager->GetSceneManager()->SetNextScene(
+			SceneManager::SCENE_LOAD
+		);
+	}
+	else if (InputManager::CheckDownKey(KEY_INPUT_Q))
+	{
+		mIsPressKey = true;
+		Master::mpGameManager->GetSceneManager()->SetNextScene(
+			SceneManager::SCENE_STAGESELECT
+		);
 	}
 }
 
 void DeathController::Draw(int live) const
 {
-	if (!mActive) { return; }
+	if (!mActive)
+	{
+		return;
+	}
 
-	// 画面を暗くする
-	SetDrawBlendMode(DX_BLENDMODE_ALPHA, 200);
+	SetDrawBlendMode(DX_BLENDMODE_ALPHA, 220);
 
 	DrawBox(
 		0,
@@ -69,21 +73,21 @@ void DeathController::Draw(int live) const
 
 	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 
-	// GAME OVER表示
+	int textSize = 80;
 	Master::mpGameManager->GetFontManager()->DrawDotString(
 		TextPosition::FallDeathX,
 		TextPosition::FallDeathY,
-		200,
+		textSize,
 		ColorOption::White,
-		"GAME OVER Enterで復活"
+		"Rキー:   Retry(復活)"
 	);
-
-	// Enterが押された後
-	if (mIsPressEnter)
-	{
-		// ロード画面にいくようにした
-		Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_LOAD);
-	}
+	Master::mpGameManager->GetFontManager()->DrawDotString(
+		TextPosition::FallDeathX,
+		TextPosition::FallDeathY + 110,
+		textSize,
+		ColorOption::White,
+		"Qキー:   Quit(ステージ選択)"
+	);
 }
 
 
@@ -91,8 +95,7 @@ void DeathController::Draw(int live) const
 void DeathController::Reset()
 {
 	mActive = false;
-	mIsPressEnter = false;
-	mReviveTimer = TextTimer::MaxFallDeathTimer;
+	mIsPressKey = false;
 }
 
 
