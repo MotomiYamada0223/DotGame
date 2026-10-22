@@ -5,7 +5,7 @@
 #include "BlockMap.h"
 #include "CharacterPhysics.h" // ジャンプとかの当たり判定をしてくれる処理
 #include "BlockAction.h"
-#include "FallDeathController.h"
+#include "DeathController.h"
 #include "PlayerAnimState.h"
 #include "UnitStatus.h"
 #include "DeathReason.h"
@@ -73,7 +73,7 @@ public: // アクセサ
 private:
 	// インスタンスで持っているもの
 	CharacterPhysics mCharacterPhysics; // 物理計算用のインスタンス
-	FallDeathController mFallDeath; // 落下処理
+	DeathController mDeath; // 落下処理
 	PlayerAnimState mPlayerState;
 	BlockAction mBlockAction;
 	DeathReason::DeathType mDeathReason;
@@ -158,7 +158,7 @@ private:
 
 private: // 復活処理関係
 	void Revive();
-	bool mbFallDeath = false; // 死亡判定
+	bool mbDeath = false; // 死亡判定
 
 	// ボス演出・自動歩行関連
 	bool mbAutoWalking = false;

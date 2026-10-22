@@ -78,7 +78,7 @@ private:
 	// 死亡時チュートリアル用
 	StepLoader deathLoader;
 
-	const StepData* mStep;
+	const StepData* mStep = nullptr;
 
 	int mnCurrentID = 1; // 現在のステップID
 	int mnPreviousID = 1; // 死亡する前の通常チュートリアルID

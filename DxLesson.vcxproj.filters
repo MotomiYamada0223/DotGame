@@ -108,7 +108,7 @@
     <ClCompile Include="Source\BlockAction.cpp">
       <Filter>ソース ファイル\Map関係</Filter>
     </ClCompile>
-    <ClCompile Include="Source\FallDeathController.cpp">
+    <ClCompile Include="Source\DeathController.cpp">
       <Filter>ソース ファイル\Controller系</Filter>
     </ClCompile>
     <ClCompile Include="Source\LoseResultScene.cpp">
@@ -194,6 +194,12 @@
     </ClCompile>
     <ClCompile Include="Source\CircleFade.cpp">
       <Filter>ソース ファイル\Draw系</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\LeafCutter.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\LoadScene.cpp">
+      <Filter>ソース ファイル\Scene系</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -338,7 +344,7 @@
     <ClInclude Include="Source\DrawFrame.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\FallDeathController.h">
+    <ClInclude Include="Source\DeathController.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\ColorTagParser.h">
@@ -361,6 +367,12 @@
     </ClInclude>
     <ClInclude Include="Source\CircleFade.h">
       <Filter>ソース ファイル\Draw系</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LeafCutter.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LoadScene.h">
+      <Filter>ソース ファイル\Scene系</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

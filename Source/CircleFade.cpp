@@ -69,7 +69,7 @@ void CircleFade::UpdateCircleFade()
 	if (mnState == 1)
 	{
 		mnTimer++;
-		if (mnTimer > 120)
+		if (mnTimer > 100)
 		{
 			mnState = 2;
 			mnTimer = 0;

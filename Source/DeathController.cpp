@@ -1,4 +1,4 @@
-#include "FallDeathController.h"
+#include "DeathController.h"
 #include "GameConstants.h"
 #include "Master.h"
 #include "SceneManager.h"
@@ -6,7 +6,7 @@
 #include "InputManager.h"
 
 
-FallDeathController::FallDeathController()
+DeathController::DeathController()
 	: mActive(false)
 	, mIsPressEnter(false)
 	, mReviveTimer(0.0f)
@@ -14,12 +14,12 @@ FallDeathController::FallDeathController()
 
 }
 
-FallDeathController::~FallDeathController()
+DeathController::~DeathController()
 {
 
 }
 
-void FallDeathController::Update(VECTOR playerPos, int playerLive)
+void DeathController::Update(VECTOR playerPos, int playerLive)
 {
 	// プレイヤーが地点を超えたらかつ残機が１以上なら
 	if (!mActive && playerPos.y >= PlayerConstants::PlayerDeathHeight
@@ -50,7 +50,7 @@ void FallDeathController::Update(VECTOR playerPos, int playerLive)
 	}
 }
 
-void FallDeathController::Draw(int live) const
+void DeathController::Draw(int live) const
 {
 	if (!mActive) { return; }
 
@@ -80,7 +80,10 @@ void FallDeathController::Draw(int live) const
 	// Enterが押された後
 	if (mIsPressEnter)
 	{
-		Master::mpGameManager->GetFontManager()->DrawDotString(
+		// ロード画面にいくようにした
+		Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_LOAD);
+
+		/*Master::mpGameManager->GetFontManager()->DrawDotString(
 			TextPosition::LivesX,
 			TextPosition::LivesY,
 			100,
@@ -96,13 +99,13 @@ void FallDeathController::Draw(int live) const
 			ColorOption::White,
 			"%.2f",
 			mReviveTimer / 60.0f
-		);
+		);*/
 	}
 }
 
 
 // フラグ関係のリセット関数
-void FallDeathController::Reset()
+void DeathController::Reset()
 {
 	mActive = false;
 	mIsPressEnter = false;

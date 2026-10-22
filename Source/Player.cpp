@@ -42,7 +42,7 @@ Player::Player(VECTOR initPos)
 
 
 	UpdateStatusByProgress(GameProgress::Tutorial1);
-	mFallDeath.Reset();
+	mDeath.Reset();
 
 	// 画像の読み込み
 	mHeartFullGraph = LoadGraph(CharacterGraphPath::HeartFull.c_str());
@@ -124,12 +124,13 @@ void Player::PlayerMove(BlockMap& blockMap)
 		return;
 	}
 
-	if (!mbFallDeath && mvPosition.y >= PlayerConstants::PlayerDeathHeight)
+
+	if (!mbDeath && mvPosition.y >= PlayerConstants::PlayerDeathHeight)
 	{
 		// 死因を設定してからHPを0にする
 		mDeathReason = DeathReason::DeathType::Fall;
 		mHp = 0;
-		mbFallDeath = true;
+		mbDeath = true;
 	}
 
 	// 移動領域の設定
@@ -379,11 +380,9 @@ void Player::PlayerMove(BlockMap& blockMap)
 
 void Player::Update()
 {
-	if (mbFallDeath)
+	if (mbDeath || isDead)
 	{
-		mFallDeath.Update(mvPosition, mlives);
-		// タイマーが0かつエンターが押されていたらの判定の可否をとる
-		if (mFallDeath.IsReviveFinished()) { Revive(); }
+		mDeath.Update(mvPosition, mlives);
 	}
 
 	if (isDead)
@@ -673,7 +672,7 @@ void Player::Update()
 // GameScereで呼び出し
 void Player::DrawFallDeath()
 {
-	mFallDeath.Draw(mlives);
+	mDeath.Draw(mlives);
 }
 
 void Player::Draw()
@@ -993,7 +992,7 @@ void Player::DebugDraw()
 
 void Player::DeadProcess()
 {
-	if (mbFallDeath) return;
+	if (mbDeath) return;
 
 	deadTimer++;
 
@@ -1125,7 +1124,7 @@ void Player::Revive()
 	if (mpBlockMap != nullptr)
 	{
 		mpBlockMap->ResetScroll();
-		mFallDeath.Reset();
+		mDeath.Reset();
 		mBlockAction.SetHitDeathBlock(false);
 	}
 
@@ -1140,7 +1139,7 @@ void Player::Revive()
 	mbSwordReadyStance = false;
 
 	isDead = false;
-	mbFallDeath = false;
+	mbDeath = false;
 }
 
 void Player::StartAutoWalk(float targetX)

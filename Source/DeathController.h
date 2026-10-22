@@ -7,12 +7,12 @@ class GameConstanes;
 /// <summary>
 /// ゲームオーバーしたときの表示とタイマーを管理するコントローラークラス
 /// </summary>
-class FallDeathController
+class DeathController
 {
 public:
 
-    FallDeathController();
-    ~FallDeathController();
+    DeathController();
+    ~DeathController();
     void Update(VECTOR playerPos, int playerLive);
     void Draw(int live) const;
 

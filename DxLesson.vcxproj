@@ -150,13 +150,14 @@
     <ClCompile Include="Source\EnemySkeleton.cpp" />
     <ClCompile Include="Source\EnemySlime.cpp" />
     <ClCompile Include="Source\EnemyWolf.cpp" />
-    <ClCompile Include="Source\FallDeathController.cpp" />
+    <ClCompile Include="Source\DeathController.cpp" />
     <ClCompile Include="Source\FontManager.cpp" />
     <ClCompile Include="Source\GameManager.cpp" />
     <ClCompile Include="Source\GameScene.cpp" />
     <ClCompile Include="Source\HiddenBlock.cpp" />
     <ClCompile Include="Source\InputManager.cpp" />
     <ClCompile Include="Source\LeafCutter.cpp" />
+    <ClCompile Include="Source\LoadScene.cpp" />
     <ClCompile Include="Source\LoseResultScene.cpp" />
     <ClCompile Include="Source\Main.cpp" />
     <ClCompile Include="Source\Master.cpp" />
@@ -205,7 +206,7 @@
     <ClInclude Include="Source\EnemySkeleton.h" />
     <ClInclude Include="Source\EnemySlime.h" />
     <ClInclude Include="Source\EnemyWolf.h" />
-    <ClInclude Include="Source\FallDeathController.h" />
+    <ClInclude Include="Source\DeathController.h" />
     <ClInclude Include="Source\FontManager.h" />
     <ClInclude Include="Source\GameConstants.h" />
     <ClInclude Include="Source\GameManager.h" />
@@ -213,6 +214,7 @@
     <ClInclude Include="Source\HiddenBlock.h" />
     <ClInclude Include="Source\InputManager.h" />
     <ClInclude Include="Source\LeafCutter.h" />
+    <ClInclude Include="Source\LoadScene.h" />
     <ClInclude Include="Source\LoseResultScene.h" />
     <ClInclude Include="Source\Master.h" />
     <ClInclude Include="Source\MovingFloor.h" />
