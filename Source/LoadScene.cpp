@@ -33,12 +33,19 @@ void LoadScene::Draw()
 		0.0f,
 		mnHandle, TRUE);
 
+
+	int color = ColorOption::White;
+	if (Master::gPlayerLive <= 0)
+	{
+		color = ColorOption::Red;
+	}
+
 	Master::mpGameManager->GetFontManager()->DrawDotString(
 		ScreenSize::CenterX,
 		ScreenSize::CenterY,
 		120,
-		ColorOption::White,
-		"écã@ Å~ %d",
+		color,
+		"Å~ %d",
 		Master::gPlayerLive
 	);
 

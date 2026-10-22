@@ -480,20 +480,19 @@ void StageSelectScene::DrawStageString()
 		// 死亡回数の描画
 		char deathText[128];
 
-sprintf_s(
-	deathText,
-	"今回の死亡回数: %d 回\n累計死亡回数: %d 回",
-	Master::gDeathCounts[nodeIndex],
-	Master::gTotalDeathCounts[nodeIndex]
-);
+		sprintf_s(
+			deathText,
+			"今回の死亡回数: %d 回",
+			Master::gDeathCounts[nodeIndex]
+		);
 
-Master::mpGameManager->GetFontManager()->DrawDotString(
-	boxX + 25,
-	boxY + 60,
-	24,
-	GetColor(255, 100, 100),
-	deathText
-);
+		Master::mpGameManager->GetFontManager()->DrawDotString(
+			boxX + 25,
+			boxY + 60,
+			24,
+			GetColor(255, 100, 100),
+			deathText
+		);
 
 		// ステージ説明文の描画
 		unsigned int descColor = locked ? GetColor(255, 100, 100) : GetColor(255, 255, 255);

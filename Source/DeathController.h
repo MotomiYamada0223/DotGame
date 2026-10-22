@@ -17,11 +17,11 @@ public:
     void Draw(int live) const;
 
     bool IsActive() const { return mActive; };
-    bool IsReviveReady() const { return mIsPressEnter; }
+    bool IsReviveReady() const { return mIsPressKey; }
 
     void Reset();
 
 private:
     bool mActive;
-    bool mIsPressEnter;
+    bool mIsPressKey;
 };
