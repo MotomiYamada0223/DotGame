@@ -1,5 +1,6 @@
 #include "CircleFade.h"
 #include "GameConstants.h"
+#include "Master.h"
 
 CircleFade::CircleFade()
 	: mnState(1)
@@ -69,7 +70,7 @@ void CircleFade::UpdateCircleFade()
 	if (mnState == 1)
 	{
 		mnTimer++;
-		if (mnTimer > 100)
+		if (mnTimer > 20)
 		{
 			mnState = 2;
 			mnTimer = 0;

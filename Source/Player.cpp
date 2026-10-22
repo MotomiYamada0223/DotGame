@@ -380,10 +380,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 
 void Player::Update()
 {
-	if (mbDeath || isDead)
-	{
-		mDeath.Update(mvPosition, mlives);
-	}
+	mDeath.Update(mvPosition, mlives, mHp);
 
 	if (isDead)
 	{
@@ -516,7 +513,7 @@ void Player::Update()
 			0.0f
 		);
 
-		// 1. プレイヤー自身と敵の衝突判定 (ダメージで赤くする)
+		// プレイヤー自身と敵の衝突判定 (ダメージで赤くする)
 		if (Collision::CheckRectToRect(myPos, mySize, enePos, eneSize) ||
 			enemy->CheckAttackCollision(myPos, mySize))
 		{

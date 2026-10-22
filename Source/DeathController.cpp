@@ -19,10 +19,11 @@ DeathController::~DeathController()
 
 }
 
-void DeathController::Update(VECTOR playerPos, int playerLive)
+void DeathController::Update(VECTOR playerPos, int playerLive, int playerHp)
 {
 	// プレイヤーが地点を超えたらかつ残機が１以上なら
-	if (!mActive && playerPos.y >= PlayerConstants::PlayerDeathHeight
+	if (!mActive &&
+		(playerPos.y >= PlayerConstants::PlayerDeathHeight || playerHp <= 0)
 		&& playerLive > 1)
 	{
 		mActive = true;
@@ -82,24 +83,6 @@ void DeathController::Draw(int live) const
 	{
 		// ロード画面にいくようにした
 		Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_LOAD);
-
-		/*Master::mpGameManager->GetFontManager()->DrawDotString(
-			TextPosition::LivesX,
-			TextPosition::LivesY,
-			100,
-			ColorOption::White,
-			"残機 × %d",
-			live
-		);
-
-		Master::mpGameManager->GetFontManager()->DrawDotString(
-			TextPosition::LivesX,
-			TextPosition::LivesY + 100,
-			60,
-			ColorOption::White,
-			"%.2f",
-			mReviveTimer / 60.0f
-		);*/
 	}
 }
 

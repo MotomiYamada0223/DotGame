@@ -36,4 +36,6 @@ public:
 	static int gCurrentStageRunDeathCount;
 	static int gCurrentStageIndex;
 
+	static int gPlayerLive;
+
 };

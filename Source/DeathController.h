@@ -13,7 +13,7 @@ public:
 
     DeathController();
     ~DeathController();
-    void Update(VECTOR playerPos, int playerLive);
+    void Update(VECTOR playerPos, int playerLive, int playerHp);
     void Draw(int live) const;
 
     bool IsActive() const { return mActive; };
