@@ -30,6 +30,8 @@ BossEnemySlime::BossEnemySlime(VECTOR initPos, float groundY, Player* targetPlay
     , mHasChargedThisTackle(false)
     , mTackleChargeTimer(0)
     , mJumpSpeedX(0.0f)
+    , mpAnimDeath(nullptr)
+    , mDeathPhase(DeathPhase::PlayingAnimation)
     , mTackleVelocityY(0.0f)
     , mTargetPlayerX(initPos.x)
     , mYellowHp(100.0f)
@@ -57,6 +59,10 @@ BossEnemySlime::BossEnemySlime(VECTOR initPos, float groundY, Player* targetPlay
     mpAnimLongRange->SetScale(KingSlimeIntroConstants::Scale);
     mpAnimLongRange->SetLoop(false);
 
+    mpAnimDeath = new TextureAnimation(initPos, CharacterGraphPath::KingSlimeDeath, 8, 8, 1, KingSlimeDeathConstants::AnimInterval);
+    mpAnimDeath->SetScale(KingSlimeIntroConstants::Scale);
+    mpAnimDeath->SetLoop(false);
+
     // 出現時はジャンプモーションの6枚目（インデックス5）で固定
     if (mpAnimJump)
     {
@@ -76,6 +82,7 @@ BossEnemySlime::~BossEnemySlime()
     if (mpAnimJump) delete mpAnimJump;
     if (mpAnimAttack) delete mpAnimAttack;
     if (mpAnimLongRange) delete mpAnimLongRange;
+    if (mpAnimDeath) delete mpAnimDeath;
 }
 
 void BossEnemySlime::StartBattle()
@@ -89,6 +96,8 @@ void BossEnemySlime::StartBattle()
 
 void BossEnemySlime::TakeDamage(int damage)
 {
+    if (mState == KingSlimeState::Death) return;
+
     // ダメージ前のHPを記憶（黄色バーが既に減少中なら現在のmYellowHpを維持してそこから引く）
     if (mYellowHp < static_cast<float>(mHp))
     {
@@ -99,6 +108,38 @@ void BossEnemySlime::TakeDamage(int damage)
 
     // ダメージを受けた分のバーが黄色く変化し、少ししたら一定速度で減少し始める
     mYellowDelayTimer = KingSlimeHpBarConstants::YellowDelayFrames;
+
+    if (mHp <= 0)
+    {
+        mHp = 0;
+        StartDeathSequence();
+    }
+}
+
+void BossEnemySlime::StartDeathSequence()
+{
+    mState = KingSlimeState::Death;
+    mDeathPhase = DeathPhase::PlayingAnimation;
+    mPhaseTimer = 0;
+
+    // 空中にいる場合は着地させる
+    if (mpBlockMap != nullptr)
+    {
+        mGroundY = FindGroundY(*mpBlockMap, mvPosition.x);
+        mvPosition.y = GetLandingCenterY(mGroundY);
+    }
+
+    mJumpSpeedX = 0.0f;
+    mTackleVelocityY = 0.0f;
+
+    if (mpAnimDeath)
+    {
+        mpAnimDeath->ResetAnimation();
+        mpAnimDeath->SetCurrentFrame(0);
+        mpAnimDeath->SetLoop(false);
+        mpAnimDeath->SetReverse(false);
+        mpAnimDeath->SetInterval(KingSlimeDeathConstants::AnimInterval);
+    }
 }
 
 float BossEnemySlime::GetSlotWorldX(BossPositionSlot slot) const
@@ -364,6 +405,12 @@ void BossEnemySlime::Update()
     }
     mPrevHp = mHp;
 
+    if (mHp <= 0 && mState != KingSlimeState::Death)
+    {
+        mHp = 0;
+        StartDeathSequence();
+    }
+
     // 黄色バーの処理：待機時間後に一定速度でmHpに向けて減少
     if (mYellowDelayTimer > 0)
     {
@@ -385,6 +432,72 @@ void BossEnemySlime::Update()
     if (mTackleCooldownTimer > 0)
     {
         mTackleCooldownTimer--;
+    }
+
+    if (mState == KingSlimeState::Death)
+    {
+        if (mDeathPhase == DeathPhase::PlayingAnimation)
+        {
+            if (mpAnimDeath)
+            {
+                mpAnimDeath->Update();
+                if (mpAnimDeath->IsFinished() || mpAnimDeath->GetCurrentFrame() >= 7)
+                {
+                    mpAnimDeath->SetCurrentFrame(7);
+                    mDeathPhase = DeathPhase::PostAnimPause;
+                    mPhaseTimer = 0;
+                }
+            }
+        }
+        else if (mDeathPhase == DeathPhase::PostAnimPause)
+        {
+            mPhaseTimer++;
+            if (mPhaseTimer >= KingSlimeDeathConstants::PostAnimPauseFrames)
+            {
+                mDeathPhase = DeathPhase::Shaking;
+                mPhaseTimer = 0;
+            }
+        }
+        else if (mDeathPhase == DeathPhase::Shaking)
+        {
+            mPhaseTimer++;
+            if (mPhaseTimer >= KingSlimeDeathConstants::ShakeDurationFrames)
+            {
+                mDeathPhase = DeathPhase::PreExplodePause;
+                mPhaseTimer = 0;
+            }
+        }
+        else if (mDeathPhase == DeathPhase::PreExplodePause)
+        {
+            mPhaseTimer++;
+            if (mPhaseTimer >= KingSlimeDeathConstants::PreExplodePauseFrames)
+            {
+                mDeathPhase = DeathPhase::Exploded;
+                mPhaseTimer = 0;
+
+                // 爆発の瞬間！画面揺れ＆全方位に液体弾を散布
+                if (mpBlockMap != nullptr)
+                {
+                    mpBlockMap->StartCameraShake(
+                        KingSlimeShakeConstants::ShakePower * 2.0f,
+                        KingSlimeShakeConstants::RatioX,
+                        KingSlimeShakeConstants::RatioY,
+                        35
+                    );
+                }
+                SpawnDeathExplosionDroplets();
+            }
+        }
+        else if (mDeathPhase == DeathPhase::Exploded)
+        {
+            mPhaseTimer++;
+            if (mPhaseTimer >= KingSlimeDeathConstants::PostExplosionWaitFrames)
+            {
+                mDeathPhase = DeathPhase::Finished;
+                SetDeleteFlag(true);
+            }
+        }
+        return;
     }
 
     if (mState == KingSlimeState::SpawnFalling)
@@ -718,6 +831,11 @@ void BossEnemySlime::EnemyMove(BlockMap& blockMap)
         mBossAreaCenterX = blockMap.GetBossAreaCenterX();
     }
 
+    if (mState == KingSlimeState::Death)
+    {
+        return;
+    }
+
     if (mState == KingSlimeState::SpawnFalling)
     {
         mvPosition.y += mFallSpeed;
@@ -938,7 +1056,11 @@ void BossEnemySlime::Draw()
         if (isDamaged) { SetDrawBright(255, 100, 100); }
 
         TextureAnimation* currentAnim = mpAnimIdle;
-        if (mState == KingSlimeState::SpawnFalling ||
+        if (mState == KingSlimeState::Death)
+        {
+            currentAnim = mpAnimDeath;
+        }
+        else if (mState == KingSlimeState::SpawnFalling ||
             mState == KingSlimeState::SpawnLandingReverse ||
             mState == KingSlimeState::JumpAttack)
         {
@@ -953,7 +1075,53 @@ void BossEnemySlime::Draw()
             currentAnim = mpAnimAttack;
         }
 
-        if (currentAnim != nullptr)
+        if (mState == KingSlimeState::Death)
+        {
+            if (mDeathPhase < DeathPhase::Exploded && currentAnim != nullptr)
+            {
+                float drawScreenX = screenX;
+                float drawScreenY = screenY;
+
+                // 左右の小刻みな震え（約3フレーム間隔で左右反転）
+                if (mDeathPhase == DeathPhase::Shaking)
+                {
+                    const int interval = (KingSlimeDeathConstants::ShakeInterval > 0) ? KingSlimeDeathConstants::ShakeInterval : 3;
+                    float dir = ((mPhaseTimer / interval) % 2 == 0) ? 1.0f : -1.0f;
+                    float shakeX = dir * KingSlimeDeathConstants::ShakePower;
+                    drawScreenX += shakeX;
+                }
+
+                currentAnim->SetPosition(VGet(drawScreenX, drawScreenY, 0.0f));
+                currentAnim->Draw(mIsFacingRight);
+            }
+            else if (mDeathPhase == DeathPhase::Exploded)
+            {
+                // 爆発フラッシュと衝撃波リングの描画
+                if (mPhaseTimer <= 30)
+                {
+                    float progress = static_cast<float>(mPhaseTimer) / 30.0f;
+                    float radius = 40.0f + progress * 280.0f;
+                    int alpha = static_cast<int>(240.0f * (1.0f - progress));
+
+                    SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
+                    // 外側衝撃波リング
+                    DrawCircle(static_cast<int>(screenX), static_cast<int>(screenY), static_cast<int>(radius), GetColor(80, 200, 255), FALSE);
+                    DrawCircle(static_cast<int>(screenX), static_cast<int>(screenY), static_cast<int>(radius - 2.0f), GetColor(180, 240, 255), FALSE);
+                    DrawCircle(static_cast<int>(screenX), static_cast<int>(screenY), static_cast<int>(radius - 4.0f), GetColor(255, 255, 255), FALSE);
+
+                    // 内側閃光コア（最初の半分）
+                    if (progress < 0.4f)
+                    {
+                        int coreAlpha = static_cast<int>(255.0f * (1.0f - progress * 2.5f));
+                        SetDrawBlendMode(DX_BLENDMODE_ALPHA, coreAlpha);
+                        DrawCircle(static_cast<int>(screenX), static_cast<int>(screenY), static_cast<int>(radius * 0.5f), GetColor(255, 255, 255), TRUE);
+                        DrawCircle(static_cast<int>(screenX), static_cast<int>(screenY), static_cast<int>(radius * 0.7f), GetColor(140, 220, 255), TRUE);
+                    }
+                    SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+                }
+            }
+        }
+        else if (currentAnim != nullptr)
         {
             float drawScreenX = screenX;
             float drawScreenY = screenY;
@@ -1288,7 +1456,7 @@ void BossEnemySlime::UpdateStatusByProgress(GameProgress progress)
 void BossEnemySlime::DrawTackleDebug() const
 {
     if (mpBlockMap == nullptr) return;
-    if (mState == KingSlimeState::SpawnFalling) return;
+    if (mState == KingSlimeState::SpawnFalling || mState == KingSlimeState::Death) return;
 
     const float rangeMax = KingSlimeAIConstants::TackleRangeMax;
     const float groundScreenY = ConvertToScreenY(mGroundY, mpBlockMap);
@@ -1438,6 +1606,7 @@ void BossEnemySlime::DrawHpBar() const
 
     // 登場演出の黒帯が消えて戦闘開始するまでは非表示
     if (!mIsBattleActive) return;
+    if (mState == KingSlimeState::Death && mDeathPhase == DeathPhase::Finished) return;
 
     // バーの配置座標とサイズ（フェードやスムージングなしでそのまま表示）
     const int totalWidth = KingSlimeHpBarConstants::Width;
@@ -1563,6 +1732,47 @@ void BossEnemySlime::SpawnLandingDroplets(const BlockMap& blockMap)
     }
 }
 
+
+void BossEnemySlime::SpawnDeathExplosionDroplets()
+{
+    // 非アクティブな弾を整理
+    mSlimeDroplets.erase(
+        std::remove_if(mSlimeDroplets.begin(), mSlimeDroplets.end(), [](const SlimeDroplet& d) { return !d.isActive; }),
+        mSlimeDroplets.end()
+    );
+
+    const int count = KingSlimeDeathConstants::DeathDropletCount; // 24個
+    const float minSpeed = KingSlimeDeathConstants::DeathDropletSpeedMin;
+    const float maxSpeed = KingSlimeDeathConstants::DeathDropletSpeedMax;
+    const float minRadius = KingSlimeAIConstants::DropletRadiusMin;
+    const float maxRadius = KingSlimeAIConstants::DropletRadiusMax;
+
+    // スライムの中心（mvPosition）から全方位（0度〜360度）に一斉射出
+    for (int i = 0; i < count; i++)
+    {
+        SlimeDroplet drop;
+        drop.pos = VGet(mvPosition.x, mvPosition.y, 0.0f);
+
+        // 360度均等配分 ＋ ランダムジッター（±5度）
+        float baseAngleDeg = static_cast<float>(i) * (360.0f / static_cast<float>(count));
+        float jitterDeg = static_cast<float>(GetRand(10) - 5);
+        float angleDeg = baseAngleDeg + jitterDeg;
+        float angleRad = angleDeg * (3.14159265f / 180.0f);
+
+        float speed = minSpeed + static_cast<float>(GetRand(static_cast<int>((maxSpeed - minSpeed) * 10.0f))) * 0.1f;
+        drop.vel.x = speed * std::cos(angleRad);
+        drop.vel.y = speed * std::sin(angleRad);
+        drop.vel.z = 0.0f;
+
+        drop.radius = minRadius + static_cast<float>(GetRand(static_cast<int>((maxRadius - minRadius) * 10.0f))) * 0.1f;
+        drop.lifeTime = KingSlimeAIConstants::DropletLifeFrames;
+        drop.isActive = true;
+        drop.isSplashing = false;
+        drop.splashTimer = 0;
+
+        mSlimeDroplets.push_back(drop);
+    }
+}
 void BossEnemySlime::UpdateDroplets()
 {
     for (auto& droplet : mSlimeDroplets)

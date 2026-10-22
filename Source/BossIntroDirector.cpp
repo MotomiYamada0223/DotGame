@@ -241,6 +241,11 @@ void BossIntroDirector::Update(Player* player, BlockMap& blockMap)
 	case State::IntroFinished:
 		// 演出完了：黒帯は非表示
 		mFadeTimer = 0;
+		if (mpBossSlime != nullptr && mpBossSlime->IsDeleteFlag())
+		{
+			mpBossSlime = nullptr;
+			blockMap.SetCameraLocked(false);
+		}
 		break;
 
 	case State::Ended:

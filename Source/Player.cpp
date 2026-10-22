@@ -513,8 +513,14 @@ void Player::Update()
 			0.0f
 		);
 
+<<<<<<< Updated upstream
 		// プレイヤー自身と敵の衝突判定 (ダメージで赤くする)
 		if (Collision::CheckRectToRect(myPos, mySize, enePos, eneSize) ||
+=======
+		// 1. プレイヤー自身と敵の衝突判定 (ダメージで赤くする)
+		bool canHitBody = enemy->IsActiveTarget();
+		if ((canHitBody && Collision::CheckRectToRect(myPos, mySize, enePos, eneSize)) ||
+>>>>>>> Stashed changes
 			enemy->CheckAttackCollision(myPos, mySize))
 		{
 			UnitStatus* enemyStatus = dynamic_cast<UnitStatus*>(enemy);
@@ -560,7 +566,7 @@ void Player::Update()
 			}
 		}
 		// 2. 攻撃判定と敵の衝突判定 (敵を赤く光らせる)
-		if (hasAttackRect)
+		if (hasAttackRect && enemy->IsActiveTarget())
 		{
 			if (Collision::CheckRectToRect(atkPos, atkSize, enePos, eneSize))
 			{
@@ -586,7 +592,7 @@ void Player::Update()
 					if (enemyStatus)
 					{
 						enemyStatus->TakeDamage(mAttack);
-						if (enemyStatus->mHp <= 0)
+						if (enemyStatus->mHp <= 0 && !enemy->HasCustomDeath())
 						{
 							enemy->SetDeleteFlag(true);
 						}
