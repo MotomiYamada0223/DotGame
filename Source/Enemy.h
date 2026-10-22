@@ -30,6 +30,11 @@ public:
 	// 本体矩形以外の追加攻撃判定（ビーム等）との衝突チェック
 	virtual bool CheckAttackCollision(const VECTOR& targetPos, const VECTOR& targetSize) const { return false; }
 
+	// カスタム死亡演出を持つか
+	virtual bool HasCustomDeath() const { return false; }
+	// プレイヤーとの本体接触判定・被攻撃判定が有効か
+	virtual bool IsActiveTarget() const { return true; }
+
 protected:
 	// 移動・物理関連
 	

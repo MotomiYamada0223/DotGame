@@ -85,6 +85,7 @@ namespace CharacterGraphPath
 	static const std::string KingSlimeJump = "Resource/Enemy/KingSlime/kingSlime_jump.png";
 	static const std::string KingSlimeAttack = "Resource/Enemy/KingSlime/kingSlime_attack.png";
 	static const std::string KingSlimeLongRangeAttack = "Resource/Enemy/KingSlime/kingSlime_long_range_attack.png";
+	static const std::string KingSlimeDeath = "Resource/Enemy/KingSlime/kingSlime_death.png";
 
 
 	// 天使の画像
@@ -228,13 +229,13 @@ namespace TextTimer
 namespace MovingFloorConstants
 {
 	// プレイヤーが床に乗る判定の許容判定距離
-	static constexpr float RideMarginTop = 10.0f;    // 上側の許容範囲（めり込み許容）
-	static constexpr float RideMarginBottom = 30.0f; // 下側の許容範囲（高速落下時のすり抜け防止）
+	static constexpr float RideMarginTop = 10.0f;    // 上側の許容範囲
+	static constexpr float RideMarginBottom = 30.0f; // 下側の許容範囲
 
 	// 乗ったら速度が上がる罠で上昇する速度の倍率
 	static constexpr float SpeedUpMultiplier = 3.0f;
 
-	// 一定方向に移動し続けるタイプで画面外と判定して破棄するまでの距離（高さのみ）
+	// 一定方向に移動し続けるタイプで画面外と判定して破棄するまでの距離
 	static constexpr float DestroyMarginY = 200.0f;
 
 	// 追加: ReverseAndDash用の定数
@@ -256,16 +257,16 @@ namespace FeintFloorConstants
 // スライム用の定数
 namespace SlimeConstants
 {
-	static constexpr float CollisionWidth = 70.0f;  // 当たり判定の横幅（見た目110pxに対して適正化）
-	static constexpr float CollisionHeight = 65.0f; // 当たり判定の縦幅（見た目105pxに対して適正化）
+	static constexpr float CollisionWidth = 70.0f;  // 当たり判定の横幅
+	static constexpr float CollisionHeight = 65.0f; // 当たり判定の縦幅
 }
 
 // ボス戦開始演出用の定数
 namespace BossIntroConstants
 {
-	static constexpr int LetterboxHeight = 50;   // 黒帯の最大高さ(px)
+	static constexpr int LetterboxHeight = 50;   // 黒帯の最大高さ
 	static constexpr int LetterboxAlpha  = 255;  // 黒帯の最大不透明度
-	static constexpr int FadeFrames      = 60;   // 黒帯フェードインのフレーム数（約1秒）
+	static constexpr int FadeFrames      = 60;   // 黒帯フェードインのフレーム数
 	static constexpr float AutoWalkSpeed = 3.0f; // 演出中の自動歩行速度
 }
 
@@ -274,22 +275,22 @@ namespace KingSlimeIntroConstants
 {
 	static constexpr float Scale                 = 4.0f;  // キングスライムの拡大率
 	static constexpr float HitBoxScale			 = 3.0f;  // キングスライムの当たり判定の拡大率
-	static constexpr int WaitFramesBeforeWarning = 45;    // 到着後の待機フレーム（約0.75秒）
-	static constexpr int WarningDurationFrames   = 75;    // 警告表示フレーム（約1.25秒）
-	static constexpr int WarningFadeOutFrames    = 15;    // 警告フェードアウトフレーム（約0.25秒）
-	static constexpr float WarningWidth          = 80.0f * Scale; // 警告の横幅（キングスライム当たり判定幅準拠: 320.0f）
+	static constexpr int WaitFramesBeforeWarning = 45;    // 到着後の待機フレーム
+	static constexpr int WarningDurationFrames   = 75;    // 警告表示フレーム
+	static constexpr int WarningFadeOutFrames    = 15;    // 警告フェードアウトフレーム
+	static constexpr float WarningWidth          = 80.0f * Scale; // 警告の横幅
 	static constexpr float WarningHeight         = 450.0f;// 警告の縦幅
 	static constexpr float EvasionSpeedX         = 8.0f; // 回避ジャンプの水平移動速度
-	static constexpr float EvasionJumpSpeedY     = -10.0f;// 回避ジャンプの初速Y（上方向）
+	static constexpr float EvasionJumpSpeedY     = -10.0f;// 回避ジャンプの初速Y
 	static constexpr int EvasionDurationFrames   = 22;    // 回避ジャンプの持続フレーム数
 }
 
 // キングスライム着地時の画面揺れ用定数
 namespace KingSlimeShakeConstants
 {
-	static constexpr float ShakePower     = 30.0f; // 揺れの最大強度（ピクセル）
-	static constexpr float RatioY         = 0.8f;  // 縦方向の揺れ割合（8割）
-	static constexpr float RatioX         = 0.2f;  // 横方向の揺れ割合（2割）
+	static constexpr float ShakePower     = 30.0f; // 揺れの最大強度
+	static constexpr float RatioY         = 0.8f;  // 縦方向の揺れ割合
+	static constexpr float RatioX         = 0.2f;  // 横方向の揺れ割合
 	static constexpr int   DurationFrames = 30;    // 揺らすフレーム数
 }
 
@@ -305,12 +306,12 @@ namespace KingSlimeTitleConstants
 	static constexpr float WaveAmplitude          = 8.0f;   // 縦揺れの振幅
 	static constexpr float WaveSpeed              = 0.08f;  // 縦揺れの周期速度
 	static constexpr float WavePhaseOffset        = 0.45f;  // 隣接文字間の波の位相差
-	static constexpr int   ColorGoldR             = 255;    // 「キング」金色 R
-	static constexpr int   ColorGoldG             = 215;    // 「キング」金色 G
-	static constexpr int   ColorGoldB             = 0;      // 「キング」金色 B
-	static constexpr int   ColorCyanR             = 30;     // 「スライミー」濃い水色 R
-	static constexpr int   ColorCyanG             = 160;    // 「スライミー」濃い水色 G
-	static constexpr int   ColorCyanB             = 240;    // 「スライミー」濃い水色 B
+	static constexpr int   ColorGoldR             = 255;    // 金色
+	static constexpr int   ColorGoldG             = 215;    
+	static constexpr int   ColorGoldB             = 0;      
+	static constexpr int   ColorCyanR             = 30;     // 濃い水色
+	static constexpr int   ColorCyanG             = 160;    
+	static constexpr int   ColorCyanB             = 240;    
 	static constexpr int   CharCount              = 8;      // タイトル文字数（「キングスライミー」で8文字）
 }
 
@@ -318,74 +319,88 @@ namespace KingSlimeTitleConstants
 namespace KingSlimeAIConstants
 {
 	// 待機・ターゲット選択関連
-	static constexpr int   IdleWaitFrames            = 60;     // 行動間の待機フレーム数（約1秒）
+	static constexpr int   IdleWaitFrames            = 60;     
 	static constexpr float EdgeOffsetX               = 650.0f; // ボスエリア中央から左右端へのオフセット距離
 	static constexpr float CenterZoneHalfWidth       = 240.0f; // プレイヤーが中央付近にいると判定する半幅
-	static constexpr int   RandomTargetChancePercent = 20;     // ロジックを無視して別地点へランダムジャンプする確率(%)
+	static constexpr int   RandomTargetChancePercent = 20;     // ロジック無視確率
 
 	// ジャンプ攻撃関連
-	static constexpr int   JumpPrepareAnimInterval   = 4;      // ジャンプ開始時のアニメーション間隔
+	static constexpr int   JumpPrepareAnimInterval   = 4;      
 	static constexpr float JumpAscendSpeed           = 34.0f;  // 上空へ飛び上がる速度
-	static constexpr float JumpFallSpeed             = 26.0f;  // 急降下速度（登場演出と同速度）
-	static constexpr float JumpStartHeightOffset     = 1200.0f;// 落下開始高度（地面からの距離）
-	static constexpr int   JumpWarningDurationFrames = 50;     // 着地予測の赤警告表示フレーム数
-	static constexpr int   JumpWarningFadeOutFrames  = 15;     // 赤警告のフェードアウトフレーム数
+	static constexpr float JumpFallSpeed             = 26.0f;  // 急降下速度
+	static constexpr float JumpStartHeightOffset     = 1200.0f;// 落下開始高度
+	static constexpr int   JumpWarningDurationFrames = 50;     
+	static constexpr int   JumpWarningFadeOutFrames  = 15;     
 
 	// ビーム攻撃関連
-	static constexpr int   BeamMouthOpenInterval     = 5;      // 1〜3枚目（口を開けるまで）の再生間隔
-	static constexpr int   BeamChargeFrames          = 80;     // 3枚目停止中のエネルギーチャージ（タメ）フレーム数
-	static constexpr int   BeamConvergeFrames        = 36;     // 4〜9枚目再生＋エネルギー収束（攻撃直前演出）フレーム数
-	static constexpr int   BeamFireStartInterval     = 4;      // 10枚目から11枚目へ移行するフレーム数
-	static constexpr int   BeamFireHoldFrames        = 65;     // 11枚目停止中のレーザー照射持続フレーム数
-	static constexpr int   BeamRecoveryInterval      = 6;      // 12〜13枚目（照射終了モーション）の再生間隔
+	static constexpr int   BeamMouthOpenInterval     = 5;      // 1〜3枚目の再生間隔
+	static constexpr int   BeamChargeFrames          = 80;     
+	static constexpr int   BeamConvergeFrames        = 36;     
+	static constexpr int   BeamFireStartInterval     = 4;      
+	static constexpr int   BeamFireHoldFrames        = 65;     
+	static constexpr int   BeamRecoveryInterval      = 6;      // 12〜13枚目の再生間隔
 
 	// ビーム座標・サイズ・演出関連
-	static constexpr float BeamMouthOffsetX          = 126.0f; // 中心Xから口元への水平オフセット（42px * Scale）
-	static constexpr float BeamMouthOffsetY          = 84.0f;  // 中心Yからのビーム高さオフセット（値を小さくすると上、大きくすると下へ移動）
-	static constexpr float BeamLength                = 1800.0f;// 反対側の端まで貫通するレーザー長
+	static constexpr float BeamMouthOffsetX          = 126.0f; 
+	static constexpr float BeamMouthOffsetY          = 84.0f;  
+	static constexpr float BeamLength                = 1800.0f;// レーザーの長さ
 	static constexpr float BeamHalfHeight            = 48.0f;  // レーザーの当たり判定・描画の半分の高さ
-	static constexpr float BeamOrbMaxRadius          = 44.0f;  // チャージ時の水色エネルギー球の最大半径
-	static constexpr float BeamOrbMinRadius          = 8.0f;   // 収束時のエネルギー球の最小半径
-	static constexpr int   BeamParticleCount         = 24;     // 吸い込まれる小粒子の数
-	static constexpr int   BeamDotPixelSize          = 4;      // ドット絵表現の1ドット単位サイズ
+	static constexpr float BeamOrbMaxRadius          = 44.0f;  
+	static constexpr float BeamOrbMinRadius          = 8.0f;   
+	static constexpr int   BeamParticleCount         = 24;     
+	static constexpr int   BeamDotPixelSize          = 4;      
 
 	// 当たり判定・見た目調整関連
 	static constexpr float HitBoxBottomExtend        = 36.0f;  // 当たり判定下部をさらに下へ伸ばす拡張量
 
 	// 体当たり攻撃関連
-	static constexpr float TackleRangeMax            = 650.0f; // 体当たりを発動するプレイヤーとの最大距離
-	static constexpr int   TackleChancePercent       = 40;     // 条件を満たした際に体当たりを発動する確率(%)
-	static constexpr int   TackleCooldownFrames      = 180;    // 体当たりのクールタイムフレーム数（3秒）
-	static constexpr int   TackleAnimInterval        = 8;      // 体当たりアニメーションのフレーム間隔
-	static constexpr float TackleJumpSpeedY          = -8.0f;  // 体当たり時の小ジャンプ初速Y（上方向）
-	static constexpr float TackleGravity             = 0.5f;   // 体当たり時の重力加速度
-	static constexpr float TackleOvershootX          = 0.0f; // プレイヤーの目標座標を通り越す追加距離
-	static constexpr int   TackleChargeFrames        = 26;     // 3枚目での溜め停止フレーム数（約0.43秒）
-	static constexpr float TackleShakePower          = 4.5f;   // 溜め時のスライムの震え（振動）の強さ(px)
+	static constexpr float TackleRangeMax            = 650.0f; // 判定距離
+	static constexpr int   TackleChancePercent       = 40;     // 発動確率
+	static constexpr int   TackleCooldownFrames      = 180;    // クールタイム
+	static constexpr int   TackleAnimInterval        = 8;      
+	static constexpr float TackleJumpSpeedY          = -8.0f;  
+	static constexpr float TackleGravity             = 0.5f;   // 体当たり時の重力
+	static constexpr float TackleOvershootX          = 5.0f; // プレイヤーの目標座標を通り越す追加距離
+	static constexpr int   TackleChargeFrames        = 36;     
+	static constexpr float TackleShakePower          = 4.5f;   
 
 	// 着地時スライム液体弾関連
-	static constexpr int   DropletCount              = 10;     // まき散らす液体弾の個数
-	static constexpr float DropletSpeedMin           = 10.0f;  // 弾の初速（最小）
-	static constexpr float DropletSpeedMax           = 16.0f;  // 弾の初速（最大）
-	static constexpr float DropletGravity            = 0.28f;  // 弾の重力加速度
-	static constexpr float DropletRadiusMin          = 10.0f;  // 弾の半径（最小px）
-	static constexpr float DropletRadiusMax          = 16.0f;  // 弾の半径（最大px）
-	static constexpr int   DropletLifeFrames         = 180;    // 弾の最大生存フレーム数（約3秒）
-	static constexpr int   DropletSplashFrames       = 10;     // 床着地時のスプラッシュ演出フレーム数
-	static constexpr float DropletAngleRangeDeg      = 45.0f;  // 真上(0度)からの左右最大角度(±45度、計90度)
-	static constexpr float DropletSpawnSpreadX       = 35.0f;  // 出現位置の左右の絞り幅（±35px）
-	static constexpr float DropletSpawnOffsetY       = -75.0f; // 出現位置のY軸オフセット（スライム中心から上部へ）
-	static constexpr float DropletHpThresholdRatio   = 0.5f;   // 液体弾が発動するHP割合の閾値（最大HPの50%以下）
+	static constexpr int   DropletCount              = 10;     // 個数
+	static constexpr float DropletSpeedMin           = 10.0f;  // 弾の初速
+	static constexpr float DropletSpeedMax           = 16.0f; 
+	static constexpr float DropletGravity            = 0.28f;  // 弾の重力
+	static constexpr float DropletRadiusMin          = 10.0f;  // 弾の半径
+	static constexpr float DropletRadiusMax          = 16.0f;  
+	static constexpr int   DropletLifeFrames         = 180;    // 弾の最大生存フレーム数
+	static constexpr int   DropletSplashFrames       = 10;     // 床着地時の演出フレーム数
+	static constexpr float DropletAngleRangeDeg      = 45.0f;  
+	static constexpr float DropletSpawnSpreadX       = 35.0f;  
+	static constexpr float DropletSpawnOffsetY       = -75.0f; 
+	static constexpr float DropletHpThresholdRatio   = 0.5f;   // 液体弾が発動するHP割合
 }
 
 // キングスライムHPバー用定数
 namespace KingSlimeHpBarConstants
 {
-	static constexpr int   Width                = 800;   // HPバーの全幅(px)
-	static constexpr int   Height               = 24;    // HPバーの高さ(px)
-	static constexpr int   PosY                 = 980;   // HPバーのY座標（画面下部）
-	static constexpr int   BorderThickness      = 3;     // 白枠の太さ(px)
-	static constexpr int   Padding              = 2;     // 枠線と赤いバーの内側余白(px)
-	static constexpr int   YellowDelayFrames    = 25;    // ダメージ後に黄色バーが減少し始めるまでの待機フレーム数（約0.4秒）
-	static constexpr float YellowDrainSpeed     = 0.6f;  // 黄色バーが一定速度で減少する速度（1フレームあたりの減少量）
+	static constexpr int   Width                = 800;   // HPバーの全幅
+	static constexpr int   Height               = 24;    // HPバーの高さ
+	static constexpr int   PosY                 = 980;   // HPバーのY座標
+	static constexpr int   BorderThickness      = 3;     // 白枠の太さ
+	static constexpr int   Padding              = 2;     // 枠線と赤いバーの内側余白
+	static constexpr int   YellowDelayFrames    = 25;    
+	static constexpr float YellowDrainSpeed     = 0.6f;  
+}
+// キングスライム死亡演出用定数
+namespace KingSlimeDeathConstants
+{
+	static constexpr int   AnimInterval          = 8;      
+	static constexpr int   PostAnimPauseFrames   = 25;     // 最終コマ停止時間
+	static constexpr int   ShakeDurationFrames   = 45;     // 左右小刻み震え継続時間
+	static constexpr float ShakePower            = 6.0f;  
+	static constexpr int   ShakeInterval         = 3;      
+	static constexpr int   PreExplodePauseFrames = 10;     // 震え停止後〜爆発までの時間
+	static constexpr int   DeathDropletCount     = 24;     // 個数
+	static constexpr float DeathDropletSpeedMin  = 10.0f;  
+	static constexpr float DeathDropletSpeedMax  = 18.0f;  
+	static constexpr int   PostExplosionWaitFrames = 180;  
 }

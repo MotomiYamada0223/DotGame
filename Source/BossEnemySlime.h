@@ -38,6 +38,15 @@ public:
         LandingReverse  // 着地時のジャンプ逆再生（6〜1枚目）
     };
 
+    enum class DeathPhase
+    {
+        PlayingAnimation, // 1. kingSlime_death.png アニメーション再生（1〜8枚目）
+        PostAnimPause,    // 2. 最後のコマ（8枚目）で少しの間ストップ
+        Shaking,          // 3. 体を左右に小刻みに震わせる
+        PreExplodePause,  // 4. 震えが止まり、爆発直前の一瞬の静寂
+        Exploded,         // 5. スライムが爆発！全方位に液体弾射出＆画面揺れ＆衝撃波
+        Finished          // 6. 演出完了（一定時間経過後に削除）
+    };
     enum class BeamPhase
     {
         OpenToCharge,   // 1〜3枚目まで再生して口を開ける
@@ -77,6 +86,8 @@ public:
     virtual bool CheckAttackCollision(const VECTOR& targetPos, const VECTOR& targetSize) const override;
     virtual float GetCollisionOffsetY() const override { return mCollisionOffsetY; }
     virtual void TakeDamage(int damage) override;
+    virtual bool HasCustomDeath() const override { return true; }
+    virtual bool IsActiveTarget() const override { return (mState != KingSlimeState::Death); }
     void DrawHpBar() const;
 
     KingSlimeState GetState() const { return mState; }
@@ -104,6 +115,8 @@ private:
     void DrawBeamEffect(float mouthScreenX, float mouthScreenY) const;
     void DrawTackleDebug() const;
     void SpawnLandingDroplets(const BlockMap& blockMap);
+    void SpawnDeathExplosionDroplets();
+    void StartDeathSequence();
     void UpdateDroplets();
     void DrawDroplets() const;
 
@@ -119,6 +132,8 @@ private:
     TextureAnimation* mpAnimJump;
     TextureAnimation* mpAnimAttack;
     TextureAnimation* mpAnimLongRange;
+    TextureAnimation* mpAnimDeath;
+    DeathPhase mDeathPhase;
 
     float mGroundY;
     float mBossAreaCenterX;
