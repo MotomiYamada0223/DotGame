@@ -111,7 +111,7 @@ void Player::UpdateStatusByProgress(GameProgress progress)
 	}
 
 	// 残機の代入
-	mlives = PlayerConstants::MaxLive;
+	mlives = Master::gPlayerLive;
 }
 
 
@@ -609,7 +609,7 @@ void Player::Update()
 	{
 		isDead = true;
 		mfCurrentSpeed = 0; // 現在の速さをリセット
-		mlives -= 1;
+		Master::gPlayerLive -= 1;
 		mDeadState = 1; // SCATTER
 		deadTimer = 0;
 		mFragments.clear();

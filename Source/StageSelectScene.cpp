@@ -60,6 +60,8 @@ void StageSelectScene::Initialize()
 	animCounter = 0;
 	caveTimer = 0;
 	isHidden = false;
+
+	Master::gPlayerLive = PlayerConstants::MaxLive;
 }
 
 // 移動処理：プレイヤーの移動アニメーションや自動ルート分岐、キー入力による移動先の設定を行う

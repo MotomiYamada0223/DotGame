@@ -187,7 +187,7 @@ void TestScene::Update()
 	}
 	pKeyWasDown = pKeyIsDown;
 	//残機がないかの判定がtrueなら
-	if (mpPlayer->IsOutOfLive())
+	if (Master::gPlayerLive <= 0)
 	{
 		Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_LOSERESULT);
 	}

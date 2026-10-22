@@ -27,7 +27,7 @@ namespace PlayerConstants
 	static const int PlayerAttackWidth = 600; // プレイヤーの攻撃範囲の幅
 	static const int PlayerAttackHeight = 40; // プレイヤーの攻撃範囲の高さ
 
-	static const int MaxLive = 300; // プレイヤーの最大残機
+	static const int MaxLive = 3; // プレイヤーの最大残機
 
 	// 落下でプレイヤーが死亡する位置
 	static const int PlayerDeathHeight = ScreenSize::ScrrenHeight + 100;
