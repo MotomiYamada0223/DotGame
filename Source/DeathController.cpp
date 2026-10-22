@@ -25,8 +25,7 @@ void DeathController::Update(
 {
 	if (!mActive &&
 		(playerPos.y >= PlayerConstants::PlayerDeathHeight ||
-		 playerHp <= 0) &&
-		playerLive > 1)
+		 playerHp <= 0))
 	{	
 		mActive = true;
 		mIsPressEnter = false;

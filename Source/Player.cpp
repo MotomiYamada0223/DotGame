@@ -432,7 +432,7 @@ void Player::Update()
 		{
 			BlinkAfterimage img;
 			img.pos = mvPosition;
-			img.facingRight = isFacingRight;
+		 img.facingRight = isFacingRight;
 			img.alpha = 150.0f;
 			mAfterimages.push_back(img);
 		}
@@ -608,58 +608,17 @@ void Player::Update()
 	if (mHp <= 0 && !isDead)
 	{
 		isDead = true;
-		mfCurrentSpeed = 0; // 現在の速さをリセット
+		mfCurrentSpeed = 0;
 		Master::gPlayerLive -= 1;
-		mDeadState = 1; // SCATTER
-		deadTimer = 0;
-		mFragments.clear();
 
-		int stageIndex = Master::gCurrentStageIndex;
+		const int stageIndex = Master::gCurrentStageIndex;
 		if (stageIndex >= 0 && stageIndex < Master::MaxStageCount)
 		{
-			if (Master::gDeathCounts[stageIndex] == -1)
-			{
-				Master::gDeathCounts[Master::gCurrentStageIndex] = 1;
-			}
-			else
-			{
-				Master::gDeathCounts[Master::gCurrentStageIndex] += 1;
-			}
-		}
+			// 現在のステージでの死亡回数
+			Master::gDeathCounts[stageIndex]++;
 
-		int fragSize = 16;
-		int srcBaseY = PlayerAnimState::IDLE_POS;
-
-		if (isAttacking)
-		{
-			srcBaseY = PlayerAnimState::ATTACK_POS;
-		}
-		else if (mbIsJumping)
-		{
-			srcBaseY = PlayerAnimState::JUMP_POS;
-		}
-		else if (mfMoveDirection != 0.0f)
-		{
-			srcBaseY = PlayerAnimState::WALK_POS;
-		}
-
-		for (int y = 0; y < PlayerAnimState::FRAME_HEIGHT; y += fragSize)
-		{
-			for (int x = 0; x < PlayerAnimState::FRAME_WIDTH; x += fragSize)
-			{
-				PlayerFragment frag;
-				frag.pos.x = mvPosition.x - (PlayerAnimState::FRAME_WIDTH / 2.0f) + (float)x;
-				frag.pos.y = mvPosition.y - (PlayerAnimState::FRAME_HEIGHT / 2.0f) + (float)y;
-				frag.srcX = x;
-				frag.srcY = srcBaseY + y;
-				frag.width = fragSize;
-				frag.height = fragSize;
-
-				frag.vel.x = ((float)GetRand(100) / 100.0f * 10.0f) - 5.0f;
-				frag.vel.y = ((float)GetRand(100) / 100.0f * -15.0f) - 5.0f;
-
-				mFragments.push_back(frag);
-			}
+			// これまでの累計死亡回数
+			Master::gTotalDeathCounts[stageIndex]++;
 		}
 	}
 
@@ -944,6 +903,9 @@ void Player::DebugDraw()
 			);
 		}
 		DrawFormatString(500, 300, GetColor(255, 0, 0), "%s", deathText);
+		DrawFormatString(500, 340, GetColor(255, 0, 0), "累計死亡回数: %d回", Master::gTotalDeathCounts[stageIndex]);
+
+
 	}
 
 
@@ -1072,7 +1034,6 @@ void Player::DeadProcess()
 		}
 	}
 }
-
 
 // 復活した時に位置とHPを戻す処理
 void Player::Revive()

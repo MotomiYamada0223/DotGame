@@ -82,12 +82,6 @@ void GameScene::Update()
 
 
 
-	//残機がないかの判定がtrueなら
-	if (Master::gPlayerLive <= 0)
-	{
-		Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_LOSERESULT);
-	}
-
 	// チュートリアルテキストの更新
 	mpPlayer->PlayerMove(mBlockMap);
 	SetTextUpdate(); // テキスト更新の呼び出し
