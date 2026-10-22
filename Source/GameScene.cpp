@@ -1,21 +1,30 @@
 ﻿#include "GameScene.h"
+#include "NeedleTrap.h"
 #include "Utility.h"
 #include "Master.h"
 #include "InputManager.h"
 #include "Player.h" 
 #include "Enemy.h"
 #include "EnemySlime.h" 
+#include "Saint.h"
 #include "GameConstants.h"
+#include "HiddenBlock.h"
+#include "MovingFloor.h"
+#include "FloorSpawner.h"
+#include "FeintFloor.h"
+#include "ObjectManager.h"
 
 GameScene::GameScene()
 	:Scene()
-	, mProgress()
 	, mSaint(VGet(Utility::SCREEN_WIDTH / 2.0f, 150.0f, 0.0f)) // 天使の作成
-	, mbWasPlayerDead(false)
-
+	, mbCircleFlag(false)
+	, mLoadData(
+		mpPlayer,
+		mBlockMap,
+		mBackground,
+		mTutorialText,
+		mProgress)
 {
-	spawnTimer = 0;
-	mpPlayer = nullptr;
 	mbIsLoaded = false;
 }
 
@@ -26,91 +35,71 @@ GameScene::~GameScene()
 
 void GameScene::Initialize()
 {
-	// CSVのファイル読み込み
-	// チュートリアルテキストとブロックマップのタイル
-	mTutorialText.Initialize(CsvPath::TutorialText, CsvPath::TutorialDeathText);
-
 	// 天使のセッターとテキストのゲッターの紐づけをする
 	mSaint.SetIsTextCompletedChecker([this]()
-	{
-		return mTutorialText.GetIsTextCompleted();
-	});
-
-	// 背景画像と当たり判定画像を読み込む
-	if (!mBlockMap.Load(
-		BlockMapGraphPath::Background,
-		BlockMapGraphPath::Collision
-	))
-	{
-		return;
-	}
-	mBackground.Load(ScrollGraphPath::Stage1);
-
+		{
+			return mTutorialText.GetIsTextCompleted();
+		});
 
 	// プレイヤーの生成
-	mpPlayer = new Player(VGet(ScreenSize::CenterX - 6000, 300, 0.0f));
+	mpPlayer = new Player(VGet(ScreenSize::CenterX - 6000, 10, 0.0f));
 
-	// 敵の生成
-	if (mpPlayer != nullptr)
-	{
-		// 画面左側 (X=0 付近)、Yはプレイヤーと同じ高さで生成
-		EnemySlime* slime = new EnemySlime(VGet(1000.0f, mpPlayer->GetPosition().y - 500, 0.0f));
-		slime->UpdateStatusByProgress(mProgress);
-				EnemySlime* slime1 = new EnemySlime(VGet(1200.0f, mpPlayer->GetPosition().y - 500, 0.0f));
-		slime1->UpdateStatusByProgress(mProgress);
-	}
+	mLoadData.LoadInitialize(Master::gCurrentStageIndex);
 
-	spawnTimer = 0;
+	MovingFloor::s_IsReverseAndDashTriggered = false;
 
 	mbIsLoaded = true;
 }
 
 void GameScene::Update()
 {
-	// Pキーで進行度切り替え (デバッグ用)
-	static bool pKeyWasDown = false;
-	bool pKeyIsDown = (CheckHitKey(KEY_INPUT_P) == 1);
-	if (pKeyIsDown && !pKeyWasDown)
+	// 円のフェード更新
+	mCircleFade.UpdateCircleFade();
+
+	mLeaf.LeafUpdate(mBlockMap, mpPlayer);
+
+	// デバッグ
+	if (InputManager::CheckDownKey(KEY_INPUT_9))
 	{
-		if (mProgress == GameProgress::Tutorial1)
-		{
-			mProgress = GameProgress::Tutorial2; // すり抜けON (無敵)
-		}
-		else
-		{
-			mProgress = GameProgress::Tutorial1; // すり抜けOFF (即死)
-		}
+		Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_TYPE::SCENE_STAGESELECT);
+	}
 
-		if (mpPlayer) mpPlayer->UpdateStatusByProgress(mProgress);
-
-		ObjectManager* objManager = Master::mpGameManager->GetSceneManager()->GetCurrentScene()->GetObjectManager();
-		if (objManager)
+	// 1キーでプレイヤーの座標を (7200, 700) にワープ (デバッグ用)
+	static bool oneKeyWasDown = false;
+	bool oneKeyIsDown = (CheckHitKey(KEY_INPUT_1) == 1 || CheckHitKey(KEY_INPUT_NUMPAD1) == 1);
+	if (oneKeyIsDown && !oneKeyWasDown)
+	{
+		if (mpPlayer != nullptr)
 		{
-			std::vector<Object2D*> enemyList = objManager->GetObject2DListByTag(Object2D::Enemy2D);
-			for (Object2D* obj : enemyList)
-			{
-				UnitStatus* enemyStatus = dynamic_cast<UnitStatus*>(obj);
-				if (enemyStatus)
-				{
-					enemyStatus->UpdateStatusByProgress(mProgress);
-				}
-			}
+			mpPlayer->SetPosition(VGet(7200.0f, 700.0f, 0.0f));
+			mpPlayer->SetVelocityY(0.0f);
+			mpPlayer->ResetBossIntroState();
+			mBlockMap.SetCameraLocked(false);
+			mBossIntro.Reset();
 		}
 	}
-	pKeyWasDown = pKeyIsDown;
+	oneKeyWasDown = oneKeyIsDown;
+
+
+
 	//残機がないかの判定がtrueなら
-	if (mpPlayer->IsOutOfLive())
+	if (Master::gPlayerLive <= 0)
 	{
 		Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_LOSERESULT);
 	}
 
+	// チュートリアルテキストの更新
+	mpPlayer->PlayerMove(mBlockMap);
 	SetTextUpdate(); // テキスト更新の呼び出し
+	mBossIntro.Update(mpPlayer, mBlockMap); // ボス戦開始演出の更新
 	mSaint.Update(); // 天使の更新
+	mLoadData.LoadUpdate();
 
 	if (mpPlayer)
 	{
 		mBackground.Move(static_cast<int>(mpPlayer->GetCurrentSpeed()), mBlockMap.GetIsScrolling(), mBlockMap.GetScrollDirection());
 	}
+
 
 	// シーン上に存在するすべての敵をオブジェクトマネージャー経由で一括取得
 	/// 個別のコードを追加することなく共通の移動処理を実行するため
@@ -128,17 +117,15 @@ void GameScene::Update()
 		}
 	}
 
+
 	// クラスのUpdate呼び出し
 	Scene::Update();
 }
 
 void GameScene::SetTextUpdate()
 {
-	// チュートリアルテキストの更新
-	mpPlayer->PlayerMove(mBlockMap);
 	// プレイヤーの死亡状態の確認
 	bool isPlayerDead = mpPlayer->GetIsDead();
-
 	// 死亡した瞬間
 	if (isPlayerDead && !mbWasPlayerDead)
 	{
@@ -157,34 +144,46 @@ void GameScene::SetTextUpdate()
 	mTutorialText.SetActionState(mpPlayer->GetActionState());
 }
 
+
 void GameScene::Draw()
 {
 	if (!mbIsLoaded) { return; }
 
-	// オブジェクトの描画
-	mBackground.Draw(); // スクロール背景
+	if (mbCircleFlag)
+	{
+		// オブジェクトの描画
+		mBackground.Draw(mBlockMap.GetShakeOffsetX(), mBlockMap.GetShakeOffsetY()); // スクロール背景
 
-	Scene::Draw();
+		Scene::Draw();
 
-	mBlockMap.Draw(); // ブロックマップの描画
+		mBlockMap.Draw(); // ブロックマップの描画
+		mLeaf.LeafDraw(mBlockMap); // 落下してくる葉の描画
 
-	// 一番手前に描画したいもの
-	mpPlayer->DrawFallDeath(); // 死亡時テキスト
-	mDrawFrame.Draw(); // フレーム描画
-	mSaint.Draw(); // 天使の描画
+		// 一番手前に描画したいもの
+		mpPlayer->DrawFallDeath(); // 死亡時テキスト
+		mDrawFrame.Draw(); // フレーム描画
+		mSaint.Draw(); // 天使の描画
 
-	// デバッグ系
-	mpPlayer->DebugDraw(); // ブロックデバッグ
-	mBlockMap.DebugDraw(); // ブロックマップデバッグ表示
-	mTutorialText.DebugDraw(); // テキスト
 
-	mTutorialText.Draw(); // チュートリアルの描画
+		// ボス演出の黒帯
+		mBossIntro.Draw();
 
-	// デバッグ表示: 現在の進行度
-	const char* progStr = (mProgress == GameProgress::Tutorial1) ? "Tutorial1 (Death)" : "Tutorial2 (Immune)";
-	DrawFormatString(10, 30, GetColor(0, 255, 0), "Progress: %s  [Press P to toggle]", progStr);
+		// デバッグ系
+		mpPlayer->DebugDraw(); // ブロックデバッグ
+		mBlockMap.DebugDraw(); // ブロックマップデバッグ表示
+		mTutorialText.DebugDraw(); // テキスト
 
+		// オブジェクトの描画 (マップを手前に描画)
+		mTutorialText.Draw();
 	}
+
+	if (mCircleFade.GetStateFlag())
+	{
+		mbCircleFlag = true;
+	}
+	mCircleFade.DrawCircleFade(mpPlayer, mBlockMap);
+	mLoadData.LoadDraw();
+}
 
 void GameScene::Finalize()
 {

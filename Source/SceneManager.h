@@ -18,7 +18,6 @@ public: // enum, struct の定義
 
 		SCENE_WINRESULT,  // 勝利シーン
 		SCENE_LOSERESULT,
-		SCENE_TEST, // 敗北
 		SCENE_LOAD,
 	};
 

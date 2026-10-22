@@ -8,7 +8,6 @@
 #include "GameScene.h"
 #include "WinResultScene.h"
 #include "LoseResultScene.h"
-#include "TestScene.h"
 #include "LoadScene.h"
 
 
@@ -94,9 +93,6 @@ void SceneManager::ChangeSceneIfNeeded()
 		break;
 	case SCENE_TYPE::SCENE_LOSERESULT:
 		mpCurrentScene = new LoseResultScene();
-		break;
-	case SCENE_TYPE::SCENE_TEST:
-		mpCurrentScene = new TestScene();
 		break;
 	case SCENE_TYPE::SCENE_LOAD:
 		mpCurrentScene = new LoadScene();

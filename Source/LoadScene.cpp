@@ -62,8 +62,8 @@ void LoadScene::Update()
 
 	if (mbFlag)
 	{
-		// ƒ[ƒh‰æ–Ê‚É‚¢‚­‚æ‚¤‚É‚µ‚½
-		Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_TEST);
+		// ƒQ[ƒ€‰æ–Ê‚É‚¢‚­‚æ‚¤‚É‚µ‚½
+		Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_GAME);
 	}
 
 	Scene::Update();

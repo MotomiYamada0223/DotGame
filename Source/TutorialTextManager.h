@@ -87,7 +87,7 @@ private:
 	int mnDisplayByteCount = 0; // 画面に表示する文字列のバイト数
 
 
-	float mfCurrentTriggerX; // 現在発生中のX座標グループを管理するため
+	float mfCurrentTriggerX = 0.0f; // 現在発生中のX座標グループを管理するため
 	std::set<int> mCompletedXStepIDs; // 既に表示開始したX座標ステップのID履歴を保持するため
 
 
