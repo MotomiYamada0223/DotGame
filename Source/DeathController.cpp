@@ -9,7 +9,6 @@
 DeathController::DeathController()
 	: mActive(false)
 	, mIsPressEnter(false)
-	, mReviveTimer(0.0f)
 {
 
 }
@@ -19,43 +18,41 @@ DeathController::~DeathController()
 
 }
 
-void DeathController::Update(VECTOR playerPos, int playerLive, int playerHp)
+void DeathController::Update(
+	VECTOR playerPos,
+	int playerLive,
+	int playerHp)
 {
-	// プレイヤーが地点を超えたらかつ残機が１以上なら
 	if (!mActive &&
-		(playerPos.y >= PlayerConstants::PlayerDeathHeight || playerHp <= 0)
-		&& playerLive > 1)
-	{
+		(playerPos.y >= PlayerConstants::PlayerDeathHeight ||
+		 playerHp <= 0) &&
+		playerLive > 1)
+	{	
 		mActive = true;
 		mIsPressEnter = false;
-		mReviveTimer = TextTimer::MaxFallDeathTimer;
 	}
 
-	if (mActive)
+	if (!mActive || mIsPressEnter)
 	{
-		// Enterが押されたら表示
-		if (InputManager::CheckDownKey(KEY_INPUT_RETURN) || mIsPressEnter)
-		{
-			mIsPressEnter = true;
-		}
+		return;
 	}
 
-	// 復活待機中はタイマーを減らす
-	if (mIsPressEnter)
+	if (InputManager::CheckDownKey(KEY_INPUT_RETURN))
 	{
-		mReviveTimer -= 1.0f;
-		if (mReviveTimer <= 0.0f)
-		{
-			mReviveTimer = 0.0f;
-		}
+		mIsPressEnter = true;
+		Master::mpGameManager->GetSceneManager()->SetNextScene(
+			SceneManager::SCENE_LOAD
+		);
 	}
 }
 
 void DeathController::Draw(int live) const
 {
-	if (!mActive) { return; }
+	if (!mActive)
+	{
+		return;
+	}
 
-	// 画面を暗くする
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, 200);
 
 	DrawBox(
@@ -69,7 +66,6 @@ void DeathController::Draw(int live) const
 
 	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 
-	// GAME OVER表示
 	Master::mpGameManager->GetFontManager()->DrawDotString(
 		TextPosition::FallDeathX,
 		TextPosition::FallDeathY,
@@ -77,13 +73,6 @@ void DeathController::Draw(int live) const
 		ColorOption::White,
 		"GAME OVER Enterで復活"
 	);
-
-	// Enterが押された後
-	if (mIsPressEnter)
-	{
-		// ロード画面にいくようにした
-		Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_LOAD);
-	}
 }
 
 
@@ -92,7 +81,6 @@ void DeathController::Reset()
 {
 	mActive = false;
 	mIsPressEnter = false;
-	mReviveTimer = TextTimer::MaxFallDeathTimer;
 }
 
 

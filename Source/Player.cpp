@@ -1044,8 +1044,15 @@ void Player::DeadProcess()
 
 		for (auto& frag : mFragments)
 		{
-			float targetX = mSpawnPos.x - (PlayerAnimState::FRAME_WIDTH / 2.0f) + frag.srcX;
-			float targetY = mSpawnPos.y - (PlayerAnimState::FRAME_HEIGHT / 2.0f) + (frag.srcY % PlayerAnimState::FRAME_HEIGHT);
+			float targetX =
+				mSpawnPos.x -
+				(PlayerAnimState::FRAME_WIDTH / 2.0f) +
+				frag.srcX;
+
+			float targetY =
+				mSpawnPos.y -
+				(PlayerAnimState::FRAME_HEIGHT / 2.0f) +
+				(frag.srcY % PlayerAnimState::FRAME_HEIGHT);
 
 			float dx = targetX - frag.pos.x;
 			float dy = targetY - frag.pos.y;
@@ -1062,17 +1069,6 @@ void Player::DeadProcess()
 				frag.pos.x = targetX;
 				frag.pos.y = targetY;
 			}
-		}
-
-		// 全て集まったか、タイムアウト（5秒）で強制復活
-		if ((allReturned && deadTimer > 60) || deadTimer > 300)
-		{
-			mDeadState = 0;
-			deadTimer = 0;
-			isFacingRight = true;
-			mFragments.clear();
-
-			Revive();
 		}
 	}
 }
