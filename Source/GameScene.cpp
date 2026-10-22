@@ -183,7 +183,8 @@ void GameScene::Draw()
 	// デバッグ表示: 現在の進行度
 	const char* progStr = (mProgress == GameProgress::Tutorial1) ? "Tutorial1 (Death)" : "Tutorial2 (Immune)";
 	DrawFormatString(10, 30, GetColor(0, 255, 0), "Progress: %s  [Press P to toggle]", progStr);
-}
+
+	}
 
 void GameScene::Finalize()
 {

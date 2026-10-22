@@ -282,6 +282,7 @@ void TestScene::Draw()
 		const char* progStr = (mProgress == GameProgress::Tutorial1) ? "Tutorial1 (Death)" : "Tutorial2 (Immune)";
 		DrawFormatString(10, 30, GetColor(0, 255, 0), "Progress: %s  [Press P to toggle]", progStr);
 		DrawFormatString(10, 50, GetColor(0, 255, 0), "[1]: Warp to Boss Area (7200, 700)");
+
 	}
 
 	if (mCircleFade.GetStateFlag())
