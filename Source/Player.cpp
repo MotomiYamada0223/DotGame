@@ -633,9 +633,6 @@ void Player::DrawFallDeath()
 
 void Player::Draw()
 {
-
-	DrawLife();
-
 	if (isDead)
 	{
 		SetDrawBright(255, 255, 255); // 色をリセット
@@ -822,7 +819,7 @@ void Player::Draw()
 void Player::DrawLife()
 {
 	// UI（ハート）の描画（右上）
-	if (mMaxHp > 0)
+	if (mHp >= 0)
 	{
 		int hpLevel = (mHp * 6) / mMaxHp;
 		if (mHp > 0 && hpLevel == 0) hpLevel = 1;

@@ -215,7 +215,8 @@ namespace MapScrollConstants
 	static constexpr int ScrollStartRightX = 1000;
 	// プレイヤーがこの画面X座標より左に行ったらスクロール
 	static constexpr int ScrollStartLeftX = 600;
-	static constexpr int ScrollStartUpY = 500;
+	// プレイヤーがこの画像Y座標より上下にいったらスクロール
+	static constexpr int ScrollStartUpY = 600;
 
 	// 背景を少し遅くさせるための倍率
 	static constexpr float BackgroundScrollSpeedScale = 0.3f;

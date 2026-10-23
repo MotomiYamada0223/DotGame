@@ -158,6 +158,10 @@ void GameScene::Draw()
 		mSaint.Draw(); // 天使の描画
 
 
+		mpPlayer->DrawLife();
+
+
+
 		// ボス演出の黒帯
 		mBossIntro.Draw();
 
