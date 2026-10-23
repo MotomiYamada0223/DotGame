@@ -513,14 +513,9 @@ void Player::Update()
 			0.0f
 		);
 
-<<<<<<< Updated upstream
-		// プレイヤー自身と敵の衝突判定 (ダメージで赤くする)
-		if (Collision::CheckRectToRect(myPos, mySize, enePos, eneSize) ||
-=======
-		// 1. プレイヤー自身と敵の衝突判定 (ダメージで赤くする)
+		//  プレイヤー自身と敵の衝突判定 (ダメージで赤くする)
 		bool canHitBody = enemy->IsActiveTarget();
 		if ((canHitBody && Collision::CheckRectToRect(myPos, mySize, enePos, eneSize)) ||
->>>>>>> Stashed changes
 			enemy->CheckAttackCollision(myPos, mySize))
 		{
 			UnitStatus* enemyStatus = dynamic_cast<UnitStatus*>(enemy);
