@@ -117,10 +117,13 @@ namespace BackGroundGraphPath
 // ブロックマップ関係
 namespace BlockMapGraphPath
 {
-	static const char* Background = "Resource/Map/backGround.png";
-	static const char* Collision = "Resource/Map/collision.png";
+	// 1-1ステージ　始まりの森
 	static const char* TestBackground = "Resource/Map/TestMap.png";
 	static const char* TestCollision = "Resource/Map/TestMapCollision.png";
+
+	// 1-2ステージ 洞窟
+	static const char* CaveMap = "Resource/Map/CaveMap.png";
+	static const char* CaveMapCollision = "Resource/Map/CaveMapCollision.png";
 }
 
 // スクロール背景のパス
@@ -213,7 +216,8 @@ namespace MapScrollConstants
 	static constexpr int ScrollStartRightX = 1000;
 	// プレイヤーがこの画面X座標より左に行ったらスクロール
 	static constexpr int ScrollStartLeftX = 600;
-	static constexpr int ScrollStartUpY = 500;
+	// プレイヤーがこの画像Y座標より上下にいったらスクロール
+	static constexpr int ScrollStartUpY = 600;
 
 	// 背景を少し遅くさせるための倍率
 	static constexpr float BackgroundScrollSpeedScale = 0.3f;

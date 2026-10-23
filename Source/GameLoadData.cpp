@@ -115,7 +115,7 @@ void GameLoadData::StageForest()
 	);
 
 
-	// 例1: 左右に往復する基本の動く床
+	// 左右に往復する基本の動く床
 	MovingFloor* floor1 = new MovingFloor(
 		VGet(900.0f, 200.0f, 0.0f), VGet(1800.0f, 200.0f, 0.0f),
 		2.0f, MovePattern::Loop, FloorFeature::SpeedUpOnRide, mpPlayer, &mBlockMap
@@ -145,8 +145,8 @@ void GameLoadData::StageCave()
 
 	// 背景画像と当たり判定画像を読み込む
 	if (!mBlockMap.Load(
-		BlockMapGraphPath::Background,
-		BlockMapGraphPath::Collision
+		BlockMapGraphPath::CaveMap,
+		BlockMapGraphPath::CaveMapCollision
 	))
 	{
 		return;
@@ -157,9 +157,9 @@ void GameLoadData::StageCave()
 	if (mpPlayer != nullptr)
 	{
 		// 画面左側 (X=0 付近)、Yはプレイヤーと同じ高さで生成
-		EnemySlime* slime = new EnemySlime(VGet(1000.0f, mpPlayer->GetPosition().y - 500, 0.0f));
+		EnemySlime* slime = new EnemySlime(VGet(1000.0f, mpPlayer->GetPosition().y - 400, 0.0f));
 		slime->UpdateStatusByProgress(mProgress);
-		EnemySlime* slime1 = new EnemySlime(VGet(1200.0f, mpPlayer->GetPosition().y - 500, 0.0f));
+		EnemySlime* slime1 = new EnemySlime(VGet(1700.0f, mpPlayer->GetPosition().y - 400, 0.0f));
 		slime1->UpdateStatusByProgress(mProgress);
 	}
 

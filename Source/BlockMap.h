@@ -10,7 +10,7 @@ class BlockMap
 public:
 
     // 当たり判定の色によってタイプを分ける
-	enum class CollisionType
+	enum class CollisionType : unsigned char
 	{
 		None = 0, // 当たり判定なし
 		Block,  // 当たり判定あり

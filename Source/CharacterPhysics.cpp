@@ -34,7 +34,7 @@ BlockMap::CollisionType CharacterPhysics::CheckCollision(
 		{
 			// スクロール判定をしない
 			const int mapX = pixelX;
-			const int mapY = pixelY;
+			const int mapY = blockMap.ScreenToMapY(pixelY);
 			const BlockMap::CollisionType type =
 				blockMap.GetCollisionType(mapX, mapY);
 
@@ -241,80 +241,6 @@ BlockMap::CollisionType CharacterPhysics::UpdateMoveAndCollision(
 	{
 		position.y = nextY;
 	}
-
-
-
-	/*// デバッグ描画 ワールド座標
-	if (moveDirection != 0.0f)
-	{
-		const float debugX =
-			(moveDirection < 0.0f)
-			? (nextX - halfWidth)
-			: (nextX + halfWidth);
-
-		const float debugTop =position.y - halfHeight;
-		const int screenDebugX = static_cast<int>(debugX - blockMap.GetScrollX());
-		const int screenDebugY = static_cast<int>(debugTop);
-
-		DrawBox(
-			screenDebugX,
-			screenDebugY,
-			screenDebugX + static_cast<int>(PlayerBlockCollision::CollisionThickness),
-			screenDebugY + static_cast<int>(height),
-			GetColor(255, 255, 0),
-			FALSE
-		);
-	}
-
-	if (velocityY > 0.0f)
-	{
-		const int screenLeft = static_cast<int>(playerLeft - blockMap.GetScrollX());
-		const int screenBottom = static_cast<int>(nextBottom);
-
-		DrawBox(
-			screenLeft,
-			screenBottom,
-			screenLeft + static_cast<int>(width),
-			screenBottom + static_cast<int>(PlayerBlockCollision::CollisionThickness),
-			GetColor(0, 255, 255),
-			FALSE
-		);
-	}
-
-	if (velocityY < 0.0f)
-	{
-		const int screenLeft = static_cast<int>(playerLeft - blockMap.GetScrollX());
-		const int screenBottom = static_cast<int>(nextTop);
-
-		DrawBox(
-			screenLeft,
-			screenBottom,
-			screenLeft + static_cast<int>(width),
-			screenBottom + static_cast<int>(PlayerBlockCollision::CollisionThickness),
-			GetColor(255, 0, 255),
-			FALSE
-		);
-	}
-
-	if (isGrounded)
-	{
-		DrawFormatString(
-			0,
-			40,
-			GetColor(255, 255, 255),
-			"床にあたっている"
-		);
-	}
-	if (isHittingWall)
-	{
-		DrawFormatString(
-			0,
-			60,
-			GetColor(255, 255, 0),
-			"壁に当たっている"
-		);
-	}*/
-
 
 	return detectedSpecialType;
 }
