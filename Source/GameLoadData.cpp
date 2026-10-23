@@ -145,8 +145,8 @@ void GameLoadData::StageCave()
 
 	// ”wŒi‰æ‘œ‚Æ“–‚½‚è”»’è‰æ‘œ‚ğ“Ç‚İ‚Ş
 	if (!mBlockMap.Load(
-		BlockMapGraphPath::Background,
-		BlockMapGraphPath::Collision
+		BlockMapGraphPath::CaveMap,
+		BlockMapGraphPath::CaveMapCollision
 	))
 	{
 		return;

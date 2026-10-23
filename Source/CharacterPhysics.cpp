@@ -34,7 +34,7 @@ BlockMap::CollisionType CharacterPhysics::CheckCollision(
 		{
 			// スクロール判定をしない
 			const int mapX = pixelX;
-			const int mapY = pixelY;
+			const int mapY = blockMap.ScreenToMapY(pixelY);
 			const BlockMap::CollisionType type =
 				blockMap.GetCollisionType(mapX, mapY);
 

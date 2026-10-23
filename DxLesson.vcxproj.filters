@@ -117,9 +117,6 @@
     <ClCompile Include="Source\Player.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\TestScene.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Background.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -200,6 +197,9 @@
     </ClCompile>
     <ClCompile Include="Source\LoadScene.cpp">
       <Filter>ソース ファイル\Scene系</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GameLoadData.cpp">
+      <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -320,9 +320,6 @@
     <ClInclude Include="Source\PlayerAnimState.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\TestScene.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="Source\NeedleTrap.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -365,14 +362,17 @@
     <ClInclude Include="Source\BackgroundBox.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\CircleFade.h">
-      <Filter>ソース ファイル\Draw系</Filter>
-    </ClInclude>
     <ClInclude Include="Source\LeafCutter.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="Source\GameLoadData.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
     <ClInclude Include="Source\LoadScene.h">
-      <Filter>ソース ファイル\Scene系</Filter>
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\CircleFade.h">
+      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

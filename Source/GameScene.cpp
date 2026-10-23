@@ -37,13 +37,12 @@ void GameScene::Initialize()
 {
 	// 天使のセッターとテキストのゲッターの紐づけをする
 	mSaint.SetIsTextCompletedChecker([this]()
-		{
-			return mTutorialText.GetIsTextCompleted();
-		});
+	{
+		return mTutorialText.GetIsTextCompleted();
+	});
 
 	// プレイヤーの生成
-	mpPlayer = new Player(VGet(ScreenSize::CenterX - 6000, 10, 0.0f));
-
+	mpPlayer = new Player(VGet(ScreenSize::CenterX - 6000, 300, 0.0f));
 	mLoadData.LoadInitialize(Master::gCurrentStageIndex);
 
 	MovingFloor::s_IsReverseAndDashTriggered = false;

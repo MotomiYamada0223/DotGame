@@ -116,10 +116,13 @@ namespace BackGroundGraphPath
 // ブロックマップ関係
 namespace BlockMapGraphPath
 {
-	static const char* Background = "Resource/Map/backGround.png";
-	static const char* Collision = "Resource/Map/collision.png";
+	// 1-1ステージ　始まりの森
 	static const char* TestBackground = "Resource/Map/TestMap.png";
 	static const char* TestCollision = "Resource/Map/TestMapCollision.png";
+
+	// 1-2ステージ 洞窟
+	static const char* CaveMap = "Resource/Map/CaveMap.png";
+	static const char* CaveMapCollision = "Resource/Map/CaveMapCollision.png";
 }
 
 // スクロール背景のパス

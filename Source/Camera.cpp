@@ -22,7 +22,16 @@ Camera::~Camera()
 }
 
 // プレイヤーの位置や移動方向に応じてカメラのスクロール位置を計算するため
-void Camera::Update(int playerScreenX, int playerScreenY, float moveDirection, float currentSpeed, int backgroundWidth, int screenWidth)
+void Camera::Update(
+	int playerScreenX,
+	int playerScreenY,
+	float moveDirection,
+	float currentSpeed,
+	int backgroundWidth,
+	int screenWidth,
+	int backgroundHeight,
+	int screenHeight
+)
 {
 	// スクロールがロックされている場合は位置を更新せず、画面揺れのみ処理
 	if (mIsLocked)
@@ -63,13 +72,19 @@ void Camera::Update(int playerScreenX, int playerScreenY, float moveDirection, f
 		mScrollY += diffY;
 	}
 
-	// マップの左端を超えないようにするため
-	if (mScrollY > 0)
-	{
-		mScrollY = 0;
-	}
 
+	// マップの下端を超えないようにするため（背景の高さから画面の高さを引いた値を最大スクロール量とする）
+	int maxScrollY = backgroundHeight - screenHeight;
+	if (maxScrollY < 0) { maxScrollY = 0; }
+
+	// mScrollYは下方向へ進むにつれてマイナスになるため、下限を -maxScrollY に制限する
+	if (mScrollY > maxScrollY)
+	{
+		mScrollY = maxScrollY;
+	}
 	mIsScrolling = (oldScrollPos != mScrollX);
+
+
 
 	// 画面揺れの更新
 	UpdateShake();

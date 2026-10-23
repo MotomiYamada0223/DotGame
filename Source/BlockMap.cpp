@@ -265,7 +265,9 @@ void BlockMap::Move(int playerScreenX, int playerScreenY, float moveDirection, f
         moveDirection,
         currentSpeed,
         mnBackgroundWidth,
-        ScreenSize::ScrrenWidth
+        ScreenSize::ScrrenWidth,
+        mnBackgroundHeight,
+        ScreenSize::ScrrenHeight
     );
 }
 

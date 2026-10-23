@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+
+
 class Camera
 {
 public:
@@ -13,7 +15,9 @@ public:
         float moveDirection,
         float currentSpeed,
         int backgroundWidth, 
-        int screenWidth);
+        int screenWidth,
+        int backgroundHeight,
+        int screenHeight);
 
     // スクロール位置取得
     int GetScrollX() const { return mScrollX; }
