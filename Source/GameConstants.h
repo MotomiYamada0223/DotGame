@@ -110,7 +110,15 @@ namespace CharacterGraphPath
 // 背景画像の読み込み
 namespace BackGroundGraphPath
 {
+	// 選択画面の背景
 	static const std::string SelectStageMap = "Resource/Backgrounds/selectMap.png";
+
+	// タイトルロゴの背景
+	static const std::string TitleLogoGraphs = "Resource/LogoImage/title_logo.png";
+	// タイトル雲
+	static const std::string TitleScrollCloud = "Resource/SceneBackground/cloud_seamless.png";
+	// タイトル背景画像
+	static const std::string TitleBackground = "Resource/SceneBackground/background_noclouds.png";
 }
 
 

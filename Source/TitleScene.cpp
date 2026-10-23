@@ -97,17 +97,17 @@ void TitleScene::DrawSelectString()
 
 void TitleScene::Draw()
 {
-		Master::mpGameManager->GetFontManager()->DrawDotString(
-			500,
-			500,
-			100,
-			GetColor(255, 255, 255),
-			"タイトル　才能の原石\n\n Enterでゲームシーン"
-		);
+	Master::mpGameManager->GetFontManager()->DrawDotString(
+		500,
+		500,
+		100,
+		GetColor(255, 255, 255),
+		"タイトル　才能の原石\n\n Enterでゲームシーン"
+	);
 
-		mTitleLogo.Draw();
+	mTitleLogo.Draw();
 
-		DrawSelectString();
+	DrawSelectString();
 
 	// 基底クラスの更新処理を呼びだす
 	Scene::Draw();

@@ -8,24 +8,27 @@
 
 TitleLogo::TitleLogo()
 	: mnBackGroundHandle(-1)
-	, mnfScrollCloudHandle(-1)
+	, mnScrollCloudHandle(-1)
 	, mnLogoHandle(-1)
 	, mfScrollCloudX(0.0f)
 	, mnMenuCursor(0)
 	, mLogoPieces()
 	, mfAnimtionTimer(0.0f)
 	, mfLogoY(ScreenSize::CenterY)
+	, mfCloudX(0.0f)
+	, mnCloudHeight(0)
+	, mnCloudWidth(0)
 {
-	mnBackGroundHandle = LoadGraph("Resource/SceneBackground/background_noclouds.png");
-	mnfScrollCloudHandle = LoadGraph("Resource/SceneBackground/cloud_seamless.png");
-	mnLogoHandle = LoadGraph("Resource/LogoImage/title_logo.png");
+	mnBackGroundHandle = LoadGraph(BackGroundGraphPath::TitleBackground.c_str());
+	mnScrollCloudHandle = LoadGraph(BackGroundGraphPath::TitleScrollCloud.c_str());
+	mnLogoHandle = LoadGraph(BackGroundGraphPath::TitleLogoGraphs.c_str());
 
 
 	if (mnBackGroundHandle == -1)
 	{
 		printfDx("îwåiâÊëúÇ™Ç†ÇËÇ‹ÇπÇÒÅB");
 	}
-	if (mnfScrollCloudHandle == -1)
+	if (mnScrollCloudHandle == -1)
 	{
 		printfDx("â_âÊëúÇ™Ç†ÇËÇ‹ÇπÇÒÅB");
 	}
@@ -33,6 +36,12 @@ TitleLogo::TitleLogo()
 	{
 		printfDx("ÉçÉSâÊëúÇ™Ç†ÇËÇ‹ÇπÇÒÅB");
 	}
+
+	// â_âÊëúÇÃëÂÇ´Ç≥ÇéÊìæ
+	GetGraphSize(
+		mnScrollCloudHandle,
+		&mnCloudWidth,
+		&mnCloudHeight);
 }
 
 TitleLogo::~TitleLogo()
@@ -42,10 +51,10 @@ TitleLogo::~TitleLogo()
 		DeleteGraph(mnBackGroundHandle);
 		mnBackGroundHandle = -1;
 	}
-	if (mnfScrollCloudHandle != -1)
+	if (mnScrollCloudHandle != -1)
 	{
-		DeleteGraph(mnfScrollCloudHandle);
-		mnfScrollCloudHandle = -1;
+		DeleteGraph(mnScrollCloudHandle);
+		mnScrollCloudHandle = -1;
 	}
 	if (mnLogoHandle != -1)
 	{
@@ -57,6 +66,15 @@ TitleLogo::~TitleLogo()
 
 void TitleLogo::Update()
 {
+
+	float scale = 2.0f;
+	int cloudScaledWidth = static_cast<int>(mnCloudWidth * scale);
+	mfCloudX -= 1.0f;
+	if (mfCloudX <= -cloudScaledWidth)
+	{
+		mfCloudX += cloudScaledWidth;
+	}
+
 	UpdateLogoAnimation();
 }
 
@@ -74,7 +92,9 @@ void TitleLogo::Draw()
 			TRUE);
 	}
 
-	if (mnBackGroundHandle != -1)
+	DrawCloud();
+
+	if (mnLogoHandle != -1)
 	{
 		DrawRotaGraph(
 			ScreenSize::CenterX,
@@ -83,6 +103,41 @@ void TitleLogo::Draw()
 			0.0f, 
 			mnLogoHandle,
 			TRUE);
+	}
+}
+
+void TitleLogo::DrawCloud()
+{
+	float scale = 2.0f;
+	int bgScaledWidth = static_cast<int>(mnCloudWidth);
+	int bgScaledHeight = static_cast<int>(mnCloudHeight * scale);
+	int cloudScaledWidth = static_cast<int>(mnCloudWidth * scale);
+
+	int bgX = (ScreenSize::ScrrenWidth - bgScaledWidth) / 2;
+	int bgY = CloudY;
+
+
+
+	if (mnScrollCloudHandle != -1)
+	{
+		int c1X = bgX + static_cast<int>(mfCloudX);
+		DrawExtendGraph(
+			c1X,
+			bgY,
+			c1X + cloudScaledWidth,
+			bgY + bgScaledHeight,
+			mnScrollCloudHandle,
+			TRUE
+		);
+
+
+		DrawExtendGraph(c1X + cloudScaledWidth,
+			bgY,
+			c1X + cloudScaledWidth * 2,
+			bgY + bgScaledHeight,
+			mnScrollCloudHandle,
+			TRUE
+		);
 	}
 }
 

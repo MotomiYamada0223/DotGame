@@ -14,6 +14,7 @@ class TitleLogo
 private:
 	static constexpr float LogoExrate = 1.8f; // ƒƒS‰æ‘œ‚ÌŠg‘å—¦
 	static constexpr int LogoLowY = 200; // ’†S‚©‚ç‚ÌƒƒS‚Ì‚‚³
+	static constexpr int CloudY = 250; // ‰_•{‰æ‘œ‚ÌŠî€Y
 
 	// ƒƒS
 	static constexpr float LogoInitialY = -800.0f;
@@ -34,11 +35,13 @@ public:
 	void Update();
 	void Draw();
 
+
+	void DrawCloud();
 	void UpdateLogoAnimation();
 
 private:
 	int mnBackGroundHandle;
-	int mnfScrollCloudHandle;
+	int mnScrollCloudHandle;
 	int mnLogoHandle;
 
 	float mfScrollCloudX;
@@ -49,4 +52,10 @@ private:
 	LogoPiece mLogoPieces[60];
 	float mfLogoY;
 	float mfAnimtionTimer;
+
+	// ‰_‚ÌƒXƒNƒ[ƒ‹
+	float mfCloudX = 0.0f;
+	int mnCloudWidth;
+	int mnCloudHeight;
+
 };
