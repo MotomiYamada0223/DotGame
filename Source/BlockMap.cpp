@@ -200,6 +200,7 @@ void BlockMap::Draw()
 {
     if (!mbIsLoaded) { return; }
 
+
     // 背景画像を描画
     DrawRectGraph(
         0,                              // 画面上のX
