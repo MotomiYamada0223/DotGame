@@ -26,6 +26,6 @@ private:
 	TitleLogo mTitleLogo;
 
 	int mnSelectIndex;
-	const int MAX_SELECT = 2;
+	const int MAX_SELECT = 3;
 };
 

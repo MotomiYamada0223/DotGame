@@ -32,16 +32,27 @@ void TitleScene::Initialize()
 void TitleScene::Update()
 {
 	UpdateSelectString();
+
 	// Enterでゲーム画面へ
 	if (InputManager::CheckDownKey(KEY_INPUT_RETURN))
 	{
-		if (mnSelectIndex == 0)
+		switch (mnSelectIndex)
 		{
+		case 0:
 			Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_TYPE::SCENE_STAGESELECT);
-		}
-		else
-		{
+			break;
+
+		case 1:
+			 // まだ実装してないから、SE出しても良い
+			break;
+
+		case 2:
 			DxLib_End();
+			break;
+
+		default:
+			break;
+
 		}
 	}
 
@@ -51,6 +62,8 @@ void TitleScene::Update()
 	Scene::Update();
 }
 
+
+// キー入力で選択
 void TitleScene::UpdateSelectString()
 {
 	if (InputManager::CheckDownKey(KEY_INPUT_W) || InputManager::CheckDownKey(KEY_INPUT_UP))
@@ -58,42 +71,55 @@ void TitleScene::UpdateSelectString()
 		mnSelectIndex--;
 		if (mnSelectIndex < 0)
 		{
-			mnSelectIndex = 1; // 項目数に合わせて調整（全2項目なら 1）
+			mnSelectIndex = MAX_SELECT;
 		}
 	}
 	if (InputManager::CheckDownKey(KEY_INPUT_S) || InputManager::CheckDownKey(KEY_INPUT_DOWN))
 	{
 		mnSelectIndex++;
-		if (mnSelectIndex > 1)
+		if (mnSelectIndex >= MAX_SELECT)
 		{
-			mnSelectIndex = 0; // 0に戻る
+			mnSelectIndex = 0;
 		}
 	}
 }
 
 void TitleScene::DrawSelectString()
 {
-	// メニュー項目の座標基準
-	int menuX = ScreenSize::CenterX;
-	int menuStartY = ScreenSize::CenterY + 100;
+	std::string selectList[] =
+	{
+		"Play",
+		"Continue",
+		"Exit"
+	};
+
+	// 参考演算子で選択中のを見やすく表示
+	int stringX = ScreenSize::CenterX - 50;
+	int stringY = ScreenSize::CenterY + 200;
 	int lineSpacing = 80; // 項目ごとの間隔
 	int fontSize = 70;
 
-	if (mnSelectIndex == 0)
+	int SelectNow = mnSelectIndex; 
+	for (int i = 0; i < MAX_SELECT; i++) // 表示するため
 	{
-		Master::mpGameManager->GetFontManager()->DrawDotString(menuX - 50, menuStartY, 80, GetColor(255, 255, 255), ">");
+		int posY = stringY + (i - 1) * lineSpacing;
+
+		// 選択中か、それ以外かの処理を三項演算子でやってる
+		int Color = (i == SelectNow) ? GetColor(255, 255, 100) : GetColor(255, 100, 100);
+		Master::mpGameManager->GetFontManager()->DrawDotString(
+			stringX, posY, fontSize,
+			Color, "%s", selectList[i].c_str());
+
+		if (i == SelectNow)
+		{
+			Master::mpGameManager->GetFontManager()->DrawDotString(
+				stringX - 40, posY, fontSize,
+				Color, ">");
+		}
 	}
-	Master::mpGameManager->GetFontManager()->DrawDotString(
-		menuX, menuStartY, fontSize,
-		GetColor(255, 255, 255), "Play");
-	if (mnSelectIndex == 1)
-	{
-		Master::mpGameManager->GetFontManager()->DrawDotString(menuX - 50, menuStartY + lineSpacing, 80, GetColor(255, 255, 255), ">");
-	}
-	Master::mpGameManager->GetFontManager()->DrawDotString(
-		menuX, menuStartY + lineSpacing, fontSize,
-		GetColor(255, 255, 255), "Continue");
 }
+
+
 
 void TitleScene::Draw()
 {
