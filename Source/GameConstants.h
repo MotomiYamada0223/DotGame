@@ -418,3 +418,51 @@ namespace KingSlimeDeathConstants
 	static constexpr float DeathDropletSpeedMax  = 18.0f;  
 	static constexpr int   PostExplosionWaitFrames = 180;  
 }
+
+// ステージクリア演出用定数
+namespace StageClearConstants
+{
+	static constexpr int   StartDelayFrames      = 15;     // 開始までの待機フレーム数
+	static constexpr int   CrackerSlideFrames    = 22;     // スライドイン所要フレーム数
+	static constexpr int   CrackerAimWaitFrames  = 60;     // 停止後、発射までの待機フレーム数
+	static constexpr int   AimLockFramesBeforeBurst = 18;  // 発射何フレーム前に照準を固定するか
+	static constexpr float CrackerScale          = 3.8f;   // 画像描画スケール
+	static constexpr float CrackerLeftStartX     = -160.0f;
+	static constexpr float CrackerLeftTargetX    = 90.0f;  
+	static constexpr float CrackerRightStartX    = 2080.0f;
+	static constexpr float CrackerRightTargetX   = 1830.0f;
+	static constexpr float CrackerPosYTop        = 320.0f; 
+	static constexpr float CrackerPosYMid        = 540.0f; 
+	static constexpr float CrackerPosYBottom     = 760.0f; 
+	static constexpr int   ConfettiPerCracker    = 25;     // 紙吹雪個数
+	static constexpr int   ConfettiLifeFrames    = 180;    // 紙吹雪滞空寿命
+
+	// 銀色弾（円形弾）用定数
+	static constexpr int   BulletsPerCracker     = 3;      // 弾丸発射数
+	static constexpr float BulletRadius          = 12.0f; // 弾の半径（視認性向上）
+	static constexpr float BulletAimedSpeed      = 22.0f;  // 狙撃弾の初速
+	static constexpr float BulletAimedGravity    = 0.10f;  // 狙撃弾の重力
+	static constexpr float BulletSkySpeed        = 24.0f;  // 空中打ち上げ弾の初速
+	static constexpr float BulletSkyGravity      = 0.45f;  // 空中打ち上げ弾の重力
+
+	// タイトルロゴ落下演出用定数
+	static constexpr float LogoInitialY          = -650.0f; // 画面はるか上空の開始Y座標
+	static constexpr float LogoFallGravity       = 2.4f;    // 落下重力加速度
+	static constexpr float LogoFallMaxSpeed      = 54.0f;   // 最高落下終端速度
+	static constexpr float LogoTiltAngleRad      = -0.2618f;// 傾き角度（-15度、左下角が下を向く）
+	static constexpr float LogoGroundY           = 709.0f;  // ボスエリア床面Y座標
+	static constexpr float LogoEmbedDepth        = 35.0f;   // 地面への突き刺さり深さ
+	static constexpr float LogoShakePower        = 22.0f;   // 着地時カメラシェイク強度
+	static constexpr int   LogoShakeDuration     = 30;      // 画面揺れ継続フレーム数
+	static constexpr int   LogoPostImpactWaitFrames = 30;   // 着地激突後、文字表示開始までの余韻待機時間
+	static constexpr int   CrackerBurstWaitFrames = 45;     // クラッカー発射からロゴ落下開始までの時間（約0.75秒）
+
+	static constexpr int   FontSize              = 120;    // フォントサイズ
+	static constexpr int   OutlineWidth          = 4;      // 黒枠アウトライン太さ
+	static constexpr int   FixedPosY             = 360;    // 固定描画Y座標
+	static constexpr int   BlinkDurationFrames   = 50;     // 点滅表示時間
+	static constexpr int   BlinkIntervalFrames   = 5;      // 点滅切り替え間隔
+	static constexpr int   DisplayDurationFrames = 240;    // クリア表示時間
+}
+
+

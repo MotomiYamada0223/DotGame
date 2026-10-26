@@ -185,6 +185,7 @@
     <ClCompile Include="Source\UnitStatus.cpp" />
     <ClCompile Include="Source\WinResultScene.cpp" />
     <ClCompile Include="Source\FloorSpawner.cpp" />
+    <ClCompile Include="Source\StageClear.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Background.h" />
@@ -244,6 +245,7 @@
     <ClInclude Include="Source\Utility.h" />
     <ClInclude Include="Source\WinResultScene.h" />
     <ClInclude Include="Source\FloorSpawner.h" />
+    <ClInclude Include="Source\StageClear.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

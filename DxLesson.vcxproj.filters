@@ -19,7 +19,7 @@
     <Filter Include="ソース ファイル\Scene系">
       <UniqueIdentifier>{88c4395f-412d-4afa-8590-380052fef24d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ソース ファイル\Text関係">
+    <Filter Include="ソース ファイル\Text関俁E>
       <UniqueIdentifier>{de72453d-964a-4bc1-9a97-d3b8512c2a28}</UniqueIdentifier>
     </Filter>
     <Filter Include="ソース ファイル\Controller系">
@@ -31,7 +31,7 @@
     <Filter Include="ソース ファイル\Gimmick系">
       <UniqueIdentifier>{30629378-bfe3-4b0f-8dc5-b8f93369e038}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ソース ファイル\Map関係">
+    <Filter Include="ソース ファイル\Map関俁E>
       <UniqueIdentifier>{571b8c62-aa7d-4336-9f42-5e50d9ce1513}</UniqueIdentifier>
     </Filter>
     <Filter Include="ソース ファイル\Draw系">
@@ -79,10 +79,10 @@
       <Filter>ソース ファイル\Scene系</Filter>
     </ClCompile>
     <ClCompile Include="Source\TutorialTextManager.cpp">
-      <Filter>ソース ファイル\Text関係</Filter>
+      <Filter>ソース ファイル\Text関俁E/Filter>
     </ClCompile>
     <ClCompile Include="Source\StepLoader.cpp">
-      <Filter>ソース ファイル\Text関係</Filter>
+      <Filter>ソース ファイル\Text関俁E/Filter>
     </ClCompile>
     <ClCompile Include="Source\GameScene.cpp">
       <Filter>ソース ファイル\Scene系</Filter>
@@ -100,13 +100,13 @@
       <Filter>ソース ファイル\Manager系</Filter>
     </ClCompile>
     <ClCompile Include="Source\BlockMap.cpp">
-      <Filter>ソース ファイル\Map関係</Filter>
+      <Filter>ソース ファイル\Map関俁E/Filter>
     </ClCompile>
     <ClCompile Include="Source\CharacterPhysics.cpp">
-      <Filter>ソース ファイル\Map関係</Filter>
+      <Filter>ソース ファイル\Map関俁E/Filter>
     </ClCompile>
     <ClCompile Include="Source\BlockAction.cpp">
-      <Filter>ソース ファイル\Map関係</Filter>
+      <Filter>ソース ファイル\Map関俁E/Filter>
     </ClCompile>
     <ClCompile Include="Source\DeathController.cpp">
       <Filter>ソース ファイル\Controller系</Filter>
