@@ -45,7 +45,8 @@ public:
         Shaking,          // 3. 体を左右に小刻みに震わせる
         PreExplodePause,  // 4. 震えが止まり、爆発直前の一瞬の静寂
         Exploded,         // 5. スライムが爆発！全方位に液体弾射出＆画面揺れ＆衝撃波
-        Finished          // 6. 演出完了（一定時間経過後に削除）
+        WaitDroplets,     // 6. 液体弾が飛翔・スプラッシュ中（全消滅待ち）
+        Finished          // 7. 演出完了（削除）
     };
     enum class BeamPhase
     {
@@ -89,6 +90,7 @@ public:
     virtual bool HasCustomDeath() const override { return true; }
     virtual bool IsActiveTarget() const override { return (mState != KingSlimeState::Death); }
     void DrawHpBar() const;
+
 
     KingSlimeState GetState() const { return mState; }
     bool IsSpawnFinished() const { return mState != KingSlimeState::SpawnFalling && mState != KingSlimeState::SpawnLandingReverse; }
@@ -163,6 +165,7 @@ private:
     float mYellowHp;
     int mYellowDelayTimer;
     mutable bool mHpBarDrawnThisFrame;
+
     int mPrevHp;
 
     // 着地時スライム液体弾（ドロップレット）

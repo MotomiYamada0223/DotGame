@@ -44,6 +44,7 @@ void GameScene::Initialize()
 	// プレイヤーの生成
 	mpPlayer = new Player(VGet(ScreenSize::CenterX - 6000, 300, 0.0f));
 	mLoadData.LoadInitialize(Master::gCurrentStageIndex);
+	mStageClear.Reset();
 
 	MovingFloor::s_IsReverseAndDashTriggered = false;
 
@@ -75,16 +76,24 @@ void GameScene::Update()
 			mpPlayer->ResetBossIntroState();
 			mBlockMap.SetCameraLocked(false);
 			mBossIntro.Reset();
+			mStageClear.Reset();
 		}
 	}
 	oneKeyWasDown = oneKeyIsDown;
 
 
 
+	// ステージクリア演出中はカメラ固定を維持し、画面スクロールを抑止
+	if (mStageClear.IsActive())
+	{
+		mBlockMap.SetCameraLocked(true);
+	}
+
 	// チュートリアルテキストの更新
 	mpPlayer->PlayerMove(mBlockMap);
 	SetTextUpdate(); // テキスト更新の呼び出し
-	mBossIntro.Update(mpPlayer, mBlockMap); // ボス戦開始演出の更新
+	mBossIntro.Update(mpPlayer, mBlockMap);
+	mStageClear.Update(mpPlayer, &mBlockMap); // ステージクリア演出の更新
 	mSaint.Update(); // 天使の更新
 	mLoadData.LoadUpdate();
 
@@ -164,6 +173,7 @@ void GameScene::Draw()
 
 		// ボス演出の黒帯
 		mBossIntro.Draw();
+		mStageClear.Draw();
 
 		// デバッグ系
 		mpPlayer->DebugDraw(); // ブロックデバッグ

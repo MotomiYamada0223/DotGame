@@ -1,4 +1,5 @@
 ﻿#include "BossIntroDirector.h"
+#include "StageClear.h"
 #include "Player.h"
 #include "BossEnemySlime.h"
 #include "GameConstants.h"
@@ -244,6 +245,14 @@ void BossIntroDirector::Update(Player* player, BlockMap& blockMap)
 		if (mpBossSlime != nullptr && mpBossSlime->IsDeleteFlag())
 		{
 			mpBossSlime = nullptr;
+		}
+		// ボス撃破後、ステージクリア演出が終わるまではカメラ固定を維持する
+		if (StageClear::IsStageClearActive())
+		{
+			blockMap.SetCameraLocked(true);
+		}
+		else if (mpBossSlime == nullptr)
+		{
 			blockMap.SetCameraLocked(false);
 		}
 		break;

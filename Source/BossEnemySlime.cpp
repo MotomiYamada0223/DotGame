@@ -1,8 +1,14 @@
 ﻿#include "BossEnemySlime.h"
+#include "StageClear.h"
 #include "GameConstants.h"
 #include "Player.h"
 #include "BlockMap.h"
 #include "Collision.h"
+#include "Master.h"
+#include "GameManager.h"
+#include "SceneManager.h"
+#include "InputManager.h"
+#include "FontManager.h"
 #include <cmath>
 #include <algorithm>
 
@@ -491,8 +497,29 @@ void BossEnemySlime::Update()
         else if (mDeathPhase == DeathPhase::Exploded)
         {
             mPhaseTimer++;
-            if (mPhaseTimer >= KingSlimeDeathConstants::PostExplosionWaitFrames)
+            // 爆発エフェクト進行後、液体弾の消滅監視フェーズへ
+            if (mPhaseTimer >= 30)
             {
+                mDeathPhase = DeathPhase::WaitDroplets;
+                mPhaseTimer = 0;
+            }
+        }
+        else if (mDeathPhase == DeathPhase::WaitDroplets)
+        {
+            // 全ての液体弾が着地・消滅したか判定
+            bool anyDropletActive = false;
+            for (const auto& droplet : mSlimeDroplets)
+            {
+                if (droplet.isActive)
+                {
+                    anyDropletActive = true;
+                    break;
+                }
+            }
+            if (!anyDropletActive)
+            {
+                // 全ての液体弾が消滅！ステージクリア演出をトリガーし、ボスの死亡完了
+                StageClear::Trigger();
                 mDeathPhase = DeathPhase::Finished;
                 SetDeleteFlag(true);
             }
@@ -1162,6 +1189,8 @@ void BossEnemySlime::Draw()
         {
             DrawHpBar();
         }
+
+        
     }
     else
     {
@@ -1606,7 +1635,7 @@ void BossEnemySlime::DrawHpBar() const
 
     // 登場演出の黒帯が消えて戦闘開始するまでは非表示
     if (!mIsBattleActive) return;
-    if (mState == KingSlimeState::Death && mDeathPhase == DeathPhase::Finished) return;
+    if (mState == KingSlimeState::Death && (mDeathPhase == DeathPhase::Finished)) return;
 
     // バーの配置座標とサイズ（フェードやスムージングなしでそのまま表示）
     const int totalWidth = KingSlimeHpBarConstants::Width;

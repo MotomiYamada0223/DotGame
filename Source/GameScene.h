@@ -1,15 +1,16 @@
-#pragma once
+ï»¿#pragma once
 #include "Scene.h"
 #include "TutorialTextManager.h"
 #include "Background.h"
 #include "DrawFrame.h"
 #include "Saint.h"
 #include "BossIntroDirector.h"
+#include "StageClear.h"
 #include "CircleFade.h"
 #include "LeafCutter.h"
 #include "GameLoadData.h"
 
-// ‘O•ûéŒ¾
+// å‰æ–¹å®£è¨€
 class Player;
 class CircleFade;
 
@@ -27,7 +28,7 @@ public:
 	virtual void Draw() override;
 	virtual void Finalize() override;
 
-	void SetTextUpdate(); // ƒ`ƒ…[ƒgƒŠƒAƒ‹ƒeƒLƒXƒg‚ÌXV
+	void SetTextUpdate(); // ãƒãƒ¥ãƒ¼ãƒˆãƒªã‚¢ãƒ«ãƒ†ã‚­ã‚¹ãƒˆã®æ›´æ–°
 
 
 private:
@@ -39,16 +40,17 @@ private:
 	CircleFade mCircleFade;
 	LeafCutter mLeaf;
 
-	GameProgress mProgress; // ƒvƒŒƒCƒ„[‚ÌÀ•W‚ğQÆ‚·‚é‚½‚ß‚É•Û
+	GameProgress mProgress; // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®åº§æ¨™ã‚’å‚ç…§ã™ã‚‹ãŸã‚ã«ä¿æŒ
 	BlockMap mBlockMap;
-	Background mBackground; // ƒXƒNƒ[ƒ‹”wŒi
-	DrawFrame mDrawFrame; //  “Vg‚ÌƒtƒŒ[ƒ€•`‰æ—p
-	Saint mSaint; // “Vg‚ÌƒLƒƒƒ‰ƒNƒ^[‰æ‘œ
-	BossIntroDirector mBossIntro; // ƒ{ƒXíŠJn‰‰oƒfƒBƒŒƒNƒ^[
+	Background mBackground; // ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«èƒŒæ™¯
+	DrawFrame mDrawFrame; //  å¤©ä½¿ã®ãƒ•ãƒ¬ãƒ¼ãƒ æç”»ç”¨
+	Saint mSaint; // å¤©ä½¿ã®ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ç”»åƒ
+	BossIntroDirector mBossIntro;
+	StageClear mStageClear; // ãƒœã‚¹æˆ¦é–‹å§‹æ¼”å‡ºãƒ‡ã‚£ãƒ¬ã‚¯ã‚¿ãƒ¼
 
-	bool mbIsLoaded = false; // ƒ}ƒbƒv‚ªƒ[ƒh‚³‚ê‚½‚©‚Ç‚¤‚©‚Ìƒtƒ‰ƒO
-	bool mbWasPlayerDead = false; // ‘OƒtƒŒ[ƒ€‚ÌƒvƒŒƒCƒ„[‚Ì€–Só‘Ô‚ğ•Û‚·‚éƒtƒ‰ƒO
+	bool mbIsLoaded = false; // ãƒãƒƒãƒ—ãŒãƒ­ãƒ¼ãƒ‰ã•ã‚ŒãŸã‹ã©ã†ã‹ã®ãƒ•ãƒ©ã‚°
+	bool mbWasPlayerDead = false; // å‰ãƒ•ãƒ¬ãƒ¼ãƒ ã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®æ­»äº¡çŠ¶æ…‹ã‚’ä¿æŒã™ã‚‹ãƒ•ãƒ©ã‚°
 
-	// ‰~‚Ì•`‰æ
+	// å††ã®æç”»
 	bool mbCircleFlag;
 };
