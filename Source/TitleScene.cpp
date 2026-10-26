@@ -71,7 +71,7 @@ void TitleScene::UpdateSelectString()
 		mnSelectIndex--;
 		if (mnSelectIndex < 0)
 		{
-			mnSelectIndex = MAX_SELECT;
+			mnSelectIndex = MAX_SELECT-1;
 		}
 	}
 	if (InputManager::CheckDownKey(KEY_INPUT_S) || InputManager::CheckDownKey(KEY_INPUT_DOWN))
