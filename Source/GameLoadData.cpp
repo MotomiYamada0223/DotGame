@@ -69,7 +69,7 @@ void GameLoadData::StageForest()
 	{
 		return;
 	}
-	mBackground.Load(ScrollGraphPath::Stage1);
+	mBackground.Load(ScrollGraphPath::StageForest);
 
 
 	// フェイント床の配置（4つの足場の一番下のところ）
@@ -151,7 +151,7 @@ void GameLoadData::StageCave()
 	{
 		return;
 	}
-	mBackground.Load(ScrollGraphPath::Stage1);
+	mBackground.Load(ScrollGraphPath::StageCave);
 
 	// 敵の生成
 	if (mpPlayer != nullptr)
