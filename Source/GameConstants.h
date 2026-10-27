@@ -53,6 +53,12 @@ namespace UIGraphController
 	static constexpr float LifeScale = 4.5f; // ハートの拡大率
 }
 
+namespace MovingFloorConstants
+{
+	// 配置位置から上下どちらへこの距離（px）以上離れたら破棄する
+	constexpr float DestroyDistanceY = 1000.0f;
+}
+
 
 // 天使の位置
 namespace SainController

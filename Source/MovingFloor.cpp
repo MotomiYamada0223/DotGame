@@ -157,10 +157,14 @@ void MovingFloor::Move()
     else if (mPattern == MovePattern::OneWayDestroy) {
         // 一方向移動
         nextPos = VAdd(prevPos, currentVelocity);
-        
-        // X座標による消滅判定は除外し、Y座標が画面の上下200ピクセル外に出たら破棄する
-        if (nextPos.y < -MovingFloorConstants::DestroyMarginY || nextPos.y > ScreenSize::ScrrenHeight + MovingFloorConstants::DestroyMarginY) {
+
+        // 配置位置（mStartPos）から上下どちらへでも一定距離離れたら破棄する
+        // 乗ると向きが反転するため、Y座標の符号ではなく距離の絶対値で判定する
+        const float distanceY = std::fabs(nextPos.y - mStartPos.y);
+        if (distanceY >= MovingFloorConstants::DestroyDistanceY) {
             SetDeleteFlag(true);
+            mIsPlayerRiding = false; // 削除される床にプレイヤーを追従させない
+            return;                  // このframeは床もプレイヤーも動かさない
         }
     }
 

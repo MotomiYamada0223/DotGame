@@ -74,18 +74,18 @@ void GameLoadData::StageForest()
 
 	// フェイント床の配置（4つの足場の一番下のところ）
 	new FeintFloor(
-		VGet(4920.0f, 625.0f, 0.0f),
+		VGet(4920.0f, 1685.0f, 0.0f),
 		mpPlayer,
 		&mBlockMap
 	);
 
 	// 隠しブロックの生成
-	new HiddenBlock(VGet(3100, 100.0f, 0.0f), &mBlockMap);
+	new HiddenBlock(VGet(3100, 1200.0f, 0.0f), &mBlockMap);
 
 
 	// 上から下へ無限に降ってくる足場のスポナーを配置
 	new FloorSpawner(
-		VGet(6300.0f, 1180.0f, 0.0f),
+		VGet(6300.0f, 2250.0f, 0.0f),
 		VGet(0.0f, -3.0f, 0.0f),
 		120,
 		mpPlayer,
@@ -95,7 +95,7 @@ void GameLoadData::StageForest()
 	);
 
 	new FloorSpawner(
-		VGet(6575.0f, -100.0f, 0.0f),
+		VGet(6575.0f, 1170.0f, 0.0f),
 		VGet(0.0f, 3.0f, 0.0f),
 		120,
 		mpPlayer,
@@ -105,7 +105,7 @@ void GameLoadData::StageForest()
 	);
 
 	new FloorSpawner(
-		VGet(6850.0f, 1180.0f, 0.0f),
+		VGet(6850.0f, 2250.0f, 0.0f),
 		VGet(0.0f, -3.0f, 0.0f),
 		120,
 		mpPlayer,
@@ -117,7 +117,7 @@ void GameLoadData::StageForest()
 
 	// 左右に往復する基本の動く床
 	MovingFloor* floor1 = new MovingFloor(
-		VGet(900.0f, 200.0f, 0.0f), VGet(1800.0f, 200.0f, 0.0f),
+		VGet(900.0f, 1270.0f, 0.0f), VGet(1800.0f, 1270.0f, 0.0f),
 		2.0f, MovePattern::Loop, FloorFeature::SpeedUpOnRide, mpPlayer, &mBlockMap
 	);
 
@@ -129,8 +129,8 @@ void GameLoadData::StageForest()
 		slime->UpdateStatusByProgress(mProgress);
 
 		// トラップのテスト配置 (スライムと同じY座標 300 付近に配置)
-		new NeedleTrap(VGet(500.0f, 450.0f, 0.0f), TrapType::PopUp);
-		new NeedleTrap(VGet(1500.0f, 400.0f, 0.0f), TrapType::AntiJump);
+		new NeedleTrap(VGet(500.0f, 1520.0f, 0.0f), TrapType::PopUp);
+		new NeedleTrap(VGet(1500.0f, 1470.0f, 0.0f), TrapType::AntiJump);
 	}
 }
 
