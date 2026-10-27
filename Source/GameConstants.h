@@ -127,8 +127,8 @@ namespace BlockMapGraphPath
 {
 
 	// 1-1ステージ　始まりの森
-	static const char* TestBackground = "Resource/Map/ForestMap.png";
-	static const char* TestCollision = "Resource/Map/ForestMapCollision.png";
+	static const char* ForestMap = "Resource/Map/ForestMap.png";
+	static const char* ForestMapCollision = "Resource/Map/ForestMapCollision.png";
 
 	// 1-2ステージ 洞窟
 	static const char* CaveMap = "Resource/Map/CaveMap.png";

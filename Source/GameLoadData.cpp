@@ -63,8 +63,8 @@ void GameLoadData::StageForest()
 
 	// ”wŒi‰æ‘œ‚Æ“–‚½‚è”»’è‰æ‘œ‚ğ“Ç‚İ‚Ş
 	if (!mBlockMap.Load(
-		BlockMapGraphPath::TestBackground,
-		BlockMapGraphPath::TestCollision
+		BlockMapGraphPath::ForestMap,
+		BlockMapGraphPath::ForestMapCollision
 	))
 	{
 		return;
