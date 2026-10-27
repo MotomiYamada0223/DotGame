@@ -158,6 +158,9 @@ void GameScene::Draw()
 
 		Scene::Draw();
 
+		// ステージ（ブロックマップ）の背面に突き刺さるタイトルロゴを描画
+		mStageClear.DrawBehindStage(&mBlockMap);
+
 		mBlockMap.Draw(); // ブロックマップの描画
 		mLeaf.LeafDraw(mBlockMap); // 落下してくる葉の描画
 

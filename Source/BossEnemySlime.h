@@ -11,11 +11,11 @@ enum class KingSlimeState
     SpawnFalling,        // 出現：空からの急降下
     SpawnLandingReverse, // 出現：着地時のジャンプ逆再生
     Idle,                // 待機モーション
-    Move,                // 移動（今後実装）
+    Move,                // 移動
     JumpAttack,          // ジャンプ攻撃
     BeamAttack,          // ビーム攻撃
-    Tackle,              // 体当たり（今後実装）
-    Death                // 死亡（今後実装）
+    Tackle,              // 体当たり
+    Death                // 死亡
 };
 
 class BossEnemySlime : public Enemy, public UnitStatus
@@ -30,31 +30,31 @@ public:
 
     enum class JumpPhase
     {
-        Prepare,        // 地上でのジャンプモーション再生（1〜6枚目）
-        Ascending,      // 上空へ飛び上がる
-        Warning,        // 着地予測の赤警告表示
-        WarningFadeOut, // 赤警告のフェードアウト
-        Falling,        // 急降下
-        LandingReverse  // 着地時のジャンプ逆再生（6〜1枚目）
+        Prepare,        // モーション再生
+        Ascending,      
+        Warning,        // 警告表示
+        WarningFadeOut, 
+        Falling,        
+        LandingReverse  
     };
 
     enum class DeathPhase
     {
-        PlayingAnimation, // 1. kingSlime_death.png アニメーション再生（1〜8枚目）
-        PostAnimPause,    // 2. 最後のコマ（8枚目）で少しの間ストップ
-        Shaking,          // 3. 体を左右に小刻みに震わせる
-        PreExplodePause,  // 4. 震えが止まり、爆発直前の一瞬の静寂
-        Exploded,         // 5. スライムが爆発！全方位に液体弾射出＆画面揺れ＆衝撃波
-        WaitDroplets,     // 6. 液体弾が飛翔・スプラッシュ中（全消滅待ち）
-        Finished          // 7. 演出完了（削除）
+        PlayingAnimation, 
+        PostAnimPause,    
+        Shaking,          
+        PreExplodePause,  
+        Exploded,         
+        WaitDroplets,     
+        Finished          
     };
     enum class BeamPhase
     {
-        OpenToCharge,   // 1〜3枚目まで再生して口を開ける
-        Charging,       // 3枚目で一時停止し、水色の玉に小玉を吸引＋予告ライン表示
-        Converging,     // 4〜9枚目を再生しながら玉を一点へ収束させる攻撃直前演出
-        Firing,         // 10〜11枚目を再生し11枚目で停止、端まで貫通するレーザー照射
-        Recovery        // 12〜13枚目を再生して待機へ戻る
+        OpenToCharge,   // 1〜3枚目まで再生
+        Charging,       // 3枚目で一時停止
+        Converging,     // 4〜9枚目を再生
+        Firing,         // 10〜11枚目を再生し11枚目で停止
+        Recovery        // 12〜13枚目を再生
     };
 
     struct ChargeParticle
@@ -115,7 +115,6 @@ private:
 
     void DrawJumpWarning(float screenX, float screenY, float fadeAlphaRatio) const;
     void DrawBeamEffect(float mouthScreenX, float mouthScreenY) const;
-    void DrawTackleDebug() const;
     void SpawnLandingDroplets(const BlockMap& blockMap);
     void SpawnDeathExplosionDroplets();
     void StartDeathSequence();

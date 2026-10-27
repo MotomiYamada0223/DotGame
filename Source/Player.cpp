@@ -70,6 +70,7 @@ Player::~Player()
 void Player::UpdateStatusByProgress(GameProgress progress)
 {
 	// なぜそうしたか・何のための処理か（意図）: 進行度ごとのパラメータ設定を明確に分離し、マジックナンバーの散逸を防ぐため
+	mGameProgress = progress;
 	switch (progress)
 	{
 	case GameProgress::Tutorial1:
@@ -79,7 +80,7 @@ void Player::UpdateStatusByProgress(GameProgress progress)
 		break;
 	case GameProgress::PostTutorial1:
 	case GameProgress::Tutorial2:
-		mMaxHp = 30; mHp = 30;
+		mMaxHp = 3000; mHp = 3000;
 		mAttack = 15; mDefense = 15; mMagic = 15;
 		mIsBlinkWallDeathImmune = true;
 		break;
@@ -624,6 +625,26 @@ void Player::Update()
 	}
 
 	Object2D::Update();
+}
+
+void Player::TakeBulletDamage(int damage)
+{
+	TakeDamage(damage);
+	isHitDamage = true;
+
+	if (mHp <= 0 && !isDead)
+	{
+		isDead = true;
+		mfCurrentSpeed = 0;
+		Master::gPlayerLive -= 1;
+
+		const int stageIndex = Master::gCurrentStageIndex;
+		if (stageIndex >= 0 && stageIndex < Master::MaxStageCount)
+		{
+			Master::gDeathCounts[stageIndex]++;
+			Master::gTotalDeathCounts[stageIndex]++;
+		}
+	}
 }
 
 // GameScereで呼び出し

@@ -55,4 +55,8 @@ public:
     // ゲッター関係
 public:
     int GetHp() const { return mHp; }
+    GameProgress GetGameProgress() const { return mGameProgress; }
+
+protected:
+    GameProgress mGameProgress;
 };
