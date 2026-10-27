@@ -18,6 +18,7 @@ UnitStatus::UnitStatus()
     , mIgnoresInvincibility(false)
     , mIsGiantInvincible(false)
     , mUseCounterTeleport(false)
+    , mGameProgress(GameProgress::Tutorial1)
 {
 }
 
@@ -27,7 +28,7 @@ UnitStatus::~UnitStatus()
 
 void UnitStatus::UpdateStatusByProgress(GameProgress progress)
 {
-    // 基底クラスでは何もしない。派生クラスでオーバーライドする
+    mGameProgress = progress;
 }
 
 // 敵との判定で使用するダメージ処理

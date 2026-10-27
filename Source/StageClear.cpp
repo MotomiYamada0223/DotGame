@@ -17,7 +17,7 @@ StageClear* StageClear::sInstance = nullptr;
 StageClear::StageClear()
 	: mState(State::Inactive)
 	, mTimer(0)
-	, mBurstTimer(0)
+	, mBurstTimer(-1)
 	, mCrackerGraph(-1)
 	, mAimedCrackerIndex(0)
 	, mAimLocked(false)
@@ -29,10 +29,25 @@ StageClear::StageClear()
 	, mbLogoLanded(false)
 	, mLogoImpactTimer(0)
 	, mLogoReboundOffset(0.0f)
+	, mpBlockMap(nullptr)
 {
 	sInstance = this;
 	mCrackerGraph = LoadGraph("Resource/Image/Cracker.png");
 	mnLogoHandle = LoadGraph(BackGroundGraphPath::TitleLogoGraphs.c_str());
+
+	for (int i = 0; i < StageClearConstants::FlashFrameCount; i++)
+	{
+		mFlashGraphs[i] = -1;
+	}
+	LoadDivGraph(
+		"Resource/Image/Flash.png",
+		StageClearConstants::FlashFrameCount,
+		StageClearConstants::FlashFrameCount,
+		1,
+		StageClearConstants::FlashFrameWidth,
+		StageClearConstants::FlashFrameHeight,
+		mFlashGraphs
+	);
 }
 
 StageClear::~StageClear()
@@ -47,6 +62,14 @@ StageClear::~StageClear()
 		DeleteGraph(mnLogoHandle);
 		mnLogoHandle = -1;
 	}
+	for (int i = 0; i < StageClearConstants::FlashFrameCount; i++)
+	{
+		if (mFlashGraphs[i] != -1)
+		{
+			DeleteGraph(mFlashGraphs[i]);
+			mFlashGraphs[i] = -1;
+		}
+	}
 	if (sInstance == this)
 	{
 		sInstance = nullptr;
@@ -59,7 +82,7 @@ void StageClear::Start()
 	{
 		mState = State::PreCrackerDelay;
 		mTimer = 0;
-		mBurstTimer = 0;
+		mBurstTimer = -1;
 		mAimedCrackerIndex = GetRand(5); // 0〜5からランダムで1基を狙撃手に選出
 		mAimLocked = false;
 		InitCrackers();
@@ -74,7 +97,7 @@ void StageClear::Reset()
 {
 	mState = State::Inactive;
 	mTimer = 0;
-	mBurstTimer = 0;
+	mBurstTimer = -1;
 	mAimedCrackerIndex = 0;
 	mAimLocked = false;
 	mCrackers.clear();
@@ -86,6 +109,7 @@ void StageClear::Reset()
 	mbLogoLanded = false;
 	mLogoImpactTimer = 0;
 	mLogoReboundOffset = 0.0f;
+	mpBlockMap = nullptr;
 }
 
 void StageClear::InitCrackers()
@@ -95,42 +119,38 @@ void StageClear::InitCrackers()
 
 	const float kPi = 3.14159265f;
 
-	// 左側 3基
-	// 上段: やや浅い角度
+	// 左側 3基（上空へ綺麗な扇状に配置：-28度, -45度, -62度）
+	// 通常画像は-45度を向いているため、描画角度 angle = shootAngleRad + 45度
 	mCrackers[0] = { StageClearConstants::CrackerLeftStartX, StageClearConstants::CrackerPosYTop,
 		StageClearConstants::CrackerLeftStartX, StageClearConstants::CrackerLeftTargetX, StageClearConstants::CrackerPosYTop,
-		33.0f * kPi / 180.0f, -33.0f * kPi / 180.0f, false, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f };
+		(-28.0f + 45.0f) * kPi / 180.0f, -28.0f * kPi / 180.0f, false, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f };
 
-	// 中段: 基準 45度
 	mCrackers[1] = { StageClearConstants::CrackerLeftStartX, StageClearConstants::CrackerPosYMid,
 		StageClearConstants::CrackerLeftStartX, StageClearConstants::CrackerLeftTargetX, StageClearConstants::CrackerPosYMid,
-		45.0f * kPi / 180.0f, -45.0f * kPi / 180.0f, false, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f };
+		(-45.0f + 45.0f) * kPi / 180.0f, -45.0f * kPi / 180.0f, false, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f };
 
-	// 下段: やや急な角度（空高く打ち上げる）
 	mCrackers[2] = { StageClearConstants::CrackerLeftStartX, StageClearConstants::CrackerPosYBottom,
 		StageClearConstants::CrackerLeftStartX, StageClearConstants::CrackerLeftTargetX, StageClearConstants::CrackerPosYBottom,
-		58.0f * kPi / 180.0f, -58.0f * kPi / 180.0f, false, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f };
+		(-62.0f + 45.0f) * kPi / 180.0f, -62.0f * kPi / 180.0f, false, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f };
 
-	// 右側 3基
-	// 上段
+	// 右側 3基（左右対称に上空へ扇状に配置：-152度, -135度, -118度）
+	// 水平反転(TurnFlag=TRUE)画像は-135度を向くため、描画角度 angle = shootAngleRad + 135度
 	mCrackers[3] = { StageClearConstants::CrackerRightStartX, StageClearConstants::CrackerPosYTop,
 		StageClearConstants::CrackerRightStartX, StageClearConstants::CrackerRightTargetX, StageClearConstants::CrackerPosYTop,
-		-33.0f * kPi / 180.0f, -147.0f * kPi / 180.0f, true, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f };
+		(-152.0f + 135.0f) * kPi / 180.0f, -152.0f * kPi / 180.0f, true, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f };
 
-	// 中段
 	mCrackers[4] = { StageClearConstants::CrackerRightStartX, StageClearConstants::CrackerPosYMid,
 		StageClearConstants::CrackerRightStartX, StageClearConstants::CrackerRightTargetX, StageClearConstants::CrackerPosYMid,
-		-45.0f * kPi / 180.0f, -135.0f * kPi / 180.0f, true, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f };
+		(-135.0f + 135.0f) * kPi / 180.0f, -135.0f * kPi / 180.0f, true, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f };
 
-	// 下段
 	mCrackers[5] = { StageClearConstants::CrackerRightStartX, StageClearConstants::CrackerPosYBottom,
 		StageClearConstants::CrackerRightStartX, StageClearConstants::CrackerRightTargetX, StageClearConstants::CrackerPosYBottom,
-		-58.0f * kPi / 180.0f, -122.0f * kPi / 180.0f, true, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f };
+		(-118.0f + 135.0f) * kPi / 180.0f, -118.0f * kPi / 180.0f, true, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f };
 
 	for (auto& c : mCrackers)
 	{
-		c.mouthX = c.x + 68.0f * std::cos(c.shootAngleRad);
-		c.mouthY = c.y + 68.0f * std::sin(c.shootAngleRad);
+		c.mouthX = c.x + 125.0f * std::cos(c.shootAngleRad);
+		c.mouthY = c.y + 125.0f * std::sin(c.shootAngleRad);
 	}
 }
 
@@ -158,15 +178,15 @@ void StageClear::TrackPlayerWithCracker(int crackerIdx, Player* player, BlockMap
 
 	if (!c.isRightSide)
 	{
-		c.angle = targetShootAngle + (kPi * 0.25f);
+		c.angle = targetShootAngle + (45.0f * kPi / 180.0f);
 	}
 	else
 	{
-		c.angle = targetShootAngle + (kPi * 0.75f);
+		c.angle = targetShootAngle + (135.0f * kPi / 180.0f);
 	}
 
-	c.mouthX = c.x + 68.0f * std::cos(c.shootAngleRad);
-	c.mouthY = c.y + 68.0f * std::sin(c.shootAngleRad);
+	c.mouthX = c.x + 125.0f * std::cos(c.shootAngleRad);
+	c.mouthY = c.y + 125.0f * std::sin(c.shootAngleRad);
 }
 
 void StageClear::BurstCrackers()
@@ -297,8 +317,8 @@ void StageClear::UpdateCrackers()
 		{
 			c.x = c.startX + (c.targetX - c.startX) * ease;
 			c.y = c.targetY;
-			c.mouthX = c.x + 68.0f * std::cos(c.shootAngleRad);
-			c.mouthY = c.y + 68.0f * std::sin(c.shootAngleRad);
+			c.mouthX = c.x + 125.0f * std::cos(c.shootAngleRad);
+			c.mouthY = c.y + 125.0f * std::sin(c.shootAngleRad);
 		}
 	}
 	else
@@ -309,8 +329,8 @@ void StageClear::UpdateCrackers()
 			c.squishScaleX += (1.0f - c.squishScaleX) * 0.20f;
 			c.squishScaleY += (1.0f - c.squishScaleY) * 0.20f;
 
-			c.mouthX = c.x + 68.0f * std::cos(c.shootAngleRad);
-			c.mouthY = c.y + 68.0f * std::sin(c.shootAngleRad);
+			c.mouthX = c.x + 125.0f * std::cos(c.shootAngleRad);
+			c.mouthY = c.y + 125.0f * std::sin(c.shootAngleRad);
 		}
 	}
 }
@@ -374,11 +394,21 @@ void StageClear::UpdateBullets(Player* player, BlockMap* pBlockMap)
 			float hitRadius = b.radius * 0.85f;
 			if ((dx * dx + dy * dy) <= (hitRadius * hitRadius))
 			{
-				player->SetDeathReason(DeathReason::DeathType::EnemyHit);
-				player->TakeDamage(player->GetHp());
 				b.isActive = false;
-				mState = State::Inactive;
-				return;
+
+				// PostTutorial1およびTutorial2の時は10ダメージ、それ以外は即死
+				GameProgress prog = player->GetGameProgress();
+				bool isTenDmg = (prog == GameProgress::PostTutorial1 || prog == GameProgress::Tutorial2);
+				int dmg = isTenDmg ? StageClearConstants::BulletDamagePostTutorial : player->GetHp();
+
+				player->SetDeathReason(DeathReason::DeathType::EnemyHit);
+				player->TakeBulletDamage(dmg);
+
+				if (player->GetHp() <= 0 || player->GetIsDead())
+				{
+					mState = State::Inactive;
+					return;
+				}
 			}
 		}
 
@@ -396,6 +426,7 @@ void StageClear::InitLogo()
 	mbLogoLanded = false;
 	mLogoImpactTimer = 0;
 	mLogoReboundOffset = 0.0f;
+	mpBlockMap = nullptr;
 	mImpactDusts.clear();
 
 	int textWidth = 840;
@@ -411,11 +442,13 @@ void StageClear::InitLogo()
 
 	mLogoScale = static_cast<float>(textWidth) / 611.0f;
 
-	float hw = (611.0f * mLogoScale) * 0.5f;
-	float hh = (334.0f * mLogoScale) * 0.5f;
 	float sinA = std::sin(StageClearConstants::LogoTiltAngleRad);
 	float cosA = std::cos(StageClearConstants::LogoTiltAngleRad);
-	float tipRelY = (-hw) * sinA + (hh) * cosA;
+
+	// 画像内の可視先端（非透明ピクセル px=42, py=209）を基点として接地目標を計算
+	float rx = (42.0f - 305.5f) * mLogoScale;
+	float ry = (209.0f - 167.0f) * mLogoScale;
+	float tipRelY = rx * sinA + ry * cosA;
 
 	float targetTipY = StageClearConstants::LogoGroundY + StageClearConstants::LogoEmbedDepth;
 	mLogoTargetY = targetTipY - tipRelY;
@@ -467,6 +500,10 @@ void StageClear::UpdateImpactDust()
 
 void StageClear::DrawImpactDust() const
 {
+	const BlockMap* blockMap = mpBlockMap;
+	int shakeX = (blockMap != nullptr) ? blockMap->GetShakeOffsetX() : 0;
+	int shakeY = (blockMap != nullptr) ? blockMap->GetShakeOffsetY() : 0;
+
 	for (const auto& d : mImpactDusts)
 	{
 		if (!d.isActive) continue;
@@ -475,18 +512,15 @@ void StageClear::DrawImpactDust() const
 		int alpha = static_cast<int>(static_cast<float>(d.alpha) * (1.0f - progress));
 
 		SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
-		DrawCircleAA(d.x, d.y, d.size, 16, GetColor(200, 185, 165), TRUE);
+		DrawCircleAA(d.x - shakeX, d.y - shakeY, d.size, 16, GetColor(200, 185, 165), TRUE);
 	}
 	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 }
 
 void StageClear::UpdateLogo(Player* player, BlockMap* pBlockMap)
 {
-	float hw = (611.0f * mLogoScale) * 0.5f;
-	float hh = (334.0f * mLogoScale) * 0.5f;
 	float sinA = std::sin(StageClearConstants::LogoTiltAngleRad);
 	float cosA = std::cos(StageClearConstants::LogoTiltAngleRad);
-	float tipRelY = (-hw) * sinA + (hh) * cosA;
 
 	if (!mbLogoLanded)
 	{
@@ -501,6 +535,7 @@ void StageClear::UpdateLogo(Player* player, BlockMap* pBlockMap)
 		float scrollY = (pBlockMap != nullptr) ? static_cast<float>(pBlockMap->GetScrollY()) : 0.0f;
 
 		// プレイヤー押し潰し判定（案B: 即死トラップ）
+		// 画像の透明余白を除外し、狭く適正化した当たり判定（幅480px, 高320px）で判定
 		if (player != nullptr && !player->GetIsDead())
 		{
 			float pScreenX = player->GetPosition().x - scrollX;
@@ -508,10 +543,10 @@ void StageClear::UpdateLogo(Player* player, BlockMap* pBlockMap)
 			float halfW = player->GetPlayerWidth() * 0.40f;
 			float halfH = player->GetPlayerHeight() * 0.45f;
 
-			float logoLeft = ScreenSize::CenterX - 380.0f;
-			float logoRight = ScreenSize::CenterX + 380.0f;
-			float logoBottom = mLogoY + tipRelY;
-			float logoTop = mLogoY - tipRelY;
+			float logoLeft = ScreenSize::CenterX - StageClearConstants::LogoHitboxHalfWidth;
+			float logoRight = ScreenSize::CenterX + StageClearConstants::LogoHitboxHalfWidth;
+			float logoBottom = mLogoY + StageClearConstants::LogoHitboxHalfHeight;
+			float logoTop = mLogoY - StageClearConstants::LogoHitboxHalfHeight;
 
 			bool xOverlap = (pScreenX + halfW >= logoLeft) && (pScreenX - halfW <= logoRight);
 			bool yOverlap = (pScreenY + halfH >= logoTop) && (pScreenY - halfH <= logoBottom);
@@ -542,7 +577,10 @@ void StageClear::UpdateLogo(Player* player, BlockMap* pBlockMap)
 				);
 			}
 
-			float tipRelX = (-hw) * cosA - (hh) * sinA;
+			// 可視先端の着地点に土煙エフェクトを発生
+			float rx = (42.0f - 305.5f) * mLogoScale;
+			float ry = (209.0f - 167.0f) * mLogoScale;
+			float tipRelX = rx * cosA - ry * sinA;
 			SpawnImpactDust(ScreenSize::CenterX + tipRelX, StageClearConstants::LogoGroundY);
 		}
 	}
@@ -558,50 +596,74 @@ void StageClear::UpdateLogo(Player* player, BlockMap* pBlockMap)
 		else
 		{
 			mLogoReboundOffset = 0.0f;
+	mpBlockMap = nullptr;
 		}
 	}
 }
 
-void StageClear::DrawLogo() const
+void StageClear::DrawBehindStage(const BlockMap* pBlockMap) const
+{
+	if (mState == State::Inactive)
+	{
+		return;
+	}
+
+	// ステージ（ブロックマップ）の背面に突き刺さるロゴ本体を描画
+	DrawLogo(pBlockMap);
+}
+
+void StageClear::DrawLogo(const BlockMap* pBlockMap) const
 {
 	if (mnLogoHandle == -1) return;
 	if (mLogoY < -550.0f) return;
 
+	const BlockMap* blockMap = (pBlockMap != nullptr) ? pBlockMap : mpBlockMap;
+	int shakeX = (blockMap != nullptr) ? blockMap->GetShakeOffsetX() : 0;
+	int shakeY = (blockMap != nullptr) ? blockMap->GetShakeOffsetY() : 0;
+
 	float currentY = mLogoY + mLogoReboundOffset;
 	DrawRotaGraph(
-		ScreenSize::CenterX,
-		static_cast<int>(currentY),
+		ScreenSize::CenterX - shakeX,
+		static_cast<int>(currentY - shakeY),
 		mLogoScale,
 		StageClearConstants::LogoTiltAngleRad,
 		mnLogoHandle,
 		TRUE
 	);
-
-	if (mbLogoLanded)
-	{
-		float hw = (611.0f * mLogoScale) * 0.5f;
-		float hh = (334.0f * mLogoScale) * 0.5f;
-		float sinA = std::sin(StageClearConstants::LogoTiltAngleRad);
-		float cosA = std::cos(StageClearConstants::LogoTiltAngleRad);
-		float tipRelX = (-hw) * cosA - (hh) * sinA;
-
-		int tipX = static_cast<int>(ScreenSize::CenterX + tipRelX);
-		int groundY = static_cast<int>(StageClearConstants::LogoGroundY);
-
-		DrawLine(tipX - 35, groundY + 4, tipX - 5, groundY + 1, GetColor(35, 30, 25), 3);
-		DrawLine(tipX - 5, groundY + 1, tipX + 25, groundY + 5, GetColor(35, 30, 25), 3);
-		DrawLine(tipX - 12, groundY + 2, tipX - 20, groundY + 12, GetColor(45, 38, 30), 2);
-		DrawLine(tipX + 10, groundY + 3, tipX + 18, groundY + 10, GetColor(45, 38, 30), 2);
-
-		DrawCircle(tipX - 8, groundY + 2, 7, GetColor(80, 70, 55), TRUE);
-		DrawCircle(tipX + 6, groundY + 3, 8, GetColor(70, 60, 48), TRUE);
-		DrawCircle(tipX - 2, groundY + 1, 6, GetColor(95, 82, 65), TRUE);
-		DrawCircle(tipX + 14, groundY + 4, 5, GetColor(60, 50, 40), TRUE);
-	}
 }
 
+void StageClear::DrawLogoGroundImpact(const BlockMap* pBlockMap) const
+{
+	if (!mbLogoLanded) return;
+
+	const BlockMap* blockMap = (pBlockMap != nullptr) ? pBlockMap : mpBlockMap;
+	int shakeX = (blockMap != nullptr) ? blockMap->GetShakeOffsetX() : 0;
+	int shakeY = (blockMap != nullptr) ? blockMap->GetShakeOffsetY() : 0;
+
+	float sinA = std::sin(StageClearConstants::LogoTiltAngleRad);
+	float cosA = std::cos(StageClearConstants::LogoTiltAngleRad);
+	float rx = (42.0f - 305.5f) * mLogoScale;
+	float ry = (209.0f - 167.0f) * mLogoScale;
+	float tipRelX = rx * cosA - ry * sinA;
+
+	int tipX = static_cast<int>(ScreenSize::CenterX + tipRelX - shakeX);
+	int groundY = static_cast<int>(StageClearConstants::LogoGroundY - shakeY);
+
+	// 地面表面のひび割れ描画
+	DrawLine(tipX - 35, groundY + 4, tipX - 5, groundY + 1, GetColor(35, 30, 25), 3);
+	DrawLine(tipX - 5, groundY + 1, tipX + 25, groundY + 5, GetColor(35, 30, 25), 3);
+	DrawLine(tipX - 12, groundY + 2, tipX - 20, groundY + 12, GetColor(45, 38, 30), 2);
+	DrawLine(tipX + 10, groundY + 3, tipX + 18, groundY + 10, GetColor(45, 38, 30), 2);
+
+	// 飛び散った石・土塊の描画
+	DrawCircle(tipX - 8, groundY + 2, 7, GetColor(80, 70, 55), TRUE);
+	DrawCircle(tipX + 6, groundY + 3, 8, GetColor(70, 60, 48), TRUE);
+	DrawCircle(tipX - 2, groundY + 1, 6, GetColor(95, 82, 65), TRUE);
+	DrawCircle(tipX + 14, groundY + 4, 5, GetColor(60, 50, 40), TRUE);
+}
 void StageClear::Update(Player* player, BlockMap* pBlockMap)
 {
+	mpBlockMap = pBlockMap;
 	if (mState == State::Inactive || mState == State::Finished)
 	{
 		return;
@@ -669,7 +731,57 @@ void StageClear::Update(Player* player, BlockMap* pBlockMap)
 		UpdateBullets(player, pBlockMap);
 		if (mState == State::Inactive) return;
 
-		if (mTimer >= StageClearConstants::CrackerBurstWaitFrames)
+		// すべての弾丸が画面外へ抜けるか被弾して消滅したかを監視
+		{
+			bool allBulletsGone = !mBullets.empty();
+			for (const auto& b : mBullets)
+			{
+				if (b.isActive)
+				{
+					allBulletsGone = false;
+					break;
+				}
+			}
+
+			// 全弾消滅、または念のための上限時間経過で弾丸消滅後の小休止フェーズへ遷移
+			if (allBulletsGone || mTimer >= StageClearConstants::CrackerBurstMaxFrames)
+			{
+				mState = State::PostBulletDelay;
+				mTimer = 0;
+			}
+		}
+		break;
+
+	case State::PostBulletDelay:
+		mBurstTimer++;
+		UpdateCrackers();
+		UpdateConfetti();
+
+		// 弾丸がすべて消えた後、少し時間が経ってから（安堵の静寂）
+		if (mTimer >= StageClearConstants::PostBulletWaitFrames)
+		{
+			mState = State::LogoPreFallShake;
+			mTimer = 0;
+			if (pBlockMap != nullptr)
+			{
+				// 落下直前に画面横揺れ（比率X=1.0, Y=0.0）
+				pBlockMap->StartCameraShake(
+					StageClearConstants::LogoPreFallShakePower,
+					1.0f,
+					0.0f,
+					StageClearConstants::LogoPreFallShakeDuration
+				);
+			}
+		}
+		break;
+
+	case State::LogoPreFallShake:
+		mBurstTimer++;
+		UpdateCrackers();
+		UpdateConfetti();
+
+		// 落下直前の横揺れ演出が完了したらタイトルロゴ落下へ
+		if (mTimer >= StageClearConstants::LogoPreFallShakeFrames)
 		{
 			mState = State::LogoFall;
 			mTimer = 0;
@@ -759,38 +871,53 @@ void StageClear::DrawCrackers() const
 			drawY -= c.recoilOffset * std::sin(c.shootAngleRad);
 		}
 
+		// クラッカーの持ち手根元を回転ピボットに設定
+		// 左側: cx=6, cy=31 
+		// 右側: cx=30, cy=31
 		DrawRotaGraph3(
 			static_cast<int>(drawX),
 			static_cast<int>(drawY),
-			c.isRightSide ? 37 : 0,
-			17,
+			c.isRightSide ? 30 : 6,
+			31,
 			c.squishScaleX * StageClearConstants::CrackerScale,
 			c.squishScaleY * StageClearConstants::CrackerScale,
 			c.angle,
 			mCrackerGraph,
-			TRUE
+			TRUE,
+			c.isRightSide ? TRUE : FALSE
 		);
 	}
 }
 
 void StageClear::DrawMuzzleFlashes() const
 {
-	if (mBurstTimer >= 6) return;
+	if (mBurstTimer < 0) return;
 
-	float progress = static_cast<float>(mBurstTimer) / 6.0f;
-	int alpha = static_cast<int>(255.0f * (1.0f - progress));
-	float r = 16.0f + progress * 32.0f;
+	int frameIdx = mBurstTimer / StageClearConstants::FlashAnimInterval;
+	if (frameIdx >= StageClearConstants::FlashFrameCount) return;
+	if (mFlashGraphs[frameIdx] == -1) return;
 
-	SetDrawBlendMode(DX_BLENDMODE_ADD, alpha);
+	// 加算ブレンドで自発光・強い閃光感を演出
+	SetDrawBlendMode(DX_BLENDMODE_ADD, 255);
 
 	for (const auto& c : mCrackers)
 	{
-		float mx = c.mouthX;
-		float my = c.mouthY;
+		float drawMouthX = c.mouthX;
+		float drawMouthY = c.mouthY;
+		if (c.recoilOffset > 0.05f)
+		{
+			drawMouthX -= c.recoilOffset * std::cos(c.shootAngleRad);
+			drawMouthY -= c.recoilOffset * std::sin(c.shootAngleRad);
+		}
 
-		DrawQuadrangleAA(mx, my - r, mx + r * 0.35f, my, mx, my + r, mx - r * 0.35f, my, GetColor(255, 240, 150), TRUE);
-		DrawQuadrangleAA(mx - r, my, mx, my - r * 0.35f, mx + r, my, mx, my + r * 0.35f, GetColor(255, 240, 150), TRUE);
-		DrawCircleAA(mx, my, r * 0.45f, 16, GetColor(255, 255, 255), TRUE);
+		DrawRotaGraph(
+			static_cast<int>(drawMouthX),
+			static_cast<int>(drawMouthY),
+			StageClearConstants::FlashScale,
+			0.0,
+			mFlashGraphs[frameIdx],
+			TRUE
+		);
 	}
 
 	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
@@ -898,8 +1025,8 @@ void StageClear::Draw() const
 	// 3. 銀色の円形弾描画
 	DrawBullets();
 
-	// 4. タイトルロゴ落下＆地面突き刺さり描画
-	DrawLogo();
+	// 4. タイトルロゴ落下に伴う地面衝撃エフェクト（ひび割れ・破片・土煙）
+	DrawLogoGroundImpact();
 	DrawImpactDust();
 
 	// 5. 「ステージクリア」特大文字描画（点滅・常時表示）
