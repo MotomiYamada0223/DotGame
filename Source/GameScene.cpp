@@ -42,7 +42,7 @@ void GameScene::Initialize()
 	});
 
 	// プレイヤーの生成
-	mpPlayer = new Player(VGet(ScreenSize::CenterX - 6000, 300, 0.0f));
+	mpPlayer = new Player(VGet(0, 400, 0.0f));
 	mLoadData.LoadInitialize(Master::gCurrentStageIndex);
 	mStageClear.Reset();
 

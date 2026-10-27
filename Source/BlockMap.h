@@ -29,7 +29,7 @@ public:
         const std::string& collisionPath
     );
 
-    void Move(int playerScreenX, int playerScreenY, float moveDirection, float currentSpeed);
+    void Move(int playerScreenX, int playerMapY, float moveDirection, float currentSpeed);
     void Draw();
     void DebugDraw();
 

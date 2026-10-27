@@ -30,7 +30,7 @@ namespace PlayerConstants
 	static const int MaxLive = 3; // プレイヤーの最大残機
 
 	// 落下でプレイヤーが死亡する位置
-	static const int PlayerDeathHeight = ScreenSize::ScrrenHeight + 100;
+	static const int PlayerDeathHeight = 3000;
 }
 
 // UI画像
@@ -125,9 +125,10 @@ namespace BackGroundGraphPath
 // ブロックマップ関係
 namespace BlockMapGraphPath
 {
+
 	// 1-1ステージ　始まりの森
-	static const char* TestBackground = "Resource/Map/TestMap.png";
-	static const char* TestCollision = "Resource/Map/TestMapCollision.png";
+	static const char* TestBackground = "Resource/Map/ForestMap.png";
+	static const char* TestCollision = "Resource/Map/ForestMapCollision.png";
 
 	// 1-2ステージ 洞窟
 	static const char* CaveMap = "Resource/Map/CaveMap.png";

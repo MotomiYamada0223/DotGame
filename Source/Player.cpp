@@ -250,15 +250,17 @@ void Player::PlayerMove(BlockMap& blockMap)
 	}
 
 	// 当たり判定後にスクロール量を反映させるため、親クラスの共通関数を使用してプレイヤーのスクリーン座標を算出する
+	// 横方向は画面座標（境界判定のため）、縦方向はマップ座標（カメラ目標位置の計算のため）
 	const int playerScreenX = static_cast<int>(ConvertToScreenX(mvPosition.x, mpBlockMap));
-	const int playerScreenY = static_cast<int>(ConvertToScreenY(mvPosition.y, mpBlockMap));
+	const int playerMapY = static_cast<int>(mvPosition.y);
 
 	blockMap.Move(
 		playerScreenX,
-		playerScreenY,
+		playerMapY,
 		mfMoveDirection,
 		mfCurrentSpeed
 	);
+
 
 	// 特殊地形の処理
 	mBlockAction.SetCollisionType(collisionType);
