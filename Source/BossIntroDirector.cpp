@@ -38,7 +38,7 @@ void BossIntroDirector::Update(Player* player, BlockMap& blockMap)
 	switch (mState)
 	{
 	case State::Inactive:
-		// プレイヤーにボスエリア接触（またはボスエリアX範囲到達）したら演出開始
+		// プレイヤーにボスエリア接触またはボスエリアX範囲到達したら演出開始
 		if (!player->GetIsDead() && blockMap.HasBossArea())
 		{
 			bool entered = player->IsTouchingBossArea() ||
@@ -143,7 +143,7 @@ void BossIntroDirector::Update(Player* player, BlockMap& blockMap)
 		if (mStateTimer <= 0)
 		{
 			mState = State::BossFalling;
-			// 画面上空から急降下開始（4倍に伴い地面Yの1200px上空から落下開始）
+			// 画面上空から急降下開始
 			const float startY = mGroundY - 1200.0f;
 			mpBossSlime = new BossEnemySlime(VGet(mWarningX, startY, 0.0f), mGroundY, player);
 		}
@@ -163,7 +163,7 @@ void BossIntroDirector::Update(Player* player, BlockMap& blockMap)
 		break;
 
 	case State::BossLanding:
-		// 帯は維持
+		
 		if (mFadeTimer < BossIntroConstants::FadeFrames)
 		{
 			mFadeTimer++;
@@ -177,7 +177,7 @@ void BossIntroDirector::Update(Player* player, BlockMap& blockMap)
 		break;
 
 	case State::TitleWait:
-		// 帯は維持
+		
 		if (mFadeTimer < BossIntroConstants::FadeFrames)
 		{
 			mFadeTimer++;
@@ -193,7 +193,7 @@ void BossIntroDirector::Update(Player* player, BlockMap& blockMap)
 		break;
 
 	case State::TitleDisplay:
-		// 帯は維持
+		
 		if (mFadeTimer < BossIntroConstants::FadeFrames)
 		{
 			mFadeTimer++;
@@ -240,7 +240,7 @@ void BossIntroDirector::Update(Player* player, BlockMap& blockMap)
 		break;
 
 	case State::IntroFinished:
-		// 演出完了：黒帯は非表示
+		// 演出完了
 		mFadeTimer = 0;
 		if (mpBossSlime != nullptr && mpBossSlime->IsDeleteFlag())
 		{

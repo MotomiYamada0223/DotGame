@@ -649,17 +649,6 @@ void StageClear::DrawLogoGroundImpact(const BlockMap* pBlockMap) const
 	int tipX = static_cast<int>(ScreenSize::CenterX + tipRelX - shakeX);
 	int groundY = static_cast<int>(StageClearConstants::LogoGroundY - shakeY);
 
-	// 地面表面のひび割れ描画
-	DrawLine(tipX - 35, groundY + 4, tipX - 5, groundY + 1, GetColor(35, 30, 25), 3);
-	DrawLine(tipX - 5, groundY + 1, tipX + 25, groundY + 5, GetColor(35, 30, 25), 3);
-	DrawLine(tipX - 12, groundY + 2, tipX - 20, groundY + 12, GetColor(45, 38, 30), 2);
-	DrawLine(tipX + 10, groundY + 3, tipX + 18, groundY + 10, GetColor(45, 38, 30), 2);
-
-	// 飛び散った石・土塊の描画
-	DrawCircle(tipX - 8, groundY + 2, 7, GetColor(80, 70, 55), TRUE);
-	DrawCircle(tipX + 6, groundY + 3, 8, GetColor(70, 60, 48), TRUE);
-	DrawCircle(tipX - 2, groundY + 1, 6, GetColor(95, 82, 65), TRUE);
-	DrawCircle(tipX + 14, groundY + 4, 5, GetColor(60, 50, 40), TRUE);
 }
 void StageClear::Update(Player* player, BlockMap* pBlockMap)
 {
@@ -743,7 +732,7 @@ void StageClear::Update(Player* player, BlockMap* pBlockMap)
 				}
 			}
 
-			// 全弾消滅、または念のための上限時間経過で弾丸消滅後の小休止フェーズへ遷移
+			// 全弾消滅、または念のための上限時間経過で次のフェーズへ遷移
 			if (allBulletsGone || mTimer >= StageClearConstants::CrackerBurstMaxFrames)
 			{
 				mState = State::PostBulletDelay;
@@ -757,14 +746,14 @@ void StageClear::Update(Player* player, BlockMap* pBlockMap)
 		UpdateCrackers();
 		UpdateConfetti();
 
-		// 弾丸がすべて消えた後、少し時間が経ってから（安堵の静寂）
+		// 弾丸がすべて消えた後、少し時間が経ってから
 		if (mTimer >= StageClearConstants::PostBulletWaitFrames)
 		{
 			mState = State::LogoPreFallShake;
 			mTimer = 0;
 			if (pBlockMap != nullptr)
 			{
-				// 落下直前に画面横揺れ（比率X=1.0, Y=0.0）
+				// 落下直前に画面横揺れ
 				pBlockMap->StartCameraShake(
 					StageClearConstants::LogoPreFallShakePower,
 					1.0f,
