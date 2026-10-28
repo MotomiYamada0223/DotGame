@@ -155,18 +155,21 @@ void MovingFloor::Move()
         }
     } 
     else if (mPattern == MovePattern::OneWayDestroy) {
-        // 一方向移動
         nextPos = VAdd(prevPos, currentVelocity);
 
-        // 配置位置（mStartPos）から上下どちらへでも一定距離離れたら破棄する
-        // 乗ると向きが反転するため、Y座標の符号ではなく距離の絶対値で判定する
-        const float distanceY = std::fabs(nextPos.y - mStartPos.y);
-        if (distanceY >= MovingFloorConstants::DestroyDistanceY) {
+        // 速度倍率で割ることで、加速していても「基準速度で進んだ距離」として数える
+        const float speedRatio = (mBaseSpeed > 0.0f) ? (mCurrentSpeed / mBaseSpeed) : 1.0f;
+        mTraveledDistance += VSize(VSub(nextPos, prevPos)) / speedRatio;
+
+        if (mTraveledDistance >= MovingFloorConstants::DestroyDistance) {
             SetDeleteFlag(true);
-            mIsPlayerRiding = false; // 削除される床にプレイヤーを追従させない
-            return;                  // このframeは床もプレイヤーも動かさない
+            mIsPlayerRiding = false;
+            return;
         }
     }
+
+
+
 
 
     // 床自身の座標を更新

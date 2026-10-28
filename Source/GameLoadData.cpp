@@ -95,7 +95,7 @@ void GameLoadData::StageForest()
 	);
 
 	new FloorSpawner(
-		VGet(6575.0f, 1170.0f, 0.0f),
+		VGet(6575.0f, 870.0f, 0.0f),
 		VGet(0.0f, 3.0f, 0.0f),
 		120,
 		mpPlayer,

@@ -67,4 +67,6 @@ private:
     // 内部処理関数
     void Move();                // 実際の移動計算
     void CheckPlayerRiding();   // プレイヤーが乗っているかどうかの判定と連動
+
+    float mTraveledDistance = 0.0f;  // 床が移動した累積距離
 };

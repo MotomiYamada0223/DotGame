@@ -71,12 +71,12 @@ void GameScene::Update()
 	{
 		if (mpPlayer != nullptr)
 		{
-			mpPlayer->SetPosition(VGet(7200.0f, 700.0f, 0.0f));
+			mpPlayer->SetPosition(VGet(6000.0f, 1700.0f, 0.0f));
 			mpPlayer->SetVelocityY(0.0f);
 			mpPlayer->ResetBossIntroState();
 			mBlockMap.SetCameraLocked(false);
 			mBossIntro.Reset();
-			mStageClear.Reset();
+			//mStageClear.Reset();
 		}
 	}
 	oneKeyWasDown = oneKeyIsDown;

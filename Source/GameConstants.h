@@ -56,7 +56,7 @@ namespace UIGraphController
 namespace MovingFloorConstants
 {
 	// 配置位置から上下どちらへこの距離（px）以上離れたら破棄する
-	constexpr float DestroyDistanceY = 1000.0f;
+	constexpr float DestroyDistance = 1500.0f;
 }
 
 
