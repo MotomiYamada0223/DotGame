@@ -169,7 +169,6 @@ void GameScene::Draw()
 		mDrawFrame.Draw(); // フレーム描画
 		mSaint.Draw(); // 天使の描画
 
-
 		mpPlayer->DrawLife();
 
 

@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 #include "Camera.h"
+#include "DestructibleWall.h"
+#include <memory>
 
 class BlockMap
 {
@@ -17,11 +19,15 @@ public:
 		Death, // 死亡判定あり
 		Goal,  // ゴール判定あり
 		BossArea, // ボスエリア判定あり
+        BreakableBlock, // 破壊可能な壁
 	};
 
+    // 攻撃矩形と重なる破壊可能壁を削る。1ピクセルでも削れたら true
+    bool BreakWallAtArea(float left, float top, float right, float bottom);
 
     BlockMap();
     ~BlockMap();
+
 
     // 背景画像と当たり判定画像を読み込む
     bool Load(
@@ -96,6 +102,10 @@ private:
     // 配列のインデックスを取得
     // 2次元座標を1次元配列の番号に変換する。
     int GetCollisionIndex(int x, int y) const { return y * mnCollisionWidth + x; }
+
+    // 破壊可能壁
+    std::vector<std::shared_ptr<DestructibleWall>> mWalls;
+
 
 
 private: // スクロール関係

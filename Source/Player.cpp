@@ -490,6 +490,16 @@ void Player::Update()
 		atkSize = VGet((float)attackWidth, (float)attackHeight, 0.0f);
 	}
 
+	if (hasAttackRect && mpBlockMap != nullptr)
+	{
+		mpBlockMap->BreakWallAtArea(
+			atkPos.x,
+			atkPos.y,
+			atkPos.x + atkSize.x,
+			atkPos.y + atkSize.y
+			);
+	}
+
 	for (Object2D* obj : enemyList)
 	{
 		Enemy* enemy = dynamic_cast<Enemy*>(obj);

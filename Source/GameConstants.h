@@ -192,6 +192,11 @@ namespace BlockCollisionColor
 	static constexpr int BOSSAREA_R = 255;
 	static constexpr int BOSSAREA_G = 255;
 	static constexpr int BOSSAREA_B = 0;
+
+	// オレンジ 破壊可能
+	constexpr int BREAKABLE_R = 255;
+	constexpr int BREAKABLE_G = 128;
+	constexpr int BREAKABLE_B = 0;
 }
 
 // プレイヤーがブロックマップとの当たり判定で使用するサイズ

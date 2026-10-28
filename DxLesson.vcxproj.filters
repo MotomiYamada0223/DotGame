@@ -19,7 +19,7 @@
     <Filter Include="ソース ファイル\Scene系">
       <UniqueIdentifier>{88c4395f-412d-4afa-8590-380052fef24d}</UniqueIdentifier>
     </Filter>
-	<Filter Include="ソース ファイル\Text関系">
+    <Filter Include="ソース ファイル\Text関系">
       <UniqueIdentifier>{de72453d-964a-4bc1-9a97-d3b8512c2a28}</UniqueIdentifier>
     </Filter>
     <Filter Include="ソース ファイル\Controller系">
@@ -201,6 +201,12 @@
     <ClCompile Include="Source\GameLoadData.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="Source\StageClear.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\DestructibleWall.cpp">
+      <Filter>ソース ファイル\Controller系</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Collision.h">
@@ -373,6 +379,12 @@
     </ClInclude>
     <ClInclude Include="Source\CircleFade.h">
       <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\StageClear.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\DestructibleWall.h">
+      <Filter>ソース ファイル\Controller系</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
