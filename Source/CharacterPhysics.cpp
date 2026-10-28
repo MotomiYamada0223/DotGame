@@ -11,7 +11,6 @@ CharacterPhysics::~CharacterPhysics()
 {
 }
 
-// 矩形領域とマップタイルが接触しているかを判定し、接触したタイル種別と座標を返す
 BlockMap::CollisionType CharacterPhysics::CheckCollision(
 	const BlockMap& blockMap,
 	float x,
@@ -21,31 +20,29 @@ BlockMap::CollisionType CharacterPhysics::CheckCollision(
 	int* blockX,
 	int* blockY) const
 {
-	// 浮動小数点的な座標を整数ピクセルに変換
+	// 引数はすべてマップ座標（mvPosition と同じ座標系）
 	const int left = static_cast<int>(x);
 	const int right = static_cast<int>(x + width - 1.0f);
 	const int top = static_cast<int>(y);
 	const int bottom = static_cast<int>(y + height - 1.0f);
 
-	// 指定矩形内を1ピクセルずつ調べる
-	for (int pixelY = top; pixelY <= bottom; ++pixelY)
+	for (int mapY = top; mapY <= bottom; ++mapY)
 	{
-		for (int pixelX = left; pixelX <= right; ++pixelX)
+		for (int mapX = left; mapX <= right; ++mapX)
 		{
-			// スクロール判定をしない
-			const int mapX = pixelX;
-			const int mapY = blockMap.ScreenToMapY(pixelY);
 			const BlockMap::CollisionType type =
 				blockMap.GetCollisionType(mapX, mapY);
 
 			if (type == BlockMap::CollisionType::None) { continue; }
-			if (blockX != nullptr) { *blockX = pixelX; }
-			if (blockY != nullptr) { *blockY = pixelY; }
+
+			if (blockX != nullptr) { *blockX = mapX; }
+			if (blockY != nullptr) { *blockY = mapY; }
 			return type;
 		}
 	}
 	return BlockMap::CollisionType::None;
 }
+
 
 
 // キャラクターの移動、重力処理、マップタイルとの当たり判定を解決する

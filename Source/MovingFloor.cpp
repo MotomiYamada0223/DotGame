@@ -155,14 +155,21 @@ void MovingFloor::Move()
         }
     } 
     else if (mPattern == MovePattern::OneWayDestroy) {
-        // 一方向移動
         nextPos = VAdd(prevPos, currentVelocity);
-        
-        // X座標による消滅判定は除外し、Y座標が画面の上下200ピクセル外に出たら破棄する
-        if (nextPos.y < -MovingFloorConstants::DestroyMarginY || nextPos.y > ScreenSize::ScrrenHeight + MovingFloorConstants::DestroyMarginY) {
+
+        // 速度倍率で割ることで、加速していても「基準速度で進んだ距離」として数える
+        const float speedRatio = (mBaseSpeed > 0.0f) ? (mCurrentSpeed / mBaseSpeed) : 1.0f;
+        mTraveledDistance += VSize(VSub(nextPos, prevPos)) / speedRatio;
+
+        if (mTraveledDistance >= MovingFloorConstants::DestroyDistance) {
             SetDeleteFlag(true);
+            mIsPlayerRiding = false;
+            return;
         }
     }
+
+
+
 
 
     // 床自身の座標を更新

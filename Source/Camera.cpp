@@ -1,6 +1,9 @@
 ﻿#include "Camera.h"
 #include "GameConstants.h"
 #include <DxLib.h>
+#include <algorithm>
+#include <string>
+#include <cmath>
 
 Camera::Camera()
 	: mScrollX(0)
@@ -14,6 +17,7 @@ Camera::Camera()
 	, mShakeOffsetX(0)
 	, mShakeOffsetY(0)
 	, mIsLocked(false)
+	, mNeedScrollInit(true)
 {
 }
 
@@ -23,72 +27,64 @@ Camera::~Camera()
 
 // プレイヤーの位置や移動方向に応じてカメラのスクロール位置を計算するため
 void Camera::Update(
-	int playerScreenX,
-	int playerScreenY,
-	float moveDirection,
-	float currentSpeed,
-	int backgroundWidth,
-	int screenWidth,
-	int backgroundHeight,
-	int screenHeight
+    int playerScreenX,
+    int playerMapY,
+    float moveDirection,
+    float currentSpeed,
+    int backgroundWidth,
+    int screenWidth,
+    int backgroundHeight,
+    int screenHeight
 )
 {
-	// スクロールがロックされている場合は位置を更新せず、画面揺れのみ処理
-	if (mIsLocked)
-	{
-		mIsScrolling = false;
-		UpdateShake();
-		return;
-	}
+    // 最大スクロール量を保存（描画時のクランプで使用）
+    mMaxScrollX = (std::max)(0, backgroundWidth - screenWidth);
+    mMaxScrollY = (std::max)(0, backgroundHeight - screenHeight);
 
 
-	int oldScrollPos = mScrollX;
-	// プレイヤーが右のスクロール境界を越えたら、越えた分だけスクロールを加算する
-	if (playerScreenX > MapScrollConstants::ScrollStartRightX)
-	{
-		mScrollX += (playerScreenX - MapScrollConstants::ScrollStartRightX);
-	}
-	// プレイヤーが左のスクロール境界を越えたら、越えた分だけスクロールを減算する
-	else if (playerScreenX < MapScrollConstants::ScrollStartLeftX)
-	{
-		mScrollX += (playerScreenX - MapScrollConstants::ScrollStartLeftX);
-	}
+    if (mIsLocked)
+    {
+        mIsScrolling = false;
+        UpdateShake();
+        return;
+    }
 
-	// マップの左端を超えないようにするため
-	if (mScrollX < 0)
-	{
-		mScrollX = 0;
-	}
-	// マップの右端を超えないようにするため
-	int maxScrollX = backgroundWidth - screenWidth;
-	if (maxScrollX < 0) { maxScrollX = 0; }
-	if (mScrollX > maxScrollX) { mScrollX = maxScrollX; }
+    int oldScrollPos = mScrollX;
 
-	// プレイヤーが画面上の一定のライン
-	if (playerScreenY < MapScrollConstants::ScrollStartUpY)
-	{
-		// プレイヤーが上に上がった分だけ、カメラを上に動かす
-		int diffY = static_cast<int>(playerScreenY - MapScrollConstants::ScrollStartUpY * MapScrollConstants::BlockMapSpeedScale);
-		mScrollY += diffY;
-	}
+    // 横スクロール（丸めて整数化）
+    if (playerScreenX > MapScrollConstants::ScrollStartRightX && moveDirection > 0.0f)
+    {
+        mScrollX += static_cast<int>(std::round(currentSpeed * moveDirection));
+    }
+    else if (playerScreenX < MapScrollConstants::ScrollStartLeftX && moveDirection < 0.0f)
+    {
+        mScrollX += static_cast<int>(std::round(currentSpeed * moveDirection));
+    }
+
+    mScrollX = LimitValue(mScrollX, 0, mMaxScrollX);
+
+    // 縦スクロール（補間も丸める）
+    int targetScrollY = LimitValue(playerMapY - 720, 0, mMaxScrollY);
 
 
-	// マップの下端を超えないようにするため（背景の高さから画面の高さを引いた値を最大スクロール量とする）
-	int maxScrollY = backgroundHeight - screenHeight;
-	if (maxScrollY < 0) { maxScrollY = 0; }
+    if (mNeedScrollInit)
+    {
+        mScrollYf = static_cast<float>(targetScrollY);
+        mNeedScrollInit = false;
+    }
+    else
+    {
+        mScrollYf += (targetScrollY - mScrollYf) * 0.15f;
+    }
+    mScrollY = LimitValue(static_cast<int>(std::round(mScrollYf)), 0, mMaxScrollY);
 
-	// mScrollYは下方向へ進むにつれてマイナスになるため、下限を -maxScrollY に制限する
-	if (mScrollY > maxScrollY)
-	{
-		mScrollY = maxScrollY;
-	}
-	mIsScrolling = (oldScrollPos != mScrollX);
 
+    mIsScrolling = (oldScrollPos != mScrollX);
 
-
-	// 画面揺れの更新
-	UpdateShake();
+    UpdateShake();
 }
+
+
 
 void Camera::StartShake(float power, float ratioX, float ratioY, int durationFrames)
 {

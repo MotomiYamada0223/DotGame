@@ -30,7 +30,7 @@ namespace PlayerConstants
 	static const int MaxLive = 3; // プレイヤーの最大残機
 
 	// 落下でプレイヤーが死亡する位置
-	static const int PlayerDeathHeight = ScreenSize::ScrrenHeight + 100;
+	static const int PlayerDeathHeight = 3000;
 }
 
 // UI画像
@@ -51,6 +51,12 @@ namespace UIGraphController
 	static const int LifePosY = 120; // 体力はーとの位置Y
 	static const int LifeDistance = 130; // ハートの間隔
 	static constexpr float LifeScale = 4.5f; // ハートの拡大率
+}
+
+namespace MovingFloorConstants
+{
+	// 配置位置から上下どちらへこの距離（px）以上離れたら破棄する
+	constexpr float DestroyDistance = 1500.0f;
 }
 
 
@@ -125,9 +131,10 @@ namespace BackGroundGraphPath
 // ブロックマップ関係
 namespace BlockMapGraphPath
 {
+
 	// 1-1ステージ　始まりの森
-	static const char* TestBackground = "Resource/Map/TestMap.png";
-	static const char* TestCollision = "Resource/Map/TestMapCollision.png";
+	static const char* ForestMap = "Resource/Map/ForestMap.png";
+	static const char* ForestMapCollision = "Resource/Map/ForestMapCollision.png";
 
 	// 1-2ステージ 洞窟
 	static const char* CaveMap = "Resource/Map/CaveMap.png";
