@@ -189,6 +189,8 @@ bool BlockMap::Load(
         mnCollisionSoftImage
     );
 
+    mCamera.ResetScrollInit();
+
     mnCollisionSoftImage = -1;
     mbIsLoaded = true;
     return true;
@@ -255,14 +257,14 @@ void BlockMap::DebugDraw()
 }
 
 // マップのスクロール処理
-void BlockMap::Move(int playerScreenX, int playerScreenY, float moveDirection, float currentSpeed)
+void BlockMap::Move(int playerScreenX, int playerMapY, float moveDirection, float currentSpeed)
 {
     if (!mbIsLoaded) { return; }
     mfMoveDirection = moveDirection;
 
     mCamera.Update(
         playerScreenX,
-        playerScreenY,
+        playerMapY,
         moveDirection,
         currentSpeed,
         mnBackgroundWidth,
@@ -301,7 +303,7 @@ int BlockMap::ScreenToMapX(int screenX) const
 
 int BlockMap::ScreenToMapY(int screenY) const
 {
-    return screenY;
+    return screenY + mCamera.GetScrollY();
 }
 
 void BlockMap::SetCollisionBlock(int startX, int startY, int width, int height, CollisionType type)
@@ -323,4 +325,5 @@ void BlockMap::ResetScroll()
     mCamera.SetScrollX(0);
     mCamera.SetScrollY(0);
     mCamera.SetLocked(false);
+    mCamera.ResetScrollInit();
 }

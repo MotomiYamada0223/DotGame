@@ -42,7 +42,7 @@ void GameScene::Initialize()
 	});
 
 	// プレイヤーの生成
-	mpPlayer = new Player(VGet(ScreenSize::CenterX - 6000, 300, 0.0f));
+	mpPlayer = new Player(VGet(0, 400, 0.0f));
 	mLoadData.LoadInitialize(Master::gCurrentStageIndex);
 	mStageClear.Reset();
 
@@ -71,12 +71,12 @@ void GameScene::Update()
 	{
 		if (mpPlayer != nullptr)
 		{
-			mpPlayer->SetPosition(VGet(7200.0f, 700.0f, 0.0f));
+			mpPlayer->SetPosition(VGet(6000.0f, 1700.0f, 0.0f));
 			mpPlayer->SetVelocityY(0.0f);
 			mpPlayer->ResetBossIntroState();
 			mBlockMap.SetCameraLocked(false);
 			mBossIntro.Reset();
-			mStageClear.Reset();
+			//mStageClear.Reset();
 		}
 	}
 	oneKeyWasDown = oneKeyIsDown;

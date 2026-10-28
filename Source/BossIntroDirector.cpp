@@ -41,8 +41,12 @@ void BossIntroDirector::Update(Player* player, BlockMap& blockMap)
 		// プレイヤーにボスエリア接触またはボスエリアX範囲到達したら演出開始
 		if (!player->GetIsDead() && blockMap.HasBossArea())
 		{
-			bool entered = player->IsTouchingBossArea() ||
-				(player->GetPosition().x >= static_cast<float>(blockMap.GetBossAreaLeft()));
+			/*bool entered = player->IsTouchingBossArea() ||
+				(player->GetPosition().x >= static_cast<float>(blockMap.GetBossAreaLeft()));*/
+			
+			bool entered = player->IsTouchingBossArea();
+
+
 
 			if (entered)
 			{
