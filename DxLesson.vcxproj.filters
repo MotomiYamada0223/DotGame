@@ -207,6 +207,9 @@
     <ClCompile Include="Source\DestructibleWall.cpp">
       <Filter>ソース ファイル\Controller系</Filter>
     </ClCompile>
+    <ClCompile Include="Source\BlockEffect.cpp">
+      <Filter>ソース ファイル\Map関系</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Collision.h">
@@ -384,6 +387,9 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\DestructibleWall.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\BlockEffect.h">
       <Filter>ソース ファイル\Controller系</Filter>
     </ClInclude>
   </ItemGroup>

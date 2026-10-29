@@ -3,9 +3,6 @@
 #include <cmath>
 #include <utility>
 
-
-
-
 DestructibleWall::~DestructibleWall()
 {
     Release();
@@ -23,7 +20,7 @@ void DestructibleWall::Release()
         DeleteGraph(mGraphHandle);
         mGraphHandle = -1;
     }
-    mDebris.clear();
+    mBlockEffect.Clear();
     mIsDirty = false;
 }
 
@@ -87,10 +84,17 @@ std::vector<DestructibleWall::Point> DestructibleWall::BreakArea(
     if (!broken.empty())
     {
         mIsDirty = true;
-        SpawnDebris(startX, startY,
-            endX - startX + 1, endY - startY + 1,
-            static_cast<int>(broken.size()));
+
+        // 破片の生成を BlockEffect に任せる
+        mBlockEffect.Spawn(
+            startX,
+            startY,
+            endX - startX + 1,
+            endY - startY + 1,
+            static_cast<int>(broken.size())
+        );
     }
+
     return broken;
 }
 
@@ -103,22 +107,8 @@ void DestructibleWall::Update()
         mIsDirty = false;
     }
 
-    for (auto it = mDebris.begin(); it != mDebris.end(); )
-    {
-        it->x += it->vx;
-        it->y += it->vy;
-        it->vy += gravity;   // 重力
-        it->life--;
-
-        if (it->life <= 0)
-        {
-            it = mDebris.erase(it);
-        }
-        else
-        {
-            ++it;
-        }
-    }
+    // 破片エフェクトの更新を BlockEffect に任せる
+    mBlockEffect.Update();
 }
 
 void DestructibleWall::Draw(int scrollX, int scrollY) const
@@ -128,28 +118,6 @@ void DestructibleWall::Draw(int scrollX, int scrollY) const
         DrawGraph(mMinX - scrollX, mMinY - scrollY, mGraphHandle, TRUE);
     }
 
-    for (const auto& d : mDebris)
-    {
-        const int dx = static_cast<int>(d.x) - scrollX;
-        const int dy = static_cast<int>(d.y) - scrollY;
-        DrawBox(dx, dy, dx + d.size, dy + d.size, d.color, TRUE);
-    }
-}
-
-void DestructibleWall::SpawnDebris(int startX, int startY, int w, int h, int brokenCount)
-{
-    const int numDebris = (std::min)(brokenCount / 20 + 8, 40);
-    for (int i = 0; i < numDebris; ++i)
-    {
-        Debris d;
-        d.x = static_cast<float>(startX + GetRand(w));
-        d.y = static_cast<float>(startY + GetRand(h));
-        d.vx = (GetRand(20) - 10) * 1.0f;
-        d.vy = (GetRand(18) - 14) * 1.0f;
-        d.size = GetRand(8) + 4;
-        d.life = GetRand(30) + 20;
-        const int c = GetRand(40) + 60;
-        d.color = GetColor(c + 15, c, c - 15);
-        mDebris.push_back(d);
-    }
+    // 破片エフェクトの描画を BlockEffect に任せる
+    mBlockEffect.Draw(scrollX, scrollY);
 }

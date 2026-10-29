@@ -187,11 +187,13 @@
     <ClCompile Include="Source\WinResultScene.cpp" />
     <ClCompile Include="Source\FloorSpawner.cpp" />
     <ClCompile Include="Source\StageClear.cpp" />
+    <ClCompile Include="Source\BlockEffect.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Background.h" />
     <ClInclude Include="Source\BackgroundBox.h" />
     <ClInclude Include="Source\BlockAction.h" />
+    <ClInclude Include="Source\BlockEffect.h" />
     <ClInclude Include="Source\BlockMap.h" />
     <ClInclude Include="Source\BossEnemyDragon.h" />
     <ClInclude Include="Source\BossEnemySlime.h" />

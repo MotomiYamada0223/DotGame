@@ -4,6 +4,7 @@
 #include <functional>
 #include <string>
 #include <vector>
+#include "BlockEffect.h"
 
 // 攻撃で削れる壁（洞窟ステージの破壊可能壁）を、1枚の矩形単位で管理するクラス
 class DestructibleWall
@@ -38,23 +39,14 @@ public:
     void Draw(int scrollX, int scrollY) const;
 
 private:
-    struct Debris
-    {
-        float x, y;
-        float vx, vy;
-        int size;
-        int life;
-        unsigned int color;
-    };
 
     void Release();
-    void SpawnDebris(int startX, int startY, int w, int h, int brokenCount);
 
     int mMinX = 0, mMinY = 0, mMaxX = 0, mMaxY = 0;
     int mImageWidth = 0, mImageHeight = 0;
     int mSoftImage = -1;     // CPU側のピクセル操作用
     int mGraphHandle = -1;   // 描画用テクスチャ
     bool mIsDirty = false;   // ソフトイメージが変更され、テクスチャ再転送が必要か
-    std::vector<Debris> mDebris;
-    float gravity = 0.4f;
+
+    BlockEffect mBlockEffect;
 };
