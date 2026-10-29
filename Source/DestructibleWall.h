@@ -23,7 +23,7 @@ public:
     DestructibleWall& operator=(const DestructibleWall&) = delete;
 
 
-    // マップ上の矩形（両端を含む）と画像パスを指定して読み込む
+    // マップ上の矩形と画像パスを指定して読み込む
     bool Load(int minX, int minY, int maxX, int maxY, const std::string& imagePath);
 
     // 攻撃矩形［left, top, right, bottom］と重なる壁ピクセルを削る
@@ -56,4 +56,5 @@ private:
     int mGraphHandle = -1;   // 描画用テクスチャ
     bool mIsDirty = false;   // ソフトイメージが変更され、テクスチャ再転送が必要か
     std::vector<Debris> mDebris;
+    float gravity = 0.4f;
 };

@@ -107,7 +107,7 @@ void DestructibleWall::Update()
     {
         it->x += it->vx;
         it->y += it->vy;
-        it->vy += 0.4f;   // d—Í
+        it->vy += gravity;   // d—Í
         it->life--;
 
         if (it->life <= 0)

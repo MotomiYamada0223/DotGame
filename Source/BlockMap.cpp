@@ -148,6 +148,18 @@ bool BlockMap::Load(
                 continue;
             }
 
+            // オレンジ色ならBreakableBlock
+            if (r == BlockCollisionColor::BREAKABLE_R &&
+                g == BlockCollisionColor::BREAKABLE_G &&
+                b == BlockCollisionColor::BREAKABLE_B)
+            {
+                mCollisionData[
+                    GetCollisionIndex(x, y)
+                ] = CollisionType::BreakableBlock;
+
+                continue;
+            }
+
 
             // 赤ならBlock
             if (r == BlockCollisionColor::BLOCK_R &&
@@ -308,6 +320,11 @@ void BlockMap::Move(int playerScreenX, int playerMapY, float moveDirection, floa
         mnBackgroundHeight,
         ScreenSize::ScrrenHeight
     );
+
+    for (auto wall : mWalls)
+    {
+        wall->Update();
+    }
 }
 
 

@@ -14,19 +14,22 @@ GameLoadData::GameLoadData(
 	BlockMap& blockMap,
 	Background& background,
 	TutorialTextManager& tutorialText,
-	GameProgress& progress
+	GameProgress& progress,
+	LeafCutter& leaf
 )
 	: mpPlayer(player)
 	, mProgress(progress)
 	, mBlockMap(blockMap)
 	, mBackground(background)
 	, mTutorialText(tutorialText)
+	, mLeaf(leaf)
 {
 }
 
 
 void GameLoadData::LoadInitialize(int stageNumber)
 {
+	mnLoadNumber = stageNumber;
 	if (stageNumber == 0)
 	{
 		StageForest();
@@ -43,12 +46,17 @@ void GameLoadData::LoadInitialize(int stageNumber)
 
 void GameLoadData::LoadDraw()
 {
-	DebugUpdate();
+	if (mnLoadNumber == 0)
+	{
+		mLeaf.LeafDraw(mBlockMap); // —Ž‰º‚µ‚Ä‚­‚é—t‚Ì•`‰æ
+	}
+
+	DebugDraw();
 }
 
 void GameLoadData::LoadUpdate()
 {
-	DebugDraw();
+	DebugUpdate();
 }
 
 
@@ -132,6 +140,8 @@ void GameLoadData::StageForest()
 		new NeedleTrap(VGet(500.0f, 1520.0f, 0.0f), TrapType::PopUp);
 		new NeedleTrap(VGet(1500.0f, 1470.0f, 0.0f), TrapType::AntiJump);
 	}
+
+	mLeaf.LeafUpdate(mBlockMap, mpPlayer);
 }
 
 

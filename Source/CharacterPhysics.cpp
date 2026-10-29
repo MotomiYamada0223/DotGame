@@ -34,7 +34,6 @@ BlockMap::CollisionType CharacterPhysics::CheckCollision(
 				blockMap.GetCollisionType(mapX, mapY);
 
 			if (type == BlockMap::CollisionType::None) { continue; }
-
 			if (blockX != nullptr) { *blockX = mapX; }
 			if (blockY != nullptr) { *blockY = mapY; }
 			return type;
@@ -88,7 +87,9 @@ BlockMap::CollisionType CharacterPhysics::UpdateMoveAndCollision(
 			);
 
 		// BlockまたはBossAreaなら壁なので移動しない
-		if (wallType == BlockMap::CollisionType::Block || wallType == BlockMap::CollisionType::BossArea)
+		if (wallType == BlockMap::CollisionType::Block ||
+			wallType == BlockMap::CollisionType::BossArea ||
+			wallType == BlockMap::CollisionType::BreakableBlock)
 		{
 			isHittingWall = true;
 			if (wallType == BlockMap::CollisionType::BossArea &&
@@ -140,7 +141,9 @@ BlockMap::CollisionType CharacterPhysics::UpdateMoveAndCollision(
 
 		if (floorType != BlockMap::CollisionType::None)
 		{
-			if (floorType == BlockMap::CollisionType::Block || floorType == BlockMap::CollisionType::BossArea)
+			if (floorType == BlockMap::CollisionType::Block ||
+				floorType == BlockMap::CollisionType::BossArea ||
+				floorType == BlockMap::CollisionType::BreakableBlock)
 			{
 				const float floorY = static_cast<float>(collisionY);
 
@@ -201,7 +204,9 @@ BlockMap::CollisionType CharacterPhysics::UpdateMoveAndCollision(
 
 		if (ceilingType != BlockMap::CollisionType::None)
 		{
-			if (ceilingType == BlockMap::CollisionType::Block || ceilingType == BlockMap::CollisionType::BossArea)
+			if (ceilingType == BlockMap::CollisionType::Block ||
+				ceilingType == BlockMap::CollisionType::BossArea ||
+				ceilingType == BlockMap::CollisionType::BreakableBlock)
 			{
 				const float ceilingY =
 					static_cast<float>(collisionY);

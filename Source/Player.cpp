@@ -473,7 +473,7 @@ void Player::Update()
 		hasAttackRect = true;
 		int attackWidth = PlayerConstants::PlayerAttackWidth;
 		int attackHeight = PlayerConstants::PlayerAttackHeight;
-		int halfSizeX = PlayerAnimState::FRAME_WIDTH / 2;
+		int halfSizeX = PlayerConstants::PlayerAttackDist;
 		float atkLeft;
 
 		if (isFacingRight)
@@ -499,6 +499,8 @@ void Player::Update()
 			atkPos.y + atkSize.y
 			);
 	}
+
+
 
 	for (Object2D* obj : enemyList)
 	{
@@ -822,7 +824,7 @@ void Player::Draw()
 		int attackWidth = PlayerConstants::PlayerAttackWidth;
 		int attackHeight = PlayerConstants::PlayerAttackHeight;
 		int rectLeft, rectTop, rectRight, rectBottom;
-		int halfSizeX = PlayerAnimState::FRAME_WIDTH / 2;
+		int halfSizeX = PlayerConstants::PlayerAttackDist;
 
 		if (isFacingRight)
 		{

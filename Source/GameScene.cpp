@@ -23,7 +23,8 @@ GameScene::GameScene()
 		mBlockMap,
 		mBackground,
 		mTutorialText,
-		mProgress)
+		mProgress,
+		mLeaf)
 {
 	mbIsLoaded = false;
 }
@@ -55,8 +56,6 @@ void GameScene::Update()
 {
 	// 円のフェード更新
 	mCircleFade.UpdateCircleFade();
-
-	mLeaf.LeafUpdate(mBlockMap, mpPlayer);
 
 	// デバッグ
 	if (InputManager::CheckDownKey(KEY_INPUT_9))
@@ -162,7 +161,6 @@ void GameScene::Draw()
 		mStageClear.DrawBehindStage(&mBlockMap);
 
 		mBlockMap.Draw(); // ブロックマップの描画
-		mLeaf.LeafDraw(mBlockMap); // 落下してくる葉の描画
 
 		// 一番手前に描画したいもの
 		mpPlayer->DrawFallDeath(); // 死亡時テキスト
