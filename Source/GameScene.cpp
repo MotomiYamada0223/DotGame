@@ -24,8 +24,9 @@ GameScene::GameScene()
 		mBackground,
 		mTutorialText,
 		mProgress,
-		mLeaf,
-		mRollingBoulder)
+		mRollingBoulder,
+		mCart
+		)
 {
 	mbIsLoaded = false;
 }
@@ -59,6 +60,7 @@ void GameScene::Update()
 	mCircleFade.UpdateCircleFade();
 	mLeaf.LeafUpdate(mBlockMap, mpPlayer);
 	mRollingBoulder.Update(mBlockMap, mpPlayer);
+	mCart.Update(mBlockMap, mpPlayer);
 
 
 	// デバッグ
@@ -165,6 +167,9 @@ void GameScene::Draw()
 		mBlockMap.Draw(); // ブロックマップの描画
 		mLeaf.LeafDraw(mBlockMap);
 		mRollingBoulder.Draw(mBlockMap.GetScrollX(), mBlockMap.GetScrollY());
+		mCart.Draw(mBlockMap.GetScrollX(), mBlockMap.GetScrollY());
+
+
 
 		// 一番手前に描画したいもの
 		mpPlayer->DrawFallDeath(); // 死亡時テキスト

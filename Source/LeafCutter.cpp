@@ -211,6 +211,11 @@ void LeafCutter::LeafUpdate(BlockMap& block, Player* player)
 
 void LeafCutter::LeafCollision(Player* player)
 {
+	if (Master::gCurrentStageIndex != 0)
+	{
+		return;
+	}
+
 	// プレイヤーが生存している場合、葉っぱとの当たり判定をチェックする
 	if (player && !player->GetIsDead())
 	{

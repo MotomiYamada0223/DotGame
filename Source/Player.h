@@ -70,6 +70,9 @@ public: // アクセサ
 	void SetSwordReadyStance(bool active) { mbSwordReadyStance = active; }
 	bool IsSwordReadyStance() const { return mbSwordReadyStance; }
 
+	// ジャンプ中かの判定
+	bool GetIsGrounded() const { return mbIsJumping; }
+
 
 private:
 	// インスタンスで持っているもの

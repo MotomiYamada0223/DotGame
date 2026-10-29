@@ -15,16 +15,16 @@ GameLoadData::GameLoadData(
 	Background& background,
 	TutorialTextManager& tutorialText,
 	GameProgress& progress,
-	LeafCutter& leaf,
-	RollingBoulder& rollBoulder
+	RollingBoulder& rollBoulder,
+	Minecart& cart
 )
 	: mpPlayer(player)
 	, mProgress(progress)
 	, mBlockMap(blockMap)
 	, mBackground(background)
 	, mTutorialText(tutorialText)
-	, mLeaf(leaf)
 	, mRollingBoulder(rollBoulder)
+	, mCart(cart)
 {
 }
 
@@ -137,8 +137,6 @@ void GameLoadData::StageForest()
 		new NeedleTrap(VGet(500.0f, 1520.0f, 0.0f), TrapType::PopUp);
 		new NeedleTrap(VGet(1500.0f, 1470.0f, 0.0f), TrapType::AntiJump);
 	}
-
-	mLeaf.LeafUpdate(mBlockMap, mpPlayer);
 }
 
 
@@ -170,6 +168,8 @@ void GameLoadData::StageCave()
 		EnemySlime* slime1 = new EnemySlime(VGet(1700.0f, mpPlayer->GetPosition().y, 0.0f));
 		slime1->UpdateStatusByProgress(mProgress);
 	}
+
+	mCart.Initialize();
 
 }
 

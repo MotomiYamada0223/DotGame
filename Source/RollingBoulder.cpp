@@ -4,6 +4,7 @@
 #include "GameConstants.h"
 #include <algorithm>
 #include <cmath>
+#include "Master.h"
 
 RollingBoulder::RollingBoulder()
 {
@@ -96,6 +97,11 @@ void RollingBoulder::SpawnSpikeParticles(float x, float y, int count)
 // 毎フレームの更新処理
 void RollingBoulder::Update(BlockMap& blockMap, Player* player)
 {
+	if (Master::gCurrentStageIndex != 1)
+	{
+		return;
+	}
+
 	// 岩もトゲも両方とも完全に終了している場合のみ処理を抜ける
 	if (mState == State::Finished && mSpikeState == SpikeTrapState::Finished) return;
 
@@ -367,6 +373,11 @@ void RollingBoulder::Update(BlockMap& blockMap, Player* player)
 // 描画処理
 void RollingBoulder::Draw(int scrollX, int scrollY)
 {
+	if (Master::gCurrentStageIndex != 1)
+	{
+		return;
+	}
+
 	// 1. くぼみの「1本で横2マス分を取る巨大なトゲ」の描画
 	if (mSpikeState != SpikeTrapState::Hidden && mSpikeState != SpikeTrapState::Finished && mSpikeHeight > 0.0f)
 	{
