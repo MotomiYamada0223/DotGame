@@ -15,7 +15,8 @@ GameLoadData::GameLoadData(
 	Background& background,
 	TutorialTextManager& tutorialText,
 	GameProgress& progress,
-	LeafCutter& leaf
+	LeafCutter& leaf,
+	RollingBoulder& rollBoulder
 )
 	: mpPlayer(player)
 	, mProgress(progress)
@@ -23,6 +24,7 @@ GameLoadData::GameLoadData(
 	, mBackground(background)
 	, mTutorialText(tutorialText)
 	, mLeaf(leaf)
+	, mRollingBoulder(rollBoulder)
 {
 }
 
@@ -46,11 +48,6 @@ void GameLoadData::LoadInitialize(int stageNumber)
 
 void GameLoadData::LoadDraw()
 {
-	if (mnLoadNumber == 0)
-	{
-		mLeaf.LeafDraw(mBlockMap); // 落下してくる葉の描画
-	}
-
 	DebugDraw();
 }
 
@@ -152,6 +149,7 @@ void GameLoadData::StageCave()
 	// チュートリアルテキストとブロックマップのタイル
 	mTutorialText.Initialize(CsvPath::TutorialText, CsvPath::TutorialDeathText);
 
+	mRollingBoulder.Initialize();
 
 	// 背景画像と当たり判定画像を読み込む
 	if (!mBlockMap.Load(

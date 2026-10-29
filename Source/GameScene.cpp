@@ -24,7 +24,8 @@ GameScene::GameScene()
 		mBackground,
 		mTutorialText,
 		mProgress,
-		mLeaf)
+		mLeaf,
+		mRollingBoulder)
 {
 	mbIsLoaded = false;
 }
@@ -56,6 +57,9 @@ void GameScene::Update()
 {
 	// 円のフェード更新
 	mCircleFade.UpdateCircleFade();
+	mLeaf.LeafUpdate(mBlockMap, mpPlayer);
+	mRollingBoulder.Update(mBlockMap, mpPlayer);
+
 
 	// デバッグ
 	if (InputManager::CheckDownKey(KEY_INPUT_9))
@@ -94,12 +98,11 @@ void GameScene::Update()
 	mBossIntro.Update(mpPlayer, mBlockMap);
 	mStageClear.Update(mpPlayer, &mBlockMap); // ステージクリア演出の更新
 	mSaint.Update(); // 天使の更新
-	mLoadData.LoadUpdate();
-
 	if (mpPlayer)
 	{
 		mBackground.Move(static_cast<int>(mpPlayer->GetCurrentSpeed()), mBlockMap.GetIsScrolling(), mBlockMap.GetScrollDirection());
 	}
+
 
 
 	// シーン上に存在するすべての敵をオブジェクトマネージャー経由で一括取得
@@ -117,7 +120,6 @@ void GameScene::Update()
 			}
 		}
 	}
-
 
 	// クラスのUpdate呼び出し
 	Scene::Update();
@@ -161,6 +163,8 @@ void GameScene::Draw()
 		mStageClear.DrawBehindStage(&mBlockMap);
 
 		mBlockMap.Draw(); // ブロックマップの描画
+		mLeaf.LeafDraw(mBlockMap);
+		mRollingBoulder.Draw(mBlockMap.GetScrollX(), mBlockMap.GetScrollY());
 
 		// 一番手前に描画したいもの
 		mpPlayer->DrawFallDeath(); // 死亡時テキスト
@@ -189,7 +193,6 @@ void GameScene::Draw()
 		mbCircleFlag = true;
 	}
 	mCircleFade.DrawCircleFade(mpPlayer, mBlockMap);
-	mLoadData.LoadDraw();
 }
 
 void GameScene::Finalize()

@@ -2,6 +2,7 @@
 #include "GameConstants.h"
 #include "DeathReason.h"
 #include "InputManager.h"
+#include "Master.h"
 
 namespace
 {
@@ -71,6 +72,11 @@ void LeafCutter::LeafReset()
 // 葉っぱの描画処理を行う
 void LeafCutter::LeafDraw(BlockMap& block)
 {
+	if (Master::gCurrentStageIndex != 0)
+	{
+		return;
+	}
+
 	for (const auto& leaf : mLeaves)
 	{
 		// スクロール量を考慮して描画座標を算出する
@@ -136,6 +142,11 @@ void LeafCutter::LeafDebug()
 // 葉っぱの生成、移動、およびプレイヤーとの当たり判定を更新する
 void LeafCutter::LeafUpdate(BlockMap& block, Player* player)
 {
+	if (Master::gCurrentStageIndex != 0)
+	{
+		return;
+	}
+
 	LeafDebug();
 
 	// スポーン停止フラグが立っていない場合、新しい葉っぱを生成する

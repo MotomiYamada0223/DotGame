@@ -7,6 +7,7 @@
 #include "Player.h"
 #include "TutorialTextManager.h"
 #include "LeafCutter.h"
+#include "RollingBoulder.h"
 
 
 /// <summary>
@@ -21,7 +22,8 @@ public:
         Background& background,
         TutorialTextManager& tutorialText,
         GameProgress& progress,
-        LeafCutter& leaf
+        LeafCutter& leaf,
+        RollingBoulder& rollBoulder
     );
 
     void LoadInitialize(int stageNumber);
@@ -40,6 +42,8 @@ private:
     Background& mBackground;
     TutorialTextManager& mTutorialText;
     LeafCutter& mLeaf;
+    RollingBoulder& mRollingBoulder;
+
 
     // 各ステージで読み込むための処理
     void StageForest();

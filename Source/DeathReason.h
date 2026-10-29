@@ -15,6 +15,7 @@ public:
 		NeedleTrapHit,
 		DeathBlock,
 		Leaf, // 葉っぱカッター
+		RockPress // 岩に押しつぶし
 	};
 
 	// 死亡原因と番号をセットするための構造体

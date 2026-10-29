@@ -11,6 +11,7 @@ namespace
 		{ DeathReason::DeathType::NeedleTrapHit, 4 },
 		{ DeathReason::DeathType::DeathBlock, 5 },
 		{ DeathReason::DeathType::Leaf, 6 },
+		{ DeathReason::DeathType::RockPress, 7 },
 	};
 }
 

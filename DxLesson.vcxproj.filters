@@ -210,6 +210,9 @@
     <ClCompile Include="Source\BlockEffect.cpp">
       <Filter>ソース ファイル\Map関系</Filter>
     </ClCompile>
+    <ClCompile Include="Source\RollingBoulder.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Collision.h">
@@ -391,6 +394,9 @@
     </ClInclude>
     <ClInclude Include="Source\BlockEffect.h">
       <Filter>ソース ファイル\Controller系</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RollingBoulder.h">
+      <Filter>ソース ファイル</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -171,6 +171,7 @@
     <ClCompile Include="Source\Player.cpp" />
     <ClCompile Include="Source\PlayerAnimState.cpp" />
     <ClCompile Include="Source\ResourceManager.cpp" />
+    <ClCompile Include="Source\RollingBoulder.cpp" />
     <ClCompile Include="Source\Saint.cpp" />
     <ClCompile Include="Source\Scene.cpp" />
     <ClCompile Include="Source\SceneManager.cpp" />
@@ -233,6 +234,7 @@
     <ClInclude Include="Source\PlayerActionState.h" />
     <ClInclude Include="Source\PlayerAnimState.h" />
     <ClInclude Include="Source\ResourceManager.h" />
+    <ClInclude Include="Source\RollingBoulder.h" />
     <ClInclude Include="Source\Saint.h" />
     <ClInclude Include="Source\Scene.h" />
     <ClInclude Include="Source\SceneManager.h" />

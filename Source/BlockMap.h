@@ -81,6 +81,7 @@ public:
     int GetBossAreaLeft() const { return mnBossAreaLeft; }
     int GetBossAreaRight() const { return mnBossAreaRight; }
 
+
 private:
     int mnBackgroundGraph;   // 背景画像
     int mnCollisionSoftImage; // 当たり判定画像 (描画はしない)
