@@ -19,6 +19,10 @@ public:
 		LogoFall,          // タイトルロゴ上空落下
 		Blink,             // 「ステージクリア」文字の点滅
 		Display,           // 常時表示フェーズ
+		ClearCleanUp,      // クラッカー・文字・ロゴの退出・フェードアウト
+		DoorAppearWait,    // 扉出現前の静寂（少ししたら）
+		DoorAppear,        // 煙演出とともに扉出現（ポップ）
+		DoorActive,        // 扉設置完了（プレイヤー接近で開閉）
 		Finished           
 	};
 
@@ -84,6 +88,20 @@ public:
 		bool isActive;
 	};
 
+	struct DoorSmokeParticle
+	{
+		float x;
+		float y;
+		float vx;
+		float vy;
+		float size;
+		int alpha;
+		int r, g, b;
+		int life;
+		int timer;
+		bool isActive;
+	};
+
 	StageClear();
 	~StageClear();
 
@@ -98,6 +116,9 @@ public:
 
 	// ステージ背面描画
 	void DrawBehindStage(const BlockMap* pBlockMap = nullptr) const;
+
+	// ステージクリア扉描画（プレイヤー背面・背景前面）
+	void DrawDoor(const BlockMap* pBlockMap = nullptr) const;
 
 	// リセット
 	void Reset();
@@ -130,6 +151,9 @@ private:
 	void SpawnImpactDust(float x, float y);
 	void UpdateImpactDust();
 	void DrawImpactDust() const;
+	void SpawnDoorSmoke(float x, float y);
+	void UpdateDoorSmoke();
+	void DrawDoorSmoke() const;
 
 private:
 	State mState;
@@ -154,6 +178,15 @@ private:
 	bool mbLogoLanded;     // 地面に突き刺さったかのフラグ
 	int mLogoImpactTimer;  // 着地後の経過フレーム数
 	float mLogoReboundOffset; // 着地時の微小リバウンド振動オフセット
+
+	int mDoorGraphs[4];      // OpenDoor.png 分割画像ハンドル (4コマ)
+	float mDoorWorldX;       // 扉ワールドX座標
+	float mDoorWorldY;       // 扉接地ワールドY座標
+	float mDoorAnimProgress; // 扉開閉アニメーション進行度 (0.0f〜3.0f)
+	int mDoorCurrentFrame;   // 現在描画するコマ (0〜3)
+	float mDoorPopScale;     // 出現時のポップ弾性拡縮率
+	mutable bool mbDoorDrawnThisFrame; // フレーム内での扉描画済みフラグ
+	std::vector<DoorSmokeParticle> mDoorSmoke; // 扉出現煙パーティクル
 
 	const BlockMap* mpBlockMap;
 	static StageClear* sInstance;

@@ -156,6 +156,9 @@ void GameScene::Draw()
 		// オブジェクトの描画
 		mBackground.Draw(mBlockMap.GetShakeOffsetX(), mBlockMap.GetShakeOffsetY()); // スクロール背景
 
+		// ステージクリア扉（プレイヤーの背面、背景の手前に描画）
+		mStageClear.DrawDoor(&mBlockMap);
+
 		Scene::Draw();
 
 		// ステージ（ブロックマップ）の背面に突き刺さるタイトルロゴを描画

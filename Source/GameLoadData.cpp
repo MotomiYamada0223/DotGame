@@ -80,7 +80,7 @@ void GameLoadData::StageForest()
 	);
 
 	// 隠しブロックの生成
-	new HiddenBlock(VGet(3100, 1200.0f, 0.0f), &mBlockMap);
+	new HiddenBlock(VGet(3150.0f, 1150.0f, 0.0f), &mBlockMap);
 
 
 	// 上から下へ無限に降ってくる足場のスポナーを配置
