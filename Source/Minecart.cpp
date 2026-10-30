@@ -306,7 +306,7 @@ void Minecart::Update(BlockMap& blockMap, Player* player)
 			if (hit)
 			{
 				player->TakeDamage(9999);
-				player->SetDeathReason(DeathReason::DeathType::Leaf);
+				player->SetDeathReason(DeathReason::DeathType::Minecart);
 				SpawnRockDebris(pPos.x, pPos.y, 40);
 			}
 		}
