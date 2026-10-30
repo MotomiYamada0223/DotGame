@@ -9,17 +9,17 @@ class StageClear
 public:
 	enum class State
 	{
-		Inactive,          // 待機中（演出未発生）
-		PreCrackerDelay,   // 液体弾消滅後の待機時間（約0.25秒 / 15フレーム）
-		CrackerSlideIn,    // クラッカースライドイン（約0.35秒 / 22フレーム）
-		CrackerAimWait,    // クラッカー停止後の待機（約1.0秒 / 60フレーム・1基のみプレイヤー追従）
-		CrackerBurstWait,  // クラッカー破裂後・全弾丸飛翔中（全弾消滅監視）
-		PostBulletDelay,   // 全弾丸消滅後の小休止（約0.6秒 / 35フレーム）
-		LogoPreFallShake,  // ロゴ落下直前の予兆・横揺れ（約0.5秒 / 30フレーム）
-		LogoFall,          // タイトルロゴ上空落下＆地面突き刺さり（約0.5秒＋着地後余韻30フレーム）
-		Blink,             // 「ステージクリア」特大文字の点滅（約0.8秒 / 50フレーム）
-		Display,           // 常時表示フェーズ（文字固定・落下弾＆紙吹雪シミュレーション）
-		Finished           // 演出完了（リザルト画面遷移済み）
+		Inactive,          
+		PreCrackerDelay,   // 液体弾消滅後の待機時間
+		CrackerSlideIn,    // クラッカースライドイン
+		CrackerAimWait,    // クラッカー停止後の待機
+		CrackerBurstWait,  // クラッカー破裂後
+		PostBulletDelay,   // 全弾丸消滅後の小休止
+		LogoPreFallShake,  // ロゴ落下直前の予兆
+		LogoFall,          // タイトルロゴ上空落下
+		Blink,             // 「ステージクリア」文字の点滅
+		Display,           // 常時表示フェーズ
+		Finished           
 	};
 
 	struct CrackerData
@@ -29,10 +29,10 @@ public:
 		float startX;
 		float targetX;
 		float targetY;
-		float angle;           // 描画回転角（ラジアン）
-		float shootAngleRad;   // 画面空間における射出方向角（ラジアン）
+		float angle;           // 描画回転角
+		float shootAngleRad;   // 画面空間における射出方向角
 		bool isRightSide;
-		float recoilOffset;    // 後退反動オフセット(px)
+		float recoilOffset;    // 後退反動オフセット
 		float squishScaleX;    // 横方向弾性スケール
 		float squishScaleY;    // 縦方向弾性スケール
 		float mouthX;          // 発射口X
@@ -51,7 +51,7 @@ public:
 		float sizeW;
 		float sizeH;
 		int r, g, b;           // 色成分
-		int shapeType;         // 0: 長方形リボン, 1: スパークル星
+		int shapeType;         // 長方形リボン, 星
 		int timer;
 		int life;
 		bool isActive;
@@ -93,13 +93,13 @@ public:
 	// 毎フレームの更新
 	void Update(Player* player = nullptr, BlockMap* pBlockMap = nullptr);
 
-	// 描画（最前面UIとして描画）
+	// 描画
 	void Draw() const;
 
-	// ステージ背面描画（ブロックマップの奥に刺さるロゴの描画）
+	// ステージ背面描画
 	void DrawBehindStage(const BlockMap* pBlockMap = nullptr) const;
 
-	// リセット（ステージ再開時など）
+	// リセット
 	void Reset();
 
 	// 状態取得

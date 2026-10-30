@@ -339,7 +339,7 @@ namespace KingSlimeTitleConstants
 	static constexpr int   ColorCyanR             = 30;     // 濃い水色
 	static constexpr int   ColorCyanG             = 160;    
 	static constexpr int   ColorCyanB             = 240;    
-	static constexpr int   CharCount              = 8;      // タイトル文字数（「キングスライミー」で8文字）
+	static constexpr int   CharCount              = 8;      // タイトル文字数「キングスライミー」
 }
 
 // キングスライムAI（ジャンプ攻撃・ビーム攻撃）用の定数
