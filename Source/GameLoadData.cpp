@@ -145,7 +145,7 @@ void GameLoadData::StageCave()
 {
 	// CSVのファイル読み込み
 	// チュートリアルテキストとブロックマップのタイル
-	mTutorialText.Initialize(CsvPath::TutorialText, CsvPath::TutorialDeathText);
+	mTutorialText.Initialize(CsvPath::TutorialCave, CsvPath::TutorialDeathText);
 
 	mRollingBoulder.Initialize();
 
