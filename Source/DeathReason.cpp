@@ -13,6 +13,7 @@ namespace
 		{ DeathReason::DeathType::Leaf, 6 },
 		{ DeathReason::DeathType::RockPress, 7 },
 		{ DeathReason::DeathType::Minecart, 8 },
+		{ DeathReason::DeathType::HotWater, 9 },
 	};
 }
 

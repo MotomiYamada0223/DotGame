@@ -367,6 +367,19 @@ void Minecart::Draw(int scrollX, int scrollY)
 		}
 	}
 
+
+	//// デバッグ用：プレイヤーとの当たり判定範囲を視覚化するため、判定の矩形枠を描画する
+	//{
+	//	int cLeft = static_cast<int>(mX - 35.0f) - scrollX;
+	//	int cRight = static_cast<int>(mX + 35.0f) - scrollX;
+	//	int cTop = static_cast<int>(mY - 22.0f) - scrollY;
+	//	int cBottom = static_cast<int>(mY + 22.0f) - scrollY;
+
+	//	// 内部を塗りつぶさず枠線のみで描画（赤色）
+	//	DrawBox(cLeft, cTop, cRight, cBottom, GetColor(255, 0, 0), FALSE);
+	//}
+
+
 	// 超加速時の残像エフェクト（スピード感を演出）
 	if (mState == State::SuperBoostLeft)
 	{

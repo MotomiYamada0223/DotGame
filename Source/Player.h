@@ -73,6 +73,31 @@ public: // アクセサ
 	// ジャンプ中かの判定
 	bool GetIsGrounded() const { return mbIsJumping; }
 
+	void SetInHotSpring(bool inWater) { mbInHotSpring = inWater; }
+	bool GetInHotSpring() const { return mbInHotSpring; }
+	void SetHotSpringHeat(float heat) { mHotSpringHeat = heat; }
+	float GetHotSpringHeat() const { return mHotSpringHeat; }
+
+
+	void Heal(int amount)
+	{
+		if (!isDead && mHp > 0)
+		{
+			mHp += amount;
+			if (mHp > mMaxHp) mHp = mMaxHp;
+		}
+	}
+
+	void HealHalfHeart()
+	{
+		if (!isDead && mHp > 0 && mMaxHp > 0)
+		{
+			int step = (mMaxHp + 5) / 6;
+			if (step < 1) step = 1;
+			Heal(step);
+		}
+	}
+
 
 private:
 	// インスタンスで持っているもの
@@ -175,4 +200,7 @@ private: // 復活処理関係
 	bool mbEvadedBossSpawn = false;
 	int mEvasionTimer = 0;
 	bool mbSwordReadyStance = false;
+
+	bool mbInHotSpring = false;
+	float mHotSpringHeat = 0.0f;
 };

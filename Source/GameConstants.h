@@ -44,14 +44,14 @@ namespace UIGraphPath
 // UI画像関係
 namespace UIGraphController
 {
-	static const int SaintFramePosX = 500; // 天使のフレーム位置
-	static const int TextFramePosX = 695; // テキストのフレーム位置
+	static const int SaintFramePosX = 490; // 天使のフレーム位置
+	static const int TextFramePosX = 1255; // テキストのフレーム位置
 	static const int FramePosY = 35; // フレーム位置Y
 
-	static const int LifePosX = 120; // 体力はーとの位置X
+	static const int LifePosX = 80; // 体力はーとの位置X
 	static const int LifePosY = 120; // 体力はーとの位置Y
-	static const int LifeDistance = 130; // ハートの間隔
-	static constexpr float LifeScale = 4.5f; // ハートの拡大率
+	static const int LifeDistance = 100; // ハートの間隔
+	static constexpr float LifeScale = 3.7f; // ハートの拡大率
 }
 
 namespace MovingFloorConstants
@@ -64,8 +64,8 @@ namespace MovingFloorConstants
 // 天使の位置
 namespace SainController
 {
-	static const int PosX = UIGraphController::SaintFramePosX + 95; // 天使の位置X
-	static const int PosY = UIGraphController::FramePosY + 90; // 天使の位置Y
+	static const int PosX = UIGraphController::SaintFramePosX; // 天使の位置X
+	static const int PosY = UIGraphController::FramePosY + 130; // 天使の位置Y
 	static constexpr float Scale = 5.5f; // 画像の拡大率
 }
 

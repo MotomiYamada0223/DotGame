@@ -16,7 +16,8 @@ public:
 		DeathBlock,
 		Leaf, // 葉っぱカッター
 		RockPress, // 岩に押しつぶし
-		Minecart // カート
+		Minecart, // カート
+		HotWater
 	};
 
 	// 死亡原因と番号をセットするための構造体

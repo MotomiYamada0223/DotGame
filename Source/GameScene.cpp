@@ -47,6 +47,7 @@ void GameScene::Initialize()
 	// プレイヤーの生成
 	mpPlayer = new Player(VGet(0, 400, 0.0f));
 	mLoadData.LoadInitialize(Master::gCurrentStageIndex);
+	mHotSpring.Initialize();
 	mStageClear.Reset();
 
 	MovingFloor::s_IsReverseAndDashTriggered = false;
@@ -61,7 +62,7 @@ void GameScene::Update()
 	mLeaf.LeafUpdate(mBlockMap, mpPlayer);
 	mRollingBoulder.Update(mBlockMap, mpPlayer);
 	mCart.Update(mBlockMap, mpPlayer);
-
+	mHotSpring.Update(mBlockMap, mpPlayer);
 
 	// デバッグ
 	if (InputManager::CheckDownKey(KEY_INPUT_9))
@@ -168,6 +169,7 @@ void GameScene::Draw()
 		mLeaf.LeafDraw(mBlockMap);
 		mRollingBoulder.Draw(mBlockMap.GetScrollX(), mBlockMap.GetScrollY());
 		mCart.Draw(mBlockMap.GetScrollX(), mBlockMap.GetScrollY());
+		mHotSpring.Draw(mBlockMap.GetScrollX(), mBlockMap.GetScrollY());
 
 
 
