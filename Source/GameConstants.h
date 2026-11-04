@@ -226,8 +226,8 @@ namespace TextPosition
 namespace TutorialTextControll
 {
 	static const int TextX = UIGraphController::SaintFramePosX + 300;
-	static const int TextY = UIGraphController::FramePosY + 30;
-	static const int TextSize = 45;
+	static const int TextY = UIGraphController::FramePosY + 35;
+	static const int TextSize = 43;
 
 	static constexpr float MaxFallDeathTimer = 180.0f;
 }
