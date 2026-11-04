@@ -181,10 +181,10 @@ void Minecart::Update(BlockMap& blockMap, Player* player)
 			float pTop = pPos.y - 50.0f;
 			float pBottom = pPos.y + 50.0f;
 
-			float cLeft = mX - 35.0f;
-			float cRight = mX + 35.0f;
-			float cTop = mY - 22.0f;
-			float cBottom = mY + 22.0f;
+			float cLeft = mX - 25.0f;
+			float cRight = mX + 25.0f;
+			float cTop = mY - 15.0f;
+			float cBottom = mY + 15.0f;
 
 			if (pRight >= cLeft && pLeft <= cRight && pBottom >= cTop && pTop <= cBottom)
 			{
@@ -402,4 +402,5 @@ void Minecart::Draw(int scrollX, int scrollY)
 	{
 		DrawRotaGraph(sx, sy, 1.0, static_cast<double>(mAngle), mGraphHandle, TRUE);
 	}
+
 }
