@@ -278,8 +278,10 @@ namespace FeintFloorConstants
 // スライム用の定数
 namespace SlimeConstants
 {
-	static constexpr float CollisionWidth = 70.0f;  // 当たり判定の横幅
+	static constexpr float CollisionWidth = 70.0f;  // 当たり判定の幅
 	static constexpr float CollisionHeight = 65.0f; // 当たり判定の縦幅
+	static constexpr int   TackleChargeFrames = 30; // 体当たり攻撃の起こり（溜め）フレーム数
+	static constexpr float TackleShakePower   = 2.2f; // 起こり（溜め）中の震えの強さ
 }
 
 // ボス戦開始演出用の定数
