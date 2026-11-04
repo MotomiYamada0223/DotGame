@@ -41,14 +41,22 @@ MovingFloor::MovingFloor(VECTOR startPos, VECTOR endPos, float speed, MovePatter
     } else {
         mVelocity = VGet(0, 0, 0);
     }
-    // もし同じ動き（Velocity）を持つ他の床がすでに加速済みなら、自分も最初から加速状態にする
-        if (mFeature == FloorFeature::SpeedUpOnRide) {
+    // もし同じ属性・同じ動き（Velocity）・同じレーンを持つ他の床がすでに加速済みなら、自分も最初から加速状態にする
+    if (mFeature == FloorFeature::SpeedUpOnRide) {
         for (MovingFloor* floor : s_AllMovingFloors) {
-            if (floor != this && floor->mIsSpedUp && 
+            if (floor != this && floor->mFeature == FloorFeature::SpeedUpOnRide && floor->mIsSpedUp && 
                 floor->mVelocity.x == this->mVelocity.x && floor->mVelocity.y == this->mVelocity.y) {
-                mCurrentSpeed = mBaseSpeed * MovingFloorConstants::SpeedUpMultiplier;
-                mIsSpedUp = true;
-                break;
+                bool isSameTrack = false;
+                if (std::abs(this->mVelocity.x) > 0.001f) {
+                    isSameTrack = (std::abs(floor->GetPosition().y - this->GetPosition().y) < 50.0f);
+                } else {
+                    isSameTrack = (std::abs(floor->GetPosition().x - this->GetPosition().x) < 50.0f);
+                }
+                if (isSameTrack) {
+                    mCurrentSpeed = mBaseSpeed * MovingFloorConstants::SpeedUpMultiplier;
+                    mIsSpedUp = true;
+                    break;
+                }
             }
         }
     }
@@ -89,14 +97,22 @@ MovingFloor::MovingFloor(VECTOR startPos, VECTOR velocity, MovePattern pattern, 
     mWidth = static_cast<float>(w);
     mHeight = static_cast<float>(h);
 
-    // もし同じ動き（Velocity）を持つ他の床がすでに加速済みなら、自分も最初から加速状態にする
+    // もし同じ属性・同じ動き（Velocity）・同じレーンを持つ他の床がすでに加速済みなら、自分も最初から加速状態にする
     if (mFeature == FloorFeature::SpeedUpOnRide) {
         for (MovingFloor* floor : s_AllMovingFloors) {
-            if (floor != this && floor->mIsSpedUp && 
+            if (floor != this && floor->mFeature == FloorFeature::SpeedUpOnRide && floor->mIsSpedUp && 
                 floor->mVelocity.x == this->mVelocity.x && floor->mVelocity.y == this->mVelocity.y) {
-                mCurrentSpeed = mBaseSpeed * MovingFloorConstants::SpeedUpMultiplier;
-                mIsSpedUp = true;
-                break;
+                bool isSameTrack = false;
+                if (std::abs(this->mVelocity.x) > 0.001f) {
+                    isSameTrack = (std::abs(floor->GetPosition().y - this->GetPosition().y) < 50.0f);
+                } else {
+                    isSameTrack = (std::abs(floor->GetPosition().x - this->GetPosition().x) < 50.0f);
+                }
+                if (isSameTrack) {
+                    mCurrentSpeed = mBaseSpeed * MovingFloorConstants::SpeedUpMultiplier;
+                    mIsSpedUp = true;
+                    break;
+                }
             }
         }
     }
@@ -232,12 +248,20 @@ void MovingFloor::CheckPlayerRiding()
             mIsSpedUp = true;
             mCurrentSpeed = mBaseSpeed * MovingFloorConstants::SpeedUpMultiplier;
             
-            // 同じ方向・同じ速度の他の床も一斉に加速させる
+            // 同じ方向・同じ速度・同じレーンの他の床も一斉に加速させる
             for (MovingFloor* floor : s_AllMovingFloors) {
                 if (floor != this && floor->mFeature == FloorFeature::SpeedUpOnRide && 
                     floor->mVelocity.x == this->mVelocity.x && floor->mVelocity.y == this->mVelocity.y) {
-                    floor->mCurrentSpeed = floor->mBaseSpeed * MovingFloorConstants::SpeedUpMultiplier;
-                    floor->mIsSpedUp = true;
+                    bool isSameTrack = false;
+                    if (std::abs(this->mVelocity.x) > 0.001f) {
+                        isSameTrack = (std::abs(floor->GetPosition().y - this->GetPosition().y) < 50.0f);
+                    } else {
+                        isSameTrack = (std::abs(floor->GetPosition().x - this->GetPosition().x) < 50.0f);
+                    }
+                    if (isSameTrack) {
+                        floor->mCurrentSpeed = floor->mBaseSpeed * MovingFloorConstants::SpeedUpMultiplier;
+                        floor->mIsSpedUp = true;
+                    }
                 }
             }
         }

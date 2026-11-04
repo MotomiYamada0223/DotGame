@@ -40,6 +40,9 @@ EnemySlime::EnemySlime(VECTOR initPos)
     mTargetPlayerPos = VGet(0, 0, 0);
     mHasJumped = false;
     mJumpSpeedX = 0.0f;
+    mIsCharging = false;
+    mHasChargedThisAttack = false;
+    mChargeTimer = 0;
 
     UpdateStatusByProgress(GameProgress::Tutorial1);
 }
@@ -63,7 +66,14 @@ void EnemySlime::Update()
 
     if (mpAnimIdle) mpAnimIdle->Update();
     if (mpAnimMove) mpAnimMove->Update();
-    if (mpAnimAttack) mpAnimAttack->Update();
+    if (mpAnimAttack)
+    {
+        // 溜め（起こり）中はアニメーション更新を一時停止（Frame 2 で固定）
+        if (!(mIsAttacking && mIsCharging))
+        {
+            mpAnimAttack->Update();
+        }
+    }
 }
 
 void EnemySlime::Draw()
@@ -116,7 +126,20 @@ void EnemySlime::Draw()
 
         if (currentAnim != nullptr)
         {
-            currentAnim->SetPosition(VGet(screenX, screenY, 0.0f));
+            float drawScreenX = screenX;
+            float drawScreenY = screenY;
+
+            // 攻撃の起こり（溜め）演出：キングスライムと同様に小刻みに震わせる
+            if (mIsAttacking && mIsCharging)
+            {
+                const float shakePower = SlimeConstants::TackleShakePower;
+                float shakeOffsetX = (static_cast<float>(GetRand(static_cast<int>(shakePower * 20.0f))) * 0.1f) - shakePower;
+                float shakeOffsetY = (static_cast<float>(GetRand(static_cast<int>(shakePower * 10.0f))) * 0.1f) - (shakePower * 0.5f);
+                drawScreenX += shakeOffsetX;
+                drawScreenY += shakeOffsetY;
+            }
+
+            currentAnim->SetPosition(VGet(drawScreenX, drawScreenY, 0.0f));
             bool turnFlag = mIsFacingRight;
             currentAnim->Draw(turnFlag);
         }
@@ -165,28 +188,72 @@ void EnemySlime::EnemyMove(BlockMap& blockMap)
                     // プレイヤーの少し奥(100.0f)を目標にする
                     if (mTargetPlayerPos.x > enemyX) {
                         mTargetPlayerPos.x += 100.0f;
+                        mIsFacingRight = true;
                     }
                     else {
                         mTargetPlayerPos.x -= 100.0f;
+                        mIsFacingRight = false;
                     }
                 }
 
-                // 4枚目(インデックス3)になったらジャンプ突進開始
-                if (currentFrame == 3 && !mHasJumped)
+                // 3枚目(インデックス2: 縮んで力を溜めるポーズ)になったら溜め（震え）開始
+                if (currentFrame == 2 && !mHasJumped && !mHasChargedThisAttack)
                 {
+                    mIsCharging = true;
+                    mHasChargedThisAttack = true;
+                    mChargeTimer = SlimeConstants::TackleChargeFrames;
+                    mIsFacingRight = (playerObj->GetPosition().x > enemyX);
+                }
+
+                // 溜め（起こり）中の処理
+                if (mIsCharging)
+                {
+                    mChargeTimer--;
+                    mCurrentMoveDirection = 0.0f;
+
+                    if (mChargeTimer <= 0)
+                    {
+                        mIsCharging = false;
+
+                        // 溜め完了！4枚目(インデックス3)に進めてジャンプ突進開始
+                        if (mpAnimAttack)
+                        {
+                            mpAnimAttack->SetCurrentFrame(3);
+                        }
+                        mbIsJumping = true;
+                        mHasJumped = true;
+
+                        // プレイヤーの最新位置に向けて突進目標を再設定
+                        mTargetPlayerPos = playerObj->GetPosition();
+                        if (mTargetPlayerPos.x > enemyX) {
+                            mTargetPlayerPos.x += 100.0f;
+                            mIsFacingRight = true;
+                        }
+                        else {
+                            mTargetPlayerPos.x -= 100.0f;
+                            mIsFacingRight = false;
+                        }
+
+                        // アニメーションは全7枚、インデックス3(4枚目)から飛びつき開始
+                        // 残り4枚(3,4,5,6) × 7フレーム = 約28フレーム
+                        float jumpFrames = 28.0f;
+
+                        // 攻撃モーション終了時に目標のX座標へ必ず到達するように速度を算出
+                        mJumpSpeedX = (mTargetPlayerPos.x - enemyX) / jumpFrames;
+
+                        // 目標のY座標に必ず到達するように初速を算出
+                        float deltaY = mTargetPlayerPos.y - enemyY;
+                        velocityY = (deltaY / jumpFrames) - (0.5f * gravity * jumpFrames);
+                    }
+                }
+                else if (currentFrame >= 3 && !mHasJumped)
+                {
+                    // フォールバック（溜めを経由しなかった場合の突進開始）
                     mbIsJumping = true;
                     mHasJumped = true;
 
-                    // アニメーションは全7枚、インデックス3(4枚目)から飛びつき開始
-                    // SetInterval(6)の場合、残り4枚(3,4,5,6) × 6フレーム = 約24フレーム
-                    float jumpFrames = 24.0f;
-
-                    // 攻撃モーション終了時に目標のX座標へ必ず到達するように速度を算出
+                    float jumpFrames = 28.0f;
                     mJumpSpeedX = (mTargetPlayerPos.x - enemyX) / jumpFrames;
-
-                    // 攻撃モーション終了時に目標のY座標（あるいは着地）に必ず到達するように初速を算出
-                    // 等加速度直線運動: Δy = v0 * t + 0.5 * g * t^2
-                    // v0 = (Δy / t) - 0.5 * g * t
                     float deltaY = mTargetPlayerPos.y - enemyY;
                     velocityY = (deltaY / jumpFrames) - (0.5f * gravity * jumpFrames);
                 }
@@ -208,6 +275,9 @@ void EnemySlime::EnemyMove(BlockMap& blockMap)
                 {
                     mIsAttacking = false;
                     mHasJumped = false;
+                    mIsCharging = false;
+                    mHasChargedThisAttack = false;
+                    mChargeTimer = 0;
                     mTargetPlayerPos = VGet(0, 0, 0);
                     // クールタイム3〜4秒
                     mAttackCooldownTimer = 180 + GetRand(60);
@@ -226,6 +296,9 @@ void EnemySlime::EnemyMove(BlockMap& blockMap)
                         mIsAttacking = true;
                         mCurrentMoveDirection = 0.0f;
                         mHasJumped = false;
+                        mIsCharging = false;
+                        mHasChargedThisAttack = false;
+                        mChargeTimer = 0;
                         mTargetPlayerPos = VGet(0, 0, 0);
                         if (mpAnimAttack) mpAnimAttack->ResetAnimation();
 
@@ -296,6 +369,9 @@ void EnemySlime::EnemyMove(BlockMap& blockMap)
     {
         mIsAttacking = false;
         mHasJumped = false;
+        mIsCharging = false;
+        mHasChargedThisAttack = false;
+        mChargeTimer = 0;
         mTargetPlayerPos = VGet(0, 0, 0);
         mIsChasing = false;
         mCurrentMoveDirection = 0.0f;

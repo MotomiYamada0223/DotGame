@@ -19,14 +19,20 @@ NeedleTrap::NeedleTrap(VECTOR initPos, TrapType type)
     
     mGraphHandle = LoadGraph(CharacterGraphPath::Needle.c_str());
 
-    if (mType == TrapType::PopUp)
+    if (mType == TrapType::Normal)
+    {
+        mvPosition.y = mBaseY;
+        mTargetY = mBaseY;
+        mState = TrapState::Finished;
+    }
+    else if (mType == TrapType::PopUp)
     {
         mvPosition.y = mBaseY + 64.0f;
         mTargetY = mBaseY - 32.0f;
     }
     else if (mType == TrapType::AntiJump)
     {
-        mvPosition.y = mBaseY + 32.0f;
+        mvPosition.y = mBaseY;
         mTargetY = mBaseY - 128.0f;
     }
 
@@ -74,7 +80,7 @@ void NeedleTrap::Draw()
 void NeedleTrap::EnemyMove(BlockMap& blockMap)
 {
     mpBlockMap = &blockMap;
-    if (mState == TrapState::Finished) return;
+    if (mState == TrapState::Finished || mType == TrapType::Normal) return;
 
     Scene* currentScene = Master::mpGameManager->GetSceneManager()->GetCurrentScene();
     if (!currentScene) return;
@@ -97,7 +103,8 @@ void NeedleTrap::EnemyMove(BlockMap& blockMap)
     {
         if (mType == TrapType::PopUp)
         {
-            if (distX < 150.0f)
+            // 横方向の感知距離を狭め、高い空中ジャンプ中の暴発を防ぐため地面付近（低空・接地時）のみ感知
+            if (distX < 85.0f && playerY >= mBaseY - 80.0f)
             {
                 mState = TrapState::Active;
             }

@@ -4,6 +4,7 @@
 #include "Player.h"
 #include "BlockMap.h"
 #include <algorithm>
+#include <cmath>
 using namespace std;
 
 FloorSpawner::FloorSpawner(VECTOR spawnPos, VECTOR velocity, int spawnIntervalFrames, Player* player, BlockMap* blockMap, FloorFeature feature, std::string imagePath)
@@ -31,14 +32,22 @@ void FloorSpawner::Update()
 
     int timerAdd = 1;
     
-    // スポナー自身が SpeedUpOnRide の場合、同じ系統の床がすでに加速済みかチェックする
+    // スポナー自身が SpeedUpOnRide の場合、同じ系統・同じレーンの床がすでに加速済みかチェックする
     if (mFeature == FloorFeature::SpeedUpOnRide) {
         for (MovingFloor* floor : MovingFloor::s_AllMovingFloors) {
             if (floor->GetFeature() == FloorFeature::SpeedUpOnRide && floor->IsSpedUp() &&
                 floor->GetVelocity().x == mVelocity.x && floor->GetVelocity().y == mVelocity.y) {
-                // 加速済みなら、床の速度が上がった倍率と同じだけタイマーの進みも速くする
-                timerAdd = static_cast<int>(MovingFloorConstants::SpeedUpMultiplier);
-                break;
+                bool isSameTrack = false;
+                if (std::abs(mVelocity.x) > 0.001f) {
+                    isSameTrack = (std::abs(floor->GetPosition().y - mSpawnPos.y) < 50.0f);
+                } else {
+                    isSameTrack = (std::abs(floor->GetPosition().x - mSpawnPos.x) < 50.0f);
+                }
+                if (isSameTrack) {
+                    // 加速済みなら、床の速度が上がった倍率と同じだけタイマーの進みも速くする
+                    timerAdd = static_cast<int>(MovingFloorConstants::SpeedUpMultiplier);
+                    break;
+                }
             }
         }
     }
@@ -49,10 +58,11 @@ void FloorSpawner::Update()
             mIsReversed = true;
             
             // スポナーの出現Y座標を反転する（TopにいたならBottomへ、BottomにいたならTopへ）
-            if (mSpawnPos.y < 500.0f) {
-                mSpawnPos.y = max(MovingFloorConstants::SpawnYTop, MovingFloorConstants::SpawnYBottom);
+            float midY = (MovingFloorConstants::SpawnYTop + MovingFloorConstants::SpawnYBottom) * 0.5f;
+            if (mSpawnPos.y < midY) {
+                mSpawnPos.y = (std::max)(MovingFloorConstants::SpawnYTop, MovingFloorConstants::SpawnYBottom);
             } else {
-                mSpawnPos.y = min(MovingFloorConstants::SpawnYTop, MovingFloorConstants::SpawnYBottom);
+                mSpawnPos.y = (std::min)(MovingFloorConstants::SpawnYTop, MovingFloorConstants::SpawnYBottom);
             }
         }
         
