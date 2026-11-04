@@ -24,8 +24,9 @@ namespace PlayerConstants
 	static const int PlayerCollisionWidth = 32; // プレイヤーの幅
 	static const int PlayerCollisionHeight = 100; // プレイヤーの高さ
 
-	static const int PlayerAttackWidth = 600; // プレイヤーの攻撃範囲の幅
-	static const int PlayerAttackHeight = 40; // プレイヤーの攻撃範囲の高さ
+	static const int PlayerAttackWidth = 130; // プレイヤーの攻撃範囲の幅
+	static const int PlayerAttackHeight = 50; // プレイヤーの攻撃範囲の高さ
+	static const int PlayerAttackDist = 10; // プレイヤーからどれだけ離れているか
 
 	static const int MaxLive = 3; // プレイヤーの最大残機
 
@@ -43,14 +44,14 @@ namespace UIGraphPath
 // UI画像関係
 namespace UIGraphController
 {
-	static const int SaintFramePosX = 500; // 天使のフレーム位置
-	static const int TextFramePosX = 695; // テキストのフレーム位置
+	static const int SaintFramePosX = 490; // 天使のフレーム位置
+	static const int TextFramePosX = 1255; // テキストのフレーム位置
 	static const int FramePosY = 35; // フレーム位置Y
 
-	static const int LifePosX = 120; // 体力はーとの位置X
+	static const int LifePosX = 80; // 体力はーとの位置X
 	static const int LifePosY = 120; // 体力はーとの位置Y
-	static const int LifeDistance = 130; // ハートの間隔
-	static constexpr float LifeScale = 4.5f; // ハートの拡大率
+	static const int LifeDistance = 100; // ハートの間隔
+	static constexpr float LifeScale = 3.7f; // ハートの拡大率
 }
 
 namespace MovingFloorConstants
@@ -63,8 +64,8 @@ namespace MovingFloorConstants
 // 天使の位置
 namespace SainController
 {
-	static const int PosX = UIGraphController::SaintFramePosX + 95; // 天使の位置X
-	static const int PosY = UIGraphController::FramePosY + 90; // 天使の位置Y
+	static const int PosX = UIGraphController::SaintFramePosX; // 天使の位置X
+	static const int PosY = UIGraphController::FramePosY + 130; // 天使の位置Y
 	static constexpr float Scale = 5.5f; // 画像の拡大率
 }
 
@@ -92,6 +93,10 @@ namespace CharacterGraphPath
 	static const std::string KingSlimeAttack = "Resource/Enemy/KingSlime/kingSlime_attack.png";
 	static const std::string KingSlimeLongRangeAttack = "Resource/Enemy/KingSlime/kingSlime_long_range_attack.png";
 	static const std::string KingSlimeDeath = "Resource/Enemy/KingSlime/kingSlime_death.png";
+
+
+	// スケルトン画像
+	static const std::string SkeletonIdel = "Resource/Enemy/KingSlime/kingSlime_death.png";
 
 
 	// 天使の画像
@@ -151,8 +156,9 @@ namespace ScrollGraphPath
 // 読み込むCSVパス
 namespace CsvPath
 {
-	static const std::string TutorialText = "Resource/TutorialTexts/tutorialTextData.csv"; // チュートリアルテキストのCSV
+	static const std::string TutorialText = "Resource/TutorialTexts/tutorialTextData.csv"; // 始まりの森で読み込むテキスト
 	static const std::string TutorialDeathText = "Resource/TutorialTexts/tutorialDeathTextData.csv"; // 死亡テキストのCSV
+	static const std::string TutorialCave = "Resource/TutorialTexts/tutorialCaveText.csv"; //洞窟ステージで読み込むテキスト
 }
 
 // よく使う色
@@ -192,6 +198,11 @@ namespace BlockCollisionColor
 	static constexpr int BOSSAREA_R = 255;
 	static constexpr int BOSSAREA_G = 255;
 	static constexpr int BOSSAREA_B = 0;
+
+	// オレンジ 破壊可能
+	constexpr int BREAKABLE_R = 255;
+	constexpr int BREAKABLE_G = 128;
+	constexpr int BREAKABLE_B = 0;
 }
 
 // プレイヤーがブロックマップとの当たり判定で使用するサイズ
@@ -219,8 +230,8 @@ namespace TextPosition
 namespace TutorialTextControll
 {
 	static const int TextX = UIGraphController::SaintFramePosX + 300;
-	static const int TextY = UIGraphController::FramePosY + 30;
-	static const int TextSize = 45;
+	static const int TextY = UIGraphController::FramePosY + 35;
+	static const int TextSize = 43;
 
 	static constexpr float MaxFallDeathTimer = 180.0f;
 }

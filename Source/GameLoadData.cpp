@@ -8,25 +8,31 @@
 #include "FloorSpawner.h"
 #include "HiddenBlock.h"
 #include "NeedleTrap.h"
+#include "EnemySkeleton.h"
 
 GameLoadData::GameLoadData(
 	Player*& player,
 	BlockMap& blockMap,
 	Background& background,
 	TutorialTextManager& tutorialText,
-	GameProgress& progress
+	GameProgress& progress,
+	RollingBoulder& rollBoulder,
+	Minecart& cart
 )
 	: mpPlayer(player)
 	, mProgress(progress)
 	, mBlockMap(blockMap)
 	, mBackground(background)
 	, mTutorialText(tutorialText)
+	, mRollingBoulder(rollBoulder)
+	, mCart(cart)
 {
 }
 
 
 void GameLoadData::LoadInitialize(int stageNumber)
 {
+	mnLoadNumber = stageNumber;
 	if (stageNumber == 0)
 	{
 		StageForest();
@@ -43,12 +49,12 @@ void GameLoadData::LoadInitialize(int stageNumber)
 
 void GameLoadData::LoadDraw()
 {
-	DebugUpdate();
+	DebugDraw();
 }
 
 void GameLoadData::LoadUpdate()
 {
-	DebugDraw();
+	DebugUpdate();
 }
 
 
@@ -145,8 +151,9 @@ void GameLoadData::StageCave()
 {
 	// CSVのファイル読み込み
 	// チュートリアルテキストとブロックマップのタイル
-	mTutorialText.Initialize(CsvPath::TutorialText, CsvPath::TutorialDeathText);
+	mTutorialText.Initialize(CsvPath::TutorialCave, CsvPath::TutorialDeathText);
 
+	mRollingBoulder.Initialize();
 
 	// 背景画像と当たり判定画像を読み込む
 	if (!mBlockMap.Load(
@@ -161,12 +168,11 @@ void GameLoadData::StageCave()
 	// 敵の生成
 	if (mpPlayer != nullptr)
 	{
-		// 画面左側 (X=0 付近)、Yはプレイヤーと同じ高さで生成
-		EnemySlime* slime = new EnemySlime(VGet(1000.0f, mpPlayer->GetPosition().y, 0.0f));
-		slime->UpdateStatusByProgress(mProgress);
-		EnemySlime* slime1 = new EnemySlime(VGet(1700.0f, mpPlayer->GetPosition().y, 0.0f));
-		slime1->UpdateStatusByProgress(mProgress);
+		new EnemySkeleton(VGet(2400.0f, 976.0f, 0.0f));
+		new EnemySkeleton(VGet(6745.0f, 1850.0f, 0.0f));
 	}
+
+	mCart.Initialize();
 
 }
 

@@ -473,7 +473,7 @@ void Player::Update()
 		hasAttackRect = true;
 		int attackWidth = PlayerConstants::PlayerAttackWidth;
 		int attackHeight = PlayerConstants::PlayerAttackHeight;
-		int halfSizeX = PlayerAnimState::FRAME_WIDTH / 2;
+		int halfSizeX = PlayerConstants::PlayerAttackDist;
 		float atkLeft;
 
 		if (isFacingRight)
@@ -489,6 +489,18 @@ void Player::Update()
 		atkPos = VGet(atkLeft, atkTop, 0.0f);
 		atkSize = VGet((float)attackWidth, (float)attackHeight, 0.0f);
 	}
+
+	if (hasAttackRect && mpBlockMap != nullptr)
+	{
+		mpBlockMap->BreakWallAtArea(
+			atkPos.x,
+			atkPos.y,
+			atkPos.x + atkSize.x,
+			atkPos.y + atkSize.y
+			);
+	}
+
+
 
 	for (Object2D* obj : enemyList)
 	{
@@ -540,7 +552,7 @@ void Player::Update()
 				if (!mIsBlinkWallDeathImmune)
 				{
 					TakeDamage(mHp);
-					mDeathReason = DeathReason::DeathType::EnemyHit;
+					mDeathReason = DeathReason::DeathType::NormalDeath;
 				}
 			}
 			else
@@ -556,7 +568,18 @@ void Player::Update()
 
 						if (mHp - dmg <= 0)
 						{
-							mDeathReason = DeathReason::DeathType::EnemyHit;
+							if (dynamic_cast<EnemySlime*>(enemy) != nullptr)
+							{
+								mDeathReason = DeathReason::DeathType::EnemySlime;
+							}
+							else if (dynamic_cast<EnemySkeleton*>(enemy) != nullptr)
+							{
+								mDeathReason = DeathReason::DeathType::EnemySkeleton;
+							}
+							else
+							{
+								mDeathReason = DeathReason::DeathType::NormalDeath;
+							}
 						}
 						TakeDamage(dmg);
 					}
@@ -812,7 +835,7 @@ void Player::Draw()
 		int attackWidth = PlayerConstants::PlayerAttackWidth;
 		int attackHeight = PlayerConstants::PlayerAttackHeight;
 		int rectLeft, rectTop, rectRight, rectBottom;
-		int halfSizeX = PlayerAnimState::FRAME_WIDTH / 2;
+		int halfSizeX = PlayerConstants::PlayerAttackDist;
 
 		if (isFacingRight)
 		{

@@ -27,13 +27,43 @@ BlockMap::~BlockMap()
 {
 }
 
-
 // マップ読み込み
 bool BlockMap::Load(
     const std::string& backgroundPath,
     const std::string& collisionPath)
 {
     if (mbIsLoaded) { return true; }
+
+    // 破壊可能壁の読み込み
+    mWalls.clear();
+    if (backgroundPath.find("Cave") != std::string::npos)
+    {
+        FILE* fp = nullptr;
+        fopen_s(&fp, "Resource/Map/Cave_WallConfig.txt", "r");
+        if (fp)
+        {
+            int count = 0;
+            if (fscanf_s(fp, "%d", &count) == 1)
+            {
+                for (int i = 0; i < count; ++i)
+                {
+                    int minX = 0, minY = 0, maxX = 0, maxY = 0;
+                    char pathBuf[256] = { 0 };
+                    if (fscanf_s(fp, "%d %d %d %d %255s",
+                        &minX, &minY, &maxX, &maxY,
+                        pathBuf, (unsigned int)sizeof(pathBuf)) == 5)
+                    {
+                        auto wall = std::make_shared<DestructibleWall>();
+                        if (wall->Load(minX, minY, maxX, maxY, pathBuf))
+                        {
+                            mWalls.push_back(wall);
+                        }
+                    }
+                }
+            }
+            fclose(fp);
+        }
+    }
 
     // 背景画像の読み込み
     mnBackgroundGraph =
@@ -115,6 +145,18 @@ bool BlockMap::Load(
                 mCollisionData[
                     GetCollisionIndex(x, y)
                 ] = CollisionType::None;
+                continue;
+            }
+
+            // オレンジ色ならBreakableBlock
+            if (r == BlockCollisionColor::BREAKABLE_R &&
+                g == BlockCollisionColor::BREAKABLE_G &&
+                b == BlockCollisionColor::BREAKABLE_B)
+            {
+                mCollisionData[
+                    GetCollisionIndex(x, y)
+                ] = CollisionType::BreakableBlock;
+
                 continue;
             }
 
@@ -214,6 +256,12 @@ void BlockMap::Draw()
         mnBackgroundGraph,
         TRUE
     );
+
+    // 破壊可能壁の描画
+    for (auto& wall : mWalls)
+    {
+        wall->Draw(mCamera.GetDrawScrollX(), mCamera.GetDrawScrollY());
+    }
 }
 
 // デバッグ描画まとめ
@@ -272,6 +320,11 @@ void BlockMap::Move(int playerScreenX, int playerMapY, float moveDirection, floa
         mnBackgroundHeight,
         ScreenSize::ScrrenHeight
     );
+
+    for (auto wall : mWalls)
+    {
+        wall->Update();
+    }
 }
 
 
@@ -326,4 +379,32 @@ void BlockMap::ResetScroll()
     mCamera.SetScrollY(0);
     mCamera.SetLocked(false);
     mCamera.ResetScrollInit();
+}
+
+bool BlockMap::BreakWallAtArea(float left, float top, float right, float bottom)
+{
+    bool hitAny = false;
+
+    // 破壊可能壁の座標だけを削る条件として渡す
+    auto isBreakable = [this](int x, int y) {
+        return GetCollisionType(x, y) == CollisionType::BreakableBlock;
+        };
+
+    for (auto& wall : mWalls)
+    {
+        auto broken = wall->BreakArea(left, top, right, bottom, isBreakable);
+
+        // 削れた座標は通り抜け可能にする
+        for (const auto& p : broken)
+        {
+            mCollisionData[GetCollisionIndex(p.x, p.y)] = CollisionType::None;
+        }
+
+        if (!broken.empty())
+        {
+            hitAny = true;
+        }
+    }
+
+    return hitAny;
 }

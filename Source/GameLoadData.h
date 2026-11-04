@@ -6,6 +6,9 @@
 #include "Background.h"
 #include "Player.h"
 #include "TutorialTextManager.h"
+#include "LeafCutter.h"
+#include "RollingBoulder.h"
+#include "Minecart.h"
 
 
 /// <summary>
@@ -19,7 +22,9 @@ public:
         BlockMap& blockMap,
         Background& background,
         TutorialTextManager& tutorialText,
-        GameProgress& progress
+        GameProgress& progress,
+        RollingBoulder& rollBoulder,
+        Minecart& cart
     );
 
     void LoadInitialize(int stageNumber);
@@ -37,8 +42,14 @@ private:
     BlockMap& mBlockMap;
     Background& mBackground;
     TutorialTextManager& mTutorialText;
+    RollingBoulder& mRollingBoulder;
+    Minecart& mCart;
+
+
 
     // 各ステージで読み込むための処理
     void StageForest();
     void StageCave();
+
+    int mnLoadNumber = 0;
 };

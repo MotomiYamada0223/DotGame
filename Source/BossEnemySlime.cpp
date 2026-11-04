@@ -884,7 +884,7 @@ void BossEnemySlime::EnemyMove(BlockMap& blockMap)
                 if (!mpPlayer->HasEvadedBossSpawn())
                 {
                     // 押しつぶし圧死
-                    mpPlayer->SetDeathReason(DeathReason::DeathType::EnemyHit);
+                    mpPlayer->SetDeathReason(DeathReason::DeathType::EnemySlime);
                     mpPlayer->TakeDamage(mpPlayer->GetHp());
                 }
 

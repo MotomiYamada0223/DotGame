@@ -10,11 +10,16 @@ public:
 		None,
 		// ここからExcel
 		WallHit,
-		EnemyHit,
+		EnemySlime,
 		Fall,
 		NeedleTrapHit,
 		DeathBlock,
 		Leaf, // 葉っぱカッター
+		RockPress, // 岩に押しつぶし
+		Minecart, // カート
+		HotWater,
+		EnemySkeleton,
+		NormalDeath, // 死んだときの通常表示
 	};
 
 	// 死亡原因と番号をセットするための構造体

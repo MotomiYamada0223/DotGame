@@ -9,6 +9,9 @@
 #include "CircleFade.h"
 #include "LeafCutter.h"
 #include "GameLoadData.h"
+#include "RollingBoulder.h"
+#include "Minecart.h"
+#include "HotSpring.h"
 
 // 前方宣言
 class Player;
@@ -30,6 +33,8 @@ public:
 
 	void SetTextUpdate(); // チュートリアルテキストの更新
 
+	Player* GetPlayer() { return mpPlayer; }
+	BlockMap& GetBlockMap() { return mBlockMap; }
 
 private:
 	GameLoadData mLoadData;
@@ -47,6 +52,9 @@ private:
 	Saint mSaint; // 天使のキャラクター画像
 	BossIntroDirector mBossIntro;
 	StageClear mStageClear; // ボス戦開始演出ディレクター
+	RollingBoulder mRollingBoulder;
+	Minecart mCart;
+	HotSpring mHotSpring;
 
 	bool mbIsLoaded = false; // マップがロードされたかどうかのフラグ
 	bool mbWasPlayerDead = false; // 前フレームのプレイヤーの死亡状態を保持するフラグ
