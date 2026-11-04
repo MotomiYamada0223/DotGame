@@ -12,7 +12,7 @@
 #include <cstdio>
 
 BossEnemyDragon::BossEnemyDragon(VECTOR initPos)
-	: Enemy("",initPos)
+	: Enemy("", initPos)
 	, mState(State::Idle)
 	, mAnimFrame(0)
 	, mAnimTimer(0)
@@ -32,7 +32,7 @@ BossEnemyDragon::BossEnemyDragon(VECTOR initPos)
 {
 	UpdateStatusByProgress(GameProgress::Tutorial1);
 
-	// 1. Idle (4��: sprite_idle1.png ~ sprite_idle4.png)
+	// 1. 待機アニメーション (4コマ: sprite_idle1.png ~ sprite_idle4.png)
 	for (int i = 1; i <= 4; ++i)
 	{
 		char path[256];
@@ -41,7 +41,7 @@ BossEnemyDragon::BossEnemyDragon(VECTOR initPos)
 		if (h != -1) mIdleAnim.push_back(h);
 	}
 
-	// 2. Move (4��: sprite_move1.png ~ sprite_move4.png)
+	// 2. 移動アニメーション (4コマ: sprite_move1.png ~ sprite_move4.png)
 	for (int i = 1; i <= 4; ++i)
 	{
 		char path[256];
@@ -50,7 +50,7 @@ BossEnemyDragon::BossEnemyDragon(VECTOR initPos)
 		if (h != -1) mMoveAnim.push_back(h);
 	}
 
-	// 3. Attack (9��: sprite_attack1.png ~ sprite_attack9.png)
+	// 3. 攻撃アニメーション (9コマ: sprite_attack1.png ~ sprite_attack9.png)
 	for (int i = 1; i <= 9; ++i)
 	{
 		char path[256];
@@ -59,7 +59,7 @@ BossEnemyDragon::BossEnemyDragon(VECTOR initPos)
 		if (h != -1) mAttackAnim.push_back(h);
 	}
 
-	// 4. �����A�j���[�V���� (7��: sprite_takeoff1.png ~ sprite_takeoff7.png)
+	// 4. 離陸アニメーション (7コマ: sprite_takeoff1.png ~ sprite_takeoff7.png)
 	for (int i = 1; i <= 7; ++i)
 	{
 		char path[256];
@@ -68,7 +68,7 @@ BossEnemyDragon::BossEnemyDragon(VECTOR initPos)
 		if (h != -1) mTakeoffAnim.push_back(h);
 	}
 
-	// 5. ���ł���A�j���[�V���� (7��: sprite_fly1.png ~ sprite_fly7.png)
+	// 5. 飛行アニメーション (7コマ: sprite_fly1.png ~ sprite_fly7.png)
 	for (int i = 1; i <= 7; ++i)
 	{
 		char path[256];
@@ -77,7 +77,7 @@ BossEnemyDragon::BossEnemyDragon(VECTOR initPos)
 		if (h != -1) mFlyAnim.push_back(h);
 	}
 
-	// 6. �󒆍U�� (7��: sprite_airAttack1.png ~ sprite_airAttack7.png)
+	// 6. 空中攻撃アニメーション (7コマ: sprite_airAttack1.png ~ sprite_airAttack7.png)
 	for (int i = 1; i <= 7; ++i)
 	{
 		char path[256];
@@ -86,7 +86,7 @@ BossEnemyDragon::BossEnemyDragon(VECTOR initPos)
 		if (h != -1) mAirAttackAnim.push_back(h);
 	}
 
-	// 7. �����A�j���[�V���� (7��: sprite_landing1.png ~ sprite_landing7.png)
+	// 7. 着地アニメーション (7コマ: sprite_landing1.png ~ sprite_landing7.png)
 	for (int i = 1; i <= 7; ++i)
 	{
 		char path[256];
@@ -95,7 +95,7 @@ BossEnemyDragon::BossEnemyDragon(VECTOR initPos)
 		if (h != -1) mLandingAnim.push_back(h);
 	}
 
-	// �����E�����蔻��T�C�Y�̐ݒ�
+	// 敵の当たり判定サイズの設定
 	mfEnemyWidth = 220.0f;
 	mfEnemyHeight = 200.0f;
 	moveSpeed = 0.0f;
@@ -159,13 +159,13 @@ void BossEnemyDragon::GetAttackHitbox(float& left, float& top, float& right, flo
 	float reach = (mState == State::AirAttack) ? 190.0f : 170.0f;
 	if (mFacingDirection < 0.0f)
 	{
-		// �������U��
+		// 左向き攻撃
 		right = mvPosition.x - 10.0f;
 		left = mvPosition.x - (mfEnemyWidth * 0.5f + reach);
 	}
 	else
 	{
-		// �E�����U��
+		// 右向き攻撃
 		left = mvPosition.x + 10.0f;
 		right = mvPosition.x + (mfEnemyWidth * 0.5f + reach);
 	}
@@ -204,7 +204,7 @@ void BossEnemyDragon::Update()
 		gameScene = dynamic_cast<GameScene*>(Master::mpGameManager->GetSceneManager()->GetCurrentScene());
 	}
 
-	// ���j���̓_�ŏ��ŏ���
+	// 死亡時の点滅処理
 	if (mHp <= 0)
 	{
 		if (!isDeadBlinking)
@@ -226,7 +226,7 @@ void BossEnemyDragon::Update()
 	Player* player = (gameScene != nullptr) ? gameScene->GetPlayer() : nullptr;
 
 	// =========================================================
-	// �o�ꉉ�o1: �V���˂��j���ė��� (EntranceDrop)
+	// 演出1: 天井を破り落下 (EntranceDrop)
 	// =========================================================
 	if (mState == State::EntranceDrop)
 	{
@@ -236,7 +236,7 @@ void BossEnemyDragon::Update()
 			mFacingDirection = (dx >= 0.0f) ? 1.0f : -1.0f;
 		}
 
-		// �󒆍~���t���[���i�����A�j���[�V�����O�� 0..2�j
+		// 空中降下フレーム（着地アニメーション前の 0..2）
 		mAnimTimer++;
 		if (mAnimTimer >= 6)
 		{
@@ -244,20 +244,11 @@ void BossEnemyDragon::Update()
 			if (mAnimFrame < 2) mAnimFrame++;
 		}
 
-		//// �V��̍����iY >= 980�j�ɓ��B�����u�ԂɓV���j�󂵂Ċ�Ђ�~�点��
-		//if (!mHasBrokenCeiling && mvPosition.y >= 980.0f && mpBlockMap != nullptr)
-		//{
-		//	mHasBrokenCeiling = true;
-		//	mpBlockMap->BreakBossCeiling(static_cast<int>(mvPosition.x), 260);
-		//	mpBlockMap->mShakeX = (GetRand(16) - 8);
-		//	mpBlockMap->mShakeY = (GetRand(16) - 8);
-		//}
-
-		// ���ɒ��n������ EntranceWait �ֈڍs���A�����A�j���[�V�����㔼�i�����G�t�F�N�g 3..6�j��Đ�
+		// 地面に着地したら EntranceWait へ移行し、着地アニメーション後半（衝撃エフェクト 3..6）を再生
 		if (isGrounded)
 		{
 			mState = State::EntranceWait;
-			mEntranceTimer = 240; // �L���O�X���C�~�[�Ɠ���4�b��
+			mEntranceTimer = 240; // キャラクタークライマックスと同様の4秒間
 			mEntranceLandAnimDone = false;
 			mAnimFrame = 3;
 			mAnimTimer = 0;
@@ -269,7 +260,7 @@ void BossEnemyDragon::Update()
 	}
 
 	// =========================================================
-	// �o�ꉉ�o2: ���n��̙�K�E�C���g���\���ҋ@ (EntranceWait)
+	// 演出2: 着地後の咆哮・ライト表示待機 (EntranceWait)
 	// =========================================================
 	if (mState == State::EntranceWait)
 	{
@@ -296,7 +287,7 @@ void BossEnemyDragon::Update()
 			}
 		}
 
-		
+
 		if (mEntranceTimer > 0) mEntranceTimer--;
 		if (mEntranceTimer <= 0)
 		{
@@ -313,10 +304,10 @@ void BossEnemyDragon::Update()
 	if (mAttackCooldown > 0) mAttackCooldown--;
 	if (mFlightCooldown > 0) mFlightCooldown--;
 
-	// �Ή��u���X�e�ƒn�ʂ̉��āi8�b�ԃ_���[�W����j�̍X�V
+	// 火炎ブレスと地面の炎（8秒間持続ダメージ）の更新
 	UpdateFireAndBurningGround(player);
 
-	// �{�X�����̍s���͈͐��� (X: 8080 ~ 9680)
+	// ボス部屋の行動範囲制限 (X: 8080 ~ 9680)
 	const float roomMinX = 8080.0f;
 	const float roomMaxX = 9680.0f;
 
@@ -340,7 +331,7 @@ void BossEnemyDragon::Update()
 		{
 			mFacingDirection = (dx >= 0.0f) ? 1.0f : -1.0f;
 
-			// ��s�N�[���_�E���������͗����A�j���[�V�����ֈڍs
+			// 飛行クールダウンが明けたら離陸アニメーションへ移行
 			if (mFlightCooldown <= 0 && mStateTimer >= 35)
 			{
 				mState = State::Takeoff;
@@ -350,18 +341,18 @@ void BossEnemyDragon::Update()
 				break;
 			}
 
-			// �ʏ�A�^�b�N�̊ԍ����Ȃ�n��A���U����
+			// 通常アタックの距離圏内なら、攻撃へ移行
 			if (absDx <= 360.0f && mAttackCooldown <= 0)
 			{
 				mState = State::Attack;
-				mAttackPhase = 0; // Phase 0: ����Ɂu�I�v�}�[�N�\��
+				mAttackPhase = 0; // Phase 0: 頭上に「！」マーク表示
 				mStateTimer = 0;
 				mAnimFrame = 0;
 				mAnimTimer = 0;
 				break;
 			}
 
-			// ��莞�ԑҋ@��Ɉړ��J�n
+			// 一定時間待機したら移動開始
 			if (mStateTimer >= 40)
 			{
 				mState = State::Move;
@@ -375,7 +366,7 @@ void BossEnemyDragon::Update()
 
 	case State::Move:
 	{
-		// �ʏ�̈ړ��X�s�[�h�E�A�j���[�V�������x�͌��̂܂�
+		// 通常の移動・アニメーション速度は現状のまま
 		mStateTimer++;
 		mAnimTimer++;
 		if (mAnimTimer >= 8 && !mMoveAnim.empty())
@@ -388,7 +379,7 @@ void BossEnemyDragon::Update()
 		{
 			mFacingDirection = (dx >= 0.0f) ? 1.0f : -1.0f;
 
-			// ��s�N�[���_�E�������܂����痣���iTakeoff�j��
+			// 飛行クールダウンが満ちていたら離脱して飛行(Takeoff)へ
 			if (mFlightCooldown <= 0 && mStateTimer >= 35)
 			{
 				mState = State::Takeoff;
@@ -398,11 +389,11 @@ void BossEnemyDragon::Update()
 				break;
 			}
 
-			// �U���ԍ����ɓ�������ʏ�A�^�b�N�iAttack�j��
+			// 攻撃距離圏内に入ったら通常アタック(Attack)へ
 			if (absDx <= 350.0f && mAttackCooldown <= 0)
 			{
 				mState = State::Attack;
-				mAttackPhase = 0; // Phase 0: ����Ɂu�I�v�}�[�N�\��
+				mAttackPhase = 0; // Phase 0: 頭上に「！」マーク表示
 				mStateTimer = 0;
 				mAnimFrame = 0;
 				mAnimTimer = 0;
@@ -427,18 +418,18 @@ void BossEnemyDragon::Update()
 
 	case State::Attack:
 	{
-		// �ʏ�A�^�b�N:
-		// Phase 0: ���̏�Ɂu�I�v�}�[�N��o���ė\������
-		// Phase 1: �r���őO�ɏ����O�i�i5�t���[���ŃX�b�Ɩ�75px�����O�֏o��j
-		// Phase 2: 1��ڂ̍U���i���̏�őf�����a�����j
-		// Phase 3: �Ăяr���őO�ɏ����O�i�i5�t���[���ŃX�b�Ɩ�75px�����O�֏o��j
-		// Phase 4: 2��ڂ̍U��
+		// 通常アタック:
+		// Phase 0: 頭の上に「！」マークを出して予兆する
+		// Phase 1: 腕を前に突っ込み前方へ（5フレームでステップ約75px前方に飛び出る）
+		// Phase 2: 1回目の攻撃（その場で爪を振り下ろす）
+		// Phase 3: 吠えて前に突っ込み前方へ（5フレームでステップ約75px前方に飛び出る）
+		// Phase 4: 2回目の攻撃
 		mStateTimer++;
 		mAnimTimer++;
 
 		if (mAttackPhase == 0)
 		{
-			// ����Ɂu�I�v�}�[�N��\�����Ȃ���\������
+			// 頭上に「！」マークを表示しながら待機
 			if (mAnimTimer >= 8 && !mIdleAnim.empty())
 			{
 				mAnimTimer = 0;
@@ -454,7 +445,7 @@ void BossEnemyDragon::Update()
 		}
 		else if (mAttackPhase == 1 || mAttackPhase == 3)
 		{
-			// �r���őO�ɏ��������O�i�i15px �~ 5�t���[�� = 75px ���u�ŃX�e�b�v�j
+			// 腕を前に突っ込み前進（15px × 5フレーム = 75px 分のステップ）
 			if (mAnimTimer >= 2 && !mMoveAnim.empty())
 			{
 				mAnimTimer = 0;
@@ -467,15 +458,15 @@ void BossEnemyDragon::Update()
 
 			if (mStateTimer >= 5)
 			{
-				mAttackPhase++; // Phase 1 -> 2 (1��ڍU��), Phase 3 -> 4 (2��ڍU��)
+				mAttackPhase++; // Phase 1 -> 2 (1回目攻撃), Phase 3 -> 4 (2回目攻撃)
 				mStateTimer = 0;
-				mAnimFrame = 2; // ���߃t���[�����΂��Ă����U����
+				mAnimFrame = 2; // 溜めフレームから振り下ろし攻撃へ
 				mAnimTimer = 0;
 			}
 		}
 		else if (mAttackPhase == 2 || mAttackPhase == 4)
 		{
-			// �U�����[�V�����Đ��i�O�i�������Ȃ��悤�A�U�����͂��̏�Ŏa�����j
+			// 攻撃モーション再生（前進はせず、攻撃判定はその場で爪を振り下ろす）
 			if (mAnimTimer >= 4)
 			{
 				mAnimTimer = 0;
@@ -487,12 +478,12 @@ void BossEnemyDragon::Update()
 					mStateTimer = 0;
 					if (mAttackPhase == 2)
 					{
-						// 1��ڂ̍U������ -> Phase 3�i2��ڂ̏����O�i�j��
+						// 1回目の攻撃終了 -> Phase 3（2回目の前進予兆）へ
 						mAttackPhase = 3;
 					}
 					else
 					{
-						// 2��ڂ̍U������ -> Idle�֖߂�
+						// 2回目の攻撃終了 -> Idleへ戻る
 						mAttackPhase = 0;
 						mState = State::Idle;
 						mAttackCooldown = 70;
@@ -505,7 +496,7 @@ void BossEnemyDragon::Update()
 
 	case State::Takeoff:
 	{
-		// �����A�j���[�V�����isprite_takeoff1 ~ 7�j
+		// 離陸アニメーション（sprite_takeoff1 ~ 7）
 		mStateTimer++;
 		mAnimTimer++;
 		if (player && !player->GetIsDead())
@@ -513,7 +504,7 @@ void BossEnemyDragon::Update()
 			mFacingDirection = (dx >= 0.0f) ? 1.0f : -1.0f;
 		}
 
-		// �t���[��2�ȍ~�ŉH�΂����ċ󒆂֕���
+		// フレーム2以降で羽ばたいて空中へ浮上
 		if (mAnimFrame >= 2)
 		{
 			mvPosition.y -= 6.5f;
@@ -537,7 +528,7 @@ void BossEnemyDragon::Update()
 
 	case State::Fly:
 	{
-		// ���ł���A�j���[�V�����isprite_fly1 ~ 7�j
+		// 飛行中アニメーション（sprite_fly1 ~ 7）
 		mStateTimer++;
 		mAnimTimer++;
 		if (mAnimTimer >= 6 && !mFlyAnim.empty())
@@ -546,7 +537,7 @@ void BossEnemyDragon::Update()
 			mAnimFrame = (mAnimFrame + 1) % static_cast<int>(mFlyAnim.size());
 		}
 
-		// �z�o�����O���x�֊��炩�Ɉێ����A�΂𕬂��₷���΂ߏ��̊ԍ����i��280�`420px�j�ֈړ�
+		// 浮遊の高さを緩やかに維持しつつ、羽をばたつかせながら斜め上の間隔（約280～420px）へ移動
 		float hoverWave = std::sin(mStateTimer * 0.1f) * 2.5f;
 		mvPosition.y += (mHoverTargetY - mvPosition.y) * 0.12f + hoverWave;
 
@@ -565,7 +556,7 @@ void BossEnemyDragon::Update()
 		if (mvPosition.x < roomMinX) mvPosition.x = roomMinX;
 		if (mvPosition.x > roomMaxX) mvPosition.x = roomMaxX;
 
-		// ��莞�Ԕ�s������ɋ󒆉Ή��u���X�U���iAirAttack�j�ֈڍs
+		// 一定時間飛行したら空中火炎ブレス攻撃（AirAttack）へ移行
 		if (mStateTimer >= 65)
 		{
 			mState = State::AirAttack;
@@ -582,11 +573,11 @@ void BossEnemyDragon::Update()
 
 	case State::AirAttack:
 	{
-		// �󒆍U���A�j���[�V�����isprite_airAttack1 ~ 7�j�ŋ󒆂ɗ��܂�Ȃ���v���C���[�Ɍ������ĉ΂𕬂�
+		// 空中攻撃アニメーション（sprite_airAttack1 ~ 7）で空中に留まりながらプレイヤーに向けて火炎を放つ
 		mStateTimer++;
 		mAnimTimer++;
 
-		// �󒆂Ōy���z�o�����O�ێ�
+		// 空中で軽く浮遊を維持
 		float hoverWave = std::sin(mStateTimer * 0.12f) * 1.5f;
 		mvPosition.y += (mHoverTargetY - mvPosition.y) * 0.1f + hoverWave;
 
@@ -595,7 +586,7 @@ void BossEnemyDragon::Update()
 			mFacingDirection = (dx >= 0.0f) ? 1.0f : -1.0f;
 		}
 
-		// �t���[��3�`5�i����傫���J���ĉ΂�f�����[�V�����j�̊ԁA��������v���C���[�֌������ĉΉ��e�𕬎�
+		// フレーム3～5（口を大きく開いて火炎をデモンストレーションする）の間、連続してプレイヤーに向かって火炎弾を発射
 		if (mAnimFrame >= 3 && mAnimFrame <= 5)
 		{
 			if (mStateTimer % 4 == 0 && player)
@@ -604,7 +595,7 @@ void BossEnemyDragon::Update()
 				float mouthY = mvPosition.y - 110.0f;
 
 				float targetX = player->GetPosition().x + static_cast<float>((GetRand(90) - 45));
-				float targetY = 1903.0f; // �v���C���[�̑����̒n�ʂ܂ł�������͂��悤�ɑ_��
+				float targetY = 1903.0f; // プレイヤーの足元の地面まで届くように狙う
 				float fdx = targetX - mouthX;
 				float fdy = targetY - mouthY;
 				if (fdy < 80.0f) fdy = 80.0f;
@@ -624,7 +615,7 @@ void BossEnemyDragon::Update()
 			}
 		}
 
-		// �΂𕬂��Ă���t���[���i3�`5�j�͏������߂Ɉێ����Ă�������Ή��u���X�������
+		// 火炎を放っているフレーム（3～5）は少し長めに維持してから次の動作へ
 		int frameDuration = (mAnimFrame >= 3 && mAnimFrame <= 5) ? 12 : 6;
 		if (mAnimTimer >= frameDuration)
 		{
@@ -644,13 +635,13 @@ void BossEnemyDragon::Update()
 
 	case State::Landing:
 	{
-		// �����A�j���[�V�����isprite_landing1 ~ 7�j
+		// 着地アニメーション（sprite_landing1 ~ 7）
 		mStateTimer++;
 		mAnimTimer++;
 
 		if (!isGrounded)
 		{
-			// ���n����܂ł̓t���[��0�`2�ō~��
+			// 着地するまでのフレーム 0～2で降下
 			if (mAnimTimer >= 6)
 			{
 				mAnimTimer = 0;
@@ -659,7 +650,7 @@ void BossEnemyDragon::Update()
 		}
 		else
 		{
-			// ���n��̓t���[��3�`6�i�����G�t�F�N�g�t�������j��Đ�
+			// 着地後のフレーム 3～6（衝撃エフェクト付与など）を再生
 			if (mAnimFrame < 3)
 			{
 				mAnimFrame = 3;
@@ -689,7 +680,7 @@ void BossEnemyDragon::EnemyMove(BlockMap& blockMap)
 {
 	mpBlockMap = &blockMap;
 
-	// �����E��s�E�󒆍U�����͏d�͗����������󒆍��W��ێ�����
+	// 離陸・飛行・空中攻撃中は重力を無効化し空中座標を維持する
 	if (mState == State::Takeoff || mState == State::Fly || mState == State::AirAttack)
 	{
 		isGrounded = false;
@@ -708,7 +699,7 @@ void BossEnemyDragon::Draw()
 	}
 
 	int handle = -1;
-	float footOffsetFromCenter = 79.0f; // 256x256�L�����o�X��̑����I�t�Z�b�g
+	float footOffsetFromCenter = 79.0f; // 256x256キャラクターキャンバス基準の足元オフセット
 
 	switch (mState)
 	{
@@ -718,7 +709,7 @@ void BossEnemyDragon::Draw()
 			int idx = mAnimFrame;
 			if (idx >= static_cast<int>(mLandingAnim.size())) idx = static_cast<int>(mLandingAnim.size()) - 1;
 			handle = mLandingAnim[idx];
-			footOffsetFromCenter = 57.0f; // 400x400�L�����o�X�
+			footOffsetFromCenter = 57.0f; // 400x400キャラクターキャンバス基準
 		}
 		break;
 
@@ -773,7 +764,7 @@ void BossEnemyDragon::Draw()
 		if (!mTakeoffAnim.empty())
 		{
 			handle = mTakeoffAnim[mAnimFrame % mTakeoffAnim.size()];
-			footOffsetFromCenter = 80.0f; // 350x350�L�����o�X�
+			footOffsetFromCenter = 80.0f; // 350x350キャラクターキャンバス基準
 		}
 		break;
 
@@ -781,7 +772,7 @@ void BossEnemyDragon::Draw()
 		if (!mFlyAnim.empty())
 		{
 			handle = mFlyAnim[mAnimFrame % mFlyAnim.size()];
-			footOffsetFromCenter = 57.0f; // 400x400�L�����o�X�
+			footOffsetFromCenter = 57.0f; // 400x400キャラクターキャンバス基準
 		}
 		break;
 
@@ -789,7 +780,7 @@ void BossEnemyDragon::Draw()
 		if (!mAirAttackAnim.empty())
 		{
 			handle = mAirAttackAnim[mAnimFrame % mAirAttackAnim.size()];
-			footOffsetFromCenter = 57.0f; // 400x400�L�����o�X�
+			footOffsetFromCenter = 57.0f; // 400x400キャラクターキャンバス基準
 		}
 		break;
 
@@ -797,7 +788,7 @@ void BossEnemyDragon::Draw()
 		if (!mLandingAnim.empty())
 		{
 			handle = mLandingAnim[mAnimFrame % mLandingAnim.size()];
-			footOffsetFromCenter = 57.0f; // 400x400�L�����o�X�
+			footOffsetFromCenter = 57.0f; // 400x400キャラクターキャンバス基準
 		}
 		break;
 	}
@@ -813,10 +804,10 @@ void BossEnemyDragon::Draw()
 		float feetWorldY = mvPosition.y + (mfEnemyHeight * 0.5f);
 		int screenY = static_cast<int>(ConvertToScreenY(feetWorldY - (footOffsetFromCenter * mDrawScale), mpBlockMap));
 
-		// ���X�v���C�g�͍������Ȃ̂ŁA�E����(mFacingDirection > 0)�̂Ƃ����E���]�`��
+		// スプライトは元々左向きなので、右向き(mFacingDirection > 0)のときは左右反転描画
 		bool reverse = (mFacingDirection > 0.0f);
 
-		// �r���O�i���iPhase 1, 3 ����эU�����ݍ��ݒ��j�͍����ړ��̎c����`�悵�ăX�s�[�h�������
+		// 踏み込み（前進Phase 1, 3での突撃時）は移動の残像を描画してスピード感を演出
 		if (mState == State::Attack && (mAttackPhase == 1 || mAttackPhase == 3))
 		{
 			int dirSign = (mFacingDirection > 0.0f) ? 1 : -1;
@@ -837,7 +828,7 @@ void BossEnemyDragon::Draw()
 			SetDrawBright(255, 255, 255);
 		}
 
-		// �ʏ�A�^�b�N�O�̗\������iPhase 0�j�F�h���S���̓��̏�Ɂu�I�v�}�[�N��\��
+		// 通常アタック前の予兆表示（Phase 0）：頭上の少し上の位置に「！」マークを表示
 		if (mState == State::Attack && mAttackPhase == 0)
 		{
 			int exX = static_cast<int>(ConvertToScreenX(mvPosition.x + mFacingDirection * 85.0f, mpBlockMap));
@@ -845,7 +836,7 @@ void BossEnemyDragon::Draw()
 			bool blinkOff = (mStateTimer / 4) % 2 != 0;
 			if (!blinkOff)
 			{
-				// �������{�ԐF�́u�I�v�}�[�N
+				// 目立つ赤色の「！」マーク
 				DrawBox(exX - 10, exY - 62, exX + 10, exY - 13, GetColor(0, 0, 0), TRUE);
 				DrawBox(exX - 10, exY - 7, exX + 10, exY + 12, GetColor(0, 0, 0), TRUE);
 				DrawBox(exX - 8, exY - 60, exX + 8, exY - 15, GetColor(255, 20, 20), TRUE);
@@ -854,7 +845,7 @@ void BossEnemyDragon::Draw()
 		}
 	}
 
-	// �Ή��u���X��8�b�ԔR��������n�ʂ̕`��
+	// 火炎ブレスおよび8秒間燃え盛る地面の描画
 	DrawFireAndBurningGround();
 }
 
@@ -862,7 +853,7 @@ void BossEnemyDragon::UpdateFireAndBurningGround(Player* player)
 {
 	const float floorY = 1903.0f;
 
-	// 1. �󒆂��畬���ꂽ�Ή��u���X�e�̈ړ��E�v���C���[�����蔻��E�n�ʒ��e����
+	// 1. 空中から吐き出された火炎ブレス弾の移動・プレイヤーとの当たり判定・地面着弾処理
 	for (auto& fp : mFireProjectiles)
 	{
 		if (!fp.active) continue;
@@ -871,7 +862,7 @@ void BossEnemyDragon::UpdateFireAndBurningGround(Player* player)
 		fp.y += fp.vy;
 		fp.animTick++;
 
-		// �v���C���[�ւ̒�������
+		// プレイヤーへの直接ヒット判定
 		if (player && !player->GetIsDead())
 		{
 			float px = player->GetPosition().x;
@@ -888,7 +879,7 @@ void BossEnemyDragon::UpdateFireAndBurningGround(Player* player)
 			}
 		}
 
-		// �n�ʁiY >= 1903�j�܂��̓u���b�N�ɒ��e������A���̏ꏊ�̒n�ʂ�8�b�ԁi480�t���[���j�R�₷
+		// 地面（Y >= 1903）または足場ブロックに着弾した判定
 		bool hitGround = (fp.y >= floorY - 6.0f);
 		if (!hitGround && mpBlockMap != nullptr && fp.y >= 1750.0f)
 		{
@@ -905,13 +896,13 @@ void BossEnemyDragon::UpdateFireAndBurningGround(Player* player)
 			if (burnX < 7950.0f) burnX = 7950.0f;
 			if (burnX > 9820.0f) burnX = 9820.0f;
 
-			// ���ɂ����߂��i70px�ȓ�j�ɔR�ăG���A������ꍇ�̓^�C�}�[��8�b�i480�t���[���j�ɍX�V���ē���
+			// すでに存在する近傍（70px以内）に燃えてエリアが生成されている場合のタイマーを8秒（480フレーム）に更新して統合
 			bool merged = false;
 			for (auto& bg : mBurningGrounds)
 			{
 				if (std::fabs(bg.x - burnX) < 70.0f)
 				{
-					bg.timer = 480; // 8�b�� (60fps �~ 8s)
+					bg.timer = 480; // 8秒間 (60fps ～ 8s)
 					merged = true;
 					break;
 				}
@@ -923,7 +914,7 @@ void BossEnemyDragon::UpdateFireAndBurningGround(Player* player)
 				bg.x = burnX;
 				bg.y = floorY;
 				bg.halfWidth = 55.0f;
-				bg.timer = 480;    // 8�b�� (60fps �~ 8s)
+				bg.timer = 480;    // 8秒間 (60fps ～ 8s)
 				bg.maxTimer = 480;
 				mBurningGrounds.push_back(bg);
 			}
@@ -934,14 +925,14 @@ void BossEnemyDragon::UpdateFireAndBurningGround(Player* player)
 		}
 	}
 
-	// ���������ꂽ�Ή��e��폜
+	// 非アクティブになった火炎弾を削除
 	for (auto it = mFireProjectiles.begin(); it != mFireProjectiles.end(); )
 	{
 		if (!it->active) it = mFireProjectiles.erase(it);
 		else ++it;
 	}
 
-	// 2. �n�ʂ̔R�ăG���A�i8�b�Ԏ����{�_���[�W����j�̍X�V
+	// 2. 地面の燃えるエリア（8秒間持続・継続ダメージ）の更新
 	for (auto it = mBurningGrounds.begin(); it != mBurningGrounds.end(); )
 	{
 		it->timer--;
@@ -951,7 +942,7 @@ void BossEnemyDragon::UpdateFireAndBurningGround(Player* player)
 			continue;
 		}
 
-		// �R���Ă���n�ʂ̃_���[�W����
+		// 燃えている地面との接触ダメージ
 		if (player && !player->GetIsDead())
 		{
 			float px = player->GetPosition().x;
@@ -982,7 +973,7 @@ void BossEnemyDragon::DrawFireAndBurningGround()
 
 	int now = GetNowCount();
 
-	// 1. �󒆉Ή��u���X�̌����G�t�F�N�g�i�\������̉΂̕������˒��̉Ή��}�Y���t���b�V���j
+	// 1. 空中火炎ブレスの予兆エフェクト（口元に発光する炎がだんだん集まるフラッシュ）
 	if (mState == State::AirAttack)
 	{
 		int mouthSX = static_cast<int>(ConvertToScreenX(mvPosition.x + mFacingDirection * (115.0f * mDrawScale), mpBlockMap));
@@ -991,14 +982,14 @@ void BossEnemyDragon::DrawFireAndBurningGround()
 		SetDrawBlendMode(DX_BLENDMODE_ADD, 210);
 		if (mAnimFrame < 3)
 		{
-			// ����z������Ō����ɉ����W�܂�\��
+			// 溜め動作で口元に光が集まる表現
 			int r = 10 + mAnimFrame * 6 + (now / 40) % 6;
 			DrawCircle(mouthSX, mouthSY, r, GetColor(255, 80, 20), TRUE);
 			DrawCircle(mouthSX, mouthSY, r / 2, GetColor(255, 220, 100), TRUE);
 		}
 		else if (mAnimFrame >= 3 && mAnimFrame <= 5)
 		{
-			// �΂𕬂��Ă�������̌�������
+			// 火炎を放っている最中の口元の輝き
 			int r = 28 + (now / 30) % 10;
 			DrawCircle(mouthSX, mouthSY, r, GetColor(255, 60, 10), TRUE);
 			DrawCircle(mouthSX, mouthSY, static_cast<int>(r * 0.7f), GetColor(255, 160, 30), TRUE);
@@ -1007,7 +998,7 @@ void BossEnemyDragon::DrawFireAndBurningGround()
 		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 	}
 
-	// 2. 8�b�ԔR��������n�ʂ̕`��
+	// 2. 8秒間燃え盛る地面の描画
 	SetDrawBlendMode(DX_BLENDMODE_ADD, 220);
 	for (const auto& bg : mBurningGrounds)
 	{
@@ -1015,15 +1006,15 @@ void BossEnemyDragon::DrawFireAndBurningGround()
 		int cy = static_cast<int>(ConvertToScreenY(bg.y, mpBlockMap));
 		int hw = static_cast<int>(bg.halfWidth);
 
-		// �c��1�b�i60�t���[�������j�ŏ��X�ɉ����������Ȃ��ď����Ă���
+		// 残り1秒（60フレーム未満）で徐々に縮小しながら消えていく
 		float scale = (bg.timer < 60) ? (static_cast<float>(bg.timer) / 60.0f) : 1.0f;
 		if (scale < 0.15f) scale = 0.15f;
 
-		// �n�ʂɍL����ܔM�̃x�[�X��
+		// 地面に広がるマグマ・ベースの楕円
 		DrawOval(cx, cy - 2, hw + 10, static_cast<int>(10 * scale) + 3, GetColor(220, 45, 10), TRUE);
 		DrawOval(cx, cy - 2, hw, static_cast<int>(6 * scale) + 2, GetColor(255, 140, 20), TRUE);
 
-		// �h��߂����̐�i�����̎O�p�`��d�˂ĉ���\���j
+		// 燃え盛る炎の列（複数の三角形を重ねて描画）
 		const int numFlames = 9;
 		for (int i = 0; i < numFlames; ++i)
 		{
@@ -1036,21 +1027,21 @@ void BossEnemyDragon::DrawFireAndBurningGround()
 			int flameW = static_cast<int>(16.0f * scale) + 5;
 			int tipX = fx + static_cast<int>(wave2 * 7.0f);
 
-			// �O���̐Ԃ���
+			// 外側の赤み
 			DrawTriangle(
 				fx - flameW, cy,
 				fx + flameW, cy,
 				tipX, cy - flameH,
 				GetColor(255, 50, 10), TRUE
 			);
-			// ���Ԃ̃I�����W�̉�
+			// 中間のオレンジの炎
 			DrawTriangle(
 				fx - (flameW * 2) / 3, cy,
 				fx + (flameW * 2) / 3, cy,
 				tipX, cy - (flameH * 3) / 4,
 				GetColor(255, 150, 20), TRUE
 			);
-			// ����̉��F�`���M�̉�
+			// 芯の黄色・白熱の炎
 			DrawTriangle(
 				fx - flameW / 3, cy,
 				fx + flameW / 3, cy,
@@ -1059,7 +1050,7 @@ void BossEnemyDragon::DrawFireAndBurningGround()
 			);
 		}
 
-		// ��������΂̕��p�[�e�B�N��
+		// 舞い上がる火の粉パーティクル
 		for (int p = 0; p < 4; ++p)
 		{
 			int seed = static_cast<int>(bg.x) + p * 97;
@@ -1071,7 +1062,7 @@ void BossEnemyDragon::DrawFireAndBurningGround()
 		}
 	}
 
-	// 3. ���Ē��̉Ή��u���X�e�̕`��
+	// 3. 移動中の火炎ブレス弾の描画
 	for (const auto& fp : mFireProjectiles)
 	{
 		if (!fp.active) continue;
@@ -1080,7 +1071,7 @@ void BossEnemyDragon::DrawFireAndBurningGround()
 		int sy = static_cast<int>(ConvertToScreenY(fp.y, mpBlockMap));
 		int r = static_cast<int>(fp.radius);
 
-		// �i�s�����t���֐L�т�Ή��̔�
+		// 進行方向反対に伸びる火炎の尾
 		int tailX1 = static_cast<int>(ConvertToScreenX(fp.x - fp.vx * 1.2f, mpBlockMap));
 		int tailY1 = static_cast<int>(ConvertToScreenY(fp.y - fp.vy * 1.2f, mpBlockMap));
 		int tailX2 = static_cast<int>(ConvertToScreenX(fp.x - fp.vx * 2.4f, mpBlockMap));
@@ -1089,7 +1080,7 @@ void BossEnemyDragon::DrawFireAndBurningGround()
 		DrawCircle(tailX2, tailY2, static_cast<int>(r * 0.55f), GetColor(220, 40, 10), TRUE);
 		DrawCircle(tailX1, tailY1, static_cast<int>(r * 0.8f), GetColor(255, 100, 15), TRUE);
 
-		// �Ή��e�{�́i�O���E����E���M�R�A�j
+		// 火炎弾本体（外郭・中層・白熱コア）
 		DrawCircle(sx, sy, r, GetColor(255, 55, 10), TRUE);
 		DrawCircle(sx, sy, static_cast<int>(r * 0.72f), GetColor(255, 165, 30), TRUE);
 		DrawCircle(sx, sy, static_cast<int>(r * 0.42f), GetColor(255, 250, 170), TRUE);
@@ -1135,7 +1126,7 @@ void BossEnemyDragon::DrawHpBar() const
 	// 空バー（暗いグレー）
 	DrawBox(bx, by, bx + barW, by + barH, GetColor(50, 50, 50), TRUE);
 
-	// スムーズ（赤）
+	// スムーズ減少用バー（赤）
 	float smoothRatio = (mSmoothHp / static_cast<float>(mMaxHp)) * fillMultiplier;
 	if (smoothRatio > 1.0f) smoothRatio = 1.0f;
 	if (smoothRatio > 0.0f)

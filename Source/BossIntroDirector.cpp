@@ -403,8 +403,6 @@ void BossIntroDirector::DrawTitle(float screenX, float screenY) const
 	}
 
 	// 垂直方向の位置計算
-	// 上端限界: 天使セリフ枠の下 (FramePosY + 190)
-	// 下端限界: キングスライム頭頂部 (screenY - 84 * Scale)
 	const float topLimit = static_cast<float>(UIGraphController::FramePosY + 190);
 	const float bottomLimit = screenY - (84.0f * KingSlimeIntroConstants::Scale);
 	const float centerY = (topLimit + bottomLimit) * 0.5f;
