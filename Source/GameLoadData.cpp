@@ -15,6 +15,7 @@ GameLoadData::GameLoadData(
 	BlockMap& blockMap,
 	Background& background,
 	TutorialTextManager& tutorialText,
+
 	GameProgress& progress,
 	RollingBoulder& rollBoulder,
 	Minecart& cart
@@ -137,10 +138,11 @@ void GameLoadData::StageForest()
 		slime1->UpdateStatusByProgress(mProgress);
 
 		// トラップの配置
-		new NeedleTrap(VGet(500.0f, 1520.0f, 0.0f), TrapType::PopUp);
 		new NeedleTrap(VGet(1404.0f, 1490.0f, 0.0f), TrapType::Normal);
 		new NeedleTrap(VGet(1500.0f, 1490.0f, 0.0f), TrapType::AntiJump);
 		new NeedleTrap(VGet(1596.0f, 1490.0f, 0.0f), TrapType::Normal);
+		new NeedleTrap(VGet(4280.0f, 1600.0f, 0.0f), TrapType::PopUp);
+		new NeedleTrap(VGet(4376.0f, 1600.0f, 0.0f), TrapType::PopUp);
 		new NeedleTrap(VGet(5980.0f, 1710.0f, 0.0f), TrapType::Normal);
 	}
 }

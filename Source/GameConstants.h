@@ -32,6 +32,8 @@ namespace PlayerConstants
 
 	// 落下でプレイヤーが死亡する位置
 	static const int PlayerDeathHeight = 3000;
+	// Wキー・Sキー長押しによるステージ裏・表落下判定フレーム数
+	static constexpr int FallThroughHoldFrames = 30;
 }
 
 // UI画像
@@ -270,7 +272,7 @@ namespace MovingFloorConstants
 	// 一定方向に移動し続けるタイプで画面外と判定して破棄するまでの距離
 	static constexpr float DestroyMarginY = 200.0f;
 
-	// 追加: ReverseAndDash用の定数
+	// 
 	static constexpr float ReverseDashMultiplier = 10.0f;
 	static constexpr float SpawnYTop = 870.0f;
 	static constexpr float SpawnYBottom = 2250.0f;
@@ -457,7 +459,7 @@ namespace StageClearConstants
 	static constexpr int   ConfettiPerCracker    = 25;     // 紙吹雪個数
 	static constexpr int   ConfettiLifeFrames    = 180;    // 紙吹雪滞空寿命
 
-	// マズルフラッシュ用定数 (Resource/Image/Flash.png)
+	// マズルフラッシュ用定数
 	static constexpr int   FlashFrameCount       = 5;      // アニメーション総コマ数
 	static constexpr int   FlashFrameWidth       = 48;     // コマ横幅
 	static constexpr int   FlashFrameHeight      = 48;     // コマ縦幅
@@ -503,19 +505,19 @@ namespace StageClearConstants
 
 	// 演出終了後のフェード・扉出現待機定数
 	static constexpr int   ClearCleanUpFrames    = 30;     // クラッカー退場・ロゴ・文字フェード時間
-	static constexpr int   DoorAppearWaitFrames  = 35;     // 扉出現前の静寂（少ししたら）
+	static constexpr int   DoorAppearWaitFrames  = 35;     
 	static constexpr int   DoorAppearFrames      = 20;     // 扉出現ポップ時間
 
-	// クリア扉用定数 (Resource/Image/OpenDoor.png)
+	// クリア扉用定数
 	static constexpr int   DoorFrameCount        = 4;      // アニメーションコマ数
-	static constexpr int   DoorFrameWidth        = 128;    // 1コマの幅
-	static constexpr int   DoorFrameHeight       = 128;    // 1コマの高さ
-	static constexpr float DoorScale             = 1.0f;   // 原寸ドット絵描画スケール
-	static constexpr float DoorSpawnScreenX      = 960.0f; // 扉出現画面X座標（中央）
-	static constexpr float DoorInteractRangeX    = 120.0f; // 扉開閉感知X範囲（扉中心からの距離）
-	static constexpr float DoorInteractRangeY    = 150.0f; // 扉開閉感知Y範囲
-	static constexpr float DoorAnimSpeed         = 0.15f;  // アニメーション再生速度（約6.7fで1コマ）
-	static constexpr float DoorGroundFallbackY   = 770.0f; // 地面検出失敗時の画面地面Y座標フォールバック    
+	static constexpr int   DoorFrameWidth        = 128;    
+	static constexpr int   DoorFrameHeight       = 128;    
+	static constexpr float DoorScale             = 1.0f;   
+	static constexpr float DoorSpawnScreenX      = 960.0f; 
+	static constexpr float DoorInteractRangeX    = 120.0f; 
+	static constexpr float DoorInteractRangeY    = 150.0f; 
+	static constexpr float DoorAnimSpeed         = 0.15f;  // アニメーション再生速度
+	static constexpr float DoorGroundFallbackY   = 770.0f;    
 }
 
 

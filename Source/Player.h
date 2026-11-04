@@ -29,6 +29,18 @@ public:
 
 	void DrawFallDeath(); // 死亡テキストの呼び出し
 	void DrawLife(); // 体力はあとの描画
+	void DrawFront(); // Sキー表側落下時の手前描画用
+
+	enum class StageFallMode
+	{
+		None,
+		Back,   // Wキー長押し：ステージ裏側（マップ奥）へ落下
+		Front   // Sキー長押し：ステージ表側（マップ手前）へ落下
+	};
+
+	StageFallMode GetStageFallMode() const { return mFallMode; }
+	bool IsFallingThrough() const { return mFallMode != StageFallMode::None; }
+	bool IsFallingFront() const { return mFallMode == StageFallMode::Front; }
 
 
 public: // アクセサ
@@ -102,7 +114,13 @@ public: // アクセサ
 
 
 private:
-	// インスタンスで持っているもの
+	// ステージ裏・表落下処理用
+	StageFallMode mFallMode;
+	int mWKeyHoldTimer;
+	int mSKeyHoldTimer;
+	void DrawPlayerModel(); // 共通のプレイヤー描画処理
+
+	// インスタンスで持ってる
 	CharacterPhysics mCharacterPhysics; // 物理計算用のインスタンス
 	DeathController mDeath; // 落下処理
 	PlayerAnimState mPlayerState;
