@@ -169,6 +169,12 @@ void GameScene::Draw()
 		mStageClear.DrawBehindStage(&mBlockMap);
 
 		mBlockMap.Draw(); // ブロックマップの描画
+
+		// Sキー（表側落下時）：プレイヤーをマップの手前側に描画
+		if (mpPlayer != nullptr)
+		{
+			mpPlayer->DrawFront();
+		}
 		mLeaf.LeafDraw(mBlockMap);
 		mRollingBoulder.Draw(mBlockMap.GetScrollX(), mBlockMap.GetScrollY());
 		mCart.Draw(mBlockMap.GetScrollX(), mBlockMap.GetScrollY());

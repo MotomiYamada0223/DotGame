@@ -39,6 +39,9 @@ Player::Player(VECTOR initPos)
 	mDeadState = 0;
 	mpBlockMap = nullptr;
 	mfMoveDirection = 0.0f;
+	mFallMode = StageFallMode::None;
+	mWKeyHoldTimer = 0;
+	mSKeyHoldTimer = 0;
 
 
 	UpdateStatusByProgress(GameProgress::Tutorial1);
@@ -122,6 +125,75 @@ void Player::PlayerMove(BlockMap& blockMap)
 	// 死亡時は操作を受け付けない
 	if (isDead)
 	{
+		return;
+	}
+
+	// Wキー/Sキー長押しによるステージ裏・表落下処理の判定
+	if (mFallMode == StageFallMode::None && !isDead && !mbAutoWalking)
+	{
+		// Wキー: ステージ裏側（マップ奥）へ落下
+		if (CheckHitKey(KEY_INPUT_W) == 1)
+		{
+			mWKeyHoldTimer++;
+			if (mWKeyHoldTimer >= PlayerConstants::FallThroughHoldFrames)
+			{
+				mFallMode = StageFallMode::Back;
+				isGrounded = false;
+				mbIsJumping = true;
+				if (velocityY < 2.0f) velocityY = 2.0f;
+				mPlayerState.SetJump();
+			}
+		}
+		else
+		{
+			mWKeyHoldTimer = 0;
+		}
+
+		// Sキー: ステージ表側（マップ手前）へ落下
+		if (CheckHitKey(KEY_INPUT_S) == 1)
+		{
+			mSKeyHoldTimer++;
+			if (mSKeyHoldTimer >= PlayerConstants::FallThroughHoldFrames)
+			{
+				mFallMode = StageFallMode::Front;
+				isGrounded = false;
+				mbIsJumping = true;
+				if (velocityY < 2.0f) velocityY = 2.0f;
+				mPlayerState.SetJump();
+			}
+		}
+		else
+		{
+			mSKeyHoldTimer = 0;
+		}
+	}
+
+	// ステージ裏・表落下処理中（マップ当たり判定を無視して落下）
+	if (mFallMode != StageFallMode::None)
+	{
+		velocityY += gravity;
+		if (velocityY > 25.0f) velocityY = 25.0f;
+		mvPosition.y += velocityY;
+		isGrounded = false;
+		mbIsJumping = true;
+		mPlayerState.SetJump();
+
+		if (!mbDeath && mvPosition.y >= PlayerConstants::PlayerDeathHeight)
+		{
+			mDeathReason = DeathReason::DeathType::Fall;
+			mHp = 0;
+			mbDeath = true;
+		}
+
+		const int playerScreenX = static_cast<int>(ConvertToScreenX(mvPosition.x, mpBlockMap));
+		const int playerMapY = static_cast<int>(mvPosition.y);
+		blockMap.Move(
+			playerScreenX,
+			playerMapY,
+			0.0f,
+			0.0f
+		);
+
 		return;
 	}
 
@@ -680,6 +752,26 @@ void Player::DrawFallDeath()
 
 void Player::Draw()
 {
+	// 表側落下中は、Scene::Draw()（マップ奥）での描画をスキップ（GameSceneでマップ手前に描画）
+	if (mFallMode == StageFallMode::Front)
+	{
+		return;
+	}
+
+	DrawPlayerModel();
+}
+
+void Player::DrawFront()
+{
+	// 表側落下中のみ、マップの手前側に描画
+	if (mFallMode == StageFallMode::Front)
+	{
+		DrawPlayerModel();
+	}
+}
+
+void Player::DrawPlayerModel()
+{
 	if (isDead)
 	{
 		SetDrawBright(255, 255, 255); // 色をリセット
@@ -1083,6 +1175,9 @@ void Player::DeadProcess()
 void Player::Revive()
 {
 	mDeathReason = DeathReason::DeathType::None;
+	mFallMode = StageFallMode::None;
+	mWKeyHoldTimer = 0;
+	mSKeyHoldTimer = 0;
 	
 
 	// 位置のリセット
