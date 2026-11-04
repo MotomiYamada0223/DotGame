@@ -80,7 +80,7 @@ void Player::UpdateStatusByProgress(GameProgress progress)
 		break;
 	case GameProgress::PostTutorial1:
 	case GameProgress::Tutorial2:
-		mMaxHp = 3000; mHp = 3000;
+		mMaxHp = 30000; mHp = 30000;
 		mAttack = 15; mDefense = 15; mMagic = 15;
 		mIsBlinkWallDeathImmune = true;
 		break;

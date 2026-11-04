@@ -86,7 +86,7 @@ void GameLoadData::StageForest()
 	);
 
 	// 隠しブロックの生成
-	new HiddenBlock(VGet(3100, 1200.0f, 0.0f), &mBlockMap);
+	new HiddenBlock(VGet(3150.0f, 1150.0f, 0.0f), &mBlockMap);
 
 
 	// 上から下へ無限に降ってくる足場のスポナーを配置
@@ -130,13 +130,18 @@ void GameLoadData::StageForest()
 	// 敵の生成
 	if (mpPlayer != nullptr)
 	{
-		// 画面左側 (X=0 付近)、Yはプレイヤーと同じ高さで生成
+		// スライムの配置
 		EnemySlime* slime = new EnemySlime(VGet(1000.0f, 300, 0.0f));
-		slime->UpdateStatusByProgress(mProgress);
 
-		// トラップのテスト配置 (スライムと同じY座標 300 付近に配置)
+		EnemySlime* slime1 = new EnemySlime(VGet(4000.0f, 1500.0f, 0.0f));
+		slime1->UpdateStatusByProgress(mProgress);
+
+		// トラップの配置
 		new NeedleTrap(VGet(500.0f, 1520.0f, 0.0f), TrapType::PopUp);
-		new NeedleTrap(VGet(1500.0f, 1470.0f, 0.0f), TrapType::AntiJump);
+		new NeedleTrap(VGet(1404.0f, 1490.0f, 0.0f), TrapType::Normal);
+		new NeedleTrap(VGet(1500.0f, 1490.0f, 0.0f), TrapType::AntiJump);
+		new NeedleTrap(VGet(1596.0f, 1490.0f, 0.0f), TrapType::Normal);
+		new NeedleTrap(VGet(5980.0f, 1710.0f, 0.0f), TrapType::Normal);
 	}
 }
 

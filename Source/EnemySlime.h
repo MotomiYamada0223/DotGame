@@ -36,6 +36,11 @@ private:
     bool mHasJumped;
     float mJumpSpeedX;
 
+    // 体当たり攻撃の起こり（溜め演出）関連
+    bool mIsCharging;
+    bool mHasChargedThisAttack;
+    int mChargeTimer;
+
 protected:
     float mMoveSpeed;
 };

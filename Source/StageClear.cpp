@@ -29,6 +29,12 @@ StageClear::StageClear()
 	, mbLogoLanded(false)
 	, mLogoImpactTimer(0)
 	, mLogoReboundOffset(0.0f)
+	, mDoorWorldX(0.0f)
+	, mDoorWorldY(0.0f)
+	, mDoorAnimProgress(0.0f)
+	, mDoorCurrentFrame(0)
+	, mDoorPopScale(0.0f)
+	, mbDoorDrawnThisFrame(false)
 	, mpBlockMap(nullptr)
 {
 	sInstance = this;
@@ -47,6 +53,20 @@ StageClear::StageClear()
 		StageClearConstants::FlashFrameWidth,
 		StageClearConstants::FlashFrameHeight,
 		mFlashGraphs
+	);
+
+	for (int i = 0; i < StageClearConstants::DoorFrameCount; i++)
+	{
+		mDoorGraphs[i] = -1;
+	}
+	LoadDivGraph(
+		"Resource/Image/OpenDoor.png",
+		StageClearConstants::DoorFrameCount,
+		StageClearConstants::DoorFrameCount,
+		1,
+		StageClearConstants::DoorFrameWidth,
+		StageClearConstants::DoorFrameHeight,
+		mDoorGraphs
 	);
 }
 
@@ -70,6 +90,14 @@ StageClear::~StageClear()
 			mFlashGraphs[i] = -1;
 		}
 	}
+	for (int i = 0; i < StageClearConstants::DoorFrameCount; i++)
+	{
+		if (mDoorGraphs[i] != -1)
+		{
+			DeleteGraph(mDoorGraphs[i]);
+			mDoorGraphs[i] = -1;
+		}
+	}
 	if (sInstance == this)
 	{
 		sInstance = nullptr;
@@ -89,6 +117,12 @@ void StageClear::Start()
 		mConfetti.clear();
 		mBullets.clear();
 		mImpactDusts.clear();
+		mDoorWorldX = 0.0f;
+		mDoorWorldY = 0.0f;
+		mDoorAnimProgress = 0.0f;
+		mDoorCurrentFrame = 0;
+		mDoorPopScale = 0.0f;
+		mDoorSmoke.clear();
 		InitLogo();
 	}
 }
@@ -109,6 +143,13 @@ void StageClear::Reset()
 	mbLogoLanded = false;
 	mLogoImpactTimer = 0;
 	mLogoReboundOffset = 0.0f;
+	mDoorWorldX = 0.0f;
+	mDoorWorldY = 0.0f;
+	mDoorAnimProgress = 0.0f;
+	mDoorCurrentFrame = 0;
+	mDoorPopScale = 0.0f;
+	mbDoorDrawnThisFrame = false;
+	mDoorSmoke.clear();
 	mpBlockMap = nullptr;
 }
 
@@ -608,6 +649,24 @@ void StageClear::DrawBehindStage(const BlockMap* pBlockMap) const
 		return;
 	}
 
+	// 扉出現フェーズ以降はロゴを描画しない
+	if (mState >= State::DoorAppearWait)
+	{
+		return;
+	}
+
+	if (mState == State::ClearCleanUp)
+	{
+		float t = static_cast<float>(mTimer) / static_cast<float>(StageClearConstants::ClearCleanUpFrames);
+		int alpha = static_cast<int>(255.0f * (1.0f - t));
+		if (alpha <= 0) return;
+
+		SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
+		DrawLogo(pBlockMap);
+		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+		return;
+	}
+
 	// ステージ（ブロックマップ）の背面に突き刺さるロゴ本体を描画
 	DrawLogo(pBlockMap);
 }
@@ -653,6 +712,7 @@ void StageClear::DrawLogoGroundImpact(const BlockMap* pBlockMap) const
 void StageClear::Update(Player* player, BlockMap* pBlockMap)
 {
 	mpBlockMap = pBlockMap;
+	mbDoorDrawnThisFrame = false;
 	if (mState == State::Inactive || mState == State::Finished)
 	{
 		return;
@@ -809,14 +869,12 @@ void StageClear::Update(Player* player, BlockMap* pBlockMap)
 		if (mTimer >= StageClearConstants::BlinkDurationFrames)
 		{
 			mState = State::Display;
+			mTimer = 0;
 		}
 		if (InputManager::CheckDownKey(KEY_INPUT_RETURN) == 1)
 		{
-			mState = State::Finished;
-			if (Master::mpGameManager && Master::mpGameManager->GetSceneManager())
-			{
-				Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_WINRESULT);
-			}
+			mState = State::ClearCleanUp;
+			mTimer = 0;
 		}
 		break;
 
@@ -832,13 +890,169 @@ void StageClear::Update(Player* player, BlockMap* pBlockMap)
 		if (mTimer >= StageClearConstants::DisplayDurationFrames ||
 			InputManager::CheckDownKey(KEY_INPUT_RETURN) == 1)
 		{
+			mState = State::ClearCleanUp;
+			mTimer = 0;
+		}
+		break;
+
+	case State::ClearCleanUp:
+	{
+		mBurstTimer++;
+		UpdateConfetti();
+		UpdateBullets(player, pBlockMap);
+		if (mState == State::Inactive) return;
+		UpdateImpactDust();
+
+		float t = static_cast<float>(mTimer) / static_cast<float>(StageClearConstants::ClearCleanUpFrames);
+		if (t > 1.0f) t = 1.0f;
+		float ease = t * t;
+
+		// クラッカーが画面外へ退場（スライドアウト）
+		for (auto& c : mCrackers)
+		{
+			c.x = c.targetX + (c.startX - c.targetX) * ease;
+			c.mouthX = c.x + 125.0f * std::cos(c.shootAngleRad);
+			c.mouthY = c.y + 125.0f * std::sin(c.shootAngleRad);
+		}
+
+		if (mTimer >= StageClearConstants::ClearCleanUpFrames)
+		{
+			mState = State::DoorAppearWait;
+			mTimer = 0;
+		}
+	}
+	break;
+
+	case State::DoorAppearWait:
+		UpdateConfetti();
+		UpdateImpactDust();
+
+		// 全てのクリア演出が終了し、少ししたら扉が出現
+		if (mTimer >= StageClearConstants::DoorAppearWaitFrames)
+		{
+			mState = State::DoorAppear;
+			mTimer = 0;
+
+			float scrollX = (pBlockMap != nullptr) ? static_cast<float>(pBlockMap->GetScrollX()) : 0.0f;
+			float scrollY = (pBlockMap != nullptr) ? static_cast<float>(pBlockMap->GetScrollY()) : 0.0f;
+
+			// 扉の配置ワールド座標を設定
+			mDoorWorldX = StageClearConstants::DoorSpawnScreenX + scrollX;
+
+			// 地面Y座標の検出（地形コリジョンから正確な接地高さを特定して宙浮きを解消）
+			float foundGroundY = -1.0f;
+			if (pBlockMap != nullptr)
+			{
+				int checkX = static_cast<int>(mDoorWorldX);
+				int startY = static_cast<int>(scrollY + 200.0f);
+				int maxY = (std::min)(static_cast<int>(scrollY + 1080.0f), 2160);
+				for (int y = startY; y < maxY; y++)
+				{
+					BlockMap::CollisionType col = pBlockMap->GetCollisionType(checkX, y);
+					if (col == BlockMap::CollisionType::Block || col == BlockMap::CollisionType::BossArea)
+					{
+						foundGroundY = static_cast<float>(y);
+						break;
+					}
+				}
+			}
+
+			if (foundGroundY > 0.0f)
+			{
+				mDoorWorldY = foundGroundY;
+			}
+			else if (player != nullptr && !player->GetIsDead() && std::abs(player->GetVelocityY()) < 0.01f)
+			{
+				mDoorWorldY = player->GetPosition().y + player->GetPlayerHeight() * 0.5f;
+			}
+			else
+			{
+				mDoorWorldY = StageClearConstants::DoorGroundFallbackY + scrollY;
+			}
+
+			mDoorAnimProgress = 0.0f;
+			mDoorCurrentFrame = 0;
+			mDoorPopScale = 0.0f;
+
+			// 煙演出の発生
+			SpawnDoorSmoke(mDoorWorldX, mDoorWorldY);
+		}
+		break;
+
+	case State::DoorAppear:
+	{
+		UpdateDoorSmoke();
+
+		float t = static_cast<float>(mTimer) / static_cast<float>(StageClearConstants::DoorAppearFrames);
+		if (t > 1.0f) t = 1.0f;
+
+		// 煙の中からポンッと飛び出すバウンススケール (0.0 -> 1.2 -> 1.0)
+		mDoorPopScale = t * (1.0f + 0.20f * std::sin(t * 3.14159f));
+
+		if (mTimer >= StageClearConstants::DoorAppearFrames)
+		{
+			mDoorPopScale = 1.0f;
+			mState = State::DoorActive;
+			mTimer = 0;
+		}
+	}
+	break;
+
+	case State::DoorActive:
+	{
+		UpdateDoorSmoke();
+
+		bool isPlayerInRange = false;
+		if (player != nullptr && !player->GetIsDead())
+		{
+			float playerHalfH = player->GetPlayerHeight() * 0.5f;
+			float dx = std::abs(player->GetPosition().x - mDoorWorldX);
+			float dy = std::abs(player->GetPosition().y - (mDoorWorldY - playerHalfH));
+
+			if (dx <= StageClearConstants::DoorInteractRangeX && dy <= StageClearConstants::DoorInteractRangeY)
+			{
+				isPlayerInRange = true;
+			}
+		}
+
+		if (isPlayerInRange)
+		{
+			// 範囲内：アニメーションを順再生（上限3.0fで停止、ループなし）
+			mDoorAnimProgress += StageClearConstants::DoorAnimSpeed;
+			if (mDoorAnimProgress > 3.0f)
+			{
+				mDoorAnimProgress = 3.0f;
+			}
+		}
+		else
+		{
+			// 離れた：現在の画像の枚数のところから逆再生（下限0.0fで停止、ループなし）
+			mDoorAnimProgress -= StageClearConstants::DoorAnimSpeed;
+			if (mDoorAnimProgress < 0.0f)
+			{
+				mDoorAnimProgress = 0.0f;
+			}
+		}
+
+		// 現在のコマ番号（0〜3）を決定
+		int frame = static_cast<int>(mDoorAnimProgress);
+		if (frame < 0) frame = 0;
+		if (frame > 3) frame = 3;
+		mDoorCurrentFrame = frame;
+
+		// 扉へのインタラクト：プレイヤーが扉範囲内にいて、Enterキーが押された時のみ遷移（上キーや範囲外でのEnterは無効）
+		bool enterKeyAtDoor = isPlayerInRange && (InputManager::CheckDownKey(KEY_INPUT_RETURN) == 1);
+
+		if (enterKeyAtDoor)
+		{
 			mState = State::Finished;
 			if (Master::mpGameManager && Master::mpGameManager->GetSceneManager())
 			{
 				Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_WINRESULT);
 			}
 		}
-		break;
+	}
+	break;
 
 	default:
 		break;
@@ -994,6 +1208,150 @@ void StageClear::DrawConfetti() const
 	}
 }
 
+void StageClear::SpawnDoorSmoke(float x, float y)
+{
+	mDoorSmoke.clear();
+	mDoorSmoke.reserve(32);
+
+	const float kPi = 3.14159265f;
+	// 扉の足元と中央付近から四方八方に広がるモクモク煙
+	for (int i = 0; i < 30; i++)
+	{
+		DoorSmokeParticle s;
+		float spawnOffsetX = static_cast<float>(GetRand(60)) - 30.0f; // -30〜+30
+		float spawnOffsetY = static_cast<float>(GetRand(90)) - 80.0f; // -80〜+10
+		s.x = x + spawnOffsetX;
+		s.y = y + spawnOffsetY;
+
+		float angle = static_cast<float>(GetRand(360)) * kPi / 180.0f;
+		float speed = 2.0f + static_cast<float>(GetRand(45)) / 10.0f; // 2.0〜6.5
+		s.vx = speed * std::cos(angle);
+		s.vy = speed * std::sin(angle) - 1.2f;
+
+		s.size = 14.0f + static_cast<float>(GetRand(14)); // 14〜28px
+		s.alpha = 230 + GetRand(25);
+
+		int shade = GetRand(25);
+		s.r = 235 + shade;
+		s.g = 230 + shade;
+		s.b = 220 + shade;
+		if (s.r > 255) s.r = 255;
+		if (s.g > 255) s.g = 255;
+		if (s.b > 255) s.b = 255;
+
+		s.life = 35 + GetRand(20); // 35〜55フレーム
+		s.timer = 0;
+		s.isActive = true;
+
+		mDoorSmoke.push_back(s);
+	}
+}
+
+void StageClear::UpdateDoorSmoke()
+{
+	for (auto& s : mDoorSmoke)
+	{
+		if (!s.isActive) continue;
+
+		s.x += s.vx;
+		s.y += s.vy;
+		s.vx *= 0.90f; // 空気抵抗で徐々に減速
+		s.vy *= 0.90f;
+		s.vy -= 0.08f; // ふわふわと上昇
+		s.size += 0.55f; // モクモクと膨張
+		s.timer++;
+
+		if (s.timer >= s.life)
+		{
+			s.isActive = false;
+		}
+	}
+}
+
+void StageClear::DrawDoorSmoke() const
+{
+	const BlockMap* blockMap = mpBlockMap;
+	int shakeX = (blockMap != nullptr) ? blockMap->GetShakeOffsetX() : 0;
+	int shakeY = (blockMap != nullptr) ? blockMap->GetShakeOffsetY() : 0;
+	float scrollX = (blockMap != nullptr) ? static_cast<float>(blockMap->GetScrollX()) : 0.0f;
+	float scrollY = (blockMap != nullptr) ? static_cast<float>(blockMap->GetScrollY()) : 0.0f;
+
+	for (const auto& s : mDoorSmoke)
+	{
+		if (!s.isActive) continue;
+
+		float progress = static_cast<float>(s.timer) / static_cast<float>(s.life);
+		int currentAlpha = static_cast<int>(static_cast<float>(s.alpha) * (1.0f - progress));
+		if (currentAlpha <= 0) continue;
+
+		float screenX = s.x - scrollX - shakeX;
+		float screenY = s.y - scrollY - shakeY;
+
+		// 煙の外周（立体感のある薄い影）
+		SetDrawBlendMode(DX_BLENDMODE_ALPHA, currentAlpha / 2);
+		DrawCircleAA(screenX, screenY, s.size + 2.0f, 16, GetColor(180, 175, 165), TRUE);
+
+		// 煙本体（やわらかな白・クリーム色）
+		SetDrawBlendMode(DX_BLENDMODE_ALPHA, currentAlpha);
+		DrawCircleAA(screenX, screenY, s.size, 16, GetColor(s.r, s.g, s.b), TRUE);
+	}
+	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+}
+
+void StageClear::DrawDoor(const BlockMap* pBlockMap) const
+{
+	if (mState != State::DoorAppear && mState != State::DoorActive)
+	{
+		return;
+	}
+
+	mbDoorDrawnThisFrame = true;
+
+	if (mDoorCurrentFrame < 0 || mDoorCurrentFrame >= StageClearConstants::DoorFrameCount)
+	{
+		return;
+	}
+
+	// 画像ハンドルのフェイルセーフ再読み込み
+	if (mDoorGraphs[mDoorCurrentFrame] == -1)
+	{
+		LoadDivGraph(
+			"Resource/Image/OpenDoor.png",
+			StageClearConstants::DoorFrameCount,
+			StageClearConstants::DoorFrameCount,
+			1,
+			StageClearConstants::DoorFrameWidth,
+			StageClearConstants::DoorFrameHeight,
+			const_cast<int*>(mDoorGraphs)
+		);
+	}
+
+	int graphHandle = mDoorGraphs[mDoorCurrentFrame];
+	if (graphHandle == -1) return;
+
+	const BlockMap* blockMap = (pBlockMap != nullptr) ? pBlockMap : mpBlockMap;
+	int shakeX = (blockMap != nullptr) ? blockMap->GetShakeOffsetX() : 0;
+	int shakeY = (blockMap != nullptr) ? blockMap->GetShakeOffsetY() : 0;
+	float scrollX = (blockMap != nullptr) ? static_cast<float>(blockMap->GetScrollX()) : 0.0f;
+	float scrollY = (blockMap != nullptr) ? static_cast<float>(blockMap->GetScrollY()) : 0.0f;
+
+	float drawScreenX = mDoorWorldX - scrollX - shakeX;
+	float drawScreenY = mDoorWorldY - scrollY - shakeY;
+
+	// 画像下端が地面(mDoorWorldY)に接するように、中心Yを上にずらす
+	float centerY = drawScreenY - (StageClearConstants::DoorFrameHeight * StageClearConstants::DoorScale * 0.5f);
+	float scale = StageClearConstants::DoorScale * mDoorPopScale;
+
+	DrawRotaGraph(
+		static_cast<int>(drawScreenX),
+		static_cast<int>(centerY),
+		scale,
+		0.0,
+		graphHandle,
+		TRUE
+	);
+}
+
 void StageClear::Draw() const
 {
 	if (mState == State::Inactive)
@@ -1004,8 +1362,8 @@ void StageClear::Draw() const
 	// 1. 紙吹雪パーティクル描画
 	DrawConfetti();
 
-	// 2. クラッカー本体描画（スライドイン中・待機中・破裂後）
-	if (mState != State::PreCrackerDelay)
+	// 2. クラッカー本体描画（DoorAppearWait以降は非表示）
+	if (mState != State::PreCrackerDelay && mState < State::DoorAppearWait)
 	{
 		DrawCrackers();
 		DrawMuzzleFlashes();
@@ -1014,12 +1372,27 @@ void StageClear::Draw() const
 	// 3. 銀色の円形弾描画
 	DrawBullets();
 
-	// 4. タイトルロゴ落下に伴う地面衝撃エフェクト（ひび割れ・破片・土煙）
-	DrawLogoGroundImpact();
-	DrawImpactDust();
+	// 4. タイトルロゴ落下に伴う地面衝撃エフェクト（DoorAppearWait以降は非表示）
+	if (mState < State::DoorAppearWait)
+	{
+		DrawLogoGroundImpact();
+		DrawImpactDust();
+	}
 
-	// 5. 「ステージクリア」特大文字描画（点滅・常時表示）
-	if (mState != State::Blink && mState != State::Display)
+	// 5. 扉描画（GameScene::Drawで呼ばれなかった場合のフェイルセーフ）
+	if (!mbDoorDrawnThisFrame && (mState == State::DoorAppear || mState == State::DoorActive))
+	{
+		DrawDoor(mpBlockMap);
+	}
+
+	// 6. 扉出現の煙エフェクト描画
+	if (mState == State::DoorAppear || mState == State::DoorActive)
+	{
+		DrawDoorSmoke();
+	}
+
+	// 6. 「ステージクリア」特大文字描画（点滅・常時表示・フェードアウト）
+	if (mState != State::Blink && mState != State::Display && mState != State::ClearCleanUp)
 	{
 		return;
 	}
@@ -1035,6 +1408,15 @@ void StageClear::Draw() const
 		{
 			return;
 		}
+	}
+
+	int textAlpha = 255;
+	if (mState == State::ClearCleanUp)
+	{
+		float t = static_cast<float>(mTimer) / static_cast<float>(StageClearConstants::ClearCleanUpFrames);
+		textAlpha = static_cast<int>(255.0f * (1.0f - t));
+		if (textAlpha <= 0) return;
+		SetDrawBlendMode(DX_BLENDMODE_ALPHA, textAlpha);
 	}
 
 	const char* clearText = "ステージクリア";
@@ -1057,4 +1439,9 @@ void StageClear::Draw() const
 
 	const unsigned int goldColor = GetColor(255, 230, 70);
 	fontMgr->DrawDotString(textX, textY, fontSize, goldColor, clearText);
+
+	if (mState == State::ClearCleanUp)
+	{
+		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+	}
 }

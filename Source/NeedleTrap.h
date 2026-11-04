@@ -3,6 +3,7 @@
 #include "UnitStatus.h"
 
 enum class TrapType {
+    Normal,
     PopUp,
     AntiJump
 };

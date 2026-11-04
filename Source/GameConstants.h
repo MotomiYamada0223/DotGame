@@ -272,8 +272,8 @@ namespace MovingFloorConstants
 
 	// 追加: ReverseAndDash用の定数
 	static constexpr float ReverseDashMultiplier = 10.0f;
-	static constexpr float SpawnYTop = -100.0f;
-	static constexpr float SpawnYBottom = 1180.0f;
+	static constexpr float SpawnYTop = 870.0f;
+	static constexpr float SpawnYBottom = 2250.0f;
 }
 
 // フェイント床（避け罠）用の定数
@@ -289,8 +289,10 @@ namespace FeintFloorConstants
 // スライム用の定数
 namespace SlimeConstants
 {
-	static constexpr float CollisionWidth = 70.0f;  // 当たり判定の横幅
+	static constexpr float CollisionWidth = 70.0f;  // 当たり判定の幅
 	static constexpr float CollisionHeight = 65.0f; // 当たり判定の縦幅
+	static constexpr int   TackleChargeFrames = 30; // 体当たり攻撃の起こり（溜め）フレーム数
+	static constexpr float TackleShakePower   = 2.2f; // 起こり（溜め）中の震えの強さ
 }
 
 // ボス戦開始演出用の定数
@@ -497,7 +499,23 @@ namespace StageClearConstants
 	static constexpr int   FixedPosY             = 360;    
 	static constexpr int   BlinkDurationFrames   = 50;     // 点滅表示時間
 	static constexpr int   BlinkIntervalFrames   = 5;      // 点滅切り替え間隔
-	static constexpr int   DisplayDurationFrames = 240;    
+	static constexpr int   DisplayDurationFrames = 240;
+
+	// 演出終了後のフェード・扉出現待機定数
+	static constexpr int   ClearCleanUpFrames    = 30;     // クラッカー退場・ロゴ・文字フェード時間
+	static constexpr int   DoorAppearWaitFrames  = 35;     // 扉出現前の静寂（少ししたら）
+	static constexpr int   DoorAppearFrames      = 20;     // 扉出現ポップ時間
+
+	// クリア扉用定数 (Resource/Image/OpenDoor.png)
+	static constexpr int   DoorFrameCount        = 4;      // アニメーションコマ数
+	static constexpr int   DoorFrameWidth        = 128;    // 1コマの幅
+	static constexpr int   DoorFrameHeight       = 128;    // 1コマの高さ
+	static constexpr float DoorScale             = 1.0f;   // 原寸ドット絵描画スケール
+	static constexpr float DoorSpawnScreenX      = 960.0f; // 扉出現画面X座標（中央）
+	static constexpr float DoorInteractRangeX    = 120.0f; // 扉開閉感知X範囲（扉中心からの距離）
+	static constexpr float DoorInteractRangeY    = 150.0f; // 扉開閉感知Y範囲
+	static constexpr float DoorAnimSpeed         = 0.15f;  // アニメーション再生速度（約6.7fで1コマ）
+	static constexpr float DoorGroundFallbackY   = 770.0f; // 地面検出失敗時の画面地面Y座標フォールバック    
 }
 
 
