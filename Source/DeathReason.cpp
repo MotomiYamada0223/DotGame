@@ -6,7 +6,7 @@ namespace
 	constexpr DeathReason::DeathTutorialSetting DeathTutorialSettings[] =
 	{
 		{ DeathReason::DeathType::WallHit,		 1 },
-		{ DeathReason::DeathType::EnemyHit,		 2 },
+		{ DeathReason::DeathType::EnemySlime,		 2 },
 		{ DeathReason::DeathType::Fall,			 3 },
 		{ DeathReason::DeathType::NeedleTrapHit, 4 },
 		{ DeathReason::DeathType::DeathBlock, 5 },
@@ -14,6 +14,8 @@ namespace
 		{ DeathReason::DeathType::RockPress, 7 },
 		{ DeathReason::DeathType::Minecart, 8 },
 		{ DeathReason::DeathType::HotWater, 9 },
+		{ DeathReason::DeathType::EnemySkeleton, 10 },
+		{ DeathReason::DeathType::NormalDeath, 11 },
 	};
 }
 

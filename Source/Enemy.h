@@ -35,9 +35,16 @@ public:
 	// プレイヤーとの本体接触判定・被攻撃判定が有効か
 	virtual bool IsActiveTarget() const { return true; }
 
+
+	// 攻撃判定 (派生クラス用)
+	virtual bool IsAttacking() const { return false; }
+	virtual void GetAttackHitbox(float& left, float& top, float& right, float& bottom) const {}
+
+
 protected:
 	// 移動・物理関連
-	
+	float moveSpeed;
+
 	// CharacterPhysics用
 	bool mbIsJumping;
 	bool isGrounded;
@@ -54,6 +61,8 @@ protected:
 	// ダメージ関連
 	bool isDamaged;
 	int damageTimer;
+	bool isDeadBlinking = false;
+	int deadBlinkTimer = 0;
 
 
 	// アニメーション関連

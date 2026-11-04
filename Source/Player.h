@@ -10,6 +10,8 @@
 #include "UnitStatus.h"
 #include "DeathReason.h"
 #include "PlayerActionState.h"
+#include "EnemySlime.h"
+#include "EnemySkeleton.h"
 
 class Player : public Object2D, public UnitStatus
 {
@@ -150,7 +152,7 @@ private:
 	int blinkTimer;
 	int blinkCooldownTimer;
 	const int blinkDuration = 12; // 約0.2秒
-	const float blinkSpeed = 30.0f;
+	const float blinkSpeed = 15.0f;
 	float blinkDirection;
 
 	// ブリンクの時に必要な処理

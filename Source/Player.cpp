@@ -552,7 +552,7 @@ void Player::Update()
 				if (!mIsBlinkWallDeathImmune)
 				{
 					TakeDamage(mHp);
-					mDeathReason = DeathReason::DeathType::EnemyHit;
+					mDeathReason = DeathReason::DeathType::NormalDeath;
 				}
 			}
 			else
@@ -568,7 +568,18 @@ void Player::Update()
 
 						if (mHp - dmg <= 0)
 						{
-							mDeathReason = DeathReason::DeathType::EnemyHit;
+							if (dynamic_cast<EnemySlime*>(enemy) != nullptr)
+							{
+								mDeathReason = DeathReason::DeathType::EnemySlime;
+							}
+							else if (dynamic_cast<EnemySkeleton*>(enemy) != nullptr)
+							{
+								mDeathReason = DeathReason::DeathType::EnemySkeleton;
+							}
+							else
+							{
+								mDeathReason = DeathReason::DeathType::NormalDeath;
+							}
 						}
 						TakeDamage(dmg);
 					}

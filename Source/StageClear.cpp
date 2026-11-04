@@ -401,7 +401,7 @@ void StageClear::UpdateBullets(Player* player, BlockMap* pBlockMap)
 				bool isTenDmg = (prog == GameProgress::PostTutorial1 || prog == GameProgress::Tutorial2);
 				int dmg = isTenDmg ? StageClearConstants::BulletDamagePostTutorial : player->GetHp();
 
-				player->SetDeathReason(DeathReason::DeathType::EnemyHit);
+				player->SetDeathReason(DeathReason::DeathType::NormalDeath);
 				player->TakeBulletDamage(dmg);
 
 				if (player->GetHp() <= 0 || player->GetIsDead())
@@ -553,7 +553,7 @@ void StageClear::UpdateLogo(Player* player, BlockMap* pBlockMap)
 
 			if (xOverlap && yOverlap)
 			{
-				player->SetDeathReason(DeathReason::DeathType::EnemyHit);
+				player->SetDeathReason(DeathReason::DeathType::NormalDeath);
 				player->TakeDamage(player->GetHp());
 				mState = State::Inactive;
 				return;

@@ -189,7 +189,7 @@ void Minecart::Update(BlockMap& blockMap, Player* player)
 			if (pRight >= cLeft && pLeft <= cRight && pBottom >= cTop && pTop <= cBottom)
 			{
 				player->TakeDamage(9999);
-				player->SetDeathReason(DeathReason::DeathType::NeedleTrapHit);
+				player->SetDeathReason(DeathReason::DeathType::Minecart);
 				SpawnRockDebris(pPos.x, pPos.y, 40);
 			}
 		}

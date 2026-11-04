@@ -33,6 +33,8 @@ public:
 
 	void SetTextUpdate(); // チュートリアルテキストの更新
 
+	Player* GetPlayer() { return mpPlayer; }
+	BlockMap& GetBlockMap() { return mBlockMap; }
 
 private:
 	GameLoadData mLoadData;

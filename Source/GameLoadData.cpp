@@ -8,6 +8,7 @@
 #include "FloorSpawner.h"
 #include "HiddenBlock.h"
 #include "NeedleTrap.h"
+#include "EnemySkeleton.h"
 
 GameLoadData::GameLoadData(
 	Player*& player,
@@ -162,11 +163,8 @@ void GameLoadData::StageCave()
 	// 敵の生成
 	if (mpPlayer != nullptr)
 	{
-		// 画面左側 (X=0 付近)、Yはプレイヤーと同じ高さで生成
-		EnemySlime* slime = new EnemySlime(VGet(1000.0f, mpPlayer->GetPosition().y, 0.0f));
-		slime->UpdateStatusByProgress(mProgress);
-		EnemySlime* slime1 = new EnemySlime(VGet(1700.0f, mpPlayer->GetPosition().y, 0.0f));
-		slime1->UpdateStatusByProgress(mProgress);
+		new EnemySkeleton(VGet(2400.0f, 976.0f, 0.0f));
+		new EnemySkeleton(VGet(6745.0f, 1850.0f, 0.0f));
 	}
 
 	mCart.Initialize();

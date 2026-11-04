@@ -24,7 +24,7 @@ namespace PlayerConstants
 	static const int PlayerCollisionWidth = 32; // プレイヤーの幅
 	static const int PlayerCollisionHeight = 100; // プレイヤーの高さ
 
-	static const int PlayerAttackWidth = 600; // プレイヤーの攻撃範囲の幅
+	static const int PlayerAttackWidth = 130; // プレイヤーの攻撃範囲の幅
 	static const int PlayerAttackHeight = 50; // プレイヤーの攻撃範囲の高さ
 	static const int PlayerAttackDist = 10; // プレイヤーからどれだけ離れているか
 
@@ -93,6 +93,10 @@ namespace CharacterGraphPath
 	static const std::string KingSlimeAttack = "Resource/Enemy/KingSlime/kingSlime_attack.png";
 	static const std::string KingSlimeLongRangeAttack = "Resource/Enemy/KingSlime/kingSlime_long_range_attack.png";
 	static const std::string KingSlimeDeath = "Resource/Enemy/KingSlime/kingSlime_death.png";
+
+
+	// スケルトン画像
+	static const std::string SkeletonIdel = "Resource/Enemy/KingSlime/kingSlime_death.png";
 
 
 	// 天使の画像
