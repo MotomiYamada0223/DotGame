@@ -32,11 +32,11 @@ public:
 	};
 
 	// 既存の型名との互換エイリアス
-	using FireProjectile = DragonFireGimmick::FireProjectile;
-	using FireSpark = DragonFireGimmick::FireSpark;
-	using BurningGround = DragonFireGimmick::BurningGround;
-	using CenterFireball = DragonFireGimmick::CenterFireball;
-	using ArchFlameWave = DragonFireGimmick::ArchFlameWave;
+	using FireProjectile  = DragonFireGimmick::FireProjectile;
+	using FireSpark       = DragonFireGimmick::FireSpark;
+	using BurningGround   = DragonFireGimmick::BurningGround;
+	using CenterFireball  = DragonFireGimmick::CenterFireball;
+	using ArchFlameWave   = DragonFireGimmick::ArchFlameWave;
 
 	BossEnemyDragon(VECTOR initPos);
 	virtual ~BossEnemyDragon();

@@ -170,7 +170,7 @@ private:
 	int blinkTimer;
 	int blinkCooldownTimer;
 	const int blinkDuration = 12; // 約0.2秒
-	const float blinkSpeed = 15.0f;
+	const float blinkSpeed = 40.0f;
 	float blinkDirection;
 
 	// ブリンクの時に必要な処理
