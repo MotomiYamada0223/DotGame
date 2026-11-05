@@ -55,6 +55,9 @@ public:
 	int GetHpShakeTimer() const { return mHpShakeTimer; }
 	bool HasRetreated() const { return mHasRetreated; }
 
+	void StartBattle(); // 追加：戦闘開始を有効化する関数
+	bool IsBattleActive() const { return mIsBattleActive; } // 追加
+
 	virtual bool IsAttacking() const override;
 	virtual void GetAttackHitbox(float& left, float& top, float& right, float& bottom) const override;
 
@@ -131,4 +134,6 @@ private:
 
 	float mSmoothHp;
 	int mHpShakeTimer;
+
+	bool mIsBattleActive;
 };

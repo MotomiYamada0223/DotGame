@@ -13,7 +13,7 @@
 #include <cstdlib>
 
 BossEnemyDragon::BossEnemyDragon(VECTOR initPos)
-	: Enemy("", initPos)
+	: Enemy("Resource/Enemy/Dragon/animation_dragon/new_idle/sprite_idle1.png", VGet(8000.0f, 1480.0f, 0.0f))
 	, mState(State::Idle)
 	, mAnimFrame(0)
 	, mAnimTimer(0)
@@ -41,6 +41,7 @@ BossEnemyDragon::BossEnemyDragon(VECTOR initPos)
 	, mBreathTargetCenterX(8900.0f)
 	, mSmoothHp(80.0f)
 	, mHpShakeTimer(0)
+	, mIsBattleActive(false)
 {
 	UpdateStatusByProgress(GameProgress::Tutorial1);
 	LoadAnimations();
@@ -49,7 +50,15 @@ BossEnemyDragon::BossEnemyDragon(VECTOR initPos)
 	mfEnemyWidth = 220.0f;
 	mfEnemyHeight = 200.0f;
 	moveSpeed = 0.0f;
+
 }
+
+
+void BossEnemyDragon::StartBattle()
+{
+	mIsBattleActive = true;
+}
+
 
 BossEnemyDragon::~BossEnemyDragon()
 {
@@ -258,6 +267,12 @@ void BossEnemyDragon::TriggerDefeatRetreat(GameScene* gameScene)
 void BossEnemyDragon::Update()
 {
 	Enemy::Update();
+
+	// 戦闘開始フラグが立つまでは、位置やアニメーション以外のAI行動・クールタイムを進めない
+	if (!mIsBattleActive && mState != State::EntranceDrop && mState != State::EntranceWait)
+	{
+		return;
+	}
 
 	if (mHpShakeTimer > 0) mHpShakeTimer--;
 	if (mSmoothHp < 0.0f) mSmoothHp = static_cast<float>(mHp);

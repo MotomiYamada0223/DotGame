@@ -262,6 +262,10 @@ void BossIntroDirector::Update(Player* player, BlockMap& blockMap)
 			{
 				mpBossSlime->StartBattle();
 			}
+			if (mpBossDragon != nullptr)
+			{
+				mpBossDragon->StartBattle();
+			}
 		}
 		break;
 
@@ -536,11 +540,7 @@ void BossIntroDirector::Reset()
 		mpBossSlime->SetDeleteFlag(true);
 		mpBossSlime = nullptr;
 	}
-	if (mpBossDragon != nullptr)
-	{
-		delete mpBossDragon;
-		mpBossDragon = nullptr;
-	}
+	
 	mState = State::Inactive;
 	mFadeTimer = 0;
 	mStateTimer = 0;

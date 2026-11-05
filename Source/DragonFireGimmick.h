@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "DxLib.h"
 #include <vector>
@@ -7,12 +7,12 @@ class Player;
 class BlockMap;
 
 // =========================================================================
-// ƒhƒ‰ƒSƒ“‚Ì‰ŠE‰Î‹…E‘å”š”­EƒA[ƒ`‰Î‰Š”gE‰„Ä’n–ÊE‰Î‰ÔƒGƒtƒFƒNƒgŠÇ—ƒNƒ‰ƒX
+// ãƒ‰ãƒ©ã‚´ãƒ³ã®ç‚ãƒ»ç«çƒãƒ»å¤§çˆ†ç™ºãƒ»ã‚¢ãƒ¼ãƒç«ç‚æ³¢ãƒ»å»¶ç„¼åœ°é¢ãƒ»ç«èŠ±ã‚¨ãƒ•ã‚§ã‚¯ãƒˆç®¡ç†ã‚¯ãƒ©ã‚¹
 // =========================================================================
 class DragonFireGimmick
 {
 public:
-	// ‹ó’†‰Î‰ŠƒuƒŒƒX‚Ì‰Î‰Š’e
+	// ç©ºä¸­ç«ç‚ãƒ–ãƒ¬ã‚¹ã®ç«ç‚å¼¾
 	struct FireProjectile
 	{
 		float x, y;
@@ -24,7 +24,7 @@ public:
 		bool active;
 	};
 
-	// ”ò‚ÑU‚é‰Î‰ÔƒXƒp[ƒNƒp[ƒeƒBƒNƒ‹
+	// é£›ã³æ•£ã‚‹ç«èŠ±ã‚¹ãƒ‘ãƒ¼ã‚¯ãƒ‘ãƒ¼ãƒ†ã‚£ã‚¯ãƒ«
 	struct FireSpark
 	{
 		float x, y;
@@ -35,18 +35,18 @@ public:
 		unsigned int color;
 	};
 
-	// ’…’e’n“_‚©‚ç¶‰E‚Ö”R‚¦L‚ª‚ég˜@‚Ì’n–Ê
+	// ç€å¼¾åœ°ç‚¹ã‹ã‚‰å·¦å³ã¸ç‡ƒãˆåºƒãŒã‚‹ç´…è“®ã®åœ°é¢
 	struct BurningGround
 	{
 		float x, y;
-		float currentHalfWidth; // ’…’e’n“_‚©‚ç¶‰E‚ÖƒJƒbƒR‚æ‚­”R‚¦L‚ª‚éŒ»İ‚Ì•
-		float targetHalfWidth;  // Å‘å‚Ü‚ÅL‚ª‚Á‚½‚Æ‚«‚Ì•
-		int timer;              // ‘±ƒtƒŒ[ƒ€
-		int maxTimer;           // Å‘å‘±ƒtƒŒ[ƒ€
-		int age;                // ”­¶‚µ‚Ä‚©‚ç‚ÌŒo‰ßƒtƒŒ[ƒ€iL‚ª‚è‰‰o—pj
+		float currentHalfWidth; // ç€å¼¾åœ°ç‚¹ã‹ã‚‰å·¦å³ã¸ã‚«ãƒƒã‚³ã‚ˆãç‡ƒãˆåºƒãŒã‚‹ç¾åœ¨ã®å¹…
+		float targetHalfWidth;  // æœ€å¤§ã¾ã§åºƒãŒã£ãŸã¨ãã®å¹…
+		int timer;              // æŒç¶šãƒ•ãƒ¬ãƒ¼ãƒ 
+		int maxTimer;           // æœ€å¤§æŒç¶šãƒ•ãƒ¬ãƒ¼ãƒ 
+		int age;                // ç™ºç”Ÿã—ã¦ã‹ã‚‰ã®çµŒéãƒ•ãƒ¬ãƒ¼ãƒ ï¼ˆåºƒãŒã‚Šæ¼”å‡ºç”¨ï¼‰
 	};
 
-	// ’†‰›‚É“f‚«o‚·‹‘å‰Î‚Ì‹Ê•ü•Ó‘å”š”­ƒh[ƒ€
+	// ä¸­å¤®ã«åãå‡ºã™å·¨å¤§ç«ã®ç‰ï¼†å‘¨è¾ºå¤§çˆ†ç™ºãƒ‰ãƒ¼ãƒ 
 	struct CenterFireball
 	{
 		bool active = false;
@@ -61,16 +61,16 @@ public:
 		float explosionRadius = 0.0f;
 	};
 
-	// ‘å”š”­‚Ì‚ ‚Æ’n–Ê‚ğ‰ˆ‚Á‚ÄƒA[ƒ`ó‚Å¶‰E‚ÉL‚ª‚é‰Š‚Ì”g
+	// å¤§çˆ†ç™ºã®ã‚ã¨åœ°é¢ã‚’æ²¿ã£ã¦ã‚¢ãƒ¼ãƒçŠ¶ã§å·¦å³ã«åºƒãŒã‚‹ç‚ã®æ³¢
 	struct ArchFlameWave
 	{
 		float startX;
 		float x;
 		float y;
-		float dir;        // -1.0f = ¶‚ÖL‚ª‚é, +1.0f = ‰E‚ÖL‚ª‚é
-		float speed;      // ‰¡•ûŒü‚Ìis‘¬“x
-		float archWidth;  // 1ƒA[ƒ`‚Ì‰¡•
-		float archHeight; // ƒA[ƒ`‚Ì‚‚³
+		float dir;        // -1.0f = å·¦ã¸åºƒãŒã‚‹, +1.0f = å³ã¸åºƒãŒã‚‹
+		float speed;      // æ¨ªæ–¹å‘ã®é€²è¡Œé€Ÿåº¦
+		float archWidth;  // 1ã‚¢ãƒ¼ãƒã®æ¨ªå¹…
+		float archHeight; // ã‚¢ãƒ¼ãƒã®é«˜ã•
 		int tick;
 		bool active;
 	};
@@ -78,25 +78,25 @@ public:
 	DragonFireGimmick() = default;
 	~DragonFireGimmick() = default;
 
-	// ‘SƒGƒtƒFƒNƒgEUŒ‚ƒIƒuƒWƒFƒNƒg‚ğƒNƒŠƒA
+	// å…¨ã‚¨ãƒ•ã‚§ã‚¯ãƒˆãƒ»æ”»æ’ƒã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’ã‚¯ãƒªã‚¢
 	void ClearAll();
 
-	// 1. ‹ó’†‰Î‰ŠƒuƒŒƒX—pFŒûŒ³‚Ö‚Ì‰Î‚Ì•²‹z‚¢‚İ•‰Î‰ŠƒXƒgƒŠ[ƒ€”­Ë
+	// 1. ç©ºä¸­ç«ç‚ãƒ–ãƒ¬ã‚¹ç”¨ï¼šå£å…ƒã¸ã®ç«ã®ç²‰å¸ã„è¾¼ã¿ï¼†ç«ç‚ã‚¹ãƒˆãƒªãƒ¼ãƒ ç™ºå°„
 	void SpawnBreathInhaleSparks(float mouthX, float mouthY);
 	void SpawnBreathStream(float mouthX, float mouthY, float targetX, float targetY);
 
-	// 2. ’†‰›‹‘å‰Î‹…—pFŒûŒ³‚Ö‚Ìƒ`ƒƒ[ƒW‰Î‰Ô‹z‚¢‚İ•‹‘å‰Î‹…”­Ë
+	// 2. ä¸­å¤®å·¨å¤§ç«çƒç”¨ï¼šå£å…ƒã¸ã®ãƒãƒ£ãƒ¼ã‚¸ç«èŠ±å¸ã„è¾¼ã¿ï¼†å·¨å¤§ç«çƒç™ºå°„
 	void SpawnCenterChargeSparks(float mouthX, float mouthY);
 	void LaunchCenterFireball(float mouthX, float mouthY, float targetX, float targetY);
 
-	// 3. ‹ó’†‹}~‰ºƒ_ƒCƒu—pF“Ëi‹OÕ‚Ì‰Î‰Ô•’…’n‚Ì”šU‰Î‰Ô
+	// 3. ç©ºä¸­æ€¥é™ä¸‹ãƒ€ã‚¤ãƒ–ç”¨ï¼šçªé€²è»Œè·¡ã®ç«èŠ±ï¼†ç€åœ°æ™‚ã®çˆ†æ•£ç«èŠ±
 	void SpawnDiveTrailSparks(float x, float y, float diveVx, float diveVy);
 	void SpawnDiveLandingSparks(float x, float facingDir);
 
-	// –ˆƒtƒŒ[ƒ€‚ÌXVˆ—iˆÚ“®E–c’£E’n–Ê‰„ÄE‘å”š”­EƒA[ƒ`”gEƒvƒŒƒCƒ„[“–‚½‚è”»’èj
+	// æ¯ãƒ•ãƒ¬ãƒ¼ãƒ ã®æ›´æ–°å‡¦ç†ï¼ˆç§»å‹•ãƒ»è†¨å¼µãƒ»åœ°é¢å»¶ç„¼ãƒ»å¤§çˆ†ç™ºãƒ»ã‚¢ãƒ¼ãƒæ³¢ãƒ»ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼å½“ãŸã‚Šåˆ¤å®šï¼‰
 	void Update(Player* player, BlockMap* blockMap, int attackDamage);
 
-	// •`‰æˆ—
+	// æç”»å‡¦ç†
 	void Draw(BlockMap* blockMap, bool isAirBreathState, bool isCenterChargeState, int animFrame, float mouthWX, float mouthWY) const;
 
 private:
