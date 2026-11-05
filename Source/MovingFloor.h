@@ -61,6 +61,8 @@ private:
     float mWidth;
     float mHeight;
     int mImageHandle;
+    float mScale;
+    bool mIsShrinking;
 
    float mTotalTravelDistance = 0.0f;
 

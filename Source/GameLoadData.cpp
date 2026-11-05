@@ -5,6 +5,7 @@
 #include "GameLoadData.h"
 #include "EnemySlime.h" 
 #include "FeintFloor.h"
+#include "CrumbleFloor.h"
 #include "FloorSpawner.h"
 #include "HiddenBlock.h"
 #include "NeedleTrap.h"
@@ -79,15 +80,22 @@ void GameLoadData::StageForest()
 	mBackground.Load(ScrollGraphPath::StageForest);
 
 
-	// フェイント床の配置（4つの足場の一番下のところ）
+	// フェイント床の配置
 	new FeintFloor(
 		VGet(4920.0f, 1685.0f, 0.0f),
 		mpPlayer,
 		&mBlockMap
 	);
 
+	// 崩落床の配置
+	new CrumbleFloor(
+		VGet(7599.0f, 1600.0f, 0.0f),
+		mpPlayer,
+		&mBlockMap
+	);
+
 	// 隠しブロックの生成
-	new HiddenBlock(VGet(3150.0f, 1150.0f, 0.0f), &mBlockMap);
+	new HiddenBlock(VGet(3150.0f, 1175.0f, 0.0f), &mBlockMap);
 
 
 	// 上から下へ無限に降ってくる足場のスポナーを配置
@@ -122,11 +130,7 @@ void GameLoadData::StageForest()
 	);
 
 
-	// 左右に往復する基本の動く床
-	MovingFloor* floor1 = new MovingFloor(
-		VGet(900.0f, 1270.0f, 0.0f), VGet(1800.0f, 1270.0f, 0.0f),
-		2.0f, MovePattern::Loop, FloorFeature::SpeedUpOnRide, mpPlayer, &mBlockMap
-	);
+
 
 	// 敵の生成
 	if (mpPlayer != nullptr)

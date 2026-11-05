@@ -276,6 +276,7 @@ namespace MovingFloorConstants
 	static constexpr float ReverseDashMultiplier = 10.0f;
 	static constexpr float SpawnYTop = 870.0f;
 	static constexpr float SpawnYBottom = 2250.0f;
+	static constexpr int   ShrinkDurationFrames = 30; // 指定座標到達時の縮小消滅にかけるフレーム数
 }
 
 // フェイント床（避け罠）用の定数
@@ -286,6 +287,15 @@ namespace FeintFloorConstants
 	static constexpr float EvadeSpeed = 20.0f;        // 避ける時のスライド速度
 	static constexpr float MaxEvadeDistance = 160.0f; // 避ける総距離
 	static constexpr float CollisionTopOffset = 30.0f; // 当たり判定の上面を削る量
+}
+
+// 崩落床（クランブルフロア）用の定数
+namespace CrumbleFloorConstants
+{
+	static constexpr float FallGravity       = 1.0f;   // 落下加速度
+	static constexpr float MaxFallSpeed      = 28.0f;  // 最大落下速度
+	static constexpr float DestroyDistanceY  = 1000.0f; // 初期位置から描画を停止するまでの落下距離
+	static constexpr float CollisionTopOffset = 30.0f;  // 当たり判定の上面削り量
 }
 
 // スライム用の定数

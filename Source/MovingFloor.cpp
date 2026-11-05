@@ -21,6 +21,8 @@ MovingFloor::MovingFloor(VECTOR startPos, VECTOR endPos, float speed, MovePatter
     , mIsPlayerRiding(false)
     , mpBlockMap(blockMap)
     , mIsSpedUp(false)
+    , mScale(1.0f)
+    , mIsShrinking(false)
 {
     s_AllMovingFloors.push_back(this);
     // 画像の読み込み
@@ -86,6 +88,8 @@ MovingFloor::MovingFloor(VECTOR startPos, VECTOR velocity, MovePattern pattern, 
     , mIsPlayerRiding(false)
     , mpBlockMap(blockMap)
     , mIsSpedUp(false)
+    , mScale(1.0f)
+    , mIsShrinking(false)
 {
     s_AllMovingFloors.push_back(this);
     // 画像の読み込み
@@ -171,16 +175,27 @@ void MovingFloor::Move()
         }
     } 
     else if (mPattern == MovePattern::OneWayDestroy) {
-        nextPos = VAdd(prevPos, currentVelocity);
+        if (!mIsShrinking) {
+            nextPos = VAdd(prevPos, currentVelocity);
 
-        // 速度倍率で割ることで、加速していても「基準速度で進んだ距離」として数える
-        const float speedRatio = (mBaseSpeed > 0.0f) ? (mCurrentSpeed / mBaseSpeed) : 1.0f;
-        mTraveledDistance += VSize(VSub(nextPos, prevPos)) / speedRatio;
+            // 速度倍率で割ることで、加速していても「基準速度で進んだ距離」として数える
+            const float speedRatio = (mBaseSpeed > 0.0f) ? (mCurrentSpeed / mBaseSpeed) : 1.0f;
+            mTraveledDistance += VSize(VSub(nextPos, prevPos)) / speedRatio;
 
-        if (mTraveledDistance >= MovingFloorConstants::DestroyDistance) {
-            SetDeleteFlag(true);
-            mIsPlayerRiding = false;
-            return;
+            if (mTraveledDistance >= MovingFloorConstants::DestroyDistance) {
+                mIsShrinking = true;
+                nextPos = prevPos; // 指定の座標到達
+            }
+        } else {
+            // 指定座標到達時：縮小化、どんどん小さくなっていき、消滅
+            nextPos = prevPos;
+            mScale -= 1.0f / static_cast<float>(MovingFloorConstants::ShrinkDurationFrames);
+            if (mScale <= 0.0f) {
+                mScale = 0.0f;
+                SetDeleteFlag(true);
+                mIsPlayerRiding = false;
+                return;
+            }
         }
     }
 
@@ -200,7 +215,9 @@ void MovingFloor::Move()
         playerPos.x += moveDelta.x;
         
         // Y座標は毎フレームの重力加算による「めり込み」を防止するため、床の上にぴったり強制配置する
-        playerPos.y = nextPos.y - mHeight / 2.0f - PlayerConstants::PlayerCollisionHeight / 2.0f;
+        // 縮小化中は縮小した上面に合わせて高さを合わせる
+        float currentHalfHeight = (mHeight * mScale) / 2.0f;
+        playerPos.y = nextPos.y - currentHalfHeight - PlayerConstants::PlayerCollisionHeight / 2.0f;
         
         mpPlayer->SetPosition(playerPos);
     }
@@ -209,6 +226,12 @@ void MovingFloor::Move()
 void MovingFloor::CheckPlayerRiding()
 {
     if (!mpPlayer) return;
+
+    // 完全に縮小しきっている場合は乗れない
+    if (mScale <= 0.05f) {
+        mIsPlayerRiding = false;
+        return;
+    }
 
     VECTOR myPos = GetPosition();
     VECTOR playerPos = mpPlayer->GetPosition();
@@ -219,10 +242,12 @@ void MovingFloor::CheckPlayerRiding()
     float pyBottom = playerPos.y + PlayerConstants::PlayerCollisionHeight / 2.0f;
     float pyTop = playerPos.y - PlayerConstants::PlayerCollisionHeight / 2.0f;
 
-    // 床の範囲（画像サイズに基づく）
-    float myLeft = myPos.x - mWidth / 2.0f;
-    float myRight = myPos.x + mWidth / 2.0f;
-    float myTop = myPos.y - mHeight / 2.0f;
+    // 床の範囲（画像サイズに基づく、縮小率を反映）
+    float currentWidth = mWidth * mScale;
+    float currentHeight = mHeight * mScale;
+    float myLeft = myPos.x - currentWidth / 2.0f;
+    float myRight = myPos.x + currentWidth / 2.0f;
+    float myTop = myPos.y - currentHeight / 2.0f;
 
     // 1. X軸の判定：
     // 端っこが1pxかすめただけで乗ったと判定されるのを防ぐため、
@@ -302,6 +327,6 @@ void MovingFloor::Draw()
         int drawX = static_cast<int>(ConvertToScreenX(mvPosition.x, mpBlockMap));
         int drawY = static_cast<int>(ConvertToScreenY(mvPosition.y, mpBlockMap));
 
-        DrawRotaGraph(static_cast<int>(drawX), static_cast<int>(drawY), 1.0, 0.0, mImageHandle, TRUE);
+        DrawRotaGraph(static_cast<int>(drawX), static_cast<int>(drawY), static_cast<double>(mScale), 0.0, mImageHandle, TRUE);
     }
 }
