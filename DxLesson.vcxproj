@@ -146,6 +146,7 @@
     <ClCompile Include="Source\CircleFade.cpp" />
     <ClCompile Include="Source\Collision.cpp" />
     <ClCompile Include="Source\DeathReason.cpp" />
+    <ClCompile Include="Source\DragonFireGimmick.cpp" />
     <ClCompile Include="Source\DrawFrame.cpp" />
     <ClCompile Include="Source\Enemy.cpp" />
     <ClCompile Include="Source\EnemySkeleton.cpp" />
@@ -209,6 +210,7 @@
     <ClInclude Include="Source\Collision.h" />
     <ClInclude Include="Source\ColorTagParser.h" />
     <ClInclude Include="Source\DeathReason.h" />
+    <ClInclude Include="Source\DragonFireGimmick.h" />
     <ClInclude Include="Source\DrawFrame.h" />
     <ClInclude Include="Source\Enemy.h" />
     <ClInclude Include="Source\EnemySkeleton.h" />
