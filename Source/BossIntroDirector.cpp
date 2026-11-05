@@ -20,6 +20,7 @@ BossIntroDirector::BossIntroDirector()
 	, mCurrentTargetX(0.0f)
 	, mWarningX(0.0f)
 	, mGroundY(0.0f)
+	, mpPlayer(nullptr)
 	, mpBlockMap(nullptr)
 	, mHasEvaded(false)
 	, mEKeyWasDown(false)
@@ -35,6 +36,7 @@ BossIntroDirector::~BossIntroDirector()
 void BossIntroDirector::Update(Player* player, BlockMap& blockMap)
 {
 	if (!player) return;
+	mpPlayer = player;
 	mpBlockMap = &blockMap;
 
 	// ステージ2判定（0がステージ1、1がステージ2）
@@ -145,7 +147,8 @@ void BossIntroDirector::Update(Player* player, BlockMap& blockMap)
 			// ステージ1ならスライム、ステージ2ならドラゴンを生成して登6場演出開始
 			if (isStage2)
 			{
-				VECTOR dragonSpawnPos = VGet(mWarningX, 1810.0f, 0.0f);
+				const float startY = mGroundY - 1200.0f;
+				VECTOR dragonSpawnPos = VGet(mWarningX, startY, 0.0f);
 
 				mpBossDragon = new BossEnemyDragon(dragonSpawnPos);
 				mpBossDragon->StartEntrance();
@@ -192,7 +195,7 @@ void BossIntroDirector::Update(Player* player, BlockMap& blockMap)
 		{
 			if (mpBossDragon != nullptr && mpBossDragon->GetState() == BossEnemyDragon::State::Fly)
 			{
-				mState = State::TitleWait;
+				mState = State::TitleFadeOut;
 				mTitleTimer = 0;
 			}
 		}
@@ -362,6 +365,10 @@ void BossIntroDirector::Draw() const
 	if (mpBossSlime != nullptr)
 	{
 		mpBossSlime->DrawHpBar();
+	}
+	if (mpBossDragon != nullptr && mpBlockMap != nullptr)
+	{
+		mpBossDragon->DrawBossUI(mpPlayer, *mpBlockMap);
 	}
 }
 

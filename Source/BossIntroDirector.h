@@ -57,6 +57,7 @@ private:
 	float mCurrentTargetX;      // ボスエリア中央X座標
 	float mWarningX;            // 警告X座標
 	float mGroundY;             // 警告地面Y座標
+	Player* mpPlayer;           // プレイヤー参照
 	BlockMap* mpBlockMap;       // 画面座標変換用
 	bool mHasEvaded;            // 回避成功フラグ
 	bool mEKeyWasDown;          // Eキー前回押下状態

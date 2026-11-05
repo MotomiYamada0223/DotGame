@@ -8,6 +8,8 @@
 #include "Player.h"
 #include "FontManager.h"
 #include "GameConstants.h"
+#include "Collision.h"
+#include "StageClear.h"
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
@@ -38,7 +40,7 @@ BossEnemyDragon::BossEnemyDragon(VECTOR initPos)
 	, mEntranceLandAnimDone(false)
 	, mFacingDirection(-1.0f)
 	, mDrawScale(1.6f)
-	, mHoverTargetY(980.0f)
+	, mHoverTargetY(1480.0f)
 	, mBreathTargetCenterX(8900.0f)
 	, mSmoothHp(80.0f)
 	, mHpShakeTimer(0)
@@ -64,7 +66,7 @@ void BossEnemyDragon::StartBattle()
 	mStateTimer        = 0;
 	mAnimFrame         = 0;
 	mAnimTimer         = 0;
-	mPostEntranceTimer = 0;
+	// mPostEntranceTimer は「ドラゴン」文字のフェードアウト演出で使用中のためリセットしない
 	mAttackCooldown    = 60;
 	mFlightCooldown    = 0;  // 戦闘開始直後は即座に攻撃行動へ移行できるようにゼロにする
 }
@@ -181,6 +183,16 @@ void BossEnemyDragon::TakeDamage(int damage)
 	mHpShakeTimer = 15;
 }
 
+bool BossEnemyDragon::CheckAttackCollision(const VECTOR& targetPos, const VECTOR& targetSize) const
+{
+	if (!IsAttacking()) return false;
+	float left = 0.0f, top = 0.0f, right = 0.0f, bottom = 0.0f;
+	GetAttackHitbox(left, top, right, bottom);
+	VECTOR atkPos = VGet(left, top, 0.0f);
+	VECTOR atkSize = VGet(right - left, bottom - top, 0.0f);
+	return Collision::CheckRectToRect(targetPos, targetSize, atkPos, atkSize);
+}
+
 bool BossEnemyDragon::IsAttacking() const
 {
 	if (mState == State::Attack)
@@ -286,6 +298,16 @@ void BossEnemyDragon::Update()
 	// 戦闘開始フラグが立つまでは、位置やアニメーション以外のAI行動・クールタイムを進めない
 	if (!mIsBattleActive && mState != State::EntranceDrop && mState != State::EntranceWait)
 	{
+		if (mPostEntranceTimer > 0) mPostEntranceTimer--;
+		if (mState == State::Fly && !mFlyAnim.empty())
+		{
+			mAnimTimer++;
+			if (mAnimTimer >= 6)
+			{
+				mAnimTimer = 0;
+				mAnimFrame = (mAnimFrame + 1) % static_cast<int>(mFlyAnim.size());
+			}
+		}
 		return;
 	}
 
@@ -410,6 +432,20 @@ void BossEnemyDragon::UpdateEntranceDrop(Player* player, GameScene* gameScene)
 	// 床に着地したら EntranceWait へ移行し、着陸アニメーション後半（砂煙エフェクト 3..6）を再生
 	if (isGrounded)
 	{
+		if (mpBlockMap != nullptr)
+		{
+			mpBlockMap->StartCameraShake(
+				KingSlimeShakeConstants::ShakePower,
+				KingSlimeShakeConstants::RatioX,
+				KingSlimeShakeConstants::RatioY,
+				KingSlimeShakeConstants::DurationFrames
+			);
+		}
+		if (player != nullptr && !player->HasEvadedBossSpawn())
+		{
+			player->SetDeathReason(DeathReason::DeathType::NormalDeath);
+			player->TakeDamage(player->GetHp());
+		}
 		mState = State::EntranceWait;
 		mEntranceTimer = 240; // キングスライミーと同じ4秒間
 		mEntranceLandAnimDone = false;
@@ -1200,6 +1236,8 @@ void BossEnemyDragon::UpdateDefeatRetreat()
 			{
 				mvPosition.y = 700.0f;
 				mHasRetreated = true;
+				StageClear::Trigger();
+				SetDeleteFlag(true);
 			}
 		}
 	}
@@ -1222,7 +1260,26 @@ void BossEnemyDragon::EnemyMove(BlockMap& blockMap)
 		return;
 	}
 
-	Enemy::EnemyMove(blockMap);
+	// 登場落下中、天井ブロック領域（Y < 1350）を通過している間は天井に引っかからないよう直接落下させる
+	if (mState == State::EntranceDrop && (mvPosition.y + mfEnemyHeight * 0.5f) < 1350.0f)
+	{
+		mvPosition.y += velocityY;
+		isGrounded = false;
+		return;
+	}
+
+	mCharacterPhysics.UpdateMoveAndCollision(
+		mvPosition,
+		velocityY,
+		isGrounded,
+		mbIsJumping,
+		blockMap,
+		mfEnemyWidth,
+		mfEnemyHeight,
+		gravity,
+		0.0f,
+		0.0f
+	);
 }
 
 // =========================================================================

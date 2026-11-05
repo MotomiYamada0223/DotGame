@@ -58,6 +58,9 @@ public:
 	void StartBattle(); // 追加：戦闘開始を有効化する関数
 	bool IsBattleActive() const { return mIsBattleActive; } // 追加
 
+	virtual bool HasCustomDeath() const override { return true; }
+	virtual bool IsActiveTarget() const override { return mState != State::EntranceDrop && mState != State::DefeatRetreat && !mHasRetreated; }
+	virtual bool CheckAttackCollision(const VECTOR& targetPos, const VECTOR& targetSize) const override;
 	virtual bool IsAttacking() const override;
 	virtual void GetAttackHitbox(float& left, float& top, float& right, float& bottom) const override;
 
