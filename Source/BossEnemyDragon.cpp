@@ -12,8 +12,9 @@
 #include <cstdio>
 #include <cstdlib>
 
+
 BossEnemyDragon::BossEnemyDragon(VECTOR initPos)
-	: Enemy("Resource/Enemy/Dragon/animation_dragon/new_idle/sprite_idle1.png", VGet(8000.0f, 1480.0f, 0.0f))
+	: Enemy("Resource/Enemy/Dragon/animation_dragon/new_idle/sprite_idle1.png", initPos)
 	, mState(State::Idle)
 	, mAnimFrame(0)
 	, mAnimTimer(0)
@@ -37,7 +38,7 @@ BossEnemyDragon::BossEnemyDragon(VECTOR initPos)
 	, mEntranceLandAnimDone(false)
 	, mFacingDirection(-1.0f)
 	, mDrawScale(1.6f)
-	, mHoverTargetY(1480.0f)
+	, mHoverTargetY(980.0f)
 	, mBreathTargetCenterX(8900.0f)
 	, mSmoothHp(80.0f)
 	, mHpShakeTimer(0)
@@ -57,6 +58,15 @@ BossEnemyDragon::BossEnemyDragon(VECTOR initPos)
 void BossEnemyDragon::StartBattle()
 {
 	mIsBattleActive = true;
+
+	// 戦闘開始時に各タイマーを適切な初期値にリセットする
+	// (EntranceWait -> Fly 遷移後、ガード停止中にタイマーが残っているため)
+	mStateTimer        = 0;
+	mAnimFrame         = 0;
+	mAnimTimer         = 0;
+	mPostEntranceTimer = 0;
+	mAttackCooldown    = 60;
+	mFlightCooldown    = 0;  // 戦闘開始直後は即座に攻撃行動へ移行できるようにゼロにする
 }
 
 
@@ -159,7 +169,7 @@ void BossEnemyDragon::StartEntrance()
 	mAnimFrame = 0;
 	mAnimTimer = 0;
 	isGrounded = false;
-	velocityY = 6.0f;
+	velocityY = 30.0f;
 	mFireGimmick.ClearAll();
 }
 
@@ -266,6 +276,11 @@ void BossEnemyDragon::TriggerDefeatRetreat(GameScene* gameScene)
 // =========================================================================
 void BossEnemyDragon::Update()
 {
+	// BossEnemyDragon::Update() の冒頭に追加（一時デバッグ用）
+	DrawFormatString(10, 100, GetColor(255, 255, 0),
+		"Dragon State=%d BattleActive=%d StateTimer=%d",
+		(int)mState, (int)mIsBattleActive, mStateTimer);
+
 	Enemy::Update();
 
 	// 戦闘開始フラグが立つまでは、位置やアニメーション以外のAI行動・クールタイムを進めない

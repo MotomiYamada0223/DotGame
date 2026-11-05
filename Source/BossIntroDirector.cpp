@@ -145,7 +145,8 @@ void BossIntroDirector::Update(Player* player, BlockMap& blockMap)
 			// ステージ1ならスライム、ステージ2ならドラゴンを生成して登場演出開始
 			if (isStage2)
 			{
-				VECTOR dragonSpawnPos = VGet(mWarningX, 980.0f, 0.0f);
+				VECTOR dragonSpawnPos = VGet(mWarningX, 1480.0f, 0.0f);
+
 				mpBossDragon = new BossEnemyDragon(dragonSpawnPos);
 				mpBossDragon->StartEntrance();
 			}
@@ -540,7 +541,12 @@ void BossIntroDirector::Reset()
 		mpBossSlime->SetDeleteFlag(true);
 		mpBossSlime = nullptr;
 	}
-	
+	if (mpBossDragon != nullptr)
+	{
+		mpBossDragon->SetDeleteFlag(true);
+		mpBossDragon = nullptr;
+	}
+
 	mState = State::Inactive;
 	mFadeTimer = 0;
 	mStateTimer = 0;
