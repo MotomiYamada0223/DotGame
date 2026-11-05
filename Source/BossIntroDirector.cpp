@@ -142,10 +142,10 @@ void BossIntroDirector::Update(Player* player, BlockMap& blockMap)
 		{
 			mState = State::BossFalling;
 
-			// ステージ1ならスライム、ステージ2ならドラゴンを生成して登場演出開始
+			// ステージ1ならスライム、ステージ2ならドラゴンを生成して登6場演出開始
 			if (isStage2)
 			{
-				VECTOR dragonSpawnPos = VGet(mWarningX, 1480.0f, 0.0f);
+				VECTOR dragonSpawnPos = VGet(mWarningX, 1810.0f, 0.0f);
 
 				mpBossDragon = new BossEnemyDragon(dragonSpawnPos);
 				mpBossDragon->StartEntrance();
