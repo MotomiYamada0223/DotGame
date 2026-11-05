@@ -68,7 +68,7 @@ void BossEnemyDragon::LoadAnimations()
 	for (int i = 1; i <= 4; ++i)
 	{
 		char path[256];
-		sprintf_s(path, "Resource/Image/animation_dragon/animation_dragon/new_idle/sprite_idle%d.png", i);
+		sprintf_s(path, "Resource/Enemy/Dragon/animation_dragon/new_idle/sprite_idle%d.png", i);
 		int h = LoadGraph(path);
 		if (h != -1) mIdleAnim.push_back(h);
 	}
@@ -77,7 +77,7 @@ void BossEnemyDragon::LoadAnimations()
 	for (int i = 1; i <= 4; ++i)
 	{
 		char path[256];
-		sprintf_s(path, "Resource/Image/animation_dragon/animation_dragon/new_move/sprite_move%d.png", i);
+		sprintf_s(path, "Resource/Enemy/Dragon/animation_dragon/new_move/sprite_move%d.png", i);
 		int h = LoadGraph(path);
 		if (h != -1) mMoveAnim.push_back(h);
 	}
@@ -86,7 +86,7 @@ void BossEnemyDragon::LoadAnimations()
 	for (int i = 1; i <= 9; ++i)
 	{
 		char path[256];
-		sprintf_s(path, "Resource/Image/animation_dragon/animation_dragon/new_attack/sprite_attack%d.png", i);
+		sprintf_s(path, "Resource/Enemy/Dragon/animation_dragon/new_attack/sprite_attack%d.png", i);
 		int h = LoadGraph(path);
 		if (h != -1) mAttackAnim.push_back(h);
 	}
@@ -95,7 +95,7 @@ void BossEnemyDragon::LoadAnimations()
 	for (int i = 1; i <= 7; ++i)
 	{
 		char path[256];
-		sprintf_s(path, "Resource/Image/animation_dragon/animation_dragon/離陸アニメーション/sprite_takeoff%d.png", i);
+		sprintf_s(path, "Resource/Enemy/Dragon/animation_dragon/new_takeoff/sprite_takeoff%d.png", i);
 		int h = LoadGraph(path);
 		if (h != -1) mTakeoffAnim.push_back(h);
 	}
@@ -104,7 +104,7 @@ void BossEnemyDragon::LoadAnimations()
 	for (int i = 1; i <= 7; ++i)
 	{
 		char path[256];
-		sprintf_s(path, "Resource/Image/animation_dragon/animation_dragon/飛んでいるアニメーション/sprite_fly%d.png", i);
+		sprintf_s(path, "Resource/Enemy/Dragon/animation_dragon/new_flying/sprite_fly%d.png", i);
 		int h = LoadGraph(path);
 		if (h != -1) mFlyAnim.push_back(h);
 	}
@@ -113,7 +113,7 @@ void BossEnemyDragon::LoadAnimations()
 	for (int i = 1; i <= 7; ++i)
 	{
 		char path[256];
-		sprintf_s(path, "Resource/Image/animation_dragon/animation_dragon/空中攻撃/sprite_airAttack%d.png", i);
+		sprintf_s(path, "Resource/Enemy/Dragon/animation_dragon/new_airborne/sprite_airAttack%d.png", i);
 		int h = LoadGraph(path);
 		if (h != -1) mAirAttackAnim.push_back(h);
 	}
@@ -122,7 +122,7 @@ void BossEnemyDragon::LoadAnimations()
 	for (int i = 1; i <= 7; ++i)
 	{
 		char path[256];
-		sprintf_s(path, "Resource/Image/animation_dragon/animation_dragon/着陸アニメーション/sprite_landing%d.png", i);
+		sprintf_s(path, "Resource/Enemy/Dragon/animation_dragon/new_landing/sprite_landing%d.png", i);
 		int h = LoadGraph(path);
 		if (h != -1) mLandingAnim.push_back(h);
 	}

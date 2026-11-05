@@ -4,6 +4,7 @@
 
 class Player;
 class BossEnemySlime;
+class BossEnemyDragon;
 
 class BossIntroDirector
 {
@@ -35,7 +36,10 @@ public:
 	bool HasPlayerEvaded() const { return mHasEvaded; }
 	float GetWarningX() const { return mWarningX; }
 	float GetGroundY() const { return mGroundY; }
+
+	//ボスのドラゴンやスライム
 	BossEnemySlime* GetBossSlime() const { return mpBossSlime; }
+	BossEnemyDragon* GetBossDragon() const { return mpBossDragon; }
 
 	void EndIntro();
 	void Reset();
@@ -57,4 +61,5 @@ private:
 	bool mHasEvaded;            // 回避成功フラグ
 	bool mEKeyWasDown;          // Eキー前回押下状態
 	BossEnemySlime* mpBossSlime;// スポーンしたキングスライム
+	BossEnemyDragon* mpBossDragon;
 };
