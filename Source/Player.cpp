@@ -1,5 +1,6 @@
 ﻿#include "Player.h"
 #include "NeedleTrap.h"
+#include "CrumbleFloor.h"
 #include "DxLib.h"
 #include "Texture.h"
 #include "Master.h"
@@ -361,8 +362,10 @@ void Player::PlayerMove(BlockMap& blockMap)
 
 
 
-	// ジャンプ開始
-	if (!mbAutoWalking && !mbAutoWalkArrived && CheckHitKey(KEY_INPUT_SPACE) == 1 &&
+	// ジャンプ開始（着地後の再入力が必要なようにトリガー判定化）
+	static bool spaceKeyWasDown = false;
+	bool spaceKeyIsDown = (CheckHitKey(KEY_INPUT_SPACE) == 1);
+	if (!mbAutoWalking && !mbAutoWalkArrived && spaceKeyIsDown && !spaceKeyWasDown &&
 		isGrounded)
 	{
 		mActionState.jump = true;
@@ -370,6 +373,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 		isGrounded = false;
 		velocityY = jumpPower;
 	}
+	spaceKeyWasDown = spaceKeyIsDown;
 
 	// 攻撃 F
 	if (!mbAutoWalking && !mbAutoWalkArrived && CheckHitKey(KEY_INPUT_F) == 1 &&
@@ -1230,6 +1234,9 @@ void Player::Revive()
 	mbEvadedBossSpawn = false;
 	mEvasionTimer = 0;
 	mbSwordReadyStance = false;
+
+	// 崩落床のリセット
+	CrumbleFloor::ResetAll();
 
 	isDead = false;
 	mbDeath = false;
