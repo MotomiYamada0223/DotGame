@@ -221,6 +221,8 @@ private: // 復活処理関係
 	int mEvasionTimer = 0;
 	bool mbSwordReadyStance = false;
 
+
 	bool mbInHotSpring = false;
 	float mHotSpringHeat = 0.0f;
+	bool mbSpaceWasPressed = false;
 };

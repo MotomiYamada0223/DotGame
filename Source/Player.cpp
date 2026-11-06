@@ -361,19 +361,52 @@ void Player::PlayerMove(BlockMap& blockMap)
 	eKeyWasDown = eKeyIsDown;
 
 
-
-	// ジャンプ開始（着地後の再入力が必要なようにトリガー判定化）
-	static bool spaceKeyWasDown = false;
-	bool spaceKeyIsDown = (CheckHitKey(KEY_INPUT_SPACE) == 1);
-	if (!mbAutoWalking && !mbAutoWalkArrived && spaceKeyIsDown && !spaceKeyWasDown &&
-		isGrounded)
+	// ジャンプ開始
+	if (mbInHotSpring)
 	{
-		mActionState.jump = true;
-		mbIsJumping = true;
-		isGrounded = false;
-		velocityY = jumpPower;
+		// 温泉のぬめり処理：
+		// 1回のジャンプではぬめりで上がれず、重い湯に引きずり込まれる
+		// スペースキーを連打（足掻き）すると少しずつ浮上・脱出可能
+		bool spaceDown = (CheckHitKey(KEY_INPUT_SPACE) == 1);
+		bool spacePressed = spaceDown && !mbSpaceWasPressed;
+		mbSpaceWasPressed = spaceDown;
+
+		if (spacePressed)
+		{
+			mbIsJumping = true;
+			isGrounded = false;
+			// ぬめりでもがく小キック
+			velocityY = -4.6f;
+		}
+
+		// ぬめりによる強い抵抗と引きずり込み
+		if (velocityY < 0.0f)
+		{
+			velocityY += 0.58f; // 上昇への強い抵抗
+		}
+		else
+		{
+			velocityY += 0.38f; // 底への引きずり込み
+		}
 	}
-	spaceKeyWasDown = spaceKeyIsDown;
+	else
+	{
+		// ジャンプ開始（着地後の再入力が必要なようにトリガー判定化）
+		static bool spaceKeyWasDown = false;
+		bool spaceKeyIsDown = (CheckHitKey(KEY_INPUT_SPACE) == 1);
+		if (!mbAutoWalking && !mbAutoWalkArrived && spaceKeyIsDown && !spaceKeyWasDown &&
+			isGrounded)
+		{
+			mActionState.jump = true;
+			mbIsJumping = true;
+			isGrounded = false;
+			velocityY = jumpPower;
+		}
+		spaceKeyWasDown = spaceKeyIsDown;
+	}
+
+
+
 
 	// 攻撃 F
 	if (!mbAutoWalking && !mbAutoWalkArrived && CheckHitKey(KEY_INPUT_F) == 1 &&
@@ -912,6 +945,35 @@ void Player::DrawPlayerModel()
 				true,
 				true
 			);
+
+			// 温泉で赤くなる
+			if (mHotSpringHeat > 0.12f)
+			{
+				float glowIntensity = (mHotSpringHeat - 0.12f) / 0.88f;
+
+				int addAlpha = static_cast<int>(glowIntensity * 195.0f);
+				if (addAlpha > 255) addAlpha = 255;
+
+				SetDrawBlendMode(DX_BLENDMODE_ADD, addAlpha);
+				SetDrawBright(
+					255,
+					static_cast<int>(35.0f * (1.0f - glowIntensity)),
+					0
+				);
+
+				DrawRectGraph(
+					screenX,
+					screenY,
+					srcX,
+					srcY,
+					PlayerAnimState::FRAME_WIDTH,
+					PlayerAnimState::FRAME_HEIGHT,
+					mpTexture->GetHandle(),
+					TRUE,
+					!isFacingRight
+				);
+				SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+			}
 		}
 
 		// 色を元に戻す
