@@ -300,6 +300,22 @@ void BossIntroDirector::Update(Player* player, BlockMap& blockMap)
 	}
 }
 
+
+// ボスの描画
+void BossIntroDirector::DrawBoss()
+{
+	if (mpBossSlime != nullptr)
+	{
+		mpBossSlime->DrawSlime();
+	}
+
+	if (mpBossDragon != nullptr)
+	{
+		mpBossDragon->DrawDragon();
+	}
+}
+
+
 void BossIntroDirector::Draw() const
 {
 	if (mState == State::Inactive)

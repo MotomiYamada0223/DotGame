@@ -43,7 +43,7 @@ public:
 
 	virtual void UpdateStatusByProgress(GameProgress progress) override;
 	virtual void Update() override;
-	virtual void Draw() override;
+	void DrawDragon();
 	virtual void EnemyMove(BlockMap& blockMap) override;
 	virtual void TakeDamage(int damage) override;
 

@@ -81,7 +81,7 @@ public:
     virtual ~BossEnemySlime();
 
     virtual void Update() override;
-    virtual void Draw() override;
+    void DrawSlime();
     virtual void EnemyMove(BlockMap& blockMap) override;
     virtual void UpdateStatusByProgress(GameProgress progress) override;
     virtual bool CheckAttackCollision(const VECTOR& targetPos, const VECTOR& targetSize) const override;

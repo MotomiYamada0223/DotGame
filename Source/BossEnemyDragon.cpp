@@ -1285,7 +1285,7 @@ void BossEnemyDragon::EnemyMove(BlockMap& blockMap)
 // =========================================================================
 // 描画処理 (Draw)
 // =========================================================================
-void BossEnemyDragon::Draw()
+void BossEnemyDragon::DrawDragon()
 {
 	if (mHasRetreated)
 	{

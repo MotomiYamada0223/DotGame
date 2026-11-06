@@ -31,6 +31,8 @@ public:
 	void Update(Player* player, BlockMap& blockMap);
 	void Draw() const;
 
+	void DrawBoss();
+
 	State GetState() const { return mState; }
 	bool IsActive() const { return mState != State::Inactive && mState != State::Ended; }
 	bool HasPlayerEvaded() const { return mHasEvaded; }
