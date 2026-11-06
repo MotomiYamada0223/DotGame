@@ -219,6 +219,12 @@
     <ClCompile Include="Source\Minecart.cpp">
       <Filter>ソース ファイル\Controller系</Filter>
     </ClCompile>
+    <ClCompile Include="Source\HotSpring.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\DragonFireGimmick.cpp">
+      <Filter>ソース ファイル\Controller系</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Collision.h">
@@ -409,6 +415,12 @@
     </ClInclude>
     <ClInclude Include="Source\RollingBoulder.h">
       <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\HotSpring.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\DragonFireGimmick.h">
+      <Filter>ソース ファイル\Controller系</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

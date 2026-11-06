@@ -16,6 +16,12 @@ namespace
 		{ DeathReason::DeathType::HotWater, 9 },
 		{ DeathReason::DeathType::EnemySkeleton, 10 },
 		{ DeathReason::DeathType::NormalDeath, 11 },
+
+		{ DeathReason::DeathType::DragonNormalAttack, 12 },
+		{ DeathReason::DeathType::DragonFireBreath, 13 },
+		{ DeathReason::DeathType::DragonExplosion, 14 },
+		{ DeathReason::DeathType::DragonArchFlame, 15 },
+		{ DeathReason::DeathType::DragonDiveAttack, 16 },
 	};
 }
 

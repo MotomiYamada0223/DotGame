@@ -36,6 +36,8 @@ public:
 	Player* GetPlayer() { return mpPlayer; }
 	BlockMap& GetBlockMap() { return mBlockMap; }
 
+	void DrawBossOrder();
+
 private:
 	GameLoadData mLoadData;
 

@@ -20,6 +20,13 @@ public:
 		HotWater,
 		EnemySkeleton,
 		NormalDeath, // 死んだときの通常表示
+
+		// ドラゴン関係
+		DragonNormalAttack,
+		DragonFireBreath,
+		DragonExplosion,
+		DragonArchFlame,
+		DragonDiveAttack,
 	};
 
 	// 死亡原因と番号をセットするための構造体

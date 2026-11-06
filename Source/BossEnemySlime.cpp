@@ -1054,7 +1054,7 @@ bool BossEnemySlime::CheckAttackCollision(const VECTOR& targetPos, const VECTOR&
     return false;
 }
 
-void BossEnemySlime::Draw()
+void BossEnemySlime::DrawSlime()
 {
     if (mpBlockMap != nullptr)
     {

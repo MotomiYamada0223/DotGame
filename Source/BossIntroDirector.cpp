@@ -2,6 +2,7 @@
 #include "StageClear.h"
 #include "Player.h"
 #include "BossEnemySlime.h"
+#include "BossEnemyDragon.h"
 #include "GameConstants.h"
 #include "DxLib.h"
 #include "Master.h"
@@ -19,10 +20,12 @@ BossIntroDirector::BossIntroDirector()
 	, mCurrentTargetX(0.0f)
 	, mWarningX(0.0f)
 	, mGroundY(0.0f)
+	, mpPlayer(nullptr)
 	, mpBlockMap(nullptr)
 	, mHasEvaded(false)
 	, mEKeyWasDown(false)
 	, mpBossSlime(nullptr)
+	, mpBossDragon(nullptr)
 {
 }
 
@@ -33,21 +36,19 @@ BossIntroDirector::~BossIntroDirector()
 void BossIntroDirector::Update(Player* player, BlockMap& blockMap)
 {
 	if (!player) return;
+	mpPlayer = player;
 	mpBlockMap = &blockMap;
+
+	// ステージ2判定（0がステージ1、1がステージ2）
+	bool isStage2 = (Master::gCurrentStageIndex == 1);
 
 	switch (mState)
 	{
 	case State::Inactive:
-		// プレイヤーにボスエリア接触またはボスエリアX範囲到達したら演出開始
+		// プレイヤーがボスエリアに接触したら演出を開始する
 		if (!player->GetIsDead() && blockMap.HasBossArea())
 		{
-			/*bool entered = player->IsTouchingBossArea() ||
-				(player->GetPosition().x >= static_cast<float>(blockMap.GetBossAreaLeft()));*/
-			
 			bool entered = player->IsTouchingBossArea();
-
-
-
 			if (entered)
 			{
 				mState = State::Walking;
@@ -62,51 +63,48 @@ void BossIntroDirector::Update(Player* player, BlockMap& blockMap)
 		break;
 
 	case State::Walking:
-		// 帯フェードタイマー加算
+		// 上下黒帯のフェードインを進める
 		if (mFadeTimer < BossIntroConstants::FadeFrames)
 		{
 			mFadeTimer++;
 		}
 
-		// プレイヤー中央到着で待機ステートへ遷移し、カメラスクロール固定
+		// プレイヤーが中央に到着したら待機ステートへ移行し、カメラを固定する
 		if (player->IsAutoWalkArrived())
 		{
 			mState = State::WaitBeforeWarning;
 			mStateTimer = 0;
-			blockMap.SetCameraLocked(true); // ボスエリア中央到達時にカメラ固定
+			blockMap.SetCameraLocked(true);
 		}
 		break;
 
 	case State::WaitBeforeWarning:
-		// 帯は最大値維持
 		if (mFadeTimer < BossIntroConstants::FadeFrames)
 		{
 			mFadeTimer++;
 		}
 
-		// 最初の溜め
+		// 警告表示前の溜め処理
 		mStateTimer++;
 		if (mStateTimer >= KingSlimeIntroConstants::WaitFramesBeforeWarning)
 		{
-			// 警告：プレイヤーの足元X座標を記録
 			mWarningX = player->GetPosition().x;
 			mGroundY = player->GetPosition().y + player->GetPlayerHeight() * 0.5f;
 			mHasEvaded = false;
 			mEKeyWasDown = false;
 			mStateTimer = 0;
 			mState = State::Warning;
-			player->SetSwordReadyStance(true); // 警告表示開始と同時に構え一枚絵へ移行
+			player->SetSwordReadyStance(true);
 		}
 		break;
 
 	case State::Warning:
-		// 帯は最大値維持
 		if (mFadeTimer < BossIntroConstants::FadeFrames)
 		{
 			mFadeTimer++;
 		}
 
-		// 警告表示中のみブリンク操作（Shift / Eキー）を受付
+		// 警告表示中のQTE（回避アクション）入力を監視する
 		{
 			bool blinkKeyIsDown = (CheckHitKey(KEY_INPUT_LSHIFT) == 1 || CheckHitKey(KEY_INPUT_RSHIFT) == 1 || CheckHitKey(KEY_INPUT_E) == 1);
 			if (blinkKeyIsDown && !mEKeyWasDown && !mHasEvaded)
@@ -126,13 +124,11 @@ void BossIntroDirector::Update(Player* player, BlockMap& blockMap)
 		break;
 
 	case State::WarningFadeOut:
-		// 帯は最大値維持
 		if (mFadeTimer < BossIntroConstants::FadeFrames)
 		{
 			mFadeTimer++;
 		}
 
-		// フェードアウト終了までブリンク回避可能
 		{
 			bool blinkKeyIsDown = (CheckHitKey(KEY_INPUT_LSHIFT) == 1 || CheckHitKey(KEY_INPUT_RSHIFT) == 1 || CheckHitKey(KEY_INPUT_E) == 1);
 			if (blinkKeyIsDown && !mEKeyWasDown && !mHasEvaded)
@@ -147,41 +143,73 @@ void BossIntroDirector::Update(Player* player, BlockMap& blockMap)
 		if (mStateTimer <= 0)
 		{
 			mState = State::BossFalling;
-			// 画面上空から急降下開始
-			const float startY = mGroundY - 1200.0f;
-			mpBossSlime = new BossEnemySlime(VGet(mWarningX, startY, 0.0f), mGroundY, player);
+
+			// ステージ1ならスライム、ステージ2ならドラゴンを生成して登6場演出開始
+			if (isStage2)
+			{
+				const float startY = mGroundY - 1200.0f;
+				VECTOR dragonSpawnPos = VGet(mWarningX, startY, 0.0f);
+
+				mpBossDragon = new BossEnemyDragon(dragonSpawnPos);
+				mpBossDragon->StartEntrance();
+			}
+			else
+			{
+				const float startY = mGroundY - 1200.0f;
+				mpBossSlime = new BossEnemySlime(VGet(mWarningX, startY, 0.0f), mGroundY, player);
+			}
 		}
 		break;
 
 	case State::BossFalling:
-		// 帯は維持
 		if (mFadeTimer < BossIntroConstants::FadeFrames)
 		{
 			mFadeTimer++;
 		}
 
-		if (mpBossSlime != nullptr && mpBossSlime->GetState() == KingSlimeState::SpawnLandingReverse)
+		// ボスの落下・降下演出の完了を監視して着地ステートへ移行する
+		if (isStage2)
 		{
-			mState = State::BossLanding;
+			if (mpBossDragon != nullptr && mpBossDragon->GetState() == BossEnemyDragon::State::EntranceWait)
+			{
+				mState = State::BossLanding;
+			}
+		}
+		else
+		{
+			if (mpBossSlime != nullptr && mpBossSlime->GetState() == KingSlimeState::SpawnLandingReverse)
+			{
+				mState = State::BossLanding;
+			}
 		}
 		break;
 
 	case State::BossLanding:
-		
 		if (mFadeTimer < BossIntroConstants::FadeFrames)
 		{
 			mFadeTimer++;
 		}
 
-		if (mpBossSlime != nullptr && mpBossSlime->IsSpawnFinished())
+		// 着地演出の完了を監視してタイトル待機ステートへ移行する
+		if (isStage2)
 		{
-			mState = State::TitleWait;
-			mTitleTimer = 0;
+			if (mpBossDragon != nullptr && mpBossDragon->GetState() == BossEnemyDragon::State::Fly)
+			{
+				mState = State::TitleFadeOut;
+				mTitleTimer = 0;
+			}
+		}
+		else
+		{
+			if (mpBossSlime != nullptr && mpBossSlime->IsSpawnFinished())
+			{
+				mState = State::TitleWait;
+				mTitleTimer = 0;
+			}
 		}
 		break;
 
 	case State::TitleWait:
-		
 		if (mFadeTimer < BossIntroConstants::FadeFrames)
 		{
 			mFadeTimer++;
@@ -197,7 +225,6 @@ void BossIntroDirector::Update(Player* player, BlockMap& blockMap)
 		break;
 
 	case State::TitleDisplay:
-		
 		if (mFadeTimer < BossIntroConstants::FadeFrames)
 		{
 			mFadeTimer++;
@@ -220,7 +247,6 @@ void BossIntroDirector::Update(Player* player, BlockMap& blockMap)
 		mTitleTimer++;
 		mTitleWaveTimer++;
 
-		// 文字のフェードアウト進行度に合わせて上下黒帯もフェードアウト
 		{
 			float fadeRatio = 1.0f - (static_cast<float>(mTitleTimer) / static_cast<float>(KingSlimeTitleConstants::FadeOutFrames));
 			if (fadeRatio < 0.0f) fadeRatio = 0.0f;
@@ -240,22 +266,30 @@ void BossIntroDirector::Update(Player* player, BlockMap& blockMap)
 			{
 				mpBossSlime->StartBattle();
 			}
+			if (mpBossDragon != nullptr)
+			{
+				mpBossDragon->StartBattle();
+			}
 		}
 		break;
 
 	case State::IntroFinished:
-		// 演出完了
 		mFadeTimer = 0;
 		if (mpBossSlime != nullptr && mpBossSlime->IsDeleteFlag())
 		{
 			mpBossSlime = nullptr;
 		}
-		// ボス撃破後、ステージクリア演出が終わるまではカメラ固定を維持する
+		if (mpBossDragon != nullptr && mpBossDragon->HasRetreated())
+		{
+			mpBossDragon = nullptr;
+		}
+
+		// ステージクリアまたはボス生存中はカメラ固定を維持する
 		if (StageClear::IsStageClearActive())
 		{
 			blockMap.SetCameraLocked(true);
 		}
-		else if (mpBossSlime == nullptr)
+		else if (mpBossSlime == nullptr && mpBossDragon == nullptr)
 		{
 			blockMap.SetCameraLocked(false);
 		}
@@ -265,6 +299,22 @@ void BossIntroDirector::Update(Player* player, BlockMap& blockMap)
 		break;
 	}
 }
+
+
+// ボスの描画
+void BossIntroDirector::DrawBoss()
+{
+	if (mpBossSlime != nullptr)
+	{
+		mpBossSlime->DrawSlime();
+	}
+
+	if (mpBossDragon != nullptr)
+	{
+		mpBossDragon->DrawDragon();
+	}
+}
+
 
 void BossIntroDirector::Draw() const
 {
@@ -278,7 +328,6 @@ void BossIntroDirector::Draw() const
 	if (progress < 0.0f) progress = 0.0f;
 	if (progress > 1.0f) progress = 1.0f;
 
-	// イージング
 	float inv = 1.0f - progress;
 	float ease = 1.0f - (inv * inv * inv);
 
@@ -288,27 +337,8 @@ void BossIntroDirector::Draw() const
 	if (currentHeight > 0 && currentAlpha > 0)
 	{
 		SetDrawBlendMode(DX_BLENDMODE_ALPHA, currentAlpha);
-
-		// 画面上部
-		DrawBox(
-			0,
-			0,
-			ScreenSize::ScrrenWidth,
-			currentHeight,
-			GetColor(0, 0, 0),
-			TRUE
-		);
-
-		// 画面下部
-		DrawBox(
-			0,
-			ScreenSize::ScrrenHeight - currentHeight,
-			ScreenSize::ScrrenWidth,
-			ScreenSize::ScrrenHeight,
-			GetColor(0, 0, 0),
-			TRUE
-		);
-
+		DrawBox(0, 0, ScreenSize::ScrrenWidth, currentHeight, GetColor(0, 0, 0), TRUE);
+		DrawBox(0, ScreenSize::ScrrenHeight - currentHeight, ScreenSize::ScrrenWidth, ScreenSize::ScrrenHeight, GetColor(0, 0, 0), TRUE);
 		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 	}
 
@@ -332,22 +362,29 @@ void BossIntroDirector::Draw() const
 		DrawWarning(screenX, screenY, fadeRatio);
 	}
 
-	// 3. ボス名タイトル「キングスライミー」の描画
+	// 3. ボス名タイトルの描画（スライム用。ドラゴンは固有の演出UIを持つため非表示）
 	if (mState == State::TitleDisplay || mState == State::TitleFadeOut)
 	{
-		float scrollX = (mpBlockMap != nullptr) ? static_cast<float>(mpBlockMap->GetScrollX()) : 0.0f;
-		float scrollY = (mpBlockMap != nullptr) ? static_cast<float>(mpBlockMap->GetScrollY()) : 0.0f;
+		if (mpBossDragon == nullptr)
+		{
+			float scrollX = (mpBlockMap != nullptr) ? static_cast<float>(mpBlockMap->GetScrollX()) : 0.0f;
+			float scrollY = (mpBlockMap != nullptr) ? static_cast<float>(mpBlockMap->GetScrollY()) : 0.0f;
 
-		float screenX = mWarningX - scrollX;
-		float screenY = mGroundY - scrollY;
+			float screenX = mWarningX - scrollX;
+			float screenY = mGroundY - scrollY;
 
-		DrawTitle(screenX, screenY);
+			DrawTitle(screenX, screenY);
+		}
 	}
 
-	// 4. キングスライムHPバーの描画（最前面UIとして描画）
+	// 4. ボスHPバー・UIの描画
 	if (mpBossSlime != nullptr)
 	{
 		mpBossSlime->DrawHpBar();
+	}
+	if (mpBossDragon != nullptr && mpBlockMap != nullptr)
+	{
+		mpBossDragon->DrawBossUI(mpPlayer, *mpBlockMap);
 	}
 }
 
@@ -361,7 +398,6 @@ void BossIntroDirector::DrawTitle(float screenX, float screenY) const
 		"キ", "ン", "グ", "ス", "ラ", "イ", "ミ", "ー"
 	};
 
-	// 表示文字数の算出
 	int revealedCount = 0;
 	if (mState == State::TitleDisplay)
 	{
@@ -378,7 +414,6 @@ void BossIntroDirector::DrawTitle(float screenX, float screenY) const
 
 	if (revealedCount <= 0) return;
 
-	// 透明度（フェードアウト時）
 	int alpha = 255;
 	if (mState == State::TitleFadeOut)
 	{
@@ -389,7 +424,6 @@ void BossIntroDirector::DrawTitle(float screenX, float screenY) const
 	}
 	if (alpha <= 0) return;
 
-	// 各文字の描画幅を計測し全体の横幅を算出
 	int charWidths[KingSlimeTitleConstants::CharCount] = { 0 };
 	int totalWidth = 0;
 	for (int i = 0; i < KingSlimeTitleConstants::CharCount; i++)
@@ -402,13 +436,11 @@ void BossIntroDirector::DrawTitle(float screenX, float screenY) const
 		}
 	}
 
-	// 垂直方向の位置計算
 	const float topLimit = static_cast<float>(UIGraphController::FramePosY + 190);
 	const float bottomLimit = screenY - (84.0f * KingSlimeIntroConstants::Scale);
 	const float centerY = (topLimit + bottomLimit) * 0.5f;
 	const float baseY = centerY - (static_cast<float>(KingSlimeTitleConstants::FontSize) * 0.5f);
 
-	// 水平方向の中央揃え開始X
 	float currentX = screenX - (static_cast<float>(totalWidth) * 0.5f);
 
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
@@ -417,12 +449,10 @@ void BossIntroDirector::DrawTitle(float screenX, float screenY) const
 	{
 		if (i < revealedCount)
 		{
-			// 位相差を持たせた緩やかなサイン波による縦揺れ
 			float waveOffset = std::sin(static_cast<float>(mTitleWaveTimer) * KingSlimeTitleConstants::WaveSpeed + static_cast<float>(i) * KingSlimeTitleConstants::WavePhaseOffset) * KingSlimeTitleConstants::WaveAmplitude;
 			int drawX = static_cast<int>(currentX);
 			int drawY = static_cast<int>(baseY + waveOffset);
 
-			// ドロップシャドウ（黒、3pxオフセット）
 			fontMgr->DrawDotString(
 				drawX + 3,
 				drawY + 3,
@@ -432,7 +462,6 @@ void BossIntroDirector::DrawTitle(float screenX, float screenY) const
 				kTitleChars[i]
 			);
 
-			// 文字色：「キング」（i = 0, 1, 2）は金色、「スライミー」（i = 3..7）は濃い水色
 			unsigned int charColor = (i < 3)
 				? GetColor(KingSlimeTitleConstants::ColorGoldR, KingSlimeTitleConstants::ColorGoldG, KingSlimeTitleConstants::ColorGoldB)
 				: GetColor(KingSlimeTitleConstants::ColorCyanR, KingSlimeTitleConstants::ColorCyanG, KingSlimeTitleConstants::ColorCyanB);
@@ -464,7 +493,6 @@ void BossIntroDirector::DrawWarning(float screenX, float screenY, float fadeAlph
 	const int bottom = static_cast<int>(screenY);
 	const int top = static_cast<int>(screenY - height);
 
-	// 1. 縦グラデーション
 	const int sliceCount = 15;
 	const float sliceHeight = height / static_cast<float>(sliceCount);
 
@@ -482,7 +510,6 @@ void BossIntroDirector::DrawWarning(float screenX, float screenY, float fadeAlph
 		DrawBox(left, stripTop, right, stripBottom, GetColor(255, 30, 30), TRUE);
 	}
 
-	// 2. 左右のエッジライン
 	const int edgeThickness = 6;
 	for (int i = 0; i < sliceCount; i++)
 	{
@@ -499,18 +526,15 @@ void BossIntroDirector::DrawWarning(float screenX, float screenY, float fadeAlph
 		DrawBox(right - edgeThickness, stripTop, right, stripBottom, GetColor(255, 0, 0), TRUE);
 	}
 
-	// 接地面ライン
 	int groundLineAlpha = static_cast<int>(240.0f * fadeAlphaRatio);
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, groundLineAlpha);
 	DrawBox(left, bottom - 6, right, bottom, GetColor(255, 60, 60), TRUE);
 
-	// 3. 範囲中央の「！」マーク
 	int midX = static_cast<int>(screenX);
 	int midY = static_cast<int>(screenY - height * 0.45f);
 
 	float pulse = 1.0f + 0.1f * std::sin(static_cast<float>(mStateTimer) * 0.2f);
 
-	// 「！」マーク本体（赤）
 	int markBodyAlpha = static_cast<int>(255.0f * fadeAlphaRatio);
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, markBodyAlpha);
 	int barWidth = 6;
@@ -540,6 +564,12 @@ void BossIntroDirector::Reset()
 		mpBossSlime->SetDeleteFlag(true);
 		mpBossSlime = nullptr;
 	}
+	if (mpBossDragon != nullptr)
+	{
+		mpBossDragon->SetDeleteFlag(true);
+		mpBossDragon = nullptr;
+	}
+
 	mState = State::Inactive;
 	mFadeTimer = 0;
 	mStateTimer = 0;

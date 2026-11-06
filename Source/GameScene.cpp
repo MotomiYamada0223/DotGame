@@ -77,7 +77,7 @@ void GameScene::Update()
 	{
 		if (mpPlayer != nullptr)
 		{
-			mpPlayer->SetPosition(VGet(6000.0f, 1700.0f, 0.0f));
+			mpPlayer->SetPosition(VGet(8850.0f, 1800.0f, 0.0f));
 			mpPlayer->SetVelocityY(0.0f);
 			mpPlayer->ResetBossIntroState();
 			mBlockMap.SetCameraLocked(false);
@@ -168,7 +168,7 @@ void GameScene::Draw()
 		// ステージ（ブロックマップ）の背面に突き刺さるタイトルロゴを描画
 		mStageClear.DrawBehindStage(&mBlockMap);
 
-		mBlockMap.Draw(); // ブロックマップの描画
+		DrawBossOrder(); // ボスとブロックマップの描画をしている
 
 		// Sキー（表側落下時）：プレイヤーをマップの手前側に描画
 		if (mpPlayer != nullptr)
@@ -181,16 +181,9 @@ void GameScene::Draw()
 		mHotSpring.Draw(mBlockMap.GetScrollX(), mBlockMap.GetScrollY());
 
 
-
 		// 一番手前に描画したいもの
 		mpPlayer->DrawFallDeath(); // 死亡時テキスト
-		mDrawFrame.Draw(); // フレーム描画
-		mSaint.Draw(); // 天使の描画
-
-		mpPlayer->DrawLife();
-
-
-
+		
 		// ボス演出の黒帯
 		mBossIntro.Draw();
 		mStageClear.Draw();
@@ -200,7 +193,12 @@ void GameScene::Draw()
 		mBlockMap.DebugDraw(); // ブロックマップデバッグ表示
 		mTutorialText.DebugDraw(); // テキスト
 
-		// オブジェクトの描画 (マップを手前に描画)
+		// 天使とハートの描画
+		mDrawFrame.Draw(); // フレーム描画
+		mSaint.Draw();
+		mpPlayer->DrawLife();
+
+		// オブジェクトの描画
 		mTutorialText.Draw();
 	}
 
@@ -214,4 +212,19 @@ void GameScene::Draw()
 void GameScene::Finalize()
 {
 
+}
+
+void GameScene::DrawBossOrder()
+{
+	if (Master::gCurrentStageIndex == 0)
+	{
+		mBossIntro.DrawBoss(); // ボス画像の描画
+	}
+
+	mBlockMap.Draw(); // ブロックマップの描画
+
+	if (Master::gCurrentStageIndex == 1)
+	{
+		mBossIntro.DrawBoss(); // ボス画像の描画
+	}
 }
