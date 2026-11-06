@@ -77,7 +77,7 @@ void GameScene::Update()
 	{
 		if (mpPlayer != nullptr)
 		{
-			mpPlayer->SetPosition(VGet(6000.0f, 1700.0f, 0.0f));
+			mpPlayer->SetPosition(VGet(8850.0f, 1800.0f, 0.0f));
 			mpPlayer->SetVelocityY(0.0f);
 			mpPlayer->ResetBossIntroState();
 			mBlockMap.SetCameraLocked(false);
@@ -181,19 +181,18 @@ void GameScene::Draw()
 		mHotSpring.Draw(mBlockMap.GetScrollX(), mBlockMap.GetScrollY());
 
 
-
 		// 一番手前に描画したいもの
 		mpPlayer->DrawFallDeath(); // 死亡時テキスト
 		mDrawFrame.Draw(); // フレーム描画
-		mSaint.Draw(); // 天使の描画
-
-		mpPlayer->DrawLife();
-
-
-
+	
 		// ボス演出の黒帯
 		mBossIntro.Draw();
 		mStageClear.Draw();
+
+		// 天使とハートの描画
+		mSaint.Draw();
+		mpPlayer->DrawLife();
+
 
 		// デバッグ系
 		mpPlayer->DebugDraw(); // ブロックデバッグ

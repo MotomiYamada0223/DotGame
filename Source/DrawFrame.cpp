@@ -20,40 +20,19 @@ DrawFrame::~DrawFrame()
 
 void DrawFrame::Draw()
 {
-	//// 天使のフレームを描画
-	//DrawGraph(
-	//	UIGraphController::SaintFramePosX,
-	//	UIGraphController::FramePosY,
-	//	mnSaintFrameHandle,
-	//	true
-	//);
-
-	int distY = 130;
-
 	// 天使のフレームを描画
-	DrawRotaGraph(
+	DrawGraph(
 		UIGraphController::SaintFramePosX,
-		UIGraphController::FramePosY + distY,
-		1.2f,
-		0.0f,
+		UIGraphController::FramePosY,
 		mnSaintFrameHandle,
 		true
 	);
 
-	//// テキストのフレームを描画
-	//DrawGraph(
-	//	UIGraphController::TextFramePosX,
-	//	UIGraphController::FramePosY,
-	//	mnTextFrameHandle,
-	//	true
-	//);
 
-	//  テキストのフレームを描画
-	DrawRotaGraph(
+	// テキストのフレームを描画
+	DrawGraph(
 		UIGraphController::TextFramePosX,
-		UIGraphController::FramePosY + distY,
-		1.2f,
-		0.0f,
+		UIGraphController::FramePosY,
 		mnTextFrameHandle,
 		true
 	);
