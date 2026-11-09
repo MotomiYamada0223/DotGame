@@ -78,6 +78,7 @@ private:
 	float mSpikeMaxHeight = 115.0f;  // 完全出現時のトゲの高さ
 	float mSpikeY = 2006.0f;         // トゲの底面Y座標（発射時は上へ移動）
 	float mSpikeVy = 0.0f;           // 上空への発射速度
+	int mSpikeGraphHandle = -1;      // 洞窟の血糊針画像（BloodNeedle.png）の画像ハンドル
 
 	// トゲ刺突・発射時のパーティクル
 	struct SpikeParticle {

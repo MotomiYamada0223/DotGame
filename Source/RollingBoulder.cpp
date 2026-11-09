@@ -17,6 +17,11 @@ RollingBoulder::~RollingBoulder()
 		DeleteGraph(mGraphHandle);
 		mGraphHandle = -1;
 	}
+	if (mSpikeGraphHandle != -1)
+	{
+		DeleteGraph(mSpikeGraphHandle);
+		mSpikeGraphHandle = -1;
+	}
 }
 
 // 初期化処理
@@ -25,6 +30,10 @@ void RollingBoulder::Initialize()
 	if (mGraphHandle == -1)
 	{
 		mGraphHandle = LoadGraph("Resource/Enemy/Rock/Cave_Boulder.png");
+	}
+	if (mSpikeGraphHandle == -1)
+	{
+		mSpikeGraphHandle = LoadGraph(CharacterGraphPath::BloodNeedle.c_str());
 	}
 	Reset();
 }
@@ -378,34 +387,43 @@ void RollingBoulder::Draw(int scrollX, int scrollY)
 		return;
 	}
 
-	// 1. くぼみの「1本で横2マス分を取る巨大なトゲ」の描画
+	// 1. くぼみの「1本で横2マス分を取る巨大なトゲ」の描画（BloodNeedle.png を使用）
 	if (mSpikeState != SpikeTrapState::Hidden && mSpikeState != SpikeTrapState::Finished && mSpikeHeight > 0.0f)
 	{
-		float leftX = mSpikeBaseX - mSpikeWidth * 0.5f;  // 4440.0f
-		float rightX = mSpikeBaseX + mSpikeWidth * 0.5f; // 4515.0f
-		float tipX = mSpikeBaseX;                        // 4477.5f（中央）
-		float baseY = mSpikeY;
+		float leftX = mSpikeBaseX - mSpikeWidth * 0.5f;
 		float tipY = mSpikeY - mSpikeHeight;
 
 		int sx1 = static_cast<int>(leftX) - scrollX;
-		int sx2 = static_cast<int>(rightX) - scrollX;
-		int stX = static_cast<int>(tipX) - scrollX;
-		int sbY = static_cast<int>(baseY) - scrollY;
 		int stY = static_cast<int>(tipY) - scrollY;
+		int drawW = static_cast<int>(mSpikeWidth);
+		int drawH = static_cast<int>(mSpikeHeight);
+		if (drawH > static_cast<int>(mSpikeMaxHeight)) drawH = static_cast<int>(mSpikeMaxHeight);
 
-		// 巨大な1本の三角トゲ本体（シルバー）
-		DrawTriangle(stX, stY, sx1, sbY, sx2, sbY, GetColor(200, 205, 215), TRUE);
-		// 立体陰影（右半分をダークシルバーに）
-		DrawTriangle(stX, stY, stX, sbY, sx2, sbY, GetColor(140, 145, 155), TRUE);
-		// 中央のハイライト線
-		DrawLine(stX, stY, stX, sbY, GetColor(245, 245, 255));
-		// 先端の血染めチップ（鋭い赤色）
-		int tipRedH = static_cast<int>(mSpikeHeight * 0.28f);
-		DrawTriangle(stX, stY, stX - 8, stY + tipRedH, stX + 8, stY + tipRedH, GetColor(220, 20, 30), TRUE);
-		// 外枠の引き締まった黒輪郭線
-		DrawLine(stX, stY, sx1, sbY, GetColor(45, 45, 55));
-		DrawLine(stX, stY, sx2, sbY, GetColor(45, 45, 55));
-		DrawLine(sx1, sbY, sx2, sbY, GetColor(45, 45, 55));
+		if (mSpikeGraphHandle != -1)
+		{
+			// BloodNeedle.png を描画（地面から突き出している時は上部から切り出して生えてくる演出）
+			DrawRectGraph(sx1, stY, 0, 0, drawW, drawH, mSpikeGraphHandle, TRUE);
+		}
+		else
+		{
+			// 画像読み込み失敗時のフォールバック（図形描画）
+			float rightX = mSpikeBaseX + mSpikeWidth * 0.5f;
+			float tipX = mSpikeBaseX;
+			float baseY = mSpikeY;
+
+			int sx2 = static_cast<int>(rightX) - scrollX;
+			int stX = static_cast<int>(tipX) - scrollX;
+			int sbY = static_cast<int>(baseY) - scrollY;
+
+			DrawTriangle(stX, stY, sx1, sbY, sx2, sbY, GetColor(200, 205, 215), TRUE);
+			DrawTriangle(stX, stY, stX, sbY, sx2, sbY, GetColor(140, 145, 155), TRUE);
+			DrawLine(stX, stY, stX, sbY, GetColor(245, 245, 255));
+			int tipRedH = static_cast<int>(mSpikeHeight * 0.28f);
+			DrawTriangle(stX, stY, stX - 8, stY + tipRedH, stX + 8, stY + tipRedH, GetColor(220, 20, 30), TRUE);
+			DrawLine(stX, stY, sx1, sbY, GetColor(45, 45, 55));
+			DrawLine(stX, stY, sx2, sbY, GetColor(45, 45, 55));
+			DrawLine(sx1, sbY, sx2, sbY, GetColor(45, 45, 55));
+		}
 	}
 
 	// 2. トゲ刺突・発射パーティクルの描画

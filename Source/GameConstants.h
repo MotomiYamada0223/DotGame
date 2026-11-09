@@ -81,6 +81,7 @@ namespace CharacterGraphPath
 	static const std::string Skeleton = "Resource/Image/SampleSkeleton.png"; // スケルトン画像
 	static const std::string Dragon = "Resource/Enemy/Dragon/enemy_dragon_move.png"; // dragon画像
 	static const std::string Needle = "Resource/Enemy/Trap/Needle.png"; // 針の罠画像
+	static const std::string BloodNeedle = "Resource/Image/BloodNeedle.png"; // 洞窟ステージの血糊針画像
 
 	// スライム画像
 	static const std::string Slime = "Resource/Enemy/Slime/slime_idle.png"; // スライム画像
