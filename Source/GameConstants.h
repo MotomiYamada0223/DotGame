@@ -112,6 +112,7 @@ namespace CharacterGraphPath
 	static const std::string MoveFloor = "Resource/Image/MoveFloor.png";
 	static const std::string MoveFloorBig = "Resource/Image/MoveFloorBig.png";
 	static const std::string FeintFloor = "Resource/Image/FeintFloor.png";
+	static const std::string CaveFloor = "Resource/Image/CaveFloor.png";
 
 	// ハートの画像
 	static const std::string HeartFull = "Resource/Image/heart_full.png";

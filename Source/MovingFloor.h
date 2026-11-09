@@ -23,10 +23,10 @@ enum class FloorFeature {
 class MovingFloor : public Object2D {
 public:
     // パターンA：往復用（始点・終点を指定）
-    MovingFloor(VECTOR startPos, VECTOR endPos, float speed, MovePattern pattern, FloorFeature feature, Player* player, BlockMap* blockMap, std::string imagePath = "");
+    MovingFloor(VECTOR startPos, VECTOR endPos, float speed, MovePattern pattern, FloorFeature feature, Player* player, BlockMap* blockMap, std::string imagePath = "", float scale = 1.0f);
 
     // パターンB：一方向・無限移動用（始点・移動ベクトルを指定）
-    MovingFloor(VECTOR startPos, VECTOR velocity, MovePattern pattern, FloorFeature feature, Player* player, BlockMap* blockMap, std::string imagePath = "");
+    MovingFloor(VECTOR startPos, VECTOR velocity, MovePattern pattern, FloorFeature feature, Player* player, BlockMap* blockMap, std::string imagePath = "", float scale = 1.0f);
 
     virtual ~MovingFloor();
     virtual void Update() override;
