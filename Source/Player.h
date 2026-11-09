@@ -84,8 +84,10 @@ public: // アクセサ
 	void SetSwordReadyStance(bool active) { mbSwordReadyStance = active; }
 	bool IsSwordReadyStance() const { return mbSwordReadyStance; }
 
+	// 接地中かの判定
+	bool GetIsGrounded() const { return isGrounded; }
 	// ジャンプ中かの判定
-	bool GetIsGrounded() const { return mbIsJumping; }
+	bool GetIsJumping() const { return mbIsJumping; }
 
 	void SetInHotSpring(bool inWater) { mbInHotSpring = inWater; }
 	bool GetInHotSpring() const { return mbInHotSpring; }

@@ -486,7 +486,7 @@ void StageClear::InitLogo()
 	float sinA = std::sin(StageClearConstants::LogoTiltAngleRad);
 	float cosA = std::cos(StageClearConstants::LogoTiltAngleRad);
 
-	// 画像内の可視先端（非透明ピクセル px=42, py=209）を基点として接地目標を計算
+	// 画像内の可視先端を基点として接地目標を計算
 	float rx = (42.0f - 305.5f) * mLogoScale;
 	float ry = (209.0f - 167.0f) * mLogoScale;
 	float tipRelY = rx * sinA + ry * cosA;
@@ -575,8 +575,8 @@ void StageClear::UpdateLogo(Player* player, BlockMap* pBlockMap)
 		float scrollX = (pBlockMap != nullptr) ? static_cast<float>(pBlockMap->GetScrollX()) : 0.0f;
 		float scrollY = (pBlockMap != nullptr) ? static_cast<float>(pBlockMap->GetScrollY()) : 0.0f;
 
-		// プレイヤー押し潰し判定（案B: 即死トラップ）
-		// 画像の透明余白を除外し、狭く適正化した当たり判定（幅480px, 高320px）で判定
+		// プレイヤー押し潰し判定
+		// 画像の透明余白を除外し、狭く適正化した当たり判定で判定
 		if (player != nullptr && !player->GetIsDead())
 		{
 			float pScreenX = player->GetPosition().x - scrollX;

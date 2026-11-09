@@ -17,12 +17,12 @@ public:
 		PostBulletDelay,   // 全弾丸消滅後の小休止
 		LogoPreFallShake,  // ロゴ落下直前の予兆
 		LogoFall,          // タイトルロゴ上空落下
-		Blink,             // 「ステージクリア」文字の点滅
+		Blink,             // ステージクリア文字の点滅
 		Display,           // 常時表示フェーズ
 		ClearCleanUp,      // クラッカー・文字・ロゴの退出・フェードアウト
-		DoorAppearWait,    // 扉出現前の静寂（少ししたら）
-		DoorAppear,        // 煙演出とともに扉出現（ポップ）
-		DoorActive,        // 扉設置完了（プレイヤー接近で開閉）
+		DoorAppearWait,    // 扉出現前の静寂
+		DoorAppear,        // 煙演出とともに扉出現
+		DoorActive,        // 扉設置完了
 		Finished           
 	};
 
@@ -117,7 +117,7 @@ public:
 	// ステージ背面描画
 	void DrawBehindStage(const BlockMap* pBlockMap = nullptr) const;
 
-	// ステージクリア扉描画（プレイヤー背面・背景前面）
+	// ステージクリア扉描画
 	void DrawDoor(const BlockMap* pBlockMap = nullptr) const;
 
 	// リセット
@@ -162,7 +162,7 @@ private:
 	int mCrackerGraph;     // Cracker.png 画像ハンドル
 	int mFlashGraphs[5]; // Flash.png 分割画像ハンドル
 
-	int mAimedCrackerIndex;// 狙撃を行うクラッカーのインデックス (0〜5)
+	int mAimedCrackerIndex;// 狙撃を行うクラッカーのインデックス
 	bool mAimLocked;       // 発射0.3秒前の照準ロックフラグ
 
 	std::vector<CrackerData> mCrackers;
@@ -179,11 +179,11 @@ private:
 	int mLogoImpactTimer;  // 着地後の経過フレーム数
 	float mLogoReboundOffset; // 着地時の微小リバウンド振動オフセット
 
-	int mDoorGraphs[4];      // OpenDoor.png 分割画像ハンドル (4コマ)
+	int mDoorGraphs[4];      // OpenDoor.png 分割画像ハンドル
 	float mDoorWorldX;       // 扉ワールドX座標
 	float mDoorWorldY;       // 扉接地ワールドY座標
-	float mDoorAnimProgress; // 扉開閉アニメーション進行度 (0.0f〜3.0f)
-	int mDoorCurrentFrame;   // 現在描画するコマ (0〜3)
+	float mDoorAnimProgress; // 扉開閉アニメーション進行度
+	int mDoorCurrentFrame;   // 現在描画するコマ
 	float mDoorPopScale;     // 出現時のポップ弾性拡縮率
 	mutable bool mbDoorDrawnThisFrame; // フレーム内での扉描画済みフラグ
 	std::vector<DoorSmokeParticle> mDoorSmoke; // 扉出現煙パーティクル

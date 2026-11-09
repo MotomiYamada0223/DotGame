@@ -294,9 +294,10 @@ void Minecart::Update(BlockMap& blockMap, Player* player)
 			{
 				if (yOverlap)
 				{
+					// 空中のトロッコ本体とプレイヤーが直接接触
 					hit = true;
 				}
-				else if (!player->GetIsGrounded() && pPos.y < 1860.0f)
+				else if (mbHasJumped && (!player->GetIsGrounded() || player->GetIsJumping()))
 				{
 					// 地上にいない（ジャンプした）場合、空中のトロッコに巻き込まれて即死！
 					hit = true;
