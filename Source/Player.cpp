@@ -599,14 +599,20 @@ void Player::Update()
 		atkSize = VGet((float)attackWidth, (float)attackHeight, 0.0f);
 	}
 
+	// 壁を壊す処理
 	if (hasAttackRect && mpBlockMap != nullptr)
 	{
-		mpBlockMap->BreakWallAtArea(
+		bool isWallBerak = mpBlockMap->BreakWallAtArea(
 			atkPos.x,
 			atkPos.y,
 			atkPos.x + atkSize.x,
 			atkPos.y + atkSize.y
 			);
+
+		if (isWallBerak)
+		{
+			mActionState.wallbreak = true;
+		}
 	}
 
 
@@ -789,6 +795,10 @@ void Player::DrawFallDeath()
 
 void Player::Draw()
 {
+	if (mActionState.wallbreak == true)
+	{
+		DrawString(500, 500, "壁壊した", ColorOption::White);
+	}
 	// 表側落下中は、Scene::Draw()（マップ奥）での描画をスキップ（GameSceneでマップ手前に描画）
 	if (mFallMode == StageFallMode::Front)
 	{
@@ -1278,6 +1288,7 @@ void Player::Revive()
 
 	// 行動ステートのリセット
 	mActionState.blink = false;
+	mActionState.wallbreak = false;
 
 	// マップのスクロール位置を一番左に戻す
 	if (mpBlockMap != nullptr)

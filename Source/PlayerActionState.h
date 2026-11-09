@@ -6,4 +6,7 @@ struct PlayerActionState
 	bool blink = false;
 	bool jump = false;
 	bool attack = false;
+
+	// RXR‚Ì•û
+	bool wallbreak = false;
 };
