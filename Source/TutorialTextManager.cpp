@@ -81,7 +81,7 @@ bool TutorialTextManager::IsTimeTriggerType(const std::string& type) const
 bool TutorialTextManager::CheckCondition(const std::string& type, float targetX, bool isCurrentlyTalking) const
 {
 	if (type == "X" || type == "Time") return true;
-
+	
 	std::string cond = type;
 	if (cond.rfind("X_", 0) == 0) cond = cond.substr(2);
 	else if (cond.rfind("Time_", 0) == 0) cond = cond.substr(5);
@@ -98,6 +98,9 @@ bool TutorialTextManager::CheckCondition(const std::string& type, float targetX,
 	// 山々山の処理
 	if (cond == "WallBreak") return mbWallBreak;
 	if (cond == "NoWallBreak") return !mbWallBreak;
+	if (type == "HotSpring") return mbHotSpring;
+
+
 
 
 	// 説明の途中で座標が変わった時
@@ -123,6 +126,7 @@ void TutorialTextManager::SetActionState(const PlayerActionState& state)
 	mbUsedJump |= state.jump;
 	mbUsedAttack |= state.attack;
 	mbWallBreak |= state.wallbreak;
+	mbHotSpring |= state.hotSpring;
 }
 
 
@@ -182,6 +186,7 @@ void TutorialTextManager::Initialize(
 	mbUsedJump = false;
 	mbUsedAttack = false;
 	mbWallBreak = false;
+	mbHotSpring = false;
 
 	// 通常チュートリアルCSVの読み込み
 	loader.LoadCSV(csvPath);
@@ -508,6 +513,7 @@ void TutorialTextManager::Reset()
 	mbUsedJump = false;
 	mbUsedAttack = false;
 	mbWallBreak = false;
+	mbHotSpring = false;
 
 	mbInterruptedLastX = false;
 }

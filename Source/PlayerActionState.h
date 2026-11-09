@@ -7,6 +7,7 @@ struct PlayerActionState
 	bool jump = false;
 	bool attack = false;
 
-	// 山々山の方
-	bool wallbreak = false;
+	// 山々山の方限定
+	bool wallbreak = false; // 壁を壊したか
+	bool hotSpring = false; // 温泉に入ったか
 };

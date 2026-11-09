@@ -364,6 +364,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 	// ジャンプ開始
 	if (mbInHotSpring)
 	{
+		mActionState.hotSpring = true;
 		// 温泉のぬめり処理：
 		// 1回のジャンプではぬめりで上がれず、重い湯に引きずり込まれる
 		// スペースキーを連打（足掻き）すると少しずつ浮上・脱出可能
@@ -795,10 +796,6 @@ void Player::DrawFallDeath()
 
 void Player::Draw()
 {
-	if (mActionState.wallbreak == true)
-	{
-		DrawString(500, 500, "壁壊した", ColorOption::White);
-	}
 	// 表側落下中は、Scene::Draw()（マップ奥）での描画をスキップ（GameSceneでマップ手前に描画）
 	if (mFallMode == StageFallMode::Front)
 	{

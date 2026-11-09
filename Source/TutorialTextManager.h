@@ -109,6 +109,8 @@ private:
 
 	// 山々山の処理
 	bool mbWallBreak = false;  // 壁を壊したか
+	bool mbHotSpring = false;  // 温泉に入ったか
+
 
 	bool mbInterruptedLastX = false; // 直前の説明の途中で現在のX座標に到達したか
 
