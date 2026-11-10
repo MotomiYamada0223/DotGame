@@ -532,4 +532,99 @@ namespace StageClearConstants
 	static constexpr float DoorGroundFallbackY   = 770.0f;    
 }
 
+// GameLoadData用定数
+namespace GameLoadDataConstants
+{
+	// ステージ識別番号
+	static constexpr int StageIndexForest = 0;
+	static constexpr int StageIndexCave = 1;
 
+	// --- 始まりの森（StageForest）配置定数 ---
+	// フェイント床（FeintFloor）
+	static constexpr float ForestFeintFloorPosX = 4920.0f;
+	static constexpr float ForestFeintFloorPosY = 1685.0f;
+
+	// 崩れる床（CrumbleFloor）
+	static constexpr float ForestCrumbleFloorPosX = 7599.0f;
+	static constexpr float ForestCrumbleFloorPosY = 1600.0f;
+
+	// 隠しブロック（HiddenBlock）
+	static constexpr float ForestHiddenBlockPosX = 3150.0f;
+	static constexpr float ForestHiddenBlockPosY = 1175.0f;
+
+	// 動く足場スポナー共通
+	static constexpr int ForestSpawnerInterval = 120; // 生成インターバル（フレーム）
+
+	// 動く足場スポナー1（下から上へ移動：通常）
+	static constexpr float ForestSpawner1PosX = 6300.0f;
+	static constexpr float ForestSpawner1PosY = 2250.0f;
+	static constexpr float ForestSpawner1VelY = -3.0f;
+
+	// 動く足場スポナー2（上から下へ移動：乗ると加速）
+	static constexpr float ForestSpawner2PosX = 6575.0f;
+	static constexpr float ForestSpawner2PosY = 870.0f;
+	static constexpr float ForestSpawner2VelY = 3.0f;
+
+	// 動く足場スポナー3（下から上へ移動：反転＆ダッシュ）
+	static constexpr float ForestSpawner3PosX = 6850.0f;
+	static constexpr float ForestSpawner3PosY = 2250.0f;
+	static constexpr float ForestSpawner3VelY = -3.0f;
+
+	// スライム（EnemySlime）
+	static constexpr float ForestSlime1PosX = 1000.0f;
+	static constexpr float ForestSlime1PosY = 300.0f;
+
+	static constexpr float ForestSlime2PosX = 4000.0f;
+	static constexpr float ForestSlime2PosY = 1500.0f;
+
+	// 針トラップ（NeedleTrap）
+	static constexpr float ForestNeedle1PosX = 1404.0f;
+	static constexpr float ForestNeedle1PosY = 1490.0f;
+
+	static constexpr float ForestNeedle2PosX = 1500.0f;
+	static constexpr float ForestNeedle2PosY = 1490.0f;
+
+	static constexpr float ForestNeedle3PosX = 1596.0f;
+	static constexpr float ForestNeedle3PosY = 1490.0f;
+
+	static constexpr float ForestNeedle4PosX = 4280.0f;
+	static constexpr float ForestNeedle4PosY = 1600.0f;
+
+	static constexpr float ForestNeedle5PosX = 4376.0f;
+	static constexpr float ForestNeedle5PosY = 1600.0f;
+
+	static constexpr float ForestNeedle6PosX = 5980.0f;
+	static constexpr float ForestNeedle6PosY = 1710.0f;
+
+	// --- 洞窟ステージ（StageCave）配置定数 ---
+	// スケルトン（EnemySkeleton）
+	static constexpr float CaveSkeleton1PosX = 2400.0f;
+	static constexpr float CaveSkeleton1PosY = 976.0f;
+
+	static constexpr float CaveSkeleton2PosX = 6745.0f;
+	static constexpr float CaveSkeleton2PosY = 1850.0f;
+
+	// 往復動く足場（MovingFloor）
+	static constexpr float CaveMovingFloorStartX = 7000.0f;
+	static constexpr float CaveMovingFloorEndX = 7550.0f;
+	static constexpr float CaveMovingFloorPosY = 1800.0f;
+	static constexpr float CaveMovingFloorSpeed = 2.0f;
+	static constexpr float CaveMovingFloorScale = 0.40f;
+
+	// 転がり岩の坂下くぼみ巨大針（BoulderNeedleTrap）
+	static constexpr float CaveBoulderSpikePosX = 4315.5f;
+	static constexpr float CaveBoulderSpikePosY = 2006.0f;
+
+	// 凹みに敷き詰める針（NeedleTrap: BloodNeedle）
+	static constexpr float CavePitStartX = 6940.0f;
+	static constexpr float CavePitNeedleWidth = 72.0f;
+	static constexpr float CavePitNeedleCenterY = 2052.0f;
+	static constexpr float CavePitNeedleScale = 1.0f;
+	static constexpr int   CavePitNeedleCount = 10;
+
+	// --- デバッグ表示用座標 ---
+	static constexpr int DebugProgressTextX = 10;
+	static constexpr int DebugProgressTextY = 30;
+	static constexpr int DebugWarpTextX = 10;
+	static constexpr int DebugWarpTextY = 50;
+}

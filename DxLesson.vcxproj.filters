@@ -87,9 +87,6 @@
     <ClCompile Include="Source\GameScene.cpp">
       <Filter>ソース ファイル\Scene系</Filter>
     </ClCompile>
-    <ClCompile Include="Source\WinResultScene.cpp">
-      <Filter>ソース ファイル\Scene系</Filter>
-    </ClCompile>
     <ClCompile Include="Source\StageSelectScene.cpp">
       <Filter>ソース ファイル\Scene系</Filter>
     </ClCompile>
@@ -224,6 +221,9 @@
     </ClCompile>
     <ClCompile Include="Source\DragonFireGimmick.cpp">
       <Filter>ソース ファイル\Controller系</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\WinResultScene.cpp">
+      <Filter>ソース ファイル\Text関系</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
