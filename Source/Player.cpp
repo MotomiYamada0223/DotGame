@@ -78,8 +78,8 @@ void Player::UpdateStatusByProgress(GameProgress progress)
 	switch (progress)
 	{
 	case GameProgress::Tutorial1:
-		mMaxHp = 15; mHp = 15;
-		mAttack = 5; mDefense = 5; mMagic = 5;
+		mMaxHp = 15000000; mHp = 15000000;
+		mAttack = 500000; mDefense = 5; mMagic = 5;
 		mIsBlinkWallDeathImmune = false;
 		break;
 	case GameProgress::PostTutorial1:
@@ -128,6 +128,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 	{
 		return;
 	}
+
 
 	// Wキー/Sキー長押しによるステージ裏・表落下処理の判定
 	if (mFallMode == StageFallMode::None && !isDead && !mbAutoWalking)
@@ -181,6 +182,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 
 		if (!mbDeath && mvPosition.y >= PlayerConstants::PlayerDeathHeight)
 		{
+			// WSで落下したときにテキストを変更した
 			mDeathReason = DeathReason::DeathType::FallSide;
 			mHp = 0;
 			mbDeath = true;
