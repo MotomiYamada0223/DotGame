@@ -1,8 +1,10 @@
-#pragma once
+ï»¿#pragma once
 #include "Scene.h"
+#include <vector>
+#include <string>
 
 /// <summary>
-/// Ÿ—˜‚µ‚½Œã‚Ì‰‰o‚ğ‚·‚éƒV[ƒ“ƒNƒ‰ƒX
+/// å‹åˆ©ã—ãŸå¾Œã®æ¼”å‡ºã‚’ã™ã‚‹ã‚·ãƒ¼ãƒ³ã‚¯ãƒ©ã‚¹
 /// </summary>
 class WinResultScene : public Scene
 {
@@ -16,5 +18,28 @@ public:
 	void Finalize();
 
 private:
+	int mPortraitBoxHandle;
+	int mTextBoxHandle;
 
+	std::vector<std::string> mMessages;
+	int mFullBodyHandles[3];
+	float mAngelX;
+	float mAngelY;
+	bool mHasArrived;
+	int mArriveWaitTimer;
+
+	int mCurrentState;
+	int mTalkTimer;
+	int mBlinkTimer;
+	int mBlinkInterval;
+	bool mIsBlinking;
+
+	int mCurrentLine;
+	int mDisplayByteCount;
+	float mCharTimer;
+	float mCharSpeed;
+	float mWaitTimer;
+
+	bool mIsTransitioning;
+	int mTransitionTimer;
 };

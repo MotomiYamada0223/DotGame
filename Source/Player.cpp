@@ -78,7 +78,7 @@ void Player::UpdateStatusByProgress(GameProgress progress)
 	switch (progress)
 	{
 	case GameProgress::Tutorial1:
-		mMaxHp = 15000000; mHp = 15000000;
+		mMaxHp = 15; mHp = 15;
 		mAttack = 500000; mDefense = 5; mMagic = 5;
 		mIsBlinkWallDeathImmune = false;
 		break;
