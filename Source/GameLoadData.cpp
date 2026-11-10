@@ -180,6 +180,19 @@ void GameLoadData::StageCave()
 
 	mCart.Initialize();
 
+	// 左右に往復する洞窟足場（X: 7000～7500、Y: 1800、罠なし、スケール0.40fで約144px）
+	new MovingFloor(
+		VGet(7000.0f, 1800.0f, 0.0f),
+		VGet(7500.0f, 1800.0f, 0.0f),
+		2.0f,
+		MovePattern::Loop,
+		FloorFeature::Normal,
+		mpPlayer,
+		&mBlockMap,
+		CharacterGraphPath::CaveFloor,
+		0.40f
+	);
+
 }
 
 void GameLoadData::DebugUpdate()

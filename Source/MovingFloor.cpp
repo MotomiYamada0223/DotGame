@@ -8,7 +8,7 @@ std::list<MovingFloor*> MovingFloor::s_AllMovingFloors;
 bool MovingFloor::s_IsReverseAndDashTriggered = false;
 
 // パターンA：往復用（始点・終点を指定）
-MovingFloor::MovingFloor(VECTOR startPos, VECTOR endPos, float speed, MovePattern pattern, FloorFeature feature, Player* player, BlockMap* blockMap, std::string imagePath)
+MovingFloor::MovingFloor(VECTOR startPos, VECTOR endPos, float speed, MovePattern pattern, FloorFeature feature, Player* player, BlockMap* blockMap, std::string imagePath, float scale)
     : Object2D(startPos)
     , mStartPos(startPos)
     , mEndPos(endPos)
@@ -21,7 +21,7 @@ MovingFloor::MovingFloor(VECTOR startPos, VECTOR endPos, float speed, MovePatter
     , mIsPlayerRiding(false)
     , mpBlockMap(blockMap)
     , mIsSpedUp(false)
-    , mScale(1.0f)
+    , mScale(scale)
     , mIsShrinking(false)
 {
     s_AllMovingFloors.push_back(this);
@@ -74,7 +74,7 @@ MovingFloor::MovingFloor(VECTOR startPos, VECTOR endPos, float speed, MovePatter
 }
 
 // パターンB：一方向・無限移動用（始点・移動ベクトルを指定）
-MovingFloor::MovingFloor(VECTOR startPos, VECTOR velocity, MovePattern pattern, FloorFeature feature, Player* player, BlockMap* blockMap, std::string imagePath)
+MovingFloor::MovingFloor(VECTOR startPos, VECTOR velocity, MovePattern pattern, FloorFeature feature, Player* player, BlockMap* blockMap, std::string imagePath, float scale)
     : Object2D(startPos)
     , mStartPos(startPos)
     , mEndPos(startPos) // 一方向の場合は使わない
@@ -88,7 +88,7 @@ MovingFloor::MovingFloor(VECTOR startPos, VECTOR velocity, MovePattern pattern, 
     , mIsPlayerRiding(false)
     , mpBlockMap(blockMap)
     , mIsSpedUp(false)
-    , mScale(1.0f)
+    , mScale(scale)
     , mIsShrinking(false)
 {
     s_AllMovingFloors.push_back(this);
