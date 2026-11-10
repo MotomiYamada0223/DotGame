@@ -181,7 +181,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 
 		if (!mbDeath && mvPosition.y >= PlayerConstants::PlayerDeathHeight)
 		{
-			mDeathReason = DeathReason::DeathType::Fall;
+			mDeathReason = DeathReason::DeathType::FallSide;
 			mHp = 0;
 			mbDeath = true;
 		}

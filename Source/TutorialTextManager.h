@@ -13,7 +13,7 @@ class  TutorialTextManager
 {
 private:
 	// 定数
-	static constexpr float CharSpeed = 0.1f; // 一文字表示にかける時間
+	static constexpr float CharSpeed = 0.02f; // 一文字表示にかける時間
 
 
 public:
