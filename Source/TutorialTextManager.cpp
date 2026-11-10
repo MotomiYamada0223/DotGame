@@ -98,7 +98,7 @@ bool TutorialTextManager::CheckCondition(const std::string& type, float targetX,
 	// 山々山の処理
 	if (cond == "WallBreak") return mbWallBreak;
 	if (cond == "NoWallBreak") return !mbWallBreak;
-	if (type == "HotSpring") return mbHotSpring;
+	if (cond == "HotSpring") return mbHotSpring;
 
 
 
