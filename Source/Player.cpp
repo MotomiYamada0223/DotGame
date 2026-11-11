@@ -133,40 +133,43 @@ void Player::PlayerMove(BlockMap& blockMap)
 	// Wキー/Sキー長押しによるステージ裏・表落下処理の判定
 	if (mFallMode == StageFallMode::None && !isDead && !mbAutoWalking)
 	{
-		// Wキー: ステージ裏側（マップ奥）へ落下
-		if (CheckHitKey(KEY_INPUT_W) == 1)
+		if (mvPosition.x <= 8000)
 		{
-			mWKeyHoldTimer++;
-			if (mWKeyHoldTimer >= PlayerConstants::FallThroughHoldFrames)
+			// Wキー: ステージ裏側（マップ奥）へ落下
+			if (CheckHitKey(KEY_INPUT_W) == 1)
 			{
-				mFallMode = StageFallMode::Back;
-				isGrounded = false;
-				mbIsJumping = true;
-				if (velocityY < 2.0f) velocityY = 2.0f;
-				mPlayerState.SetJump();
+				mWKeyHoldTimer++;
+				if (mWKeyHoldTimer >= PlayerConstants::FallThroughHoldFrames)
+				{
+					mFallMode = StageFallMode::Back;
+					isGrounded = false;
+					mbIsJumping = true;
+					if (velocityY < 2.0f) velocityY = 2.0f;
+					mPlayerState.SetJump();
+				}
 			}
-		}
-		else
-		{
-			mWKeyHoldTimer = 0;
-		}
+			else
+			{
+				mWKeyHoldTimer = 0;
+			}
 
-		// Sキー: ステージ表側（マップ手前）へ落下
-		if (CheckHitKey(KEY_INPUT_S) == 1)
-		{
-			mSKeyHoldTimer++;
-			if (mSKeyHoldTimer >= PlayerConstants::FallThroughHoldFrames)
+			// Sキー: ステージ表側（マップ手前）へ落下
+			if (CheckHitKey(KEY_INPUT_S) == 1)
 			{
-				mFallMode = StageFallMode::Front;
-				isGrounded = false;
-				mbIsJumping = true;
-				if (velocityY < 2.0f) velocityY = 2.0f;
-				mPlayerState.SetJump();
+				mSKeyHoldTimer++;
+				if (mSKeyHoldTimer >= PlayerConstants::FallThroughHoldFrames)
+				{
+					mFallMode = StageFallMode::Front;
+					isGrounded = false;
+					mbIsJumping = true;
+					if (velocityY < 2.0f) velocityY = 2.0f;
+					mPlayerState.SetJump();
+				}
 			}
-		}
-		else
-		{
-			mSKeyHoldTimer = 0;
+			else
+			{
+				mSKeyHoldTimer = 0;
+			}
 		}
 	}
 
