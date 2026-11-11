@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <cmath>
 #include <utility>
+#include "Master.h"
 
 DestructibleWall::~DestructibleWall()
 {
@@ -113,6 +114,11 @@ void DestructibleWall::Update()
 
 void DestructibleWall::Draw(int scrollX, int scrollY) const
 {
+
+    if (Master::gCurrentStageIndex != 1)
+    {
+        return;
+    }
     if (mGraphHandle != -1)
     {
         DrawGraph(mMinX - scrollX, mMinY - scrollY, mGraphHandle, TRUE);
