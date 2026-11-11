@@ -35,11 +35,11 @@ GameLoadData::GameLoadData(
 void GameLoadData::LoadInitialize(int stageNumber)
 {
 	mnLoadNumber = stageNumber;
-	if (stageNumber == 0)
+	if (stageNumber == GameLoadDataConstants::StageIndexForest)
 	{
 		StageForest();
 	}
-	else if(stageNumber == 1)
+	else if (stageNumber == GameLoadDataConstants::StageIndexCave)
 	{
 		StageCave();
 	}
@@ -69,7 +69,7 @@ void GameLoadData::StageForest()
 	// チュートリアルテキストとブロックマップのタイル
 	mTutorialText.Initialize(CsvPath::TutorialText, CsvPath::TutorialDeathText);
 
-	// 背景画像と当たり判定画像を読み込む
+	// 背景画像と当たり判定画像読み込み
 	if (!mBlockMap.Load(
 		BlockMapGraphPath::ForestMap,
 		BlockMapGraphPath::ForestMapCollision
@@ -79,40 +79,41 @@ void GameLoadData::StageForest()
 	}
 	mBackground.Load(ScrollGraphPath::StageForest);
 
+	using namespace GameLoadDataConstants;
 
 	// フェイント床の配置
 	new FeintFloor(
-		VGet(4920.0f, 1685.0f, 0.0f),
+		VGet(ForestFeintFloorPosX, ForestFeintFloorPosY, 0.0f),
 		mpPlayer,
 		&mBlockMap
 	);
 
-	// 崩落床の配置
+	// 崩れる床の配置
 	new CrumbleFloor(
-		VGet(7599.0f, 1600.0f, 0.0f),
+		VGet(ForestCrumbleFloorPosX, ForestCrumbleFloorPosY, 0.0f),
 		mpPlayer,
 		&mBlockMap
 	);
 
 	// 隠しブロックの生成
-	new HiddenBlock(VGet(3150.0f, 1175.0f, 0.0f), &mBlockMap);
+	new HiddenBlock(VGet(ForestHiddenBlockPosX, ForestHiddenBlockPosY, 0.0f), &mBlockMap);
 
 
-	// 上から下へ無限に降ってくる足場のスポナーを配置
+	// 下から上・上から下へ移動する床のスポナー配置
 	new FloorSpawner(
-		VGet(6300.0f, 2250.0f, 0.0f),
-		VGet(0.0f, -3.0f, 0.0f),
-		120,
+		VGet(ForestSpawner1PosX, ForestSpawner1PosY, 0.0f),
+		VGet(0.0f, ForestSpawner1VelY, 0.0f),
+		ForestSpawnerInterval,
 		mpPlayer,
 		&mBlockMap,
 		FloorFeature::Normal,
-		CharacterGraphPath::MoveFloorBig // ここで画像パスを指定
+		CharacterGraphPath::MoveFloorBig
 	);
 
 	new FloorSpawner(
-		VGet(6575.0f, 870.0f, 0.0f),
-		VGet(0.0f, 3.0f, 0.0f),
-		120,
+		VGet(ForestSpawner2PosX, ForestSpawner2PosY, 0.0f),
+		VGet(0.0f, ForestSpawner2VelY, 0.0f),
+		ForestSpawnerInterval,
 		mpPlayer,
 		&mBlockMap,
 		FloorFeature::SpeedUpOnRide,
@@ -120,9 +121,9 @@ void GameLoadData::StageForest()
 	);
 
 	new FloorSpawner(
-		VGet(6850.0f, 2250.0f, 0.0f),
-		VGet(0.0f, -3.0f, 0.0f),
-		120,
+		VGet(ForestSpawner3PosX, ForestSpawner3PosY, 0.0f),
+		VGet(0.0f, ForestSpawner3VelY, 0.0f),
+		ForestSpawnerInterval,
 		mpPlayer,
 		&mBlockMap,
 		FloorFeature::ReverseAndDash,
@@ -136,18 +137,18 @@ void GameLoadData::StageForest()
 	if (mpPlayer != nullptr)
 	{
 		// スライムの配置
-		EnemySlime* slime = new EnemySlime(VGet(1000.0f, 300, 0.0f));
+		EnemySlime* slime = new EnemySlime(VGet(ForestSlime1PosX, ForestSlime1PosY, 0.0f));
 
-		EnemySlime* slime1 = new EnemySlime(VGet(4000.0f, 1500.0f, 0.0f));
+		EnemySlime* slime1 = new EnemySlime(VGet(ForestSlime2PosX, ForestSlime2PosY, 0.0f));
 		slime1->UpdateStatusByProgress(mProgress);
 
 		// トラップの配置
-		new NeedleTrap(VGet(1404.0f, 1490.0f, 0.0f), TrapType::Normal);
-		new NeedleTrap(VGet(1500.0f, 1490.0f, 0.0f), TrapType::AntiJump);
-		new NeedleTrap(VGet(1596.0f, 1490.0f, 0.0f), TrapType::Normal);
-		new NeedleTrap(VGet(4280.0f, 1600.0f, 0.0f), TrapType::PopUp);
-		new NeedleTrap(VGet(4376.0f, 1600.0f, 0.0f), TrapType::PopUp);
-		new NeedleTrap(VGet(5980.0f, 1710.0f, 0.0f), TrapType::Normal);
+		new NeedleTrap(VGet(ForestNeedle1PosX, ForestNeedle1PosY, 0.0f), TrapType::Normal);
+		new NeedleTrap(VGet(ForestNeedle2PosX, ForestNeedle2PosY, 0.0f), TrapType::AntiJump);
+		new NeedleTrap(VGet(ForestNeedle3PosX, ForestNeedle3PosY, 0.0f), TrapType::Normal);
+		new NeedleTrap(VGet(ForestNeedle4PosX, ForestNeedle4PosY, 0.0f), TrapType::PopUp);
+		new NeedleTrap(VGet(ForestNeedle5PosX, ForestNeedle5PosY, 0.0f), TrapType::PopUp);
+		new NeedleTrap(VGet(ForestNeedle6PosX, ForestNeedle6PosY, 0.0f), TrapType::Normal);
 	}
 }
 
@@ -155,13 +156,20 @@ void GameLoadData::StageForest()
 
 void GameLoadData::StageCave()
 {
+	using namespace GameLoadDataConstants;
 	// CSVのファイル読み込み
 	// チュートリアルテキストとブロックマップのタイル
 	mTutorialText.Initialize(CsvPath::TutorialCave, CsvPath::TutorialDeathText);
 
 	mRollingBoulder.Initialize();
 
-	// 背景画像と当たり判定画像を読み込む
+	// 転がり岩の坂下くぼみ巨大針トラップ（せり上がり・上空発射）
+	new BoulderNeedleTrap(
+		VGet(CaveBoulderSpikePosX, CaveBoulderSpikePosY, 0.0f),
+		&mRollingBoulder
+	);
+
+	// 背景画像と当たり判定画像読み込み
 	if (!mBlockMap.Load(
 		BlockMapGraphPath::CaveMap,
 		BlockMapGraphPath::CaveMapCollision
@@ -171,26 +179,48 @@ void GameLoadData::StageCave()
 	}
 	mBackground.Load(ScrollGraphPath::StageCave);
 
+
 	// 敵の生成
 	if (mpPlayer != nullptr)
 	{
-		new EnemySkeleton(VGet(2400.0f, 976.0f, 0.0f));
-		new EnemySkeleton(VGet(6745.0f, 1850.0f, 0.0f));
+		new EnemySkeleton(VGet(CaveSkeleton1PosX, CaveSkeleton1PosY, 0.0f));
+		new EnemySkeleton(VGet(CaveSkeleton2PosX, CaveSkeleton2PosY, 0.0f));
 	}
 
 	mCart.Initialize();
 
-	// 左右に往復する洞窟足場（X: 7000～7500、Y: 1800、罠なし、スケール0.40fで約144px）
+	// 左右に往復する洞窟足場
 	new MovingFloor(
-		VGet(7000.0f, 1800.0f, 0.0f),
-		VGet(7500.0f, 1800.0f, 0.0f),
-		2.0f,
+		VGet(CaveMovingFloorStartX, CaveMovingFloorPosY, 0.0f),
+		VGet(CaveMovingFloorEndX, CaveMovingFloorPosY, 0.0f),
+		CaveMovingFloorSpeed,
 		MovePattern::Loop,
 		FloorFeature::Normal,
 		mpPlayer,
 		&mBlockMap,
 		CharacterGraphPath::CaveFloor,
-		0.40f
+		CaveMovingFloorScale
+	);
+
+	// 動く足場の下の凹みに血糊針を敷き詰める（一番左はAntiJump、それ以外はNormal）
+	for (int i = 0; i < CavePitNeedleCount; ++i)
+	{
+		float needleCenterX = CavePitStartX + (i + 0.5f) * CavePitNeedleWidth;
+		TrapType trapType = (i == 0) ? TrapType::AntiJump : TrapType::Normal;
+		new NeedleTrap(
+			VGet(needleCenterX, CavePitNeedleCenterY, 0.0f),
+			trapType,
+			CharacterGraphPath::BloodNeedle,
+			CavePitNeedleScale
+		);
+	}
+
+	// ボスエリア直前・壊せる壁の目の前で上から降ってくる針（先ほど発射された針が落ちてきた設定）
+	new NeedleTrap(
+		VGet(CaveFallingNeedlePosX, CaveFallingNeedleInitialY, 0.0f),
+		TrapType::Falling,
+		CharacterGraphPath::BloodNeedle,
+		1.0f
 	);
 
 }
@@ -204,11 +234,11 @@ void GameLoadData::DebugUpdate()
 	{
 		if (mProgress == GameProgress::Tutorial1)
 		{
-			mProgress = GameProgress::Tutorial2; // すり抜けON (無敵)
+			mProgress = GameProgress::Tutorial2; // 手加減ON (無敵)
 		}
 		else
 		{
-			mProgress = GameProgress::Tutorial1; // すり抜けOFF (即死)
+			mProgress = GameProgress::Tutorial1; // 手加減OFF (即死)
 		}
 
 		if (mpPlayer) mpPlayer->UpdateStatusByProgress(mProgress);
@@ -238,6 +268,6 @@ void GameLoadData::DebugDraw()
 {
 	// デバッグ表示：現在の進行度
 	const char* progStr = (mProgress == GameProgress::Tutorial1) ? "Tutorial1 (Death)" : "Tutorial2 (Immune)";
-	DrawFormatString(10, 30, GetColor(0, 255, 0), "Progress: %s  [Press P to toggle]", progStr);
-	DrawFormatString(10, 50, GetColor(0, 255, 0), "[1]: Warp to Boss Area (7200, 700)");
+	DrawFormatString(GameLoadDataConstants::DebugProgressTextX, GameLoadDataConstants::DebugProgressTextY, GetColor(0, 255, 0), "Progress: %s  [Press P to toggle]", progStr);
+	DrawFormatString(GameLoadDataConstants::DebugWarpTextX, GameLoadDataConstants::DebugWarpTextY, GetColor(0, 255, 0), "[1]: Warp to Boss Area (7200, 700)");
 }

@@ -1,5 +1,6 @@
 ﻿#include "MovingFloor.h"
 #include "Player.h"
+#include "BlockMap.h"
 #include "ResourceManager.h"
 #include "GameConstants.h"
 #include <cmath>
@@ -207,7 +208,7 @@ void MovingFloor::Move()
     SetPosition(nextPos);
 
     // 乗っているプレイヤーも一緒に動かす
-    if (mIsPlayerRiding && mpPlayer) {
+    if (mIsPlayerRiding && mpPlayer && !mpPlayer->GetIsDead()) {
         VECTOR moveDelta = VSub(nextPos, prevPos);
         VECTOR playerPos = mpPlayer->GetPosition();
         
@@ -220,12 +221,30 @@ void MovingFloor::Move()
         playerPos.y = nextPos.y - currentHalfHeight - PlayerConstants::PlayerCollisionHeight / 2.0f;
         
         mpPlayer->SetPosition(playerPos);
+
+        // スクロールシステムへの対応（足場の横移動にカメラを連動させる）
+        if (mpBlockMap != nullptr && std::abs(moveDelta.x) > 0.0001f) {
+            int playerScreenX = static_cast<int>(ConvertToScreenX(playerPos.x, mpBlockMap));
+            int playerMapY = static_cast<int>(playerPos.y);
+            float moveDir = (moveDelta.x > 0.0f) ? 1.0f : -1.0f;
+            float speed = std::abs(moveDelta.x);
+
+            mpBlockMap->Move(
+                playerScreenX,
+                playerMapY,
+                moveDir,
+                speed
+            );
+        }
     }
 }
 
 void MovingFloor::CheckPlayerRiding()
 {
-    if (!mpPlayer) return;
+    if (!mpPlayer || mpPlayer->GetIsDead()) {
+        mIsPlayerRiding = false;
+        return;
+    }
 
     // 完全に縮小しきっている場合は乗れない
     if (mScale <= 0.05f) {
@@ -319,11 +338,8 @@ void MovingFloor::Draw()
 {
     if (IsDeleteFlag()) return;
 
-    if ( mpBlockMap != nullptr)
+    if (mpBlockMap != nullptr)
     {
-        VECTOR pos = GetPosition();
-        float screenX = ConvertToScreenX(pos.x, mpBlockMap);
-
         int drawX = static_cast<int>(ConvertToScreenX(mvPosition.x, mpBlockMap));
         int drawY = static_cast<int>(ConvertToScreenY(mvPosition.y, mpBlockMap));
 

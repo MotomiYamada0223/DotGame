@@ -36,7 +36,7 @@ bool BlockMap::Load(
 
     // 破壊可能壁の読み込み
     mWalls.clear();
-    if (backgroundPath.find("Cave") != std::string::npos)
+    if (backgroundPath.find("") != std::string::npos)
     {
         FILE* fp = nullptr;
         fopen_s(&fp, "Resource/Map/Cave_WallConfig.txt", "r");
