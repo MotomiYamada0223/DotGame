@@ -8,7 +8,8 @@ class RollingBoulder;
 enum class TrapType {
     Normal,
     PopUp,
-    AntiJump
+    AntiJump,
+    Falling
 };
 
 enum class TrapState {
@@ -37,6 +38,17 @@ public:
     // 本来の表示サイズになるように逆算して返す
     virtual int GetSizeX() override { return static_cast<int>(mfEnemyWidth * 6.0f); }
     virtual int GetSizeY() override { return static_cast<int>(mfEnemyHeight * 6.0f); }
+
+    virtual float GetCollisionWidth() const override
+    {
+        if (mType == TrapType::Falling && mState != TrapState::Active) return 0.0f;
+        return mfEnemyWidth;
+    }
+    virtual float GetCollisionHeight() const override
+    {
+        if (mType == TrapType::Falling && mState != TrapState::Active) return 0.0f;
+        return mfEnemyHeight;
+    }
 
 protected:
     TrapType mType;

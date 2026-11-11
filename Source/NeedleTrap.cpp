@@ -38,6 +38,11 @@ NeedleTrap::NeedleTrap(VECTOR initPos, TrapType type, const std::string& graphPa
         mvPosition.y = mBaseY;
         mTargetY = mBaseY - 128.0f;
     }
+    else if (mType == TrapType::Falling)
+    {
+        mvPosition.y = mBaseY;
+        mTargetY = mBaseY;
+    }
 
     if (path == CharacterGraphPath::Needle)
     {
@@ -82,19 +87,24 @@ void NeedleTrap::Update()
 
 void NeedleTrap::Draw()
 {
+    if (IsDeleteFlag()) return;
+    if (mState == TrapState::Finished && (mType == TrapType::AntiJump || mType == TrapType::Falling)) return;
+    if (mState == TrapState::Waiting && mType == TrapType::Falling) return;
+
     if (mGraphHandle != -1 && mpBlockMap != nullptr)
     {
         int drawX = static_cast<int>(ConvertToScreenX(mvPosition.x, mpBlockMap));
         int drawY = static_cast<int>(ConvertToScreenY(mvPosition.y, mpBlockMap));
 
-        DrawRotaGraph(drawX, drawY, static_cast<double>(mScale), 0.0, mGraphHandle, TRUE);
+        double angle = (mType == TrapType::Falling) ? DX_PI : 0.0;
+        DrawRotaGraph(drawX, drawY, static_cast<double>(mScale), angle, mGraphHandle, TRUE);
     }
 }
 
 void NeedleTrap::EnemyMove(BlockMap& blockMap)
 {
     mpBlockMap = &blockMap;
-    if (mState == TrapState::Finished || mType == TrapType::Normal) return;
+    if (IsDeleteFlag() || mState == TrapState::Finished || mType == TrapType::Normal) return;
 
     Scene* currentScene = Master::mpGameManager->GetSceneManager()->GetCurrentScene();
     if (!currentScene) return;
@@ -129,32 +139,55 @@ void NeedleTrap::EnemyMove(BlockMap& blockMap)
             if (distX < 60.0f && playerY < mvPosition.y - 100.0f)
             {
                 mState = TrapState::Active;
-                // 画面の上、針が完全に見えなくなる位置まで移動目標を設定
+            }
+        }
+        else if (mType == TrapType::Falling)
+        {
+            // 壊せる壁の手前にプレイヤーが到達したとき
+            if (distX < GameLoadDataConstants::CaveFallingNeedleTriggerDistX && playerY >= 1400.0f)
+            {
+                mState = TrapState::Active;
+                // 画面の上端のすぐ外側から降らせる
                 float scrollY = (mpBlockMap != nullptr) ? static_cast<float>(mpBlockMap->GetDrawScrollY()) : 0.0f;
-                mTargetY = scrollY - mfEnemyHeight * 0.5f - 50.0f;
+                mvPosition.y = scrollY - mfEnemyHeight * 0.5f - 10.0f;
             }
         }
     }
     else if (mState == TrapState::Active)
     {
-        mvPosition.y -= mTrapSpeed;
-        
-        if (mType == TrapType::AntiJump)
+        if (mType == TrapType::Falling)
         {
-            float scrollY = (mpBlockMap != nullptr) ? static_cast<float>(mpBlockMap->GetDrawScrollY()) : 0.0f;
-            float offscreenY = scrollY - mfEnemyHeight * 0.5f - 50.0f;
-            if (mvPosition.y <= offscreenY)
+            mvPosition.y += mTrapSpeed;
+
+            // 地面に突き刺さるか、画面外（下）へ抜けたときに消滅
+            float screenTopY = ConvertToScreenY(mvPosition.y - mfEnemyHeight * 0.5f, mpBlockMap);
+            if (mvPosition.y >= GameLoadDataConstants::CaveFallingNeedleFloorY || screenTopY > ScreenSize::ScrrenHeight)
             {
-                mvPosition.y = offscreenY;
                 mState = TrapState::Finished;
+                SetDeleteFlag(true);
             }
         }
         else
         {
-            if (mvPosition.y <= mTargetY)
+            mvPosition.y -= mTrapSpeed;
+            
+            if (mType == TrapType::AntiJump)
             {
-                mvPosition.y = mTargetY;
-                mState = TrapState::Finished;
+                // 針の最下端（中心 + 高さ半分）が画面上端（0）より上に出たら消滅
+                float screenBottomY = ConvertToScreenY(mvPosition.y + mfEnemyHeight * 0.5f, mpBlockMap);
+                if (screenBottomY < 0.0f)
+                {
+                    mState = TrapState::Finished;
+                    SetDeleteFlag(true);
+                }
+            }
+            else
+            {
+                if (mvPosition.y <= mTargetY)
+                {
+                    mvPosition.y = mTargetY;
+                    mState = TrapState::Finished;
+                }
             }
         }
     }
@@ -187,7 +220,7 @@ void BoulderNeedleTrap::Update()
 void BoulderNeedleTrap::EnemyMove(BlockMap& blockMap)
 {
     mpBlockMap = &blockMap;
-    if (mSpikeState == SpikeState::Finished) return;
+    if (IsDeleteFlag() || mSpikeState == SpikeState::Finished) return;
 
     Scene* currentScene = Master::mpGameManager->GetSceneManager()->GetCurrentScene();
     if (!currentScene) return;
@@ -280,15 +313,19 @@ void BoulderNeedleTrap::EnemyMove(BlockMap& blockMap)
             }
         }
 
-        if (mvPosition.y < -300.0f)
+        // 画面外判定：針の底面（mvPosition.y）が画面上端より上に出たとき消滅
+        float screenBaseY = ConvertToScreenY(mvPosition.y, mpBlockMap);
+        if (screenBaseY < 0.0f || mvPosition.y < -300.0f)
         {
             mSpikeState = SpikeState::Finished;
+            SetDeleteFlag(true);
         }
     }
 }
 
 void BoulderNeedleTrap::Draw()
 {
+    if (IsDeleteFlag()) return;
     if (mSpikeState != SpikeState::Hidden && mSpikeState != SpikeState::Finished && mSpikeHeight > 0.0f)
     {
         if (mGraphHandle != -1 && mpBlockMap != nullptr)

@@ -622,6 +622,12 @@ namespace GameLoadDataConstants
 	static constexpr float CavePitNeedleScale = 1.0f;
 	static constexpr int   CavePitNeedleCount = 10;
 
+	// 壊せる壁前の落下針（NeedleTrap: Falling、先ほど発射された針が落ちてくる設定）
+	static constexpr float CaveFallingNeedlePosX = 7780.0f;
+	static constexpr float CaveFallingNeedleInitialY = 1000.0f;
+	static constexpr float CaveFallingNeedleFloorY = 1903.0f;
+	static constexpr float CaveFallingNeedleTriggerDistX = 90.0f;
+
 	// --- デバッグ表示用座標 ---
 	static constexpr int DebugProgressTextX = 10;
 	static constexpr int DebugProgressTextY = 30;

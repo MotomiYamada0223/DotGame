@@ -215,6 +215,14 @@ void GameLoadData::StageCave()
 		);
 	}
 
+	// ボスエリア直前・壊せる壁の目の前で上から降ってくる針（先ほど発射された針が落ちてきた設定）
+	new NeedleTrap(
+		VGet(CaveFallingNeedlePosX, CaveFallingNeedleInitialY, 0.0f),
+		TrapType::Falling,
+		CharacterGraphPath::BloodNeedle,
+		1.0f
+	);
+
 }
 
 void GameLoadData::DebugUpdate()
