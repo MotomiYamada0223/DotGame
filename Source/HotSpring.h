@@ -1,17 +1,18 @@
-#pragma once
+ï»¿#pragma once
 #include "DxLib.h"
+#include "GameConstants.h"
 #include <vector>
 
 class BlockMap;
 class Player;
 
-// “´ŒAƒXƒe[ƒWiStage 1-2j‚Ì‰·òƒMƒ~ƒbƒN
-// ƒgƒƒbƒRƒGƒŠƒA‚ğ‰z‚¦‚½æ‚Ì‚­‚Ú‚İ‘S‘ÌiX: 6418`6755, Y: 1905`1994, c2ƒ}ƒXj‚É”z’u
-// 1. ”g‘Å‚Â…–ÊiƒŠƒAƒ‹ƒ^ƒCƒ€Sine”gƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“j
-// 2. “’‹Cƒp[ƒeƒBƒNƒ‹E‹C–A
-// 3. ƒvƒŒƒCƒ„[‚ª“ü‚é‚Æ1.5•bi90ƒtƒŒ[ƒ€j‚²‚Æ‚É”¼ƒn[ƒg‰ñ•œ
-// 4. ‚Ê‚ß‚è‚ª‹­‚·‚¬‚Ä1‰ñ‚ÌƒWƒƒƒ“ƒv‚Å‚Íã‚ª‚ê‚¸A‰º‚Éˆø‚«‚¸‚è‚Ü‚ê‚éB˜A‘Å‚Å’Eo‰Â”\I
-// 5. 4•bi240ƒtƒŒ[ƒ€jˆÈãZ‚©‚é‚Æ”M’†Ç‚Å‘¦€I
+// æ´çªŸã‚¹ãƒ†ãƒ¼ã‚¸ï¼ˆStage 1-2ï¼‰ã®æ¸©æ³‰ã‚®ãƒŸãƒƒã‚¯
+// ãƒˆãƒ­ãƒƒã‚³ã‚¨ãƒªã‚¢ã‚’è¶ŠãˆãŸå…ˆã®ãã¼ã¿å…¨ä½“ï¼ˆX: 6185ï½6508, Y: 1905ï½2006ï¼‰ã«é…ç½®
+// 1. æ³¢æ‰“ã¤æ°´é¢ï¼ˆãƒªã‚¢ãƒ«ã‚¿ã‚¤ãƒ Sineæ³¢ã‚·ãƒŸãƒ¥ãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³ï¼‰
+// 2. æ¹¯æ°—ãƒ‘ãƒ¼ãƒ†ã‚£ã‚¯ãƒ«ãƒ»æ°—æ³¡
+// 3. ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒå…¥ã‚‹ã¨1.5ç§’ï¼ˆ90ãƒ•ãƒ¬ãƒ¼ãƒ ï¼‰ã”ã¨ã«åŠãƒãƒ¼ãƒˆå›å¾©
+// 4. ã¬ã‚ã‚ŠãŒå¼·ã™ãã¦1å›ã®ã‚¸ãƒ£ãƒ³ãƒ—ã§ã¯ä¸ŠãŒã‚Œãšã€ä¸‹ã«å¼•ããšã‚Šè¾¼ã¾ã‚Œã‚‹ã€‚é€£æ‰“ã§è„±å‡ºå¯èƒ½ï¼
+// 5. 4ç§’ï¼ˆ240ãƒ•ãƒ¬ãƒ¼ãƒ ï¼‰ä»¥ä¸Šæµ¸ã‹ã‚‹ã¨ç†±ä¸­ç—‡ã§å³æ­»ï¼
 class HotSpring
 {
 public:
@@ -24,11 +25,11 @@ public:
 	void Draw(int scrollX, int scrollY);
 
 private:
-	// ‰·ò‚Ì”z’u”ÍˆÍi‚­‚Ú‚İ‘S‘ÌEŒ„ŠÔ‚È‚µj
-	const float mLeftX = 6185.0f;
-	const float mRightX = 6508.0f;
-	const float mBaseWaterY = 1905.0f; // c2ƒ}ƒX‚Ì[‚³i…–Êj
-	const float mFloorY = 1994.0f;     // ƒuƒƒbƒN•\–ÊiŠÑ’Ê–h~j
+	// æ¸©æ³‰ã®é…ç½®ç¯„å›²ï¼ˆåœ°å½¢ã®ãã¼ã¿ãƒ»åºŠé¢ã«éš™é–“ãªãåˆè‡´ï¼‰
+	const float mLeftX = HotSpringConstants::LeftX;
+	const float mRightX = HotSpringConstants::RightX;
+	const float mBaseWaterY = HotSpringConstants::BaseWaterY; // æ°´é¢é«˜ã•
+	const float mFloorY = HotSpringConstants::FloorY;         // åœ°é¢åº•é¢ï¼ˆåºŠä¸Šé¢ Y=2006ï¼‰
 
 	int mWaveTimer = 0;
 	int mHeatTimer = 0;
@@ -37,7 +38,7 @@ private:
 	float mPlayerX = 0.0f;
 	float mPlayerY = 0.0f;
 
-	// ƒp[ƒeƒBƒNƒ‹i“’‹CE‹C–AE‰ñ•œE•¦“«‰ŒEŠ¾E…‚µ‚Ô‚«j
+	// ãƒ‘ãƒ¼ãƒ†ã‚£ã‚¯ãƒ«ï¼ˆæ¹¯æ°—ãƒ»æ°—æ³¡ãƒ»å›å¾©ãƒ»æ²¸é¨°ç…™ãƒ»æ±—ãƒ»æ°´ã—ã¶ãï¼‰
 	struct Particle {
 		float x, y;
 		float vx, vy;
@@ -45,11 +46,11 @@ private:
 		int life;
 		int maxLife;
 		unsigned int color;
-		int type; // 0: “’‹C, 1: ‹C–A, 2: ‰ñ•œƒNƒƒX(+), 3: ‰ñ•œƒn[ƒg, 4: ƒLƒ‰ƒLƒ‰, 5: •¦“«ö‹C/‰Î, 6: …‚µ‚Ô‚«
+		int type; // 0: æ¹¯æ°—, 1: æ°—æ³¡, 2: å›å¾©ã‚¯ãƒ­ã‚¹(+), 3: å›å¾©ãƒãƒ¼ãƒˆ, 4: ã‚­ãƒ©ã‚­ãƒ©, 5: æ²¸é¨°è’¸æ°—/ç«, 6: æ°´ã—ã¶ã
 	};
 	std::vector<Particle> mParticles;
 
-	// •‚—VƒeƒLƒXƒgi+0.5 HP, ‚ ‚Â‚¢I, ”M’†ÇIj
+	// æµ®éŠãƒ†ã‚­ã‚¹ãƒˆï¼ˆ+0.5 HP, ã‚ã¤ã„ï¼, ç†±ä¸­ç—‡ï¼ï¼‰
 	struct FloatingText {
 		float x, y;
 		float vy;

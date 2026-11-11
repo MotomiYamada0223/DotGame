@@ -9,7 +9,8 @@ enum class TrapType {
     Normal,
     PopUp,
     AntiJump,
-    Falling
+    Falling,
+    ShakingDummy // カモフラージュ用ダミー震え針
 };
 
 enum class TrapState {
@@ -58,6 +59,10 @@ protected:
     float mTrapSpeed;
     float mScale;
     int mGraphHandle;
+
+    bool mbIsShaking = false;
+    int mShakeOffsetX = 0;
+    int mShakeOffsetY = 0;
 };
 
 // 洞窟ステージの転がり岩坂下くぼみ用巨大針トラップ

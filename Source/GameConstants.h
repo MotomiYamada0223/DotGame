@@ -82,6 +82,7 @@ namespace CharacterGraphPath
 	static const std::string Dragon = "Resource/Enemy/Dragon/enemy_dragon_move.png"; // dragon画像
 	static const std::string Needle = "Resource/Enemy/Trap/Needle.png"; // 針の罠画像
 	static const std::string BloodNeedle = "Resource/Image/BloodNeedle.png"; // 洞窟ステージの血糊針画像
+	static const std::string CaveRamp = "Resource/Image/Cave_Ramp.png"; // 洞窟ステージの三角台足場画像
 
 	// スライム画像
 	static const std::string Slime = "Resource/Enemy/Slime/slime_idle.png"; // スライム画像
@@ -539,6 +540,13 @@ namespace GameLoadDataConstants
 	static constexpr int StageIndexForest = 0;
 	static constexpr int StageIndexCave = 1;
 
+	// --- プレイヤー初期座標 ---
+	static constexpr float ForestPlayerSpawnX = 100.0f;
+	static constexpr float ForestPlayerSpawnY = 1485.0f;
+
+	static constexpr float CavePlayerSpawnX = 100.0f;
+	static constexpr float CavePlayerSpawnY = 979.0f;
+
 	// --- 始まりの森（StageForest）配置定数 ---
 	// フェイント床（FeintFloor）
 	static constexpr float ForestFeintFloorPosX = 4920.0f;
@@ -621,6 +629,10 @@ namespace GameLoadDataConstants
 	static constexpr float CavePitNeedleCenterY = 2052.0f;
 	static constexpr float CavePitNeedleScale = 1.0f;
 	static constexpr int   CavePitNeedleCount = 10;
+	static constexpr int   CavePitDummyNeedleIndex = 3;     // 左から4本目（0-basedで3）のダミー針
+	static constexpr float DummyNeedleDetectDistX = 600.0f; // プレイヤー接近感知距離
+	static constexpr int   DummyNeedleShakePowerX = 3;      // 左右の震え幅（±3px）
+	static constexpr int   DummyNeedleShakePowerY = 1;      // 上下の震え幅（±1px）
 
 	// 壊せる壁前の落下針（NeedleTrap: Falling、先ほど発射された針が落ちてくる設定）
 	static constexpr float CaveFallingNeedlePosX = 7780.0f;
@@ -633,4 +645,42 @@ namespace GameLoadDataConstants
 	static constexpr int DebugProgressTextY = 30;
 	static constexpr int DebugWarpTextX = 10;
 	static constexpr int DebugWarpTextY = 50;
+}
+
+// トロッコ（Minecart）関連定数
+namespace MinecartConstants
+{
+	// 三角台スプライトの位置・サイズ
+	static constexpr int RampSpriteX = 5359;
+	static constexpr int RampSpriteY = 1800;
+	static constexpr int RampSpriteWidth = 96;
+	static constexpr int RampSpriteHeight = 96;
+
+	// 三角台コリジョン範囲
+	static constexpr int RampStartX = 5359;
+	static constexpr int RampEndX = 5440;
+	static constexpr int RampTopY = 1800;
+	static constexpr int RampFloorY = 1896;
+	static constexpr int RampHeight = RampFloorY - RampTopY; // 96
+
+	// コリジョン消去範囲（左端の1px壁や余白を確実に巻き込むためX=5350から消去）
+	static constexpr int RampClearStartX = 5350;
+	static constexpr int RampClearWidth = RampEndX - RampClearStartX + 1; // 91
+
+	// 三角台破壊時のカメラシェイク
+	static constexpr float SmashShakePower = 7.0f;
+	static constexpr int SmashShakeFrames = 12;
+
+	// トロッコのリセット判定（プレイヤーが初期位置付近に戻った時）
+	static constexpr float PlayerRespawnThresholdX = 500.0f;
+}
+
+// 温泉（HotSpring）関連定数
+namespace HotSpringConstants
+{
+	// 洞窟ステージの温泉配置範囲（くぼみの地形に隙間なく合致する座標）
+	static constexpr float LeftX = 6185.0f;       // くぼみ左端（左壁 X=6185/6186）
+	static constexpr float RightX = 6508.0f;      // くぼみ右端（右壁 X=6508/6509）
+	static constexpr float BaseWaterY = 1905.0f;  // 水面基準高さ
+	static constexpr float FloorY = 2006.0f;      // くぼみ底面（マップ画像およびコリジョンの地面上面 Y=2006）
 }

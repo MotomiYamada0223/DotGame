@@ -1,4 +1,4 @@
-#include "Master.h"
+ï»¿#include "Master.h"
 #include "GameConstants.h"
 #include "Scene.h"
 #include "MovingFloor.h"
@@ -65,11 +65,11 @@ void GameLoadData::LoadUpdate()
 
 void GameLoadData::StageForest()
 {
-	// CSV‚Ìƒtƒ@ƒCƒ‹“Ç‚İ‚İ
-	// ƒ`ƒ…[ƒgƒŠƒAƒ‹ƒeƒLƒXƒg‚ÆƒuƒƒbƒNƒ}ƒbƒv‚Ìƒ^ƒCƒ‹
+	// CSVã®ãƒ•ã‚¡ã‚¤ãƒ«èª­ã¿è¾¼ã¿
+	// ãƒãƒ¥ãƒ¼ãƒˆãƒªã‚¢ãƒ«ãƒ†ã‚­ã‚¹ãƒˆã¨ãƒ–ãƒ­ãƒƒã‚¯ãƒãƒƒãƒ—ã®ã‚¿ã‚¤ãƒ«
 	mTutorialText.Initialize(CsvPath::TutorialText, CsvPath::TutorialDeathText);
 
-	// ”wŒi‰æ‘œ‚Æ“–‚½‚è”»’è‰æ‘œ“Ç‚İ‚İ
+	// èƒŒæ™¯ç”»åƒã¨å½“ãŸã‚Šåˆ¤å®šç”»åƒèª­ã¿è¾¼ã¿
 	if (!mBlockMap.Load(
 		BlockMapGraphPath::ForestMap,
 		BlockMapGraphPath::ForestMapCollision
@@ -81,25 +81,25 @@ void GameLoadData::StageForest()
 
 	using namespace GameLoadDataConstants;
 
-	// ƒtƒFƒCƒ“ƒg°‚Ì”z’u
+	// ãƒ•ã‚§ã‚¤ãƒ³ãƒˆåºŠã®é…ç½®
 	new FeintFloor(
 		VGet(ForestFeintFloorPosX, ForestFeintFloorPosY, 0.0f),
 		mpPlayer,
 		&mBlockMap
 	);
 
-	// •ö‚ê‚é°‚Ì”z’u
+	// å´©ã‚Œã‚‹åºŠã®é…ç½®
 	new CrumbleFloor(
 		VGet(ForestCrumbleFloorPosX, ForestCrumbleFloorPosY, 0.0f),
 		mpPlayer,
 		&mBlockMap
 	);
 
-	// ‰B‚µƒuƒƒbƒN‚Ì¶¬
+	// éš ã—ãƒ–ãƒ­ãƒƒã‚¯ã®ç”Ÿæˆ
 	new HiddenBlock(VGet(ForestHiddenBlockPosX, ForestHiddenBlockPosY, 0.0f), &mBlockMap);
 
 
-	// ‰º‚©‚çãEã‚©‚ç‰º‚ÖˆÚ“®‚·‚é°‚ÌƒXƒ|ƒi[”z’u
+	// ä¸‹ã‹ã‚‰ä¸Šãƒ»ä¸Šã‹ã‚‰ä¸‹ã¸ç§»å‹•ã™ã‚‹åºŠã®ã‚¹ãƒãƒŠãƒ¼é…ç½®
 	new FloorSpawner(
 		VGet(ForestSpawner1PosX, ForestSpawner1PosY, 0.0f),
 		VGet(0.0f, ForestSpawner1VelY, 0.0f),
@@ -133,16 +133,16 @@ void GameLoadData::StageForest()
 
 
 
-	// “G‚Ì¶¬
+	// æ•µã®ç”Ÿæˆ
 	if (mpPlayer != nullptr)
 	{
-		// ƒXƒ‰ƒCƒ€‚Ì”z’u
+		// ã‚¹ãƒ©ã‚¤ãƒ ã®é…ç½®
 		EnemySlime* slime = new EnemySlime(VGet(ForestSlime1PosX, ForestSlime1PosY, 0.0f));
 
 		EnemySlime* slime1 = new EnemySlime(VGet(ForestSlime2PosX, ForestSlime2PosY, 0.0f));
 		slime1->UpdateStatusByProgress(mProgress);
 
-		// ƒgƒ‰ƒbƒv‚Ì”z’u
+		// ãƒˆãƒ©ãƒƒãƒ—ã®é…ç½®
 		new NeedleTrap(VGet(ForestNeedle1PosX, ForestNeedle1PosY, 0.0f), TrapType::Normal);
 		new NeedleTrap(VGet(ForestNeedle2PosX, ForestNeedle2PosY, 0.0f), TrapType::AntiJump);
 		new NeedleTrap(VGet(ForestNeedle3PosX, ForestNeedle3PosY, 0.0f), TrapType::Normal);
@@ -157,19 +157,19 @@ void GameLoadData::StageForest()
 void GameLoadData::StageCave()
 {
 	using namespace GameLoadDataConstants;
-	// CSV‚Ìƒtƒ@ƒCƒ‹“Ç‚İ‚İ
-	// ƒ`ƒ…[ƒgƒŠƒAƒ‹ƒeƒLƒXƒg‚ÆƒuƒƒbƒNƒ}ƒbƒv‚Ìƒ^ƒCƒ‹
+	// CSVã®ãƒ•ã‚¡ã‚¤ãƒ«èª­ã¿è¾¼ã¿
+	// ãƒãƒ¥ãƒ¼ãƒˆãƒªã‚¢ãƒ«ãƒ†ã‚­ã‚¹ãƒˆã¨ãƒ–ãƒ­ãƒƒã‚¯ãƒãƒƒãƒ—ã®ã‚¿ã‚¤ãƒ«
 	mTutorialText.Initialize(CsvPath::TutorialCave, CsvPath::TutorialDeathText);
 
 	mRollingBoulder.Initialize();
 
-	// “]‚ª‚èŠâ‚Ìâ‰º‚­‚Ú‚İ‹‘åjƒgƒ‰ƒbƒvi‚¹‚èã‚ª‚èEã‹ó”­Ëj
+	// è»¢ãŒã‚Šå²©ã®å‚ä¸‹ãã¼ã¿å·¨å¤§é‡ãƒˆãƒ©ãƒƒãƒ—ï¼ˆã›ã‚Šä¸ŠãŒã‚Šãƒ»ä¸Šç©ºç™ºå°„ï¼‰
 	new BoulderNeedleTrap(
 		VGet(CaveBoulderSpikePosX, CaveBoulderSpikePosY, 0.0f),
 		&mRollingBoulder
 	);
 
-	// ”wŒi‰æ‘œ‚Æ“–‚½‚è”»’è‰æ‘œ“Ç‚İ‚İ
+	// èƒŒæ™¯ç”»åƒã¨å½“ãŸã‚Šåˆ¤å®šç”»åƒèª­ã¿è¾¼ã¿
 	if (!mBlockMap.Load(
 		BlockMapGraphPath::CaveMap,
 		BlockMapGraphPath::CaveMapCollision
@@ -180,7 +180,7 @@ void GameLoadData::StageCave()
 	mBackground.Load(ScrollGraphPath::StageCave);
 
 
-	// “G‚Ì¶¬
+	// æ•µã®ç”Ÿæˆ
 	if (mpPlayer != nullptr)
 	{
 		new EnemySkeleton(VGet(CaveSkeleton1PosX, CaveSkeleton1PosY, 0.0f));
@@ -189,7 +189,7 @@ void GameLoadData::StageCave()
 
 	mCart.Initialize();
 
-	// ¶‰E‚É‰•œ‚·‚é“´ŒA‘«ê
+	// å·¦å³ã«å¾€å¾©ã™ã‚‹æ´çªŸè¶³å ´
 	new MovingFloor(
 		VGet(CaveMovingFloorStartX, CaveMovingFloorPosY, 0.0f),
 		VGet(CaveMovingFloorEndX, CaveMovingFloorPosY, 0.0f),
@@ -202,11 +202,20 @@ void GameLoadData::StageCave()
 		CaveMovingFloorScale
 	);
 
-	// “®‚­‘«ê‚Ì‰º‚Ì‰š‚İ‚ÉŒŒŒĞj‚ğ•~‚«‹l‚ß‚éiˆê”Ô¶‚ÍAntiJumpA‚»‚êˆÈŠO‚ÍNormalj
+	// å‹•ãè¶³å ´ã®ä¸‹ã®å‡¹ã¿ã«è¡€ç³Šé‡ã‚’æ•·ãè©°ã‚ã‚‹ï¼ˆä¸€ç•ªå·¦ã¯AntiJumpã€å·¦ã‹ã‚‰4æœ¬ç›®ã¯ãƒ€ãƒŸãƒ¼éœ‡ãˆé‡ã€ãã‚Œä»¥å¤–ã¯Normalï¼‰
 	for (int i = 0; i < CavePitNeedleCount; ++i)
 	{
 		float needleCenterX = CavePitStartX + (i + 0.5f) * CavePitNeedleWidth;
-		TrapType trapType = (i == 0) ? TrapType::AntiJump : TrapType::Normal;
+		TrapType trapType = TrapType::Normal;
+		if (i == 0)
+		{
+			trapType = TrapType::AntiJump;
+		}
+		else if (i == CavePitDummyNeedleIndex)
+		{
+			trapType = TrapType::ShakingDummy;
+		}
+
 		new NeedleTrap(
 			VGet(needleCenterX, CavePitNeedleCenterY, 0.0f),
 			trapType,
@@ -215,7 +224,7 @@ void GameLoadData::StageCave()
 		);
 	}
 
-	// ƒ{ƒXƒGƒŠƒA’¼‘OE‰ó‚¹‚é•Ç‚Ì–Ú‚Ì‘O‚Åã‚©‚ç~‚Á‚Ä‚­‚éjiæ‚Ù‚Ç”­Ë‚³‚ê‚½j‚ª—‚¿‚Ä‚«‚½İ’èj
+	// ãƒœã‚¹ã‚¨ãƒªã‚¢ç›´å‰ãƒ»å£Šã›ã‚‹å£ã®ç›®ã®å‰ã§ä¸Šã‹ã‚‰é™ã£ã¦ãã‚‹é‡ï¼ˆå…ˆã»ã©ç™ºå°„ã•ã‚ŒãŸé‡ãŒè½ã¡ã¦ããŸè¨­å®šï¼‰
 	new NeedleTrap(
 		VGet(CaveFallingNeedlePosX, CaveFallingNeedleInitialY, 0.0f),
 		TrapType::Falling,
@@ -227,18 +236,18 @@ void GameLoadData::StageCave()
 
 void GameLoadData::DebugUpdate()
 {
-	// PƒL[‚Åis“xØ‚è‘Ö‚¦ (ƒfƒoƒbƒO—p)
+	// Pã‚­ãƒ¼ã§é€²è¡Œåº¦åˆ‡ã‚Šæ›¿ãˆ (ãƒ‡ãƒãƒƒã‚°ç”¨)
 	static bool pKeyWasDown = false;
 	bool pKeyIsDown = (CheckHitKey(KEY_INPUT_P) == 1);
 	if (pKeyIsDown && !pKeyWasDown)
 	{
 		if (mProgress == GameProgress::Tutorial1)
 		{
-			mProgress = GameProgress::Tutorial2; // è‰ÁŒ¸ON (–³“G)
+			mProgress = GameProgress::Tutorial2; // æ‰‹åŠ æ¸›ON (ç„¡æ•µ)
 		}
 		else
 		{
-			mProgress = GameProgress::Tutorial1; // è‰ÁŒ¸OFF (‘¦€)
+			mProgress = GameProgress::Tutorial1; // æ‰‹åŠ æ¸›OFF (å³æ­»)
 		}
 
 		if (mpPlayer) mpPlayer->UpdateStatusByProgress(mProgress);
@@ -266,7 +275,7 @@ void GameLoadData::DebugUpdate()
 
 void GameLoadData::DebugDraw()
 {
-	// ƒfƒoƒbƒO•\¦FŒ»İ‚Ìis“x
+	// ãƒ‡ãƒãƒƒã‚°è¡¨ç¤ºï¼šç¾åœ¨ã®é€²è¡Œåº¦
 	const char* progStr = (mProgress == GameProgress::Tutorial1) ? "Tutorial1 (Death)" : "Tutorial2 (Immune)";
 	DrawFormatString(GameLoadDataConstants::DebugProgressTextX, GameLoadDataConstants::DebugProgressTextY, GetColor(0, 255, 0), "Progress: %s  [Press P to toggle]", progStr);
 	DrawFormatString(GameLoadDataConstants::DebugWarpTextX, GameLoadDataConstants::DebugWarpTextY, GetColor(0, 255, 0), "[1]: Warp to Boss Area (7200, 700)");

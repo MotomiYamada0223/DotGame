@@ -1,4 +1,4 @@
-#include "Minecart.h"
+ï»¿#include "Minecart.h"
 #include "BlockMap.h"
 #include "Player.h"
 #include "GameConstants.h"
@@ -17,24 +17,33 @@ Minecart::~Minecart()
 		DeleteGraph(mGraphHandle);
 		mGraphHandle = -1;
 	}
+	if (mRampGraphHandle != -1)
+	{
+		DeleteGraph(mRampGraphHandle);
+		mRampGraphHandle = -1;
+	}
 }
 
-// ‰Šú‰»
+// åˆæœŸåŒ–
 void Minecart::Initialize()
 {
 	if (mGraphHandle == -1)
 	{
 		mGraphHandle = LoadGraph("Resource/Image/Cave_Minecart.png");
 	}
+	if (mRampGraphHandle == -1)
+	{
+		mRampGraphHandle = LoadGraph(CharacterGraphPath::CaveRamp.c_str());
+	}
 	Reset();
 }
 
-// ƒŠƒZƒbƒgi‰ŠúˆÊ’uE‘Ò‹@ó‘Ô‚Öj
+// ãƒªã‚»ãƒƒãƒˆï¼ˆåˆæœŸä½ç½®ãƒ»å¾…æ©ŸçŠ¶æ…‹ã¸ï¼‰
 void Minecart::Reset()
 {
 	mState = State::Waiting;
-	mX = 5840.0f; // ƒvƒŒƒCƒ„[‰ŠúˆÊ’u•t‹ß‚ÌXÀ•W
-	mY = 1871.0f; // ƒŒ[ƒ‹ã‚ÌYÀ•W
+	mX = 5840.0f; // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼åˆæœŸä½ç½®ä»˜è¿‘ã®Xåº§æ¨™
+	mY = 1871.0f; // ãƒ¬ãƒ¼ãƒ«ä¸Šã®Yåº§æ¨™
 	mVx = 0.0f;
 	mVy = 0.0f;
 	mAngle = 0.0f;
@@ -45,7 +54,29 @@ void Minecart::Reset()
 	mParticles.clear();
 }
 
-// ƒŒ[ƒ‹‘–s‚Ì‰Î‰Ôƒp[ƒeƒBƒNƒ‹
+// ä¸‰è§’å°ã®å½“ãŸã‚Šåˆ¤å®šï¼ˆã‚³ãƒªã‚¸ãƒ§ãƒ³ï¼‰ã‚’æ¶ˆå»ã—ã¦ç ´å£Š
+void Minecart::SmashTriangleCollision(BlockMap& blockMap)
+{
+	using namespace MinecartConstants;
+	// X=5350ã‹ã‚‰X=5440ã¾ã§ã€Y=1800ã€œ1895ã®ç©ºé–“ã‚’ã™ã¹ã¦ç¢ºå®Ÿã«æ¶ˆå»ã—ã¦é€šã‚ŠæŠœã‘å¯èƒ½ã«ã™ã‚‹
+	blockMap.SetCollisionBlock(RampClearStartX, RampTopY, RampClearWidth, RampHeight, BlockMap::CollisionType::None);
+}
+
+// ä¸‰è§’å°ã®å½“ãŸã‚Šåˆ¤å®šï¼ˆã‚³ãƒªã‚¸ãƒ§ãƒ³ï¼‰ã‚’å¾©å…ƒ
+void Minecart::RestoreTriangleCollision(BlockMap& blockMap)
+{
+	using namespace MinecartConstants;
+	for (int x = RampStartX; x <= RampEndX; ++x)
+	{
+		int topY = RampTopY + static_cast<int>((x - RampStartX) * 1.2f);
+		for (int y = topY; y < RampFloorY; ++y)
+		{
+			blockMap.SetCollisionBlock(x, y, 1, 1, BlockMap::CollisionType::Block);
+		}
+	}
+}
+
+// ãƒ¬ãƒ¼ãƒ«èµ°è¡Œæ™‚ã®ç«èŠ±ãƒ‘ãƒ¼ãƒ†ã‚£ã‚¯ãƒ«
 void Minecart::SpawnWheelSparks(float x, float y, bool facingLeft)
 {
 	CartParticle p;
@@ -60,7 +91,7 @@ void Minecart::SpawnWheelSparks(float x, float y, bool facingLeft)
 	mParticles.push_back(p);
 }
 
-// ƒu[ƒXƒg‚ÌƒƒPƒbƒgEƒWƒFƒbƒg•¬Ë‰Š
+// ãƒ–ãƒ¼ã‚¹ãƒˆæ™‚ã®ãƒ­ã‚±ãƒƒãƒˆãƒ»ã‚¸ã‚§ãƒƒãƒˆå™´å°„ç‚
 void Minecart::SpawnBoostFlames(float x, float y, bool facingLeft)
 {
 	for (int i = 0; i < 3; i++)
@@ -68,7 +99,7 @@ void Minecart::SpawnBoostFlames(float x, float y, bool facingLeft)
 		CartParticle p;
 		p.x = x + (GetRand(8) - 4);
 		p.y = y + (GetRand(16) - 8);
-		// is•ûŒü‚Æ‹tŒü‚«‚É•¬o
+		// é€²è¡Œæ–¹å‘ã¨é€†å‘ãã«å™´å‡º
 		p.vx = facingLeft ? ((float)GetRand(40) / 10.0f + 6.0f) : -((float)GetRand(40) / 10.0f + 6.0f);
 		p.vy = ((float)GetRand(20) - 10) / 10.0f;
 		p.size = GetRand(8) + 4;
@@ -82,7 +113,7 @@ void Minecart::SpawnBoostFlames(float x, float y, bool facingLeft)
 	}
 }
 
-// OŠp‘ä”j‰ó‚Ì”ò‚ÑU‚éŠâ•ĞE‰Œƒp[ƒeƒBƒNƒ‹
+// ä¸‰è§’å°ç ´å£Šæ™‚ã®é£›ã³æ•£ã‚‹å²©ç‰‡ãƒ»ç…™ãƒ‘ãƒ¼ãƒ†ã‚£ã‚¯ãƒ«
 void Minecart::SpawnRockDebris(float x, float y, int count)
 {
 	for (int i = 0; i < count; i++)
@@ -101,16 +132,24 @@ void Minecart::SpawnRockDebris(float x, float y, int count)
 	}
 }
 
-// –ˆƒtƒŒ[ƒ€XVˆ—
+// æ¯ãƒ•ãƒ¬ãƒ¼ãƒ æ›´æ–°å‡¦ç†
 void Minecart::Update(BlockMap& blockMap, Player* player)
 {
 	if (Master::gCurrentStageIndex != 1)
 	{
 		return;
 	}
+
+	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒæ­»äº¡ã—ã¦åˆæœŸä½ç½®ã«æˆ»ã£ãŸæ™‚ã®è‡ªå‹•ãƒªã‚»ãƒƒãƒˆï¼†ä¸‰è§’å°å¾©å…ƒ
+	if (player && player->GetPosition().x <= MinecartConstants::PlayerRespawnThresholdX && mState != State::Waiting)
+	{
+		Reset();
+		RestoreTriangleCollision(blockMap);
+	}
+
 	if (!mbActive || mState == State::Finished) return;
 
-	// ƒp[ƒeƒBƒNƒ‹‚ÌXV
+	// ãƒ‘ãƒ¼ãƒ†ã‚£ã‚¯ãƒ«ã®æ›´æ–°
 	for (auto it = mParticles.begin(); it != mParticles.end(); )
 	{
 		it->x += it->vx;
@@ -124,13 +163,13 @@ void Minecart::Update(BlockMap& blockMap, Player* player)
 	switch (mState)
 	{
 	case State::Waiting:
-		// ƒvƒŒƒCƒ„[‚ªü˜Hè‘OiX >= 5380j‚Ü‚Åi‚ñ‚¾‚çƒgƒƒbƒR”­iI
+		// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒç·šè·¯æ‰‹å‰ï¼ˆX >= 5180ï¼‰ã¾ã§é€²ã‚“ã ã‚‰ãƒˆãƒ­ãƒƒã‚³ç™ºé€²ï¼
 		if (player && !player->GetIsDead())
 		{
 			if (player->GetPosition().x >= 5180.0f)
 			{
 				mState = State::RollingLeft;
-				mVx = -2.5f; // ‚ä‚Á‚­‚èü˜H‚ÖŒü‚©‚¤
+				mVx = -2.5f; // ã‚†ã£ãã‚Šç·šè·¯ã¸å‘ã‹ã†
 				SpawnWheelSparks(mX - 18.0f, mY + 20.0f, true);
 				SpawnWheelSparks(mX + 18.0f, mY + 20.0f, true);
 			}
@@ -141,17 +180,17 @@ void Minecart::Update(BlockMap& blockMap, Player* player)
 		mX += mVx;
 		mBobTimer++;
 
-		// ‘–s‚ÌƒKƒ^ƒSƒg‰Î‰Ô
+		// èµ°è¡Œæ™‚ã®ã‚¬ã‚¿ã‚´ãƒˆç«èŠ±
 		if (GetRand(3) == 0)
 		{
 			SpawnWheelSparks(mX + 18.0f, mY + 20.0f, true);
 		}
 
-		// ƒŒ[ƒ‹‚ÌÔF•”•ªiX=5719`5746j‚ÉÚG‚µ‚½uŠÔA’´‰Á‘¬”­“®I
+		// ãƒ¬ãƒ¼ãƒ«ã®èµ¤è‰²éƒ¨åˆ†ï¼ˆX=5719ï½5746ï¼‰ã«æ¥è§¦ã—ãŸç¬é–“ã€è¶…åŠ é€Ÿç™ºå‹•ï¼
 		if (mX <= 5530.0f)
 		{
 			mState = State::SuperBoostLeft;
-			mVx = -26.0f; // –ÒƒXƒs[ƒhI
+			mVx = -26.0f; // çŒ›ã‚¹ãƒ”ãƒ¼ãƒ‰ï¼
 			SpawnBoostFlames(mX + 35.0f, mY, true);
 		}
 		break;
@@ -159,20 +198,29 @@ void Minecart::Update(BlockMap& blockMap, Player* player)
 	case State::SuperBoostLeft:
 		mX += mVx;
 
-		// Œã•ûi‰E‘¤j‚©‚çƒƒPƒbƒg•¬Ë
+		// å¾Œæ–¹ï¼ˆå³å´ï¼‰ã‹ã‚‰ãƒ­ã‚±ãƒƒãƒˆå™´å°„
 		SpawnBoostFlames(mX + 35.0f, mY, true);
 
-		// OŠp‘äiX=5570`5630j‚É“’B‚µ‚½‚çA‹‰õ‚É‚Ô‚¿‰ó‚µ‚Ä•²ÓI
+		// ä¸‰è§’å°ï¼ˆX=5359ï½5440ï¼‰ã«åˆ°é”ã—ãŸã‚‰ã€è±ªå¿«ã«ã¶ã¡å£Šã—ã¦ç²‰ç •ï¼
 		if (mX <= 5440.0f && !mbSmashedTriangle)
 		{
 			mbSmashedTriangle = true;
-			SpawnRockDebris(5400.0f, 1850.0f, 55);
+			SmashTriangleCollision(blockMap);
+			SpawnRockDebris(5400.0f, 1850.0f, 60);
+			blockMap.StartCameraShake(MinecartConstants::SmashShakePower, 1.0f, 1.0f, MinecartConstants::SmashShakeFrames);
 		}
 
-		// …•½‚“xiY=1871j‚ğˆÛ‚µ‚½‚Ü‚ÜƒƒPƒbƒg’¼ii—‰º‚µ‚È‚¢j
+		// ä¸‰è§’å°é€šéä¸­ï¼ˆX=5440ï½5330ï¼‰ã‚‚ç ´å£Šã®åœŸç…™ãƒ»å²©ç‰‡ãƒ»ç«èŠ±ã‚’é€£ç¶šç™ºç”Ÿ
+		if (mX <= 5440.0f && mX >= 5330.0f)
+		{
+			SpawnRockDebris(mX, 1860.0f, 4);
+			SpawnWheelSparks(mX, 1871.0f, true);
+		}
+
+		// æ°´å¹³é«˜åº¦ï¼ˆY=1871ï¼‰ã‚’ç¶­æŒã—ãŸã¾ã¾ãƒ­ã‚±ãƒƒãƒˆç›´é€²ï¼ˆè½ä¸‹ã—ãªã„ï¼‰
 		mY = 1871.0f;
 
-		// ƒvƒŒƒCƒ„[‘¦€”»’è
+		// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼å³æ­»åˆ¤å®š
 		if (player && !player->GetIsDead())
 		{
 			VECTOR pPos = player->GetPosition();
@@ -194,7 +242,7 @@ void Minecart::Update(BlockMap& blockMap, Player* player)
 			}
 		}
 
-		// ‰æ–Ê¶ŠOiX < 4400j‚Ö“Ë‚«”²‚¯‚½‚çA‰æ–ÊŠOö•š‚ÖˆÚsI
+		// ç”»é¢å·¦å¤–ï¼ˆX < 4400ï¼‰ã¸çªãæŠœã‘ãŸã‚‰ã€ç”»é¢å¤–æ½œä¼ã¸ç§»è¡Œï¼
 		if (mX < 4400.0f)
 		{
 			mState = State::LurkingLeft;
@@ -203,16 +251,16 @@ void Minecart::Update(BlockMap& blockMap, Player* player)
 		break;
 
 	case State::LurkingLeft:
-		// ƒvƒŒƒCƒ„[‚ªƒgƒƒbƒR‰ŠúˆÊ’uiX >= 6000j•t‹ß‚Ü‚Å—ˆ‚½‚çA”wŒã‚©‚ç–ÒƒXƒs[ƒh‚Å–ß‚Á‚Ä‚­‚éI
+		// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒãƒˆãƒ­ãƒƒã‚³åˆæœŸä½ç½®ï¼ˆX >= 6000ï¼‰ä»˜è¿‘ã¾ã§æ¥ãŸã‚‰ã€èƒŒå¾Œã‹ã‚‰çŒ›ã‚¹ãƒ”ãƒ¼ãƒ‰ã§æˆ»ã£ã¦ãã‚‹ï¼
 		if (player && !player->GetIsDead())
 		{
 			if (player->GetPosition().x >= 5780.0f)
 			{
 				mState = State::ReturningRight;
-				// ƒvƒŒƒCƒ„[‚Ì‰æ–ÊŠO¶i–ñ950pxè‘Oj‚©‚ç’´ƒXƒs[ƒh‚Å“Ë“ü
+				// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ç”»é¢å¤–å·¦ï¼ˆç´„950pxæ‰‹å‰ï¼‰ã‹ã‚‰è¶…ã‚¹ãƒ”ãƒ¼ãƒ‰ã§çªå…¥
 				mX = player->GetPosition().x - 950.0f;
 				mY = 1871.0f;
-				mVx = 26.0f; // ’´ƒXƒs[ƒh‚Å‰E‚Ö’¼i“ËiI
+				mVx = 26.0f; // è¶…ã‚¹ãƒ”ãƒ¼ãƒ‰ã§å³ã¸ç›´é€²çªé€²ï¼
 				mVy = 0.0f;
 				mAngle = 0.0f;
 				mbHasJumped = false;
@@ -224,19 +272,19 @@ void Minecart::Update(BlockMap& blockMap, Player* player)
 	case State::ReturningRight:
 		mX += mVx;
 
-		// ƒ†[ƒU[—v–]F
-		// u–ß‚Á‚Ä‚­‚éƒgƒƒbƒR‚Í’¼ü‚¶‚á‚È‚­‚ÄƒvƒŒƒCƒ„[‚ª‹ß‚­‚ÌXÀ•W‚Ü‚Å—ˆ‚½ƒWƒƒƒ“ƒv‚µ‚Ä‚Ù‚µ‚¢B
-		//   ‚±‚ê‚Å‚»‚Ì‚Ü‚Ü•à‚¢‚Ä‚¢‚ê‚ÎŸè‚É”ğ‚¯‚ç‚ê‚é‚Ì‚Éƒrƒr‚Á‚ÄƒWƒƒƒ“ƒv‚µ‚½‚çƒgƒƒbƒR‚àƒWƒƒƒ“ƒv‚µ‚Ä‚«‚Ä€‚Ê‚Á‚Ä‚¢‚¤‚±‚Æ‚ª‚Å‚«‚éBv
+		// ãƒ¦ãƒ¼ã‚¶ãƒ¼è¦æœ›ï¼š
+		// ã€Œæˆ»ã£ã¦ãã‚‹ãƒˆãƒ­ãƒƒã‚³ã¯ç›´ç·šã˜ã‚ƒãªãã¦ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒè¿‘ãã®Xåº§æ¨™ã¾ã§æ¥ãŸæ™‚ã‚¸ãƒ£ãƒ³ãƒ—ã—ã¦ã»ã—ã„ã€‚
+		//   ã“ã‚Œã§ãã®ã¾ã¾æ­©ã„ã¦ã„ã‚Œã°å‹æ‰‹ã«é¿ã‘ã‚‰ã‚Œã‚‹ã®ã«ãƒ“ãƒ“ã£ã¦ã‚¸ãƒ£ãƒ³ãƒ—ã—ãŸã‚‰ãƒˆãƒ­ãƒƒã‚³ã‚‚ã‚¸ãƒ£ãƒ³ãƒ—ã—ã¦ãã¦æ­»ã¬ã£ã¦ã„ã†ã“ã¨ãŒã§ãã‚‹ã€‚ã€
 		if (player && !player->GetIsDead())
 		{
 			VECTOR pPos = player->GetPosition();
 
-			// ƒgƒƒbƒR‚ª”wŒã–ñ230px‚É”—‚Á‚½A‘åƒWƒƒƒ“ƒv”­“®I
+			// ãƒˆãƒ­ãƒƒã‚³ãŒèƒŒå¾Œç´„230pxã«è¿«ã£ãŸæ™‚ã€å¤§ã‚¸ãƒ£ãƒ³ãƒ—ç™ºå‹•ï¼
 			if (!mbHasJumped && mX >= pPos.x - 230.0f)
 			{
 				mbHasJumped = true;
-				mVy = -19.0f; // ‹ó’†‚Ö’µ‚Ëã‚ª‚é‰‘¬
-				mAngle = -0.22f; // ‚â‚âãŒü‚«‚É‹@ñã‚°
+				mVy = -19.0f; // ç©ºä¸­ã¸è·³ã­ä¸ŠãŒã‚‹åˆé€Ÿ
+				mAngle = -0.22f; // ã‚„ã‚„ä¸Šå‘ãã«æ©Ÿé¦–ä¸Šã’
 				SpawnWheelSparks(mX - 10.0f, mY + 20.0f, false);
 				SpawnWheelSparks(mX + 10.0f, mY + 20.0f, false);
 			}
@@ -245,15 +293,15 @@ void Minecart::Update(BlockMap& blockMap, Player* player)
 		if (mbHasJumped)
 		{
 			mY += mVy;
-			mVy += 0.8f; // d—Í‰Á‘¬“x
+			mVy += 0.8f; // é‡åŠ›åŠ é€Ÿåº¦
 
-			// ‹ó’†‚Å‚Ì‹@ñŠp“x‚Ì©‘R‚È•Ï‰»iã¸’†‚ÍãŒü‚«A‰º~’†‚Í‰ºŒü‚«j
+			// ç©ºä¸­ã§ã®æ©Ÿé¦–è§’åº¦ã®è‡ªç„¶ãªå¤‰åŒ–ï¼ˆä¸Šæ˜‡ä¸­ã¯ä¸Šå‘ãã€ä¸‹é™ä¸­ã¯ä¸‹å‘ãï¼‰
 			mAngle = mVy * 0.018f;
 
-			// ‹ó’†‚Å‚àŒã•û‚©‚çƒu[ƒXƒg‰Š
+			// ç©ºä¸­ã§ã‚‚å¾Œæ–¹ã‹ã‚‰ãƒ–ãƒ¼ã‚¹ãƒˆç‚
 			SpawnBoostFlames(mX - 35.0f, mY, false);
 
-			// ’…’n”»’èiŒ³‚ÌƒŒ[ƒ‹‚‚³‚É–ß‚Á‚½j
+			// ç€åœ°åˆ¤å®šï¼ˆå…ƒã®ãƒ¬ãƒ¼ãƒ«é«˜ã•ã«æˆ»ã£ãŸæ™‚ï¼‰
 			if (mY >= 1871.0f)
 			{
 				mY = 1871.0f;
@@ -270,9 +318,9 @@ void Minecart::Update(BlockMap& blockMap, Player* player)
 			SpawnBoostFlames(mX - 35.0f, mY, false);
 		}
 
-		// “–‚½‚è”»’èF
-		// ‚»‚Ì‚Ü‚Ü•à‚¢‚Ä‚¢‚ê‚Î“ªã‚ğ”ò‚Ñ‰z‚¦‚é‚½‚ßâ‘Î‚É“–‚½‚ç‚È‚¢
-		// ƒrƒr‚Á‚ÄƒWƒƒƒ“ƒv‚µ‚½ê‡‚ÍA‹ó’†‚ÌƒgƒƒbƒR‚É’¼Œ‚‚µ‚Ä‘¦€I
+		// å½“ãŸã‚Šåˆ¤å®šï¼š
+		// ãã®ã¾ã¾æ­©ã„ã¦ã„ã‚Œã°é ­ä¸Šã‚’é£›ã³è¶Šãˆã‚‹ãŸã‚çµ¶å¯¾ã«å½“ãŸã‚‰ãªã„
+		// ãƒ“ãƒ“ã£ã¦ã‚¸ãƒ£ãƒ³ãƒ—ã—ãŸå ´åˆã¯ã€ç©ºä¸­ã®ãƒˆãƒ­ãƒƒã‚³ã«ç›´æ’ƒã—ã¦å³æ­»ï¼
 		if (player && !player->GetIsDead())
 		{
 			VECTOR pPos = player->GetPosition();
@@ -294,12 +342,12 @@ void Minecart::Update(BlockMap& blockMap, Player* player)
 			{
 				if (yOverlap)
 				{
-					// ‹ó’†‚ÌƒgƒƒbƒR–{‘Ì‚ÆƒvƒŒƒCƒ„[‚ª’¼ÚÚG
+					// ç©ºä¸­ã®ãƒˆãƒ­ãƒƒã‚³æœ¬ä½“ã¨ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒç›´æ¥æ¥è§¦
 					hit = true;
 				}
 				else if (mbHasJumped && (!player->GetIsGrounded() || player->GetIsJumping()))
 				{
-					// ’nã‚É‚¢‚È‚¢iƒWƒƒƒ“ƒv‚µ‚½jê‡A‹ó’†‚ÌƒgƒƒbƒR‚ÉŠª‚«‚Ü‚ê‚Ä‘¦€I
+					// åœ°ä¸Šã«ã„ãªã„ï¼ˆã‚¸ãƒ£ãƒ³ãƒ—ã—ãŸï¼‰å ´åˆã€ç©ºä¸­ã®ãƒˆãƒ­ãƒƒã‚³ã«å·»ãè¾¼ã¾ã‚Œã¦å³æ­»ï¼
 					hit = true;
 				}
 			}
@@ -312,7 +360,7 @@ void Minecart::Update(BlockMap& blockMap, Player* player)
 			}
 		}
 
-		// ‰æ–Ê‰EŠOiX > 7600j‚Ö“Ë‚«”²‚¯‚½‚çI—¹
+		// ç”»é¢å³å¤–ï¼ˆX > 7600ï¼‰ã¸çªãæŠœã‘ãŸã‚‰çµ‚äº†
 		if (mX > 7600.0f)
 		{
 			mState = State::Finished;
@@ -324,7 +372,7 @@ void Minecart::Update(BlockMap& blockMap, Player* player)
 	}
 }
 
-// •`‰æˆ—
+// æç”»å‡¦ç†
 void Minecart::Draw(int scrollX, int scrollY)
 {
 	if (Master::gCurrentStageIndex != 1)
@@ -332,23 +380,40 @@ void Minecart::Draw(int scrollX, int scrollY)
 		return;
 	}
 
-	if (mbSmashedTriangle)
-	{
-		int tx = 5350 - scrollX;
-		int ty = 1800 - scrollY;
-		int tw = 100;
-		int th = 105;
+	using namespace MinecartConstants;
 
-		// ’n–Ê‚Éc‚Á‚½Ó‚¯U‚Á‚½Š¢âI‚ğ•`‰æ
-		DrawBox(tx + 5, ty + th - 12, tx + tw - 5, ty + th, GetColor(80, 75, 70), TRUE);
-		DrawBox(tx + 15, ty + th - 8, tx + tw - 20, ty + th, GetColor(110, 105, 95), TRUE);
-		DrawLine(tx + 10, ty + th - 6, tx + 35, ty + th - 2, GetColor(40, 35, 30));
-		DrawLine(tx + 45, ty + th - 8, tx + 70, ty + th - 3, GetColor(40, 35, 30));
+	// ä¸‰è§’å°ãŒã¾ã ç ´å£Šã•ã‚Œã¦ã„ãªã„å ´åˆã¯ã€ä¸‰è§’å°ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã‚’æç”»
+	if (!mbSmashedTriangle)
+	{
+		if (mRampGraphHandle != -1)
+		{
+			int rx = RampSpriteX - scrollX;
+			int ry = RampSpriteY - scrollY;
+			DrawGraph(rx, ry, mRampGraphHandle, TRUE);
+		}
+	}
+	else
+	{
+		// ä¸‰è§’å°ãŒç ´å£Šã•ã‚ŒãŸå ´åˆã¯ã€åœ°é¢ã«ç •ã‘æ•£ã£ãŸç“¦ç¤«ã‚’æç”»
+		// ï¼ˆCaveMap.png å´ã®ä¸‰è§’å°ã¯é€æ˜åŒ–ã•ã‚Œã¦ã„ã‚‹ãŸã‚ã€èƒŒå¾Œã®æ´çªŸèƒŒæ™¯ãŒè‡ªç„¶ã«è¦‹ãˆã€
+		//   ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ä¸Šã«èƒŒæ™¯ãŒè¦†ã„è¢«ã•ã‚‹ã“ã¨ã¯ä¸€åˆ‡ã‚ã‚Šã¾ã›ã‚“ï¼‰
+		int tx = RampClearStartX - scrollX;
+		int ty = RampTopY - scrollY;
+		int tw = 100;
+		int th = RampHeight;
+		int groundY = ty + th;
+
+		DrawBox(tx + 14, groundY - 12, tx + tw - 5, groundY, GetColor(80, 75, 70), TRUE);
+		DrawBox(tx + 24, groundY - 8, tx + tw - 20, groundY, GetColor(110, 105, 95), TRUE);
+		DrawBox(tx + 34, groundY - 15, tx + 54, groundY - 2, GetColor(90, 85, 80), TRUE);
+		DrawBox(tx + 69, groundY - 10, tx + 89, groundY - 1, GetColor(100, 95, 85), TRUE);
+		DrawLine(tx + 19, groundY - 6, tx + 44, groundY - 2, GetColor(40, 35, 30));
+		DrawLine(tx + 54, groundY - 8, tx + 79, groundY - 3, GetColor(40, 35, 30));
 	}
 
 	if (!mbActive || mState == State::Finished || mState == State::LurkingLeft) return;
 
-	// ƒp[ƒeƒBƒNƒ‹‚Ì•`‰æ
+	// ãƒ‘ãƒ¼ãƒ†ã‚£ã‚¯ãƒ«ã®æç”»
 	for (const auto& p : mParticles)
 	{
 		int px = static_cast<int>(p.x) - scrollX;
@@ -359,7 +424,7 @@ void Minecart::Draw(int scrollX, int scrollY)
 	int sx = static_cast<int>(mX) - scrollX;
 	int sy = static_cast<int>(mY) - scrollY;
 
-	// ‘–s’†‚ÌƒKƒ^ƒSƒgU“®
+	// èµ°è¡Œä¸­ã®ã‚¬ã‚¿ã‚´ãƒˆæŒ¯å‹•
 	if (mState == State::RollingLeft)
 	{
 		if ((mBobTimer / 5) % 2 == 1)
@@ -368,8 +433,7 @@ void Minecart::Draw(int scrollX, int scrollY)
 		}
 	}
 
-
-	// ’´‰Á‘¬‚Ìc‘œƒGƒtƒFƒNƒgiƒXƒs[ƒhŠ´‚ğ‰‰oj
+	// è¶…åŠ é€Ÿæ™‚ã®æ®‹åƒã‚¨ãƒ•ã‚§ã‚¯ãƒˆï¼ˆã‚¹ãƒ”ãƒ¼ãƒ‰æ„Ÿã‚’æ¼”å‡ºï¼‰
 	if (mState == State::SuperBoostLeft)
 	{
 		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 100);
@@ -391,5 +455,4 @@ void Minecart::Draw(int scrollX, int scrollY)
 	{
 		DrawRotaGraph(sx, sy, 1.0, static_cast<double>(mAngle), mGraphHandle, TRUE);
 	}
-
 }

@@ -34,9 +34,9 @@ bool BlockMap::Load(
 {
     if (mbIsLoaded) { return true; }
 
-    // 破壊可能壁の読み込み
+    // 破壊可能壁の読み込み（洞窟ステージ専用）
     mWalls.clear();
-    if (backgroundPath.find("") != std::string::npos)
+    if (backgroundPath.find("Stage1-2") != std::string::npos || backgroundPath.find("Cave") != std::string::npos)
     {
         FILE* fp = nullptr;
         fopen_s(&fp, "Resource/Map/Cave_WallConfig.txt", "r");
