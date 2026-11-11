@@ -33,7 +33,7 @@ void DragonFireGimmick::SpawnBreathInhaleSparks(float mouthX, float mouthY)
 {
 	for (int i = 0; i < 2; ++i)
 	{
-		float ang = (GetRand(360) * 3.14159265f) / 180.0f;
+		float ang = (GetRand(360) * DX_PI_F) / 180.0f;
 		float dist = 45.0f + static_cast<float>(GetRand(45));
 		FireSpark sp;
 		sp.x = mouthX + std::cos(ang) * dist;
@@ -93,7 +93,7 @@ void DragonFireGimmick::SpawnCenterChargeSparks(float mouthX, float mouthY)
 {
 	for (int i = 0; i < 3; ++i)
 	{
-		float ang = (GetRand(360) * 3.14159265f) / 180.0f;
+		float ang = (GetRand(360) * DX_PI_F) / 180.0f;
 		float dist = 50.0f + static_cast<float>(GetRand(50));
 		FireSpark sp;
 		sp.x = mouthX + std::cos(ang) * dist;

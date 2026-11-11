@@ -162,7 +162,7 @@ void StageClear::InitCrackers()
 
 	// 左側 3基（上空へ綺麗な扇状に配置：-28度, -45度, -62度）
 	// 通常画像は-45度を向いているため、描画角度 angle = shootAngleRad + 45度
-	mCrackers[0] = { StageClearConstants::CrackerLeftStartX, StageClearConstants::CrackerPosYTop,
+	mCrackers[0] = { StageClearConstants::CrackerLeftStartX,StageClearConstants::CrackerPosYTop,
 		StageClearConstants::CrackerLeftStartX, StageClearConstants::CrackerLeftTargetX, StageClearConstants::CrackerPosYTop,
 		(-28.0f + 45.0f) * kPi / 180.0f, -28.0f * kPi / 180.0f, false, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f };
 
@@ -1045,6 +1045,12 @@ void StageClear::Update(Player* player, BlockMap* pBlockMap)
 
 		if (enterKeyAtDoor)
 		{
+			// 現在のステージをクリア済みにする（次のステージのロックが解除される）
+			if (Master::gCurrentStageIndex >= 0 && Master::gCurrentStageIndex < Master::MaxStageCount)
+			{
+				Master::gStageCleared[Master::gCurrentStageIndex] = true;
+			}
+
 			mState = State::Finished;
 			if (Master::mpGameManager && Master::mpGameManager->GetSceneManager())
 			{

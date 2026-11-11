@@ -2,6 +2,7 @@
 #include "Scene.h"
 #include <vector>
 #include <string>
+#include "Saint.h"
 
 /// <summary>
 /// 勝利した後の演出をするシーンクラス
@@ -23,6 +24,8 @@ private:
 
 	std::vector<std::string> mMessages;
 	int mFullBodyHandles[3];
+	Saint mSaint; // 天使のキャラクター画像
+
 	float mAngelX;
 	float mAngelY;
 	bool mHasArrived;

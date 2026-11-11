@@ -772,6 +772,11 @@ void Player::Update()
 
 void Player::TakeBulletDamage(int damage)
 {
+	if (CheckHitKey(KEY_INPUT_6))
+	{
+		return;
+	}
+
 	TakeDamage(damage);
 	isHitDamage = true;
 
