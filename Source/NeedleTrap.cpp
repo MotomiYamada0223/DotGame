@@ -43,6 +43,12 @@ NeedleTrap::NeedleTrap(VECTOR initPos, TrapType type, const std::string& graphPa
         mvPosition.y = mBaseY;
         mTargetY = mBaseY;
     }
+    else if (mType == TrapType::ShakingDummy)
+    {
+        mvPosition.y = mBaseY;
+        mTargetY = mBaseY;
+        mState = TrapState::Waiting;
+    }
 
     if (path == CharacterGraphPath::Needle)
     {
@@ -96,7 +102,18 @@ void NeedleTrap::Draw()
         int drawX = static_cast<int>(ConvertToScreenX(mvPosition.x, mpBlockMap));
         int drawY = static_cast<int>(ConvertToScreenY(mvPosition.y, mpBlockMap));
 
-        double angle = (mType == TrapType::Falling) ? DX_PI : 0.0;
+        double angle = 0.0;
+        if (mType == TrapType::Falling)
+        {
+            angle = DX_PI;
+        }
+        else if (mType == TrapType::ShakingDummy && mbIsShaking)
+        {
+            drawX += mShakeOffsetX;
+            drawY += mShakeOffsetY;
+            angle = static_cast<double>(GetRand(30) - 15) / 1000.0;
+        }
+
         DrawRotaGraph(drawX, drawY, static_cast<double>(mScale), angle, mGraphHandle, TRUE);
     }
 }
@@ -125,7 +142,24 @@ void NeedleTrap::EnemyMove(BlockMap& blockMap)
 
     if (mState == TrapState::Waiting)
     {
-        if (mType == TrapType::PopUp)
+        if (mType == TrapType::ShakingDummy)
+        {
+            // プレイヤーが感知範囲内（手前から接近）にいる間、怪しくカタカタ震える
+            if (distX < GameLoadDataConstants::DummyNeedleDetectDistX && playerY >= mBaseY - 300.0f)
+            {
+                mbIsShaking = true;
+                mShakeOffsetX = GetRand(GameLoadDataConstants::DummyNeedleShakePowerX * 2) - GameLoadDataConstants::DummyNeedleShakePowerX;
+                mShakeOffsetY = GetRand(GameLoadDataConstants::DummyNeedleShakePowerY * 2) - GameLoadDataConstants::DummyNeedleShakePowerY;
+            }
+            else
+            {
+                mbIsShaking = false;
+                mShakeOffsetX = 0;
+                mShakeOffsetY = 0;
+            }
+            return;
+        }
+        else if (mType == TrapType::PopUp)
         {
             // 横方向の感知距離を狭め、高い空中ジャンプ中の暴発を防ぐため地面付近（低空・接地時）のみ感知
             if (distX < 85.0f && playerY >= mBaseY - 80.0f)

@@ -44,8 +44,13 @@ void GameScene::Initialize()
 		return mTutorialText.GetIsTextCompleted();
 	});
 
-	// プレイヤーの生成
-	mpPlayer = new Player(VGet(0, 400, 0.0f));
+	// プレイヤーの生成（各ステージに応じた地面接地座標からスタート）
+	VECTOR spawnPos = VGet(GameLoadDataConstants::ForestPlayerSpawnX, GameLoadDataConstants::ForestPlayerSpawnY, 0.0f);
+	if (Master::gCurrentStageIndex == GameLoadDataConstants::StageIndexCave)
+	{
+		spawnPos = VGet(GameLoadDataConstants::CavePlayerSpawnX, GameLoadDataConstants::CavePlayerSpawnY, 0.0f);
+	}
+	mpPlayer = new Player(spawnPos);
 	mLoadData.LoadInitialize(Master::gCurrentStageIndex);
 	mHotSpring.Initialize();
 	mStageClear.Reset();
