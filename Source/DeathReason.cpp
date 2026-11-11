@@ -22,6 +22,7 @@ namespace
 		{ DeathReason::DeathType::DragonExplosion, 14 },
 		{ DeathReason::DeathType::DragonArchFlame, 15 },
 		{ DeathReason::DeathType::DragonDiveAttack, 16 },
+		{ DeathReason::DeathType::FallSide, 17 },
 	};
 }
 

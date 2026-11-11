@@ -211,7 +211,7 @@ void LeafCutter::LeafUpdate(BlockMap& block, Player* player)
 
 void LeafCutter::LeafCollision(Player* player)
 {
-	if (Master::gCurrentStageIndex != 0 && player->GetPosition().y <= 8000)
+	if (Master::gCurrentStageIndex != 0 || player->GetPosition().x >= 8000)
 	{
 		return;
 	}

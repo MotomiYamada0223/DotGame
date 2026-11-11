@@ -43,10 +43,6 @@ void TitleScene::Update()
 			break;
 
 		case 1:
-			 // ‚Ü‚¾À‘•‚µ‚Ä‚È‚¢‚©‚çASEo‚µ‚Ä‚à—Ç‚¢
-			break;
-
-		case 2:
 			DxLib_End();
 			break;
 
@@ -89,7 +85,6 @@ void TitleScene::DrawSelectString()
 	std::string selectList[] =
 	{
 		"Play",
-		"Continue",
 		"Exit"
 	};
 

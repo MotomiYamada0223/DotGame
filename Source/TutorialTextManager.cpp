@@ -81,7 +81,7 @@ bool TutorialTextManager::IsTimeTriggerType(const std::string& type) const
 bool TutorialTextManager::CheckCondition(const std::string& type, float targetX, bool isCurrentlyTalking) const
 {
 	if (type == "X" || type == "Time") return true;
-
+	
 	std::string cond = type;
 	if (cond.rfind("X_", 0) == 0) cond = cond.substr(2);
 	else if (cond.rfind("Time_", 0) == 0) cond = cond.substr(5);
@@ -94,6 +94,14 @@ bool TutorialTextManager::CheckCondition(const std::string& type, float targetX,
 	if (cond == "NoAttack") return !mbUsedAttack;
 	if (cond == "Move")     return mbUsedMove;
 	if (cond == "NoMove")   return !mbUsedMove;
+
+	// 山々山の処理
+	if (cond == "WallBreak") return mbWallBreak;
+	if (cond == "NoWallBreak") return !mbWallBreak;
+	if (cond == "HotSpring") return mbHotSpring;
+
+
+
 
 	// 説明の途中で座標が変わった時
 	if (cond == "Skip" || cond == "Interrupt" || cond == "Talking" || cond == "途中")
@@ -117,6 +125,8 @@ void TutorialTextManager::SetActionState(const PlayerActionState& state)
 	mbUsedBlink |= state.blink;
 	mbUsedJump |= state.jump;
 	mbUsedAttack |= state.attack;
+	mbWallBreak |= state.wallbreak;
+	mbHotSpring |= state.hotSpring;
 }
 
 
@@ -175,6 +185,8 @@ void TutorialTextManager::Initialize(
 	mbUsedBlink = false;
 	mbUsedJump = false;
 	mbUsedAttack = false;
+	mbWallBreak = false;
+	mbHotSpring = false;
 
 	// 通常チュートリアルCSVの読み込み
 	loader.LoadCSV(csvPath);
@@ -500,6 +512,9 @@ void TutorialTextManager::Reset()
 	mbUsedBlink = false;
 	mbUsedJump = false;
 	mbUsedAttack = false;
+	mbWallBreak = false;
+	mbHotSpring = false;
+
 	mbInterruptedLastX = false;
 }
 

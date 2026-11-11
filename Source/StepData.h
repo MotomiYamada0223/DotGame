@@ -13,6 +13,4 @@ struct StepData
 	int nextID = 1; // 条件達成後に進む次のID
 
 	std::string repeatText; // 数回死亡したときに表示するテキスト
-
-
 };
