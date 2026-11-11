@@ -17,11 +17,6 @@ RollingBoulder::~RollingBoulder()
 		DeleteGraph(mGraphHandle);
 		mGraphHandle = -1;
 	}
-	if (mSpikeGraphHandle != -1)
-	{
-		DeleteGraph(mSpikeGraphHandle);
-		mSpikeGraphHandle = -1;
-	}
 }
 
 // 初期化処理
@@ -31,14 +26,9 @@ void RollingBoulder::Initialize()
 	{
 		mGraphHandle = LoadGraph("Resource/Enemy/Rock/Cave_Boulder.png");
 	}
-	if (mSpikeGraphHandle == -1)
-	{
-		mSpikeGraphHandle = LoadGraph(CharacterGraphPath::BloodNeedle.c_str());
-	}
 	Reset();
 }
 
-// 位置と状態を初期状態に戻す
 void RollingBoulder::Reset()
 {
 	mState = State::Waiting;
@@ -51,12 +41,6 @@ void RollingBoulder::Reset()
 	mbActive = true;
 	mDustList.clear();
 
-	// 2マスの単一巨大トゲ罠のリセット
-	mSpikeState = SpikeTrapState::Hidden;
-	mSpikeHeight = 0.0f;
-	mSpikeY = 2006.0f;
-	mSpikeVy = 0.0f;
-	mSpikeParticles.clear();
 }
 
 // 土煙・破片パーティクルを生成
@@ -78,31 +62,6 @@ void RollingBoulder::SpawnDust(float x, float y, int count, float speedMul)
 	}
 }
 
-// トゲ刺突・発射時のパーティクルを生成
-void RollingBoulder::SpawnSpikeParticles(float x, float y, int count)
-{
-	for (int i = 0; i < count; i++)
-	{
-		SpikeParticle sp;
-		sp.x = x + (GetRand(30) - 15);
-		sp.y = y + (GetRand(20) - 10);
-		sp.vx = (GetRand(24) - 12) * 0.7f;
-		sp.vy = -(GetRand(18) + 8) * 0.8f; // 上方へ噴き出す
-		sp.size = GetRand(7) + 3;
-		sp.life = GetRand(30) + 20;
-		sp.maxLife = sp.life;
-		if (GetRand(3) == 0)
-		{
-			sp.color = GetColor(255, 230, 150); // 火花
-		}
-		else
-		{
-			sp.color = GetColor(GetRand(50) + 200, 20, 30); // 血飛沫
-		}
-		mSpikeParticles.push_back(sp);
-	}
-}
-
 // 毎フレームの更新処理
 void RollingBoulder::Update(BlockMap& blockMap, Player* player)
 {
@@ -111,8 +70,7 @@ void RollingBoulder::Update(BlockMap& blockMap, Player* player)
 		return;
 	}
 
-	// 岩もトゲも両方とも完全に終了している場合のみ処理を抜ける
-	if (mState == State::Finished && mSpikeState == SpikeTrapState::Finished) return;
+	if (mState == State::Finished) return;
 
 	// 1. パーティクル（土煙・トゲ）の更新
 	for (auto it = mDustList.begin(); it != mDustList.end(); )
@@ -123,121 +81,6 @@ void RollingBoulder::Update(BlockMap& blockMap, Player* player)
 		it->life--;
 		if (it->life <= 0) it = mDustList.erase(it);
 		else ++it;
-	}
-
-	for (auto it = mSpikeParticles.begin(); it != mSpikeParticles.end(); )
-	{
-		it->x += it->vx;
-		it->y += it->vy;
-		it->vy += 0.45f;
-		it->life--;
-		if (it->life <= 0) it = mSpikeParticles.erase(it);
-		else ++it;
-	}
-
-	// 2. 2マスのくぼみ巨大トゲ罠の更新
-	// 出現トリガー：
-	// ① プレイヤーがくぼみに入った時
-	// ② または、転がる岩がそのくぼみの座標まで来た時（X >= 4350）
-	if (mSpikeState == SpikeTrapState::Hidden)
-	{
-		bool playerInRecess = false;
-		if (player && !player->GetIsDead())
-		{
-			VECTOR pPos = player->GetPosition();
-			if (pPos.x >= 4270.0f && pPos.x <= 4360.0f && pPos.y >= 1910.0f)
-			{
-				playerInRecess = true;
-			}
-		}
-
-		bool boulderAtRecess = (mState == State::Rolling && mX >= 4190.0f);
-
-		if (playerInRecess || boulderAtRecess)
-		{
-			mSpikeState = SpikeTrapState::Emerging;
-		}
-	}
-
-	// 下からトゲがせり上がるアニメーション
-	if (mSpikeState == SpikeTrapState::Emerging)
-	{
-		mSpikeHeight += 18.0f;
-		if (mSpikeHeight >= mSpikeMaxHeight)
-		{
-			mSpikeHeight = mSpikeMaxHeight;
-			// 岩によって針が出現した後は、勝手に飛ばずくぼみで立って待機する！
-			mSpikeState = SpikeTrapState::Ready;
-		}
-	}
-	VECTOR pPos = player->GetPosition();
-
-	// 針が出現中（せり上がり中または待機状態）のプレイヤー判定
-	if ((mSpikeState == SpikeTrapState::Emerging || mSpikeState == SpikeTrapState::Ready) && player && !player->GetIsDead())
-	{
-		// ① プレイヤーがくぼみに入った場合：針に刺さって死亡！（針は飛ばない）
-		if (pPos.x >= 4270.0f && pPos.x <= 4360.0f && pPos.y >= 1910.0f)
-		{
-			mSpikeHeight = mSpikeMaxHeight;
-			SpawnSpikeParticles(pPos.x, 1960.0f, 35);
-			player->TakeDamage(9999);
-			player->SetDeathReason(DeathReason::DeathType::NeedleTrapHit);
-
-		}
-		// ② プレイヤーがくぼみに入る以外で針が出てきたあと、プレイヤーがそのくぼみの場所を通ろうとすると発射！
-		// （飛び越えようとして上空を通過、またはくぼみの場所を通ろうとした瞬間）
-		else if (pPos.x >= 4255.0f && pPos.x <= 4375.0f)
-		{
-			mSpikeState = SpikeTrapState::Launched;
-			mSpikeHeight = mSpikeMaxHeight;
-			mSpikeY = 2006.0f;
-			mSpikeVy = -24.0f; // 上に向かって発射！
-			SpawnSpikeParticles(mSpikeBaseX, 2006.0f, 30);
-		}
-	}
-
-	// トゲが上空へ発射中の挙動と当たり判定（当たり判定はつけたまま、当たったら死亡）
-	if (mSpikeState == SpikeTrapState::Launched)
-	{
-		mSpikeY += mSpikeVy;
-
-		// 発射の推進エフェクト
-		if (GetRand(2) == 0)
-		{
-			SpawnDust(mSpikeBaseX + (GetRand(20) - 10), mSpikeY + 5.0f, 2, 0.6f);
-		}
-
-		// 上空を飛ぶトゲとプレイヤーの当たり判定
-		if (player && !player->GetIsDead())
-		{
-			VECTOR pPos = player->GetPosition();
-			float pW = 44.0f;
-			float pH = 100.0f;
-			float pLeft = pPos.x - pW * 0.5f;
-			float pRight = pPos.x + pW * 0.5f;
-			float pTop = pPos.y - pH * 0.5f;
-			float pBottom = pPos.y + pH * 0.5f;
-
-			// 発射されたトゲの判定ボックス
-			float spLeft = mSpikeBaseX - mSpikeWidth * 0.5f;
-			float spRight = mSpikeBaseX + mSpikeWidth * 0.5f;
-			float spTop = mSpikeY - mSpikeHeight;
-			float spBottom = mSpikeY;
-
-			// 矩形同士の交差判定（当たったら死亡）
-			if (pRight >= spLeft && pLeft <= spRight && pBottom >= spTop && pTop <= spBottom)
-			{
-				player->TakeDamage(9999);
-				player->SetDeathReason(DeathReason::DeathType::NeedleTrapHit);
-				SpawnSpikeParticles(pPos.x, pPos.y, 40);
-			}
-		}
-
-		// 上空画面外へ飛び去ったら消滅
-		if (mSpikeY < -300.0f)
-		{
-			mSpikeState = SpikeTrapState::Finished;
-		}
 	}
 
 	// 3. 岩の状態ごとの挙動
@@ -379,7 +222,6 @@ void RollingBoulder::Update(BlockMap& blockMap, Player* player)
 	}
 }
 
-// 描画処理
 void RollingBoulder::Draw(int scrollX, int scrollY)
 {
 	if (Master::gCurrentStageIndex != 1)
@@ -387,54 +229,7 @@ void RollingBoulder::Draw(int scrollX, int scrollY)
 		return;
 	}
 
-	// 1. くぼみの「1本で横2マス分を取る巨大なトゲ」の描画（BloodNeedle.png を使用）
-	if (mSpikeState != SpikeTrapState::Hidden && mSpikeState != SpikeTrapState::Finished && mSpikeHeight > 0.0f)
-	{
-		float leftX = mSpikeBaseX - mSpikeWidth * 0.5f;
-		float tipY = mSpikeY - mSpikeHeight;
 
-		int sx1 = static_cast<int>(leftX) - scrollX;
-		int stY = static_cast<int>(tipY) - scrollY;
-		int drawW = static_cast<int>(mSpikeWidth);
-		int drawH = static_cast<int>(mSpikeHeight);
-		if (drawH > static_cast<int>(mSpikeMaxHeight)) drawH = static_cast<int>(mSpikeMaxHeight);
-
-		if (mSpikeGraphHandle != -1)
-		{
-			// BloodNeedle.png を描画（地面から突き出している時は上部から切り出して生えてくる演出）
-			DrawRectGraph(sx1, stY, 0, 0, drawW, drawH, mSpikeGraphHandle, TRUE);
-		}
-		else
-		{
-			// 画像読み込み失敗時のフォールバック（図形描画）
-			float rightX = mSpikeBaseX + mSpikeWidth * 0.5f;
-			float tipX = mSpikeBaseX;
-			float baseY = mSpikeY;
-
-			int sx2 = static_cast<int>(rightX) - scrollX;
-			int stX = static_cast<int>(tipX) - scrollX;
-			int sbY = static_cast<int>(baseY) - scrollY;
-
-			DrawTriangle(stX, stY, sx1, sbY, sx2, sbY, GetColor(200, 205, 215), TRUE);
-			DrawTriangle(stX, stY, stX, sbY, sx2, sbY, GetColor(140, 145, 155), TRUE);
-			DrawLine(stX, stY, stX, sbY, GetColor(245, 245, 255));
-			int tipRedH = static_cast<int>(mSpikeHeight * 0.28f);
-			DrawTriangle(stX, stY, stX - 8, stY + tipRedH, stX + 8, stY + tipRedH, GetColor(220, 20, 30), TRUE);
-			DrawLine(stX, stY, sx1, sbY, GetColor(45, 45, 55));
-			DrawLine(stX, stY, sx2, sbY, GetColor(45, 45, 55));
-			DrawLine(sx1, sbY, sx2, sbY, GetColor(45, 45, 55));
-		}
-	}
-
-	// 2. トゲ刺突・発射パーティクルの描画
-	for (const auto& sp : mSpikeParticles)
-	{
-		int dx = static_cast<int>(sp.x) - scrollX;
-		int dy = static_cast<int>(sp.y) - scrollY;
-		DrawBox(dx, dy, dx + sp.size, dy + sp.size, sp.color, TRUE);
-	}
-
-	// 3. 岩の描画
 	if (mState == State::Waiting || mState == State::Finished) return;
 
 	int screenX = static_cast<int>(mX) - scrollX;
