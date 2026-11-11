@@ -79,7 +79,7 @@ void Player::UpdateStatusByProgress(GameProgress progress)
 	{
 	case GameProgress::Tutorial1:
 		mMaxHp = 15; mHp = 15;
-		mAttack = 5; mDefense = 5; mMagic = 5;
+		mAttack = 500000; mDefense = 5; mMagic = 5;
 		mIsBlinkWallDeathImmune = false;
 		break;
 	case GameProgress::PostTutorial1:
@@ -128,6 +128,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 	{
 		return;
 	}
+
 
 	// Wキー/Sキー長押しによるステージ裏・表落下処理の判定
 	if (mFallMode == StageFallMode::None && !isDead && !mbAutoWalking)
@@ -181,7 +182,8 @@ void Player::PlayerMove(BlockMap& blockMap)
 
 		if (!mbDeath && mvPosition.y >= PlayerConstants::PlayerDeathHeight)
 		{
-			mDeathReason = DeathReason::DeathType::Fall;
+			// WSで落下したときにテキストを変更した
+			mDeathReason = DeathReason::DeathType::FallSide;
 			mHp = 0;
 			mbDeath = true;
 		}
@@ -364,6 +366,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 	// ジャンプ開始
 	if (mbInHotSpring)
 	{
+		mActionState.hotSpring = true;
 		// 温泉のぬめり処理：
 		// 1回のジャンプではぬめりで上がれず、重い湯に引きずり込まれる
 		// スペースキーを連打（足掻き）すると少しずつ浮上・脱出可能
@@ -599,14 +602,20 @@ void Player::Update()
 		atkSize = VGet((float)attackWidth, (float)attackHeight, 0.0f);
 	}
 
+	// 壁を壊す処理
 	if (hasAttackRect && mpBlockMap != nullptr)
 	{
-		mpBlockMap->BreakWallAtArea(
+		bool isWallBerak = mpBlockMap->BreakWallAtArea(
 			atkPos.x,
 			atkPos.y,
 			atkPos.x + atkSize.x,
 			atkPos.y + atkSize.y
 			);
+
+		if (isWallBerak)
+		{
+			mActionState.wallbreak = true;
+		}
 	}
 
 
@@ -1278,6 +1287,7 @@ void Player::Revive()
 
 	// 行動ステートのリセット
 	mActionState.blink = false;
+	mActionState.wallbreak = false;
 
 	// マップのスクロール位置を一番左に戻す
 	if (mpBlockMap != nullptr)

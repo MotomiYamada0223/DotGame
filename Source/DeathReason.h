@@ -20,6 +20,7 @@ public:
 		HotWater,
 		EnemySkeleton,
 		NormalDeath, // 死んだときの通常表示
+		FallSide, // WSで落下した時の処理
 
 		// ドラゴン関係
 		DragonNormalAttack,

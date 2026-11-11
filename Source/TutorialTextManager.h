@@ -13,7 +13,7 @@ class  TutorialTextManager
 {
 private:
 	// 定数
-	static constexpr float CharSpeed = 0.1f; // 一文字表示にかける時間
+	static constexpr float CharSpeed = 0.02f; // 一文字表示にかける時間
 
 
 public:
@@ -106,7 +106,15 @@ private:
 	bool mbUsedBlink = false;  // ブリンクを行ったか
 	bool mbUsedJump = false;   // ジャンプを行ったか
 	bool mbUsedAttack = false; // 攻撃を行ったか
+
+	// 山々山の処理
+	bool mbWallBreak = false;  // 壁を壊したか
+	bool mbHotSpring = false;  // 温泉に入ったか
+
+
 	bool mbInterruptedLastX = false; // 直前の説明の途中で現在のX座標に到達したか
+
+	
 
 
 	// 特定のX座標のセリフが出た後に死んだかどうかを記録するセット
