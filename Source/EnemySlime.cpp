@@ -13,6 +13,12 @@
 
 EnemySlime::EnemySlime(VECTOR initPos)
     : Enemy(CharacterGraphPath::SlimeIdle, initPos)
+    , mpAnimIdle(nullptr)
+    , mpAnimMove(nullptr)
+    , mpAnimAttack(nullptr)
+    , mpAnimDeath(nullptr)
+    , mDeathState(DeathState::Alive)
+    , mDeathTimer(0)
 {
     mMoveSpeed = 1.0f; // スライムの移動速度
 
@@ -23,6 +29,8 @@ EnemySlime::EnemySlime(VECTOR initPos)
     mpAnimIdle = new TextureAnimation(initPos, CharacterGraphPath::SlimeIdle, 6, 6, 1, 8);
     mpAnimMove = new TextureAnimation(initPos, CharacterGraphPath::SlimeMove, 6, 6, 1, 8);
     mpAnimAttack = new TextureAnimation(initPos, CharacterGraphPath::SlimeAttack, 7, 7, 1, 8);
+    mpAnimDeath = new TextureAnimation(initPos, CharacterGraphPath::SlimeDeath, SlimeDeathConstants::AnimTotalFrames, SlimeDeathConstants::AnimTotalFrames, 1, SlimeDeathConstants::AnimInterval);
+    mpAnimDeath->SetLoop(false);
 
     mCurrentMoveDirection = 1.0f;
     mActionTimer = 48;
@@ -52,10 +60,21 @@ EnemySlime::~EnemySlime()
     if (mpAnimIdle) delete mpAnimIdle;
     if (mpAnimMove) delete mpAnimMove;
     if (mpAnimAttack) delete mpAnimAttack;
+    if (mpAnimDeath) delete mpAnimDeath;
 }
 
 void EnemySlime::Update()
 {
+    // 死亡演出中の更新
+    if (mDeathState != DeathState::Alive)
+    {
+        if (mDeathState == DeathState::PlayingAnim)
+        {
+            if (mpAnimDeath) mpAnimDeath->Update();
+        }
+        return;
+    }
+
     Enemy::Update();
 
     // クールタイムの減少
@@ -82,6 +101,36 @@ void EnemySlime::Draw()
     {
         const float screenX = ConvertToScreenX(mvPosition.x, mpBlockMap);
         const float screenY = ConvertToScreenY(mvPosition.y, mpBlockMap);
+
+        // 死亡演出中の描画
+        if (mDeathState != DeathState::Alive)
+        {
+            if (mpAnimDeath != nullptr)
+            {
+                if (mDeathState == DeathState::PlayingAnim)
+                {
+                    mpAnimDeath->SetPosition(VGet(screenX, screenY, 0.0f));
+                    mpAnimDeath->Draw(mIsFacingRight);
+                }
+                else if (mDeathState == DeathState::FadingOut)
+                {
+                    // 沈みながら
+                    float drawY = screenY + (mDeathTimer * SlimeDeathConstants::SinkSpeed);
+
+                    // 透明になりながら
+                    float progress = static_cast<float>(mDeathTimer) / static_cast<float>(SlimeDeathConstants::FadeOutDuration);
+                    if (progress > 1.0f) progress = 1.0f;
+                    int alpha = static_cast<int>(255.0f * (1.0f - progress));
+                    if (alpha < 0) alpha = 0;
+
+                    SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
+                    mpAnimDeath->SetPosition(VGet(screenX, drawY, 0.0f));
+                    mpAnimDeath->Draw(mIsFacingRight);
+                    SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+                }
+            }
+            return;
+        }
 
         // --- 視界の扇状(台形)デバッグ表示 ---
         float baseHalfY = mVisionBaseHeight / 2.0f;
@@ -155,6 +204,46 @@ void EnemySlime::Draw()
 void EnemySlime::EnemyMove(BlockMap& blockMap)
 {
     mpBlockMap = &blockMap;
+
+    // 死亡判定とカスタム死亡演出への遷移
+    if (mHp <= 0 && mDeathState == DeathState::Alive)
+    {
+        mDeathState = DeathState::PlayingAnim;
+        mDeathTimer = 0;
+        mIsAttacking = false;
+        mIsCharging = false;
+        mHasJumped = false;
+        mIsChasing = false;
+        mCurrentMoveDirection = 0.0f;
+        if (mpAnimDeath)
+        {
+            mpAnimDeath->ResetAnimation();
+            mpAnimDeath->SetCurrentFrame(0);
+            mpAnimDeath->SetLoop(false);
+        }
+    }
+
+    // 死亡演出中の進行
+    if (mDeathState != DeathState::Alive)
+    {
+        if (mDeathState == DeathState::PlayingAnim)
+        {
+            if (mpAnimDeath && mpAnimDeath->IsFinished())
+            {
+                mDeathState = DeathState::FadingOut;
+                mDeathTimer = 0;
+            }
+        }
+        else if (mDeathState == DeathState::FadingOut)
+        {
+            mDeathTimer++;
+            if (mDeathTimer >= SlimeDeathConstants::FadeOutDuration)
+            {
+                SetDeleteFlag(true);
+            }
+        }
+        return; // 死亡演出中は移動・攻撃・当たり判定処理を行わない
+    }
 
     // プレイヤーの死亡状態
     const bool isPlayerDead = IsPlayerDead();

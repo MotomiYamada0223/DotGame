@@ -89,6 +89,7 @@ namespace CharacterGraphPath
 	static const std::string SlimeIdle = "Resource/Enemy/Slime/slime_idle.png";
 	static const std::string SlimeMove = "Resource/Enemy/Slime/slime_move.png";
 	static const std::string SlimeAttack = "Resource/Enemy/Slime/slime_attack.png";
+	static const std::string SlimeDeath = "Resource/Enemy/Slime/slime_death.png";
 
 	// キングスライム画像
 	static const std::string KingSlimeIdle = "Resource/Enemy/KingSlime/kingSlime_idle.png";
@@ -308,6 +309,15 @@ namespace SlimeConstants
 	static constexpr float CollisionHeight = 65.0f; // 当たり判定の縦幅
 	static constexpr int   TackleChargeFrames = 30; // 体当たり攻撃の起こり（溜め）フレーム数
 	static constexpr float TackleShakePower   = 2.2f; // 起こり（溜め）中の震えの強さ
+}
+
+// スライム死亡演出用の定数
+namespace SlimeDeathConstants
+{
+	static constexpr int   AnimTotalFrames = 5;    // 死亡アニメーション総コマ数
+	static constexpr int   AnimInterval    = 8;    // コマ送り間隔
+	static constexpr int   FadeOutDuration = 60;   // 消滅時間
+	static constexpr float SinkSpeed       = 0.5f; // 沈み込む速度
 }
 
 // ボス戦開始演出用の定数
@@ -606,11 +616,14 @@ namespace GameLoadDataConstants
 
 	// --- 洞窟ステージ（StageCave）配置定数 ---
 	// スケルトン（EnemySkeleton）
-	static constexpr float CaveSkeleton1PosX = 2400.0f;
+	static constexpr float CaveSkeleton1PosX = 1000.0f;
 	static constexpr float CaveSkeleton1PosY = 976.0f;
 
-	static constexpr float CaveSkeleton2PosX = 6745.0f;
-	static constexpr float CaveSkeleton2PosY = 1850.0f;
+	static constexpr float CaveSkeleton2PosX = 2400.0f;
+	static constexpr float CaveSkeleton2PosY = 976.0f;
+
+	static constexpr float CaveSkeleton3PosX = 6745.0f;
+	static constexpr float CaveSkeleton3PosY = 1850.0f;
 
 	// 往復動く足場（MovingFloor）
 	static constexpr float CaveMovingFloorStartX = 7000.0f;
