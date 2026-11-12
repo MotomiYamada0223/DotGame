@@ -32,9 +32,7 @@ public:
 	void DrawFront(); // Sキー表側落下時の手前描画用
 
 	// 死亡フェーズ取得（GameSceneから天使演出制御に使用）
-	int GetDeathPhase() const { return mDeathPhase; }
-	bool IsDeathCutInActive() const { return isDead && mDeathPhase == 1; }
-
+	bool IsDeathCutInActive() const { return isDead && mDeath.IsAngelCutInStage(); }
 	enum class StageFallMode
 	{
 		None,
@@ -55,15 +53,17 @@ public: // アクセサ
 
 	// 動く床などのオブジェクトに乗った際に接地状態を強制するためのSetter
 	void SetForceGrounded()
-	{ mForceGroundedThisFrame = true;} 
+	{
+		mForceGroundedThisFrame = true;
+	}
 
 	// 頭をぶつけた時の落下処理用に追加 // 現在の速さ
 	void SetVelocityY(float vy) { velocityY = vy; }  // 頭をぶつけた時の落下処理用に追加 // 現在の速さ
 	// 死亡理由を取得
-	DeathReason::DeathType GetDeathReason() const { return mDeathReason;}
+	DeathReason::DeathType GetDeathReason() const { return mDeathReason; }
 
 	// 各シーンからプレイヤーの行動をセット取得するもの
-	const PlayerActionState &GetActionState() { return mActionState; }
+	const PlayerActionState& GetActionState() { return mActionState; }
 
 
 	bool IsBlinking() const { return isBlinking; } // ブリンク中かどうかの判定用
@@ -217,15 +217,12 @@ private: // 復活処理関係
 
 	// ========== 死亡演出フェーズ管理 ==========
 	// 0: 通常
-	// 1: 天使カットイン＆テキスト表示（時止め）
-	// 2: プレイヤー破壊＋フェードでGAME OVER
+	// 1: 天使カットイン（mDeath が担当）
+	// 2: 飛び散り（mFragments を DeadProcess で更新）
+	// 3: GAME OVER 表示
 	int mDeathPhase = 0;
-	int mDeathPreFlashTimer  = 0; // フェーズ1開始前の白フラッシュタイマー
-	int mDeathPostFlashTimer = 0; // フェーズ1終了後の白フラッシュタイマー
-	int mDeathCutInTimer     = 0; // 天使カットイン表示タイマー
-	int mDeathCutInPostTextTimer = 0; // テキスト終了後の待機タイマー
-	int mGameOverFadeTimer   = 0; // GAME OVERフェードタイマー
-	int mGameOverMenuIndex   = 0; // GAME OVERメニュー選択（0=リトライ, 1=ステージ選択）
+	int mGameOverFadeTimer = 0; // GAME OVERフェードタイマー
+	int mGameOverMenuIndex = 0; // GAME OVERメニュー選択（0=リトライ, 1=ステージ選択）
 
 	// ボス演出・自動歩行関連
 	bool mbAutoWalking = false;
@@ -243,4 +240,10 @@ private: // 復活処理関係
 	bool mbInHotSpring = false;
 	float mHotSpringHeat = 0.0f;
 	bool mbSpaceWasPressed = false;
+
+	void BeginDeath();        // 死亡処理の共通化
+	void StartDeathScatter(); // 天使カットイン後の飛び散り開始
+	void UpdateGameOver();    // GAME OVER中の入力処理
+	void DrawGameOver();      // GAME OVER画面の描画
+	DeathController::AngelMotion GetAngelMotionForDeathType(DeathReason::DeathType type) const;
 };
