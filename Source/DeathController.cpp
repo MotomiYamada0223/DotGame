@@ -6,24 +6,36 @@
 #include "TutorialTextManager.h"
 #include <cmath>
 
+// このファイル内だけで使用する定数・補助関数をまとめる。
 namespace
 {
+	// 死亡演出開始時のフラッシュ全体の長さ（フレーム数）。
 	const int kPreFlashFrames = 22;
+	// 開始フラッシュのうち、白く強く光る前半部分の長さ。
 	const int kPreFlashHalfFrames = 6;
+	// 天使のカットイン終了後、通常画面へ戻るフラッシュの長さ。
 	const int kPostFlashFrames = 24;
+	// 終了フラッシュで白く覆い始めるまでのフレーム数。
 	const int kPostFlashWhiteOutFrame = 10;
+	// 天使登場直後に重ねる光の余韻の長さ。
 	const int kSheenFrames = 6;
+	// セリフ表示完了後、キーによるスキップを受け付けるまでの待ち時間。
 	const int kPostTextSkipFrames = 6;
+	// セリフ表示完了後、自動で次の演出へ進むまでの待ち時間。
 	const int kPostTextWaitFrames = 85;
+	// 通常モーション時に、まばたきを開始する間隔。
 	const int kAngelBlinkIntervalFrames = 150;
+	// まばたき状態を維持する長さ。
 	const int kAngelBlinkDurationFrames = 6;
 
+	// SPACE または ENTER がこのフレームで押されたかを判定する。
 	bool IsConfirmDown()
 	{
 		return InputManager::CheckDownKey(KEY_INPUT_SPACE) || InputManager::CheckDownKey(KEY_INPUT_RETURN);
 	}
 }
 
+// メンバー変数を初期化し、天使・テキスト枠の画像を読み込む。
 DeathController::DeathController()
 	: mPhase(Phase::None)
 	, mPreFlashTimer(0)
@@ -41,29 +53,32 @@ DeathController::DeathController()
 	LoadGraphs();
 }
 
+// 使用していた画像ハンドルを解放する。
 DeathController::~DeathController()
 {
 	ReleaseGraphs();
 }
 
+// 天使の各モーション画像と、セリフ枠画像を読み込む。
 void DeathController::LoadGraphs()
 {
-	mAngelNormalHandles[0] = LoadGraph("Resource/Image/八頭身天使モーション/ノーマル/angel_fullbody_closed.png");
-	mAngelNormalHandles[1] = LoadGraph("Resource/Image/八頭身天使モーション/ノーマル/angel_fullbody_open.png");
-	mAngelNormalHandles[2] = LoadGraph("Resource/Image/八頭身天使モーション/ノーマル/angel_fullbody_talk.png");
+	mAngelNormalHandles[0] = LoadGraph("Resource/Saint/Idel/angel_fullbody_closed.png");
+	mAngelNormalHandles[1] = LoadGraph("Resource/Saint/Idel/angel_fullbody_open.png");
+	mAngelNormalHandles[2] = LoadGraph("Resource/Saint/Idel/angel_fullbody_talk.png");
 
-	mAngelLaughHandles[0] = LoadGraph("Resource/Image/八頭身天使モーション/爆笑/爆笑顔1.png");
-	mAngelLaughHandles[1] = LoadGraph("Resource/Image/八頭身天使モーション/爆笑/爆笑終わり顔.png");
+	mAngelLaughHandles[0] = LoadGraph("Resource/Saint/Smile/smile_L.png");
+	mAngelLaughHandles[1] = LoadGraph("Resource/Saint/Smile/smile_R.png");
 
-	mAngelPointHandles[0] = LoadGraph("Resource/Image/八頭身天使モーション/指さし/指さし顔1.png");
-	mAngelPointHandles[1] = LoadGraph("Resource/Image/八頭身天使モーション/指さし/指さし顔2.png");
+	mAngelPointHandles[0] = LoadGraph("Resource/Saint/Hidden/hidden_1.png");
+	mAngelPointHandles[1] = LoadGraph("Resource/Saint/Hidden/hidden_2.png");
 
-	mAngelHideHandles[0] = LoadGraph("Resource/Image/八頭身天使モーション/隠れ/隠れ顔1.png");
-	mAngelHideHandles[1] = LoadGraph("Resource/Image/八頭身天使モーション/隠れ/隠れ顔2.png");
+	mAngelHideHandles[0] = LoadGraph("Resource/Saint/Pointing/pointing_1.png");
+	mAngelHideHandles[1] = LoadGraph("Resource/Saint/Pointing/pointing_2.png");
 
-	mAngelTextBoxHandle = LoadGraph("Resource/Image/AngelTextBox.png");
+	mAngelTextBoxHandle = LoadGraph("Resource/Saint/AngelTextBox.png");
 }
 
+// 読み込み済みの画像を解放する。-1 は未読み込みとして扱う。
 void DeathController::ReleaseGraphs()
 {
 	for (int& h : mAngelNormalHandles) { if (h != -1) { DeleteGraph(h); h = -1; } }
@@ -73,6 +88,7 @@ void DeathController::ReleaseGraphs()
 	if (mAngelTextBoxHandle != -1) { DeleteGraph(mAngelTextBoxHandle); mAngelTextBoxHandle = -1; }
 }
 
+// 死亡演出を開始し、タイマー・表示状態・演出内容を初期化する。
 void DeathController::Start(DeathReason::DeathType type, AngelMotion motion)
 {
 	mPhase = Phase::PreFlash;
@@ -81,6 +97,7 @@ void DeathController::Start(DeathReason::DeathType type, AngelMotion motion)
 	mCutInTimer = 0;
 	mPostTextTimer = 0;
 
+	// 死因と、登場する天使のモーションを保存する。
 	mDeathType = type;
 	mMotion = motion;
 	mAngelAnimState = (motion == AngelMotion::Normal) ? 1 : 0;
@@ -89,6 +106,7 @@ void DeathController::Start(DeathReason::DeathType type, AngelMotion motion)
 	mbAngelBlinking = false;
 }
 
+// 死亡演出を終了状態から初期状態へ戻す。
 void DeathController::Reset()
 {
 	mPhase = Phase::None;
@@ -104,9 +122,10 @@ void DeathController::Reset()
 }
 
 // ---------------------------------------------------------------------------
-// 更新
+// 更新：演出フェーズと各アニメーションの時間を進める。
 // ---------------------------------------------------------------------------
 
+// 現在のフェーズに応じて死亡演出を更新する。
 void DeathController::Update(const FrameContext& ctx)
 {
 	TutorialTextManager* text = ctx.text;
@@ -117,6 +136,7 @@ void DeathController::Update(const FrameContext& ctx)
 	case Phase::Finished:
 		return;
 
+		// 画面をフラッシュさせた後、死亡理由のテキストと天使のカットインへ移る。
 	case Phase::PreFlash:
 		mPreFlashTimer++;
 		if (mPreFlashTimer >= kPreFlashFrames)
@@ -128,16 +148,19 @@ void DeathController::Update(const FrameContext& ctx)
 		}
 		return;
 
+		// 天使と死亡理由のテキストを表示する。テキスト終了後は待機・スキップ判定を行う。
 	case Phase::CutIn:
 	{
 		mCutInTimer++;
 
+		// テキスト管理クラスがない場合も、表示完了として扱う。
 		const bool textFinished = (text == nullptr) || text->GetIsTextCompleted();
 		UpdateAngelAnimation(textFinished);
 
 		if (textFinished)
 		{
 			mPostTextTimer++;
+			// 少し待ってから SPACE / ENTER でスキップ可能にする。
 			const bool skipKey = (mPostTextTimer >= kPostTextSkipFrames) && IsConfirmDown();
 			if (mPostTextTimer >= kPostTextWaitFrames || skipKey)
 			{
@@ -148,6 +171,7 @@ void DeathController::Update(const FrameContext& ctx)
 		return;
 	}
 
+	// 白フラッシュを使って死亡演出から通常画面へ戻す。
 	case Phase::PostFlash:
 		mPostFlashTimer++;
 		if (mPostFlashTimer >= kPostFlashFrames)
@@ -158,10 +182,12 @@ void DeathController::Update(const FrameContext& ctx)
 	}
 }
 
+// 天使のモーションに応じて、まばたき・口パク・表情切り替えを更新する。
 void DeathController::UpdateAngelAnimation(bool textFinished)
 {
 	if (mMotion == AngelMotion::Normal)
 	{
+		// 通常モーションでは一定間隔で目を閉じ、一定時間後に開く。
 		// まばたき
 		if (mbAngelBlinking)
 		{
@@ -183,6 +209,7 @@ void DeathController::UpdateAngelAnimation(bool textFinished)
 			}
 		}
 
+		// セリフ表示中だけ口の画像を交互に切り替えて口パクを表現する。
 		// 口パク
 		if (!mbAngelBlinking)
 		{
@@ -203,7 +230,7 @@ void DeathController::UpdateAngelAnimation(bool textFinished)
 	}
 	else
 	{
-		// 爆笑・指さし・隠れ：2枚を交互に切り替える
+		// 爆笑・指さし・隠れは、セリフ表示中に2枚の画像を交互に切り替える。
 		if (!textFinished)
 		{
 			mAngelTalkTimer++;
@@ -222,15 +249,17 @@ void DeathController::UpdateAngelAnimation(bool textFinished)
 }
 
 // ---------------------------------------------------------------------------
-// 描画
+// 描画：現在の演出フェーズに対応する画面・画像を描く。
 // ---------------------------------------------------------------------------
 
+// フェーズごとに描画内容を切り替える。
 void DeathController::Draw(TutorialTextManager* text) const
 {
 	const bool textFinished = (text == nullptr) || text->GetIsTextCompleted();
 
 	switch (mPhase)
 	{
+		// 画面をフラッシュさせた後、死亡理由のテキストと天使のカットインへ移る。
 	case Phase::PreFlash:
 		if (mPreFlashTimer < kPreFlashHalfFrames)
 		{
@@ -258,6 +287,7 @@ void DeathController::Draw(TutorialTextManager* text) const
 		}
 		return;
 
+		// 天使と死亡理由のテキストを表示する。テキスト終了後は待機・スキップ判定を行う。
 	case Phase::CutIn:
 		DrawCutInScene(textFinished);
 
@@ -270,6 +300,7 @@ void DeathController::Draw(TutorialTextManager* text) const
 		}
 		return;
 
+		// 白フラッシュを使って死亡演出から通常画面へ戻す。
 	case Phase::PostFlash:
 		if (mPostFlashTimer >= kPostFlashWhiteOutFrame)
 		{
@@ -302,6 +333,7 @@ void DeathController::Draw(TutorialTextManager* text) const
 	}
 }
 
+// 黒背景の上に天使とセリフ枠を重ねて描画する。
 void DeathController::DrawCutInScene(bool textFinished) const
 {
 	// 黒背景
@@ -312,6 +344,7 @@ void DeathController::DrawCutInScene(bool textFinished) const
 	DrawTextBox(textFinished);
 }
 
+// 選択中のモーション画像を決定し、登場時のズーム演出を付けて描画する。
 void DeathController::DrawAngel(bool textFinished) const
 {
 	int angelHandle = -1;
@@ -342,6 +375,7 @@ void DeathController::DrawAngel(bool textFinished) const
 
 	if (angelHandle == -1) return;
 
+	// 登場直後の10フレームで拡大状態から通常サイズへ滑らかに近づける。
 	// 登場時のズームイン
 	const float zoomT = (mCutInTimer < 10) ? (mCutInTimer / 10.0f) : 1.0f;
 	const float easeOut = 1.0f - (1.0f - zoomT) * (1.0f - zoomT);
@@ -356,6 +390,7 @@ void DeathController::DrawAngel(bool textFinished) const
 	DrawRotaGraph2(ScreenSize::CenterX, angelY, anchorX, anchorY, scale, 0.0, angelHandle, TRUE);
 }
 
+// セリフ枠を描画する。セリフ本文そのものは TutorialTextManager 側が描画する。
 void DeathController::DrawTextBox(bool textFinished) const
 {
 	const int boxLeft = 180;
@@ -375,6 +410,7 @@ void DeathController::DrawTextBox(bool textFinished) const
 	DrawBox(boxLeft - 2, boxTop - 2, boxRight + 2, boxBottom + 2, GetColor(240, 200, 90), FALSE);
 	DrawBox(boxLeft + 3, boxTop + 3, boxRight - 3, boxBottom - 3, GetColor(110, 85, 35), FALSE);
 
+	// セリフ終了後は、キー入力を促す案内文字を点滅させる。
 	if (textFinished)
 	{
 		const int pulse = 160 + static_cast<int>(90.0f * sinf(mPostTextTimer * 0.18f));
