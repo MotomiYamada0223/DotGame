@@ -920,84 +920,38 @@ void Player::DrawPlayerModel()
 			srcY = PlayerAnimState::ATTACK_POS;
 		}
 
-		// ダメージ中なら赤く変色させる
-		if (isHitDamage)
+	
+		// ダメージ中は赤み、温泉に入っている間は赤く発光させる
+		// ダメージ中、または温泉に入っている間は赤くする
+		if (isHitDamage || mHotSpringHeat > 0.12f)
 		{
 			SetDrawBright(255, 100, 100);
 		}
-
-		// 指定の場所だけ描画する   
-		// 親クラスの共通関数を使用してワールド座標からスクリーン座標へ変換する   
-		const int screenX = static_cast<int>(ConvertToScreenX(mvPosition.x, mpBlockMap) - PlayerAnimState::FRAME_WIDTH / 2);
-		const int screenY = static_cast<int>(ConvertToScreenY(mvPosition.y, mpBlockMap) - PlayerAnimState::FRAME_HEIGHT / 2);
-
-		// プレイヤーを描画    
-		//    
-		// 右向き：通常描画    
-		// 左向き：左右反転して描画    
-		if (isFacingRight)
-		{
-			DrawRectGraph(
-				screenX,
-				screenY,
-				srcX,
-				srcY,
-				PlayerAnimState::FRAME_WIDTH,
-				PlayerAnimState::FRAME_HEIGHT,
-				mpTexture->GetHandle(),
-				true,
-				false
-			);
-		}
 		else
-		{
-			DrawRectGraph(
-				screenX,
-				screenY,
-				srcX,
-				srcY,
-				PlayerAnimState::FRAME_WIDTH,
-				PlayerAnimState::FRAME_HEIGHT,
-				mpTexture->GetHandle(),
-				true,
-				true
-			);
-
-			// 温泉で赤くなる
-			if (mHotSpringHeat > 0.12f)
-			{
-				float glowIntensity = (mHotSpringHeat - 0.12f) / 0.88f;
-
-				int addAlpha = static_cast<int>(glowIntensity * 195.0f);
-				if (addAlpha > 255) addAlpha = 255;
-
-				SetDrawBlendMode(DX_BLENDMODE_ADD, addAlpha);
-				SetDrawBright(
-					255,
-					static_cast<int>(35.0f * (1.0f - glowIntensity)),
-					0
-				);
-
-				DrawRectGraph(
-					screenX,
-					screenY,
-					srcX,
-					srcY,
-					PlayerAnimState::FRAME_WIDTH,
-					PlayerAnimState::FRAME_HEIGHT,
-					mpTexture->GetHandle(),
-					TRUE,
-					!isFacingRight
-				);
-				SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
-			}
-		}
-
-		// 色を元に戻す
-		if (isHitDamage)
 		{
 			SetDrawBright(255, 255, 255);
 		}
+
+		// 指定の場所だけ描画する
+		// 親クラスの共通関数を使用してワールド座標からスクリーン座標へ変換する
+		const int screenX = static_cast<int>(ConvertToScreenX(mvPosition.x, mpBlockMap) - PlayerAnimState::FRAME_WIDTH / 2);
+		const int screenY = static_cast<int>(ConvertToScreenY(mvPosition.y, mpBlockMap) - PlayerAnimState::FRAME_HEIGHT / 2);
+		const bool flipX = !isFacingRight;
+
+		DrawRectGraph(
+			screenX,
+			screenY,
+			srcX,
+			srcY,
+			PlayerAnimState::FRAME_WIDTH,
+			PlayerAnimState::FRAME_HEIGHT,
+			mpTexture->GetHandle(),
+			TRUE,
+			flipX
+		);
+
+		// 色を元に戻す（以降の描画に影響しないように必ず初期値へ）
+		SetDrawBright(255, 255, 255);
 	}
 	else
 	{
