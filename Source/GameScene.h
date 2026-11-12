@@ -35,6 +35,7 @@ public:
 
 	Player* GetPlayer() { return mpPlayer; }
 	BlockMap& GetBlockMap() { return mBlockMap; }
+	TutorialTextManager& GetTutorialText() { return mTutorialText; }
 
 	void DrawBossOrder();
 

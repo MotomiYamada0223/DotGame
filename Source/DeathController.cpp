@@ -36,26 +36,26 @@ void DeathController::Update(
 		return;
 	}
 
-	// Retryか選択画面か
-	if (InputManager::CheckDownKey(KEY_INPUT_R))
-	{
-		mIsPressKey = true;
-		Master::mpGameManager->GetSceneManager()->SetNextScene(
-			SceneManager::SCENE_LOAD
-		);
-	}
-	else if (InputManager::CheckDownKey(KEY_INPUT_Q))
-	{
-		mIsPressKey = true;
-		Master::mpGameManager->GetSceneManager()->SetNextScene(
-			SceneManager::SCENE_STAGESELECT
-		);
-	}
+	//// Retryか選択画面か
+	//if (InputManager::CheckDownKey(KEY_INPUT_R))
+	//{
+	//	mIsPressKey = true;
+	//	Master::mpGameManager->GetSceneManager()->SetNextScene(
+	//		SceneManager::SCENE_LOAD
+	//	);
+	//}
+	//else if (InputManager::CheckDownKey(KEY_INPUT_Q))
+	//{
+	//	mIsPressKey = true;
+	//	Master::mpGameManager->GetSceneManager()->SetNextScene(
+	//		SceneManager::SCENE_STAGESELECT
+	//	);
+	//}
 }
 
 void DeathController::Draw(int live) const
 {
-	if (!mActive)
+	/*if (!mActive)
 	{
 		return;
 	}
@@ -87,7 +87,7 @@ void DeathController::Draw(int live) const
 		textSize,
 		ColorOption::White,
 		"Qキー:   Quit(ステージ選択)"
-	);
+	);*/
 }
 
 

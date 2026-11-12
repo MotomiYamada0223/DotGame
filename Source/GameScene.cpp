@@ -69,12 +69,6 @@ void GameScene::Update()
 	mCart.Update(mBlockMap, mpPlayer);
 	mHotSpring.Update(mBlockMap, mpPlayer);
 
-	// デバッグ
-	if (InputManager::CheckDownKey(KEY_INPUT_9))
-	{
-		Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_TYPE::SCENE_STAGESELECT);
-	}
-
 	// 1キーでプレイヤーの座標を (7200, 700) にワープ (デバッグ用)
 	static bool oneKeyWasDown = false;
 	bool oneKeyIsDown = (CheckHitKey(KEY_INPUT_1) == 1 || CheckHitKey(KEY_INPUT_NUMPAD1) == 1);
@@ -105,7 +99,7 @@ void GameScene::Update()
 	SetTextUpdate(); // テキスト更新の呼び出し
 	mBossIntro.Update(mpPlayer, mBlockMap);
 	mStageClear.Update(mpPlayer, &mBlockMap); // ステージクリア演出の更新
-	mSaint.Update(); // 天使の更新
+	mSaint.Update(); // 天使の更新（生存中 or フェーズ1の時のみ）
 	if (mpPlayer)
 	{
 		mBackground.Move(static_cast<int>(mpPlayer->GetCurrentSpeed()), mBlockMap.GetIsScrolling(), mBlockMap.GetScrollDirection());
@@ -137,13 +131,9 @@ void GameScene::SetTextUpdate()
 {
 	// プレイヤーの死亡状態の確認
 	bool isPlayerDead = mpPlayer->GetIsDead();
-	// 死亡した瞬間
-	if (isPlayerDead && !mbWasPlayerDead)
-	{
-		mTutorialText.OnPlayerDead(mpPlayer->GetDeathReason());
-	}
-	// 復活した瞬間
-	else if (!isPlayerDead && mbWasPlayerDead)
+
+	// 復活した瞬間（フェーズ0 & 生存状態に戻った）
+	if (!isPlayerDead && mbWasPlayerDead)
 	{
 		mTutorialText.OnPlayerRevive();
 		mTutorialText.Reset();
@@ -151,7 +141,14 @@ void GameScene::SetTextUpdate()
 
 	// 今フレームの死亡状態を保存
 	mbWasPlayerDead = isPlayerDead;
-	mTutorialText.Update(1.0f / 60.0f, mpPlayer->GetPosition().x);
+
+	// フェーズ1（天使テキスト表示中）のみテキスト更新
+	// フェーズ2以降（GAME OVER）はテキストを止める
+	bool isPhase1 = isPlayerDead && (mpPlayer->GetDeathPhase() == 1);
+	if (!isPlayerDead || isPhase1)
+	{
+		mTutorialText.Update(1.0f / 60.0f, mpPlayer->GetPosition().x);
+	}
 	mTutorialText.SetActionState(mpPlayer->GetActionState());
 }
 
@@ -187,7 +184,7 @@ void GameScene::Draw()
 
 
 		// 一番手前に描画したいもの
-		mpPlayer->DrawFallDeath(); // 死亡時テキスト
+		mpPlayer->DrawFallDeath(); // 死亡演出（フラッシュ / 黒背景 / GAME OVER）
 		
 		// ボス演出の黒帯
 		mBossIntro.Draw();
@@ -198,13 +195,22 @@ void GameScene::Draw()
 		mBlockMap.DebugDraw(); // ブロックマップデバッグ表示
 		mTutorialText.DebugDraw(); // テキスト
 
-		// 天使とハートの描画
-		mDrawFrame.Draw(); // フレーム描画
-		mSaint.Draw();
-		mpPlayer->DrawLife();
-
-		// オブジェクトの描画
-		mTutorialText.Draw();
+		// 天使・ハート・テキストの描画
+		// 死亡フェーズ1（天使カットイン中）のみ天使/テキストを描画する
+		bool isDeathPhase1 = mpPlayer->GetIsDead() && (mpPlayer->GetDeathPhase() == 1);
+		bool showAngelUI = !mpPlayer->GetIsDead() || isDeathPhase1;
+		if (showAngelUI)
+		{
+			mDrawFrame.Draw(); // フレーム描画
+			mSaint.Draw();
+			mpPlayer->DrawLife();
+			mTutorialText.Draw();
+		}
+		else
+		{
+			// 死亡フェーズ2（GAME OVER中）はハートのみ表示
+			mpPlayer->DrawLife();
+		}
 	}
 
 	if (mCircleFade.GetStateFlag())

@@ -27,9 +27,13 @@ public:
 
 	void PlayerMove(BlockMap& blockMap); // Mapを受け取って位置を更新する処理
 
-	void DrawFallDeath(); // 死亡テキストの呼び出し
+	void DrawFallDeath(); // 死亡テキストの呼び出し（天使カットイン＆GAME OVER）
 	void DrawLife(); // 体力はあとの描画
 	void DrawFront(); // Sキー表側落下時の手前描画用
+
+	// 死亡フェーズ取得（GameSceneから天使演出制御に使用）
+	int GetDeathPhase() const { return mDeathPhase; }
+	bool IsDeathCutInActive() const { return isDead && mDeathPhase == 1; }
 
 	enum class StageFallMode
 	{
@@ -210,6 +214,18 @@ private:
 private: // 復活処理関係
 	void Revive();
 	bool mbDeath = false; // 死亡判定
+
+	// ========== 死亡演出フェーズ管理 ==========
+	// 0: 通常
+	// 1: 天使カットイン＆テキスト表示（時止め）
+	// 2: プレイヤー破壊＋フェードでGAME OVER
+	int mDeathPhase = 0;
+	int mDeathPreFlashTimer  = 0; // フェーズ1開始前の白フラッシュタイマー
+	int mDeathPostFlashTimer = 0; // フェーズ1終了後の白フラッシュタイマー
+	int mDeathCutInTimer     = 0; // 天使カットイン表示タイマー
+	int mDeathCutInPostTextTimer = 0; // テキスト終了後の待機タイマー
+	int mGameOverFadeTimer   = 0; // GAME OVERフェードタイマー
+	int mGameOverMenuIndex   = 0; // GAME OVERメニュー選択（0=リトライ, 1=ステージ選択）
 
 	// ボス演出・自動歩行関連
 	bool mbAutoWalking = false;

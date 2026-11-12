@@ -29,7 +29,7 @@ void LoadScene::Draw()
 	DrawRotaGraph(
 		ScreenSize::CenterX - 250,
 		ScreenSize::CenterY,
-		1.0f,
+		0.8f,
 		0.0f,
 		mnHandle, TRUE);
 

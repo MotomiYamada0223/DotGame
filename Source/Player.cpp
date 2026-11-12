@@ -6,6 +6,7 @@
 #include "Master.h"
 #include "SceneManager.h"
 #include "Scene.h"
+#include "GameScene.h"
 #include "ObjectManager.h"
 #include "Enemy.h"
 #include "Collision.h"
@@ -498,12 +499,111 @@ void Player::PlayerMove(BlockMap& blockMap)
 
 void Player::Update()
 {
-	mDeath.Update(mvPosition, mlives, mHp);
-
 	if (isDead)
 	{
-		DeadProcess();
-		Object2D::Update();
+		// フェーズ1：天使カットイン＆テキスト表示（時止め）
+		if (mDeathPhase == 1)
+		{
+			GameScene* gs = nullptr;
+			if (Master::mpGameManager && Master::mpGameManager->GetSceneManager())
+			{
+				gs = dynamic_cast<GameScene*>(Master::mpGameManager->GetSceneManager()->GetCurrentScene());
+			}
+
+			// Pre-フラッシュ（天使登場前の白フラッシュ）
+			const int PRE_FLASH_DURATION = 22;
+			if (mDeathPreFlashTimer < PRE_FLASH_DURATION)
+			{
+				mDeathPreFlashTimer++;
+				if (mDeathPreFlashTimer >= PRE_FLASH_DURATION)
+				{
+					// 天使テキスト開始
+					if (gs) gs->GetTutorialText().OnPlayerDead(mDeathReason);
+				}
+				return;
+			}
+
+			// Post-フラッシュ（テキスト終了後）
+			const int POST_FLASH_DURATION = 24;
+			if (mDeathPostFlashTimer > 0)
+			{
+				mDeathPostFlashTimer++;
+				if (mDeathPostFlashTimer >= POST_FLASH_DURATION)
+				{
+					// フェーズ2へ（ゲーム画面に戻ってフラグメント）
+					mDeathPhase = 2;
+					mGameOverFadeTimer = 0;
+					mGameOverMenuIndex = 0;
+					mFragments.clear();
+					deadTimer = 0;
+					mDeadState = 0;
+				}
+				return;
+			}
+
+			mDeathCutInTimer++;
+
+			// テキスト完了チェック
+			bool textFinished = (gs == nullptr) || gs->GetTutorialText().GetIsTextCompleted();
+
+			// スペース/ENTERでテキストをスキップ
+			if (!textFinished && mDeathCutInTimer > 12 &&
+				(InputManager::CheckDownKey(KEY_INPUT_SPACE) || InputManager::CheckDownKey(KEY_INPUT_RETURN)))
+			{
+				textFinished = true;
+			}
+
+			if (textFinished)
+			{
+				mDeathCutInPostTextTimer++;
+				bool skipKey = (mDeathCutInPostTextTimer >= 6) &&
+					(InputManager::CheckDownKey(KEY_INPUT_SPACE) || InputManager::CheckDownKey(KEY_INPUT_RETURN));
+				if (mDeathCutInPostTextTimer >= 85 || skipKey)
+				{
+					mDeathPostFlashTimer = 1;
+				}
+			}
+			return;
+		}
+		// フェーズ2：プレイヤー破壊（フラグメント飛散）→フェードでGAME OVER
+		else if (mDeathPhase == 2)
+		{
+			DeadProcess();
+			Object2D::Update();
+
+			mGameOverFadeTimer++;
+
+			// フラグメントが一定時間経過したらGAME OVER表示開始
+			// (deadTimer >= 65 でフラグメント落ち着く)
+			if (mGameOverFadeTimer >= 25)
+			{
+				// W/Sで選択
+				if (InputManager::CheckDownKey(KEY_INPUT_W) || InputManager::CheckDownKey(KEY_INPUT_UP) ||
+					InputManager::CheckDownKey(KEY_INPUT_A) || InputManager::CheckDownKey(KEY_INPUT_LEFT))
+				{
+					mGameOverMenuIndex = 0;
+				}
+				else if (InputManager::CheckDownKey(KEY_INPUT_S) || InputManager::CheckDownKey(KEY_INPUT_DOWN) ||
+					InputManager::CheckDownKey(KEY_INPUT_D) || InputManager::CheckDownKey(KEY_INPUT_RIGHT))
+				{
+					mGameOverMenuIndex = 1;
+				}
+
+				bool confirmPressed = InputManager::CheckDownKey(KEY_INPUT_RETURN) || InputManager::CheckDownKey(KEY_INPUT_SPACE);
+				// リトライ（R または Enter/Space でindex=0）
+				if (InputManager::CheckDownKey(KEY_INPUT_R) || (confirmPressed && mGameOverMenuIndex == 0))
+				{
+					Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_LOAD);
+					return;
+				}
+				else if (InputManager::CheckDownKey(KEY_INPUT_Q) || (confirmPressed && mGameOverMenuIndex == 1))
+				{
+					Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_STAGESELECT);
+					return;
+				}
+			}
+			return;
+		}
 		return;
 	}
 
@@ -758,6 +858,7 @@ void Player::Update()
 		isDead = true;
 		mfCurrentSpeed = 0;
 		Master::gPlayerLive -= 1;
+		mlives = Master::gPlayerLive; // 表示用に同期
 
 		const int stageIndex = Master::gCurrentStageIndex;
 		if (stageIndex >= 0 && stageIndex < Master::MaxStageCount)
@@ -768,6 +869,18 @@ void Player::Update()
 			// これまでの累計死亡回数
 			Master::gTotalDeathCounts[stageIndex]++;
 		}
+
+		// フェーズ1（天使カットイン）開始
+		mDeathPhase = 1;
+		mDeathPreFlashTimer = 0;
+		mDeathCutInTimer = 0;
+		mDeathCutInPostTextTimer = 0;
+		mDeathPostFlashTimer = 0;
+		mGameOverFadeTimer = 0;
+		mGameOverMenuIndex = 0;
+		mFragments.clear();
+		deadTimer = 0;
+		mDeadState = 0;
 	}
 
 	Object2D::Update();
@@ -788,6 +901,7 @@ void Player::TakeBulletDamage(int damage)
 		isDead = true;
 		mfCurrentSpeed = 0;
 		Master::gPlayerLive -= 1;
+		mlives = Master::gPlayerLive;
 
 		const int stageIndex = Master::gCurrentStageIndex;
 		if (stageIndex >= 0 && stageIndex < Master::MaxStageCount)
@@ -795,13 +909,185 @@ void Player::TakeBulletDamage(int damage)
 			Master::gDeathCounts[stageIndex]++;
 			Master::gTotalDeathCounts[stageIndex]++;
 		}
+
+		// フェーズ1（天使カットイン）開始
+		mDeathPhase = 1;
+		mDeathPreFlashTimer = 0;
+		mDeathCutInTimer = 0;
+		mDeathCutInPostTextTimer = 0;
+		mDeathPostFlashTimer = 0;
+		mGameOverFadeTimer = 0;
+		mGameOverMenuIndex = 0;
+		mFragments.clear();
+		deadTimer = 0;
+		mDeadState = 0;
 	}
 }
 
-// GameScereで呼び出し
+// GameSceneで呼び出し
 void Player::DrawFallDeath()
 {
-	mDeath.Draw(mlives);
+	if (!isDead) return;
+
+	// =========================================================================
+	// フェーズ1：時止め ＋ 天使カットイン（Saint/DrawFrame）＆テキスト表示
+	//   ※ 天使本体の描画は GameScene::Draw() 内の mSaint.Draw() / mDrawFrame.Draw() が担当。
+	//     ここでは背景フラッシュ・黒背景・ポストフラッシュのみ描画する。
+	// =========================================================================
+	if (mDeathPhase == 1)
+	{
+		const int PRE_FLASH_DURATION = 22;
+		const int POST_FLASH_DURATION = 24;
+
+		// 1. Pre-フラッシュ（天使登場前の白フラッシュ）
+		if (mDeathPreFlashTimer < PRE_FLASH_DURATION)
+		{
+			if (mDeathPreFlashTimer < 6)
+			{
+				// 前半（0〜6）：急速に白く光る
+				float inRate = (float)mDeathPreFlashTimer / 6.0f;
+				int alphaVal = static_cast<int>(255.0f * (inRate * inRate));
+				SetDrawBlendMode(DX_BLENDMODE_ALPHA, alphaVal);
+				DrawBox(0, 0, ScreenSize::ScrrenWidth, ScreenSize::ScrrenHeight, GetColor(255, 255, 255), TRUE);
+				SetDrawBlendMode(DX_BLENDMODE_ADD, static_cast<int>(180.0f * inRate));
+				DrawBox(0, 0, ScreenSize::ScrrenWidth, ScreenSize::ScrrenHeight, GetColor(255, 255, 255), TRUE);
+				SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+			}
+			else
+			{
+				// 後半（6〜22）：漆黒背景に切り替わり、白フラッシュが引いていく
+				SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+				DrawBox(0, 0, ScreenSize::ScrrenWidth, ScreenSize::ScrrenHeight, GetColor(0, 0, 0), TRUE);
+				float outRate = 1.0f - (float)(mDeathPreFlashTimer - 6) / (float)(PRE_FLASH_DURATION - 6);
+				int alphaVal = static_cast<int>(255.0f * (outRate * outRate));
+				SetDrawBlendMode(DX_BLENDMODE_ALPHA, alphaVal);
+				DrawBox(0, 0, ScreenSize::ScrrenWidth, ScreenSize::ScrrenHeight, GetColor(255, 255, 255), TRUE);
+				SetDrawBlendMode(DX_BLENDMODE_ADD, static_cast<int>(140.0f * outRate));
+				DrawBox(0, 0, ScreenSize::ScrrenWidth, ScreenSize::ScrrenHeight, GetColor(255, 255, 255), TRUE);
+				SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+			}
+			return;
+		}
+
+		// 2. Post-フラッシュ後半（10〜24フレーム）：ゲーム画面へ戻る白フラッシュ
+		if (mDeathPostFlashTimer >= 10)
+		{
+			float outProgress = (float)(mDeathPostFlashTimer - 10) / (float)(POST_FLASH_DURATION - 10);
+			float outStrength = 1.0f - outProgress * outProgress;
+			int alphaVal = static_cast<int>(255.0f * outStrength);
+			SetDrawBlendMode(DX_BLENDMODE_ALPHA, alphaVal);
+			DrawBox(0, 0, ScreenSize::ScrrenWidth, ScreenSize::ScrrenHeight, GetColor(255, 255, 255), TRUE);
+			SetDrawBlendMode(DX_BLENDMODE_ADD, static_cast<int>(140.0f * outStrength));
+			DrawBox(0, 0, ScreenSize::ScrrenWidth, ScreenSize::ScrrenHeight, GetColor(255, 255, 255), TRUE);
+			SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+			return;
+		}
+
+		// 3. 天使カットイン中：黒背景（天使/テキストはGameSceneのSaint/TutorialTextが描画）
+		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+		DrawBox(0, 0, ScreenSize::ScrrenWidth, ScreenSize::ScrrenHeight, GetColor(0, 0, 0), TRUE);
+
+		// 天使登場直後の光の余韻
+		if (mDeathCutInTimer <= 6)
+		{
+			int sheenAlpha = (6 - mDeathCutInTimer) * 25;
+			SetDrawBlendMode(DX_BLENDMODE_ADD, sheenAlpha);
+			DrawBox(0, 0, ScreenSize::ScrrenWidth, ScreenSize::ScrrenHeight, GetColor(255, 255, 255), TRUE);
+			SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+		}
+
+		// Post-フラッシュ前半（1〜9フレーム）：天使＆黒背景を包み込んで白へ
+		if (mDeathPostFlashTimer > 0 && mDeathPostFlashTimer < 10)
+		{
+			float inProgress = (float)mDeathPostFlashTimer / 10.0f;
+			int flashAlpha = static_cast<int>(255.0f * (inProgress * inProgress));
+			SetDrawBlendMode(DX_BLENDMODE_ALPHA, flashAlpha);
+			DrawBox(0, 0, ScreenSize::ScrrenWidth, ScreenSize::ScrrenHeight, GetColor(255, 255, 255), TRUE);
+			SetDrawBlendMode(DX_BLENDMODE_ADD, static_cast<int>(160.0f * inProgress));
+			DrawBox(0, 0, ScreenSize::ScrrenWidth, ScreenSize::ScrrenHeight, GetColor(255, 255, 255), TRUE);
+			SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+		}
+		return;
+	}
+
+	// =========================================================================
+	// フェーズ2：ゲーム画面に戻ってフラグメント表示 ＋ フェードでGAME OVER
+	// =========================================================================
+	if (mDeathPhase == 2)
+	{
+		// フェードアウト（黒）
+		int fadeAlpha = (mGameOverFadeTimer * 255) / 40;
+		if (fadeAlpha > 255) fadeAlpha = 255;
+		SetDrawBlendMode(DX_BLENDMODE_ALPHA, fadeAlpha);
+		DrawBox(0, 0, ScreenSize::ScrrenWidth, ScreenSize::ScrrenHeight, GetColor(0, 0, 0), TRUE);
+		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+		// GAME OVER UI
+		if (mGameOverFadeTimer >= 20)
+		{
+			int uiAlpha = ((mGameOverFadeTimer - 20) * 255) / 25;
+			if (uiAlpha > 255) uiAlpha = 255;
+			SetDrawBlendMode(DX_BLENDMODE_ALPHA, uiAlpha);
+
+			// 1. GAME OVER 大見出し
+			int titleX = ScreenSize::CenterX - 380;
+			int titleY = 180;
+			Master::mpGameManager->GetFontManager()->DrawDotString(
+				titleX + 6, titleY + 6, 140, GetColor(75, 0, 0), "GAME OVER"
+			);
+			Master::mpGameManager->GetFontManager()->DrawDotString(
+				titleX, titleY, 140, GetColor(235, 35, 35), "GAME OVER"
+			);
+
+			// 2. 残機アイコン表示
+			if (mpTexture != nullptr && mpTexture->GetHandle() != -1)
+			{
+				DrawRectGraph(ScreenSize::CenterX - 120, 360, 0, 0,
+					PlayerAnimState::FRAME_WIDTH, PlayerAnimState::FRAME_HEIGHT,
+					mpTexture->GetHandle(), TRUE, FALSE);
+			}
+			Master::mpGameManager->GetFontManager()->DrawDotString(
+				ScreenSize::CenterX + 20, 400, 68, GetColor(255, 255, 255), "x %d", mlives
+			);
+
+			// 3. メニュー選択
+			int menuBoxW = 720;
+			int menuBoxH = 74;
+			int menuLeft = ScreenSize::CenterX - menuBoxW / 2;
+			int opt0Y = 560;
+			int opt1Y = 660;
+
+			int selY = (mGameOverMenuIndex == 0) ? opt0Y : opt1Y;
+			DrawBox(menuLeft, selY - 10, menuLeft + menuBoxW, selY + menuBoxH - 10, GetColor(60, 45, 15), TRUE);
+			DrawBox(menuLeft, selY - 10, menuLeft + menuBoxW, selY + menuBoxH - 10, GetColor(255, 215, 60), FALSE);
+
+			int bobX = static_cast<int>(sinf(mGameOverFadeTimer * 0.15f) * 6.0f);
+			unsigned int col0 = (mGameOverMenuIndex == 0) ? GetColor(255, 240, 70) : GetColor(165, 165, 175);
+			unsigned int col1 = (mGameOverMenuIndex == 1) ? GetColor(255, 240, 70) : GetColor(165, 165, 175);
+
+			if (mGameOverMenuIndex == 0)
+			{
+				Master::mpGameManager->GetFontManager()->DrawDotString(menuLeft + 24 + bobX, opt0Y, 48, col0, ">");
+			}
+			Master::mpGameManager->GetFontManager()->DrawDotString(
+				menuLeft + 76, opt0Y, 48, col0, "コンテニュー / リトライ  [Enter / R]"
+			);
+
+			if (mGameOverMenuIndex == 1)
+			{
+				Master::mpGameManager->GetFontManager()->DrawDotString(menuLeft + 24 + bobX, opt1Y, 48, col1, ">");
+			}
+			Master::mpGameManager->GetFontManager()->DrawDotString(
+				menuLeft + 76, opt1Y, 48, col1, "ステージ選択へ戻る        [Q]"
+			);
+
+			Master::mpGameManager->GetFontManager()->DrawDotString(
+				ScreenSize::CenterX - 280, 810, 32, GetColor(170, 170, 170), "W/S または ↑/↓ で選択 ・ SPACE / ENTER で決定"
+			);
+
+			SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+		}
+	}
 }
 
 void Player::Draw()
@@ -1221,6 +1507,18 @@ void Player::Revive()
 	mvPosition = mSpawnPos;
 	mvPosition = mSpawnPos;
 	mHp = mMaxHp;
+
+	// 死亡フェーズのリセット
+	mDeathPhase = 0;
+	mDeathPreFlashTimer = 0;
+	mDeathCutInTimer = 0;
+	mDeathCutInPostTextTimer = 0;
+	mDeathPostFlashTimer = 0;
+	mGameOverFadeTimer = 0;
+	mGameOverMenuIndex = 0;
+
+	// 残機を同期（死亡確定時に減算済みのgPlayerLiveと合わせる）
+	mlives = Master::gPlayerLive;
 
 	// ジャンプ状態をリセット
 	mbIsJumping = false;
