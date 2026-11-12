@@ -564,7 +564,7 @@ void TutorialTextManager::ChangeStep(int nextID)
 
 
 
-void TutorialTextManager::Draw()
+void TutorialTextManager::Draw(DrawPosition DrawPoisition)
 {
 	const StepData* step = GetCurrentStep();
 
@@ -576,21 +576,37 @@ void TutorialTextManager::Draw()
 		return;
 	}
 
-
 	std::string displayText =
 		mDisplayText.substr(0, mnDisplayByteCount);
+	int baseX;
+	int curX;
+	int curY;
+	int fontSize;
+	if (DrawPoisition == DrawPosition::TEXT_UP)
+	{
+		 baseX = TutorialTextControll::TextX;
+		 curX = baseX;
+		 curY = TutorialTextControll::TextY;
+		 fontSize = TutorialTextControll::TextSize;
+	}
+	else
+	{
+		 baseX = TutorialTextControll::TextX- 450;
+		 curX = baseX;
+		 curY = TutorialTextControll::TextY + 750;
+		 fontSize = TutorialTextControll::DeathTextSize;
+	}
 
 	// フォント設定
-	int fontSize = TutorialTextControll::TextSize;
 	int fontHandle =
 		Master::mpGameManager->GetFontManager()
 		->GetDotFontHandle(fontSize);
 
 	if (fontHandle == -1) return;
 
-	int baseX = TutorialTextControll::TextX;
-	int curX = baseX;
-	int curY = TutorialTextControll::TextY;
+
+
+
 
 	unsigned int color = GetColor(255, 255, 255);
 

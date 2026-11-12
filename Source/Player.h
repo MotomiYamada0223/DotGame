@@ -16,6 +16,7 @@
 class Player : public Object2D, public UnitStatus
 {
 public:
+
 	Player(VECTOR initPos);
 	virtual ~Player();
 
@@ -98,6 +99,8 @@ public: // アクセサ
 	void SetHotSpringHeat(float heat) { mHotSpringHeat = heat; }
 	float GetHotSpringHeat() const { return mHotSpringHeat; }
 
+
+	bool IsCutInSaint() const { return mDeath.IsCutInActive(); }
 
 	void Heal(int amount)
 	{

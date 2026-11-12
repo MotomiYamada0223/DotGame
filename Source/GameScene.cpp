@@ -127,6 +127,7 @@ void GameScene::Update()
 	Scene::Update();
 }
 
+
 void GameScene::SetTextUpdate()
 {
 	// プレイヤーの死亡状態の確認
@@ -144,14 +145,13 @@ void GameScene::SetTextUpdate()
 
 	// フェーズ1（天使テキスト表示中）のみテキスト更新
 	// フェーズ2以降（GAME OVER）はテキストを止める
-	bool isPhase1 = isPlayerDead && (mpPlayer->IsDeathCutInActive());
+	bool isPhase1 = mpPlayer->IsCutInSaint(); // ← ここを新しい関数に置き換え！
 	if (!isPlayerDead || isPhase1)
 	{
 		mTutorialText.Update(1.0f / 60.0f, mpPlayer->GetPosition().x);
 	}
 	mTutorialText.SetActionState(mpPlayer->GetActionState());
 }
-
 
 void GameScene::Draw()
 {
@@ -184,32 +184,33 @@ void GameScene::Draw()
 
 
 		// 一番手前に描画したいもの
-		mpPlayer->DrawFallDeath(); // 死亡演出（フラッシュ / 黒背景 / GAME OVER）
-		
+		mpPlayer->DrawFallDeath();
 		// ボス演出の黒帯
 		mBossIntro.Draw();
 		mStageClear.Draw();
 
-		// デバッグ系
-		mpPlayer->DebugDraw(); // ブロックデバッグ
-		mBlockMap.DebugDraw(); // ブロックマップデバッグ表示
-		mTutorialText.DebugDraw(); // テキスト
+		//// デバッグ系
+		//mpPlayer->DebugDraw(); // ブロックデバッグ
+		//mBlockMap.DebugDraw(); // ブロックマップデバッグ表示
+		//mTutorialText.DebugDraw(); // テキスト
+
 
 		// 天使・ハート・テキストの描画
-		// 死亡フェーズ1（天使カットイン中）のみ天使/テキストを描画する
-		bool isDeathPhase1 = mpPlayer->GetIsDead() && (mpPlayer->IsDeathCutInActive());
+		bool isDeathPhase1 = mpPlayer->IsCutInSaint();
 		bool showAngelUI = !mpPlayer->GetIsDead() || isDeathPhase1;
 		if (showAngelUI)
 		{
-			mDrawFrame.Draw(); // フレーム描画
-			mSaint.Draw();
-			mpPlayer->DrawLife();
-			mTutorialText.Draw();
-		}
-		else
-		{
-			// 死亡フェーズ2（GAME OVER中）はハートのみ表示
-			mpPlayer->DrawLife();
+			if (mpPlayer->IsCutInSaint())
+			{
+				mTutorialText.Draw(TutorialTextManager::TEXT_DOWN); // 死亡時の天使場面用位置
+			}
+			else
+			{
+				mDrawFrame.Draw(); // フレーム描画
+				mSaint.Draw();
+				mpPlayer->DrawLife();
+				mTutorialText.Draw(TutorialTextManager::TEXT_UP);   // 通常時の位置
+			}
 		}
 	}
 

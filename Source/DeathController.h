@@ -5,7 +5,7 @@ class TutorialTextManager;
 
 /// <summary>
 /// 死亡時の天使カットイン演出を担当するクラス
-/// 白フラッシュ → 八頭身天使＋死因テキスト（時止め） → 白フラッシュ
+/// 白フラッシュ → 八頭身天使＋死因テキスト（時止め）  白フラッシュ
 /// 飛び散り・GAME OVER は Player 側で行う
 /// </summary>
 class DeathController
@@ -33,6 +33,8 @@ public:
 	{
 		TutorialTextManager* text = nullptr; // 天使のセリフ
 	};
+
+	bool IsCutInActive() const { return mPhase == Phase::CutIn; }
 
 	DeathController();
 	~DeathController();

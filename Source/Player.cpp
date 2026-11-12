@@ -923,30 +923,26 @@ void Player::UpdateGameOver()
 {
 	if (mGameOverFadeTimer < kGameOverMenuFrames) return;
 
-	if (InputManager::CheckDownKey(KEY_INPUT_W) || InputManager::CheckDownKey(KEY_INPUT_UP) ||
-		InputManager::CheckDownKey(KEY_INPUT_A) || InputManager::CheckDownKey(KEY_INPUT_LEFT))
+	if (InputManager::CheckDownKey(KEY_INPUT_W) || InputManager::CheckDownKey(KEY_INPUT_A))
 	{
 		mGameOverMenuIndex = 0;
 	}
-	else if (InputManager::CheckDownKey(KEY_INPUT_S) || InputManager::CheckDownKey(KEY_INPUT_DOWN) ||
-		InputManager::CheckDownKey(KEY_INPUT_D) || InputManager::CheckDownKey(KEY_INPUT_RIGHT))
+	else if (InputManager::CheckDownKey(KEY_INPUT_S) || InputManager::CheckDownKey(KEY_INPUT_D))
 	{
 		mGameOverMenuIndex = 1;
 	}
 
-	const bool confirmPressed =
-		InputManager::CheckDownKey(KEY_INPUT_RETURN) || InputManager::CheckDownKey(KEY_INPUT_SPACE);
+	const bool confirmPressed =InputManager::CheckDownKey(KEY_INPUT_RETURN) || InputManager::CheckDownKey(KEY_INPUT_SPACE);
 
 	if (InputManager::CheckDownKey(KEY_INPUT_R) || (confirmPressed && mGameOverMenuIndex == 0))
 	{
-		Revive();
+		Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_LOAD);
 	}
 	else if (InputManager::CheckDownKey(KEY_INPUT_Q) || (confirmPressed && mGameOverMenuIndex == 1))
 	{
 		Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_STAGESELECT);
 	}
 }
-
 
 
 // GameSceneで呼び出し

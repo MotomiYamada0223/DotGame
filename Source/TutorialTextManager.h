@@ -15,8 +15,14 @@ private:
 	// 定数
 	static constexpr float CharSpeed = 0.02f; // 一文字表示にかける時間
 
-
 public:
+
+	// 死亡シーンでテキストの位置を分けるため
+	enum DrawPosition
+	{
+		TEXT_UP,
+		TEXT_DOWN,
+	};
 
 	void Initialize(
 		const std::string& csvPath,
@@ -24,7 +30,7 @@ public:
 	);
 
 	void Update(float dt, float playerX);
-	void Draw();
+	void Draw(DrawPosition DrawPoisition);
 	void DebugDraw();
 
 	// 文字を進める処理
@@ -71,7 +77,7 @@ private:
 	// 死亡回数によって表示テキストを分ける
 	void SelectDeathCountText();
 
-
+	DrawPosition mDrawPoisition;
 
 	// 通常チュートリアル用
 	StepLoader loader;
