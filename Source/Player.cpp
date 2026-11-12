@@ -922,14 +922,15 @@ void Player::DrawPlayerModel()
 
 	
 		// ダメージ中は赤み、温泉に入っている間は赤く発光させる
-		int baseG = 255;
-		int baseB = 255;
-		if (isHitDamage)
+		// ダメージ中、または温泉に入っている間は赤くする
+		if (isHitDamage || mHotSpringHeat > 0.12f)
 		{
-			baseG = 0;
-			baseB = 0;
+			SetDrawBright(255, 100, 100);
 		}
-		SetDrawBright(255, baseG, baseB);
+		else
+		{
+			SetDrawBright(255, 255, 255);
+		}
 
 		// 指定の場所だけ描画する
 		// 親クラスの共通関数を使用してワールド座標からスクリーン座標へ変換する
@@ -949,43 +950,8 @@ void Player::DrawPlayerModel()
 			flipX
 		);
 
-		// 温泉の赤い発光（加算合成で重ねる）
-		if (mHotSpringHeat > 0.12f)
-		{
-			float glowIntensity = (mHotSpringHeat - 0.5f) / 0.88f;
-			if (glowIntensity < 0.0f) glowIntensity = 0.0f;
-			if (glowIntensity > 1.0f) glowIntensity = 1.0f;
-			const float curved = glowIntensity * (2.0f - glowIntensity);
-
-			int addAlpha = static_cast<int>(curved * 255.0f);
-			int brightG = static_cast<int>(60.0f * (1.0f - curved));
-
-			SetDrawBlendMode(DX_BLENDMODE_ADD, addAlpha);
-			SetDrawBright(255, brightG, 0);
-
-			DrawRectGraph(
-				screenX,
-				screenY,
-				srcX,
-				srcY,
-				PlayerAnimState::FRAME_WIDTH,
-				PlayerAnimState::FRAME_HEIGHT,
-				mpTexture->GetHandle(),
-				TRUE,
-				flipX
-			);
-
-			// 発光用の設定を元に戻す
-			SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
-		}
-
 		// 色を元に戻す（以降の描画に影響しないように必ず初期値へ）
 		SetDrawBright(255, 255, 255);
-
-
-
-
-
 	}
 	else
 	{
