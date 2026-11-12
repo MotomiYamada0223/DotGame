@@ -16,12 +16,26 @@ public:
 
 	bool IsPlayerDead(); // プレイヤーが死亡しているかの判定
 
+    // カスタム死亡演出を持つか
+    virtual bool HasCustomDeath() const override { return true; }
+    // プレイヤーとの本体接触判定・被攻撃判定が有効か
+    virtual bool IsActiveTarget() const override { return mDeathState == DeathState::Alive; }
 
+    enum class DeathState {
+        Alive,
+        PlayingAnim,
+        FadingOut
+    };
+
+    DeathState GetDeathState() const { return mDeathState; }
 
 private:
     TextureAnimation* mpAnimIdle;
     TextureAnimation* mpAnimMove;
     TextureAnimation* mpAnimAttack;
+    TextureAnimation* mpAnimDeath;
+    DeathState mDeathState;
+    int mDeathTimer;
     float mCurrentMoveDirection;
     int mActionTimer;
     bool mIsFacingRight;

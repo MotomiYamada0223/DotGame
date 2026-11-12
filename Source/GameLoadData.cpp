@@ -144,11 +144,11 @@ void GameLoadData::StageForest()
 
 		// トラップの配置
 		new NeedleTrap(VGet(ForestNeedle1PosX, ForestNeedle1PosY, 0.0f), TrapType::Normal);
-		new NeedleTrap(VGet(ForestNeedle2PosX, ForestNeedle2PosY, 0.0f), TrapType::AntiJump);
+		new NeedleTrap(VGet(ForestNeedle2PosX, ForestNeedle2PosY, 0.0f), TrapType::Normal);
 		new NeedleTrap(VGet(ForestNeedle3PosX, ForestNeedle3PosY, 0.0f), TrapType::Normal);
 		new NeedleTrap(VGet(ForestNeedle4PosX, ForestNeedle4PosY, 0.0f), TrapType::PopUp);
 		new NeedleTrap(VGet(ForestNeedle5PosX, ForestNeedle5PosY, 0.0f), TrapType::PopUp);
-		new NeedleTrap(VGet(ForestNeedle6PosX, ForestNeedle6PosY, 0.0f), TrapType::Normal);
+		new NeedleTrap(VGet(ForestNeedle6PosX, ForestNeedle6PosY, 0.0f), TrapType::AntiJump);
 	}
 }
 
@@ -185,6 +185,7 @@ void GameLoadData::StageCave()
 	{
 		new EnemySkeleton(VGet(CaveSkeleton1PosX, CaveSkeleton1PosY, 0.0f));
 		new EnemySkeleton(VGet(CaveSkeleton2PosX, CaveSkeleton2PosY, 0.0f));
+		new EnemySkeleton(VGet(CaveSkeleton3PosX, CaveSkeleton3PosY, 0.0f));
 	}
 
 	mCart.Initialize();
