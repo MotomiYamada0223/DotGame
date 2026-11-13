@@ -40,7 +40,7 @@ namespace
 	constexpr float kLeafHalfSize = 12.0f;         // 葉っぱの当たり判定の矩形サイズ（中心からの半径相当）
 
 	// 葉っぱ生成確率
-	constexpr int LeafSpawn = 2; // 葉っぱの生成確率今は2%
+	constexpr int MaxLeafSpawn = 3; // 葉っぱの生成確率今は2%
 }
 
 LeafCutter::LeafCutter()
@@ -142,28 +142,36 @@ void LeafCutter::LeafUpdate(BlockMap& block, Player* player)
 	}
 
 	LeafDebug();
+	// 葉っぱの生成確率
+	constexpr int LeafSpawn = MaxLeafSpawn; // 1フレームごとの生成確率（2%）
 
-	// スポーン停止フラグが立っていない場合、新しい葉っぱを生成する
 	if (!mbStopSpawning && GetRand(100) < LeafSpawn)
 	{
 		LeafParticle p;
 
-		// 画面のスクロール位置を基準にランダムな水平位置でスポーンさせる
-		p.x = static_cast<float>(block.GetScrollX() +
-			GetRand(ScreenSize::ScrrenWidth + kSpawnWidthMargin) - kSpawnOffsetLeft);
+		p.x = static_cast<float>(
+			block.GetScrollX() +
+			GetRand(ScreenSize::ScrrenWidth + kSpawnWidthMargin) -
+			kSpawnOffsetLeft);
+
 		p.y = block.GetScrollY() - kSpawnTopOffset;
 
-		// 落下速度や揺れ具合などの物理パラメータをランダムに決定する
-		p.fallSpeed = kFallSpeedBase + (GetRand(static_cast<int>(kFallSpeedRandom)) / kPhaseScale);
-		p.swaySpeed = kSwaySpeedBase + (GetRand(static_cast<int>(kSwaySpeedRandom)) / 1000.0f);
-		p.swayAmplitude = kSwayAmpBase + (GetRand(static_cast<int>(kSwayAmpRandom)) / kPhaseScale);
+		p.fallSpeed = kFallSpeedBase +
+			GetRand(static_cast<int>(kFallSpeedRandom)) / kPhaseScale;
+		p.swaySpeed = kSwaySpeedBase +
+			GetRand(static_cast<int>(kSwaySpeedRandom)) / 1000.0f;
+		p.swayAmplitude = kSwayAmpBase +
+			GetRand(static_cast<int>(kSwayAmpRandom)) / kPhaseScale;
 		p.phase = GetRand(628) / kPhaseScale;
 		p.rotation = GetRand(628) / kPhaseScale;
-		p.rotationSpeed = (GetRand(static_cast<int>(kRotationSpeedBase * 2.0f)) - kRotationSpeedBase) / kRotationSpeedScale;
-		p.scale = kScaleBase + (GetRand(static_cast<int>(kScaleRandom)) / kPhaseScale);
-		p.isShadow = (GetRand(100) < kShadowProbability);
+		p.rotationSpeed =
+			(GetRand(static_cast<int>(kRotationSpeedBase * 2.0f)) -
+				kRotationSpeedBase) / kRotationSpeedScale;
+		p.scale = kScaleBase +
+			GetRand(static_cast<int>(kScaleRandom)) / kPhaseScale;
+		p.isShadow = GetRand(100) < kShadowProbability;
 
-		// 特定の位置を超えた場合は生成を行わない
+		// ステージ終盤では葉っぱを生成しない
 		if (!(p.x > kMaxSpawnLimitX && !mbStopSpawning))
 		{
 			mLeaves.push_back(p);
