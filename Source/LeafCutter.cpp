@@ -131,12 +131,6 @@ void LeafCutter::LeafDebug()
 	{
 		LeafReset();
 	}
-
-	// デバッグ用
-	if (InputManager::CheckDownKey(KEY_INPUT_3))
-	{
-		mbStopSpawning = !mbStopSpawning;
-	}
 }
 
 // 葉っぱの生成、移動、およびプレイヤーとの当たり判定を更新する

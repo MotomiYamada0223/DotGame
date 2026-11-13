@@ -235,14 +235,6 @@ void StageSelectScene::Move()
 // 更新処理：ステージ移行フェード、タイトル帰還フェード、洞窟内のタイマー処理、キー入力を管理する
 void StageSelectScene::Update()
 {
-	// デバッグで解放している
-	if (InputManager::CheckDownKey(KEY_INPUT_8))
-	{
-		Master::gStageCleared[0] = true;
-		Master::gStageCleared[1] = true;
-		Master::gStageCleared[2] = true;
-	}
-
 	// ステージ突入時の演出タイマー処理
 	if (mIsEnteringStage) {
 		mEnterTimer++;

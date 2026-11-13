@@ -69,24 +69,6 @@ void GameScene::Update()
 	mCart.Update(mBlockMap, mpPlayer);
 	mHotSpring.Update(mBlockMap, mpPlayer);
 
-	// 1キーでプレイヤーの座標を (7200, 700) にワープ (デバッグ用)
-	static bool oneKeyWasDown = false;
-	bool oneKeyIsDown = (CheckHitKey(KEY_INPUT_1) == 1 || CheckHitKey(KEY_INPUT_NUMPAD1) == 1);
-	if (oneKeyIsDown && !oneKeyWasDown)
-	{
-		if (mpPlayer != nullptr)
-		{
-			mpPlayer->SetPosition(VGet(8850.0f, 1800.0f, 0.0f));
-			mpPlayer->SetVelocityY(0.0f);
-			mpPlayer->ResetBossIntroState();
-			mBlockMap.SetCameraLocked(false);
-			mBossIntro.Reset();
-			//mStageClear.Reset();
-		}
-	}
-	oneKeyWasDown = oneKeyIsDown;
-
-
 
 	// ステージクリア演出中はカメラ固定を維持し、画面スクロールを抑止
 	if (mStageClear.IsActive())

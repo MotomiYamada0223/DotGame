@@ -824,29 +824,11 @@ void Player::Update()
 
 void Player::TakeBulletDamage(int damage)
 {
-	if (CheckHitKey(KEY_INPUT_6))
-	{
-		return;
-	}
-
 	TakeDamage(damage);
 	isHitDamage = true;
 
 	if (mHp <= 0 && !isDead)
 	{
-		/*isDead = true;
-		mfCurrentSpeed = 0;
-		Master::gPlayerLive -= 1;
-		mlives = Master::gPlayerLive;
-
-		const int stageIndex = Master::gCurrentStageIndex;
-		if (stageIndex >= 0 && stageIndex < Master::MaxStageCount)
-		{
-			Master::gDeathCounts[stageIndex]++;
-			Master::gTotalDeathCounts[stageIndex]++;
-		}*/
-
-
 		BeginDeath();
 	}
 }
