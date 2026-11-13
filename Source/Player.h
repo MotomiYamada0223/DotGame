@@ -152,7 +152,7 @@ private:
 	bool mbIsJumping;
 	float velocityY;
 	const float gravity = 0.3f; // 元0.5
-	const float jumpPower = -13.0f; // 元12
+	const float jumpPower = -14.0f; // 元12
 	bool isGrounded; // 地面に接地しているかどうか
 	bool mForceGroundedThisFrame; // 外部オブジェクトにより強制接地させるフラグ
 
