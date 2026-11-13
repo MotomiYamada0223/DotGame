@@ -552,7 +552,7 @@ namespace GameLoadDataConstants
 	static constexpr int StageIndexCave = 1;
 
 	// --- プレイヤー初期座標 ---
-	static constexpr float ForestPlayerSpawnX = 100.0f;
+	static constexpr float ForestPlayerSpawnX = 7000.0f;
 	static constexpr float ForestPlayerSpawnY = 1485.0f;
 
 	static constexpr float CavePlayerSpawnX = 100.0f;
