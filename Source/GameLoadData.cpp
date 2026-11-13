@@ -51,12 +51,12 @@ void GameLoadData::LoadInitialize(int stageNumber)
 
 void GameLoadData::LoadDraw()
 {
-	DebugDraw();
+	//DebugDraw();
 }
 
 void GameLoadData::LoadUpdate()
 {
-	DebugUpdate();
+	//DebugUpdate();
 }
 
 

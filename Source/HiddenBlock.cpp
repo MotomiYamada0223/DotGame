@@ -103,11 +103,11 @@ void HiddenBlock::Draw()
 
         if (!mIsRevealed)
         {
-            // 透明時（未出現時）のデバッグ表示：黄色の枠線を描画する
-            int debugColor = GetColor(255, 255, 0);
-            DrawBox(static_cast<int>(screenX), static_cast<int>(screenY), 
-                    static_cast<int>(screenX + mWidth), static_cast<int>(screenY + mHeight), 
-                    debugColor, FALSE);
+        //    // 透明時（未出現時）のデバッグ表示：黄色の枠線を描画する
+        //    int debugColor = GetColor(255, 255, 0);
+        //    DrawBox(static_cast<int>(screenX), static_cast<int>(screenY), 
+        //            static_cast<int>(screenX + mWidth), static_cast<int>(screenY + mHeight), 
+        //            debugColor, FALSE);
         }
         else if (mpTexture != nullptr)
         {
