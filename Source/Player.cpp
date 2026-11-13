@@ -85,7 +85,7 @@ void Player::UpdateStatusByProgress(GameProgress progress)
 	{
 	case GameProgress::Tutorial1:
 		mMaxHp = 15; mHp = 15;
-		mAttack = 5000; mDefense = 5; mMagic = 5;
+		mAttack = 5; mDefense = 5; mMagic = 5;
 		mIsBlinkWallDeathImmune = false;
 		break;
 	case GameProgress::PostTutorial1:
@@ -788,15 +788,6 @@ void Player::Update()
 			}
 		}
 	}
-	// デバッグ用: Kキーで5ダメージ
-	static bool kKeyWasDown = false;
-	bool kKeyIsDown = (CheckHitKey(KEY_INPUT_K) == 1);
-	if (kKeyIsDown && !kKeyWasDown && !isDead)
-	{
-		TakeDamage(5);
-	}
-
-	kKeyWasDown = kKeyIsDown;
 
 	if (mHp <= 0 && !isDead)
 	{

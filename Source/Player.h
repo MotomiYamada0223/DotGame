@@ -152,7 +152,7 @@ private:
 	bool mbIsJumping;
 	float velocityY;
 	const float gravity = 0.3f; // 元0.5
-	const float jumpPower = -15.0f; // 元12
+	const float jumpPower = -13.0f; // 元12
 	bool isGrounded; // 地面に接地しているかどうか
 	bool mForceGroundedThisFrame; // 外部オブジェクトにより強制接地させるフラグ
 
@@ -179,7 +179,7 @@ private:
 	int blinkTimer;
 	int blinkCooldownTimer;
 	const int blinkDuration = 12; // 約0.2秒
-	const float blinkSpeed = 30.0f;
+	const float blinkSpeed = 20.0f;
 	float blinkDirection;
 
 	// ブリンクの時に必要な処理

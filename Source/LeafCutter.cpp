@@ -13,12 +13,12 @@ namespace
 	constexpr float kMaxSpawnLimitX = 7800.0f;     // ステージの進行度に応じて葉っぱの生成を停止するX座標の閾値
 
 	// 物理挙動・ランダム値の係数
-	constexpr float kFallSpeedBase = 0.5f;         // 葉っぱの基本落下速度
+	constexpr float kFallSpeedBase = 0.3f;         // 葉っぱの基本落下速度
 	constexpr float kFallSpeedRandom = 150.0f;     // 落下速度のランダム幅を決める係数
 	constexpr float kSwaySpeedBase = 0.02f;        // 左右の揺れの基本速度
-	constexpr float kSwaySpeedRandom = 40.0f;      // 揺れ速度のランダム幅を決める係数
-	constexpr float kSwayAmpBase = 3.0f;           // 左右の揺れの基本幅（振幅）
-	constexpr float kSwayAmpRandom = 300.0f;       // 揺れの幅のランダム幅を決める係数
+	constexpr float kSwaySpeedRandom = 30.0f;      // 揺れ速度のランダム幅を決める係数
+	constexpr float kSwayAmpBase = 1.8f;           // 左右の揺れの基本幅（振幅）
+	constexpr float kSwayAmpRandom = 180.0f;       // 揺れの幅のランダム幅を決める係数
 	constexpr float kPhaseScale = 100.0f;          // 乱数からラジアンやスケールを算出するためのスケーリング用 divisor
 	constexpr float kRotationSpeedBase = 50.0f;    // 回転速度の基準値（プラスマイナスの振れ幅を作るため）
 	constexpr float kRotationSpeedScale = 800.0f;  // 回転速度を滑らかにするためのスケーリング用 divisor
