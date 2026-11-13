@@ -116,11 +116,11 @@ void LeafCutter::LeafDraw(BlockMap& block)
 			int top = drawY - debagDraw;
 			int bottom = drawY + debagDraw;
 
-			DrawBox(
+			/*DrawBox(
 				left, top, right, bottom,
 				GetColor(255, 0, 0),
 				FALSE
-			);
+			);*/
 		}
 	}
 }
@@ -141,7 +141,7 @@ void LeafCutter::LeafUpdate(BlockMap& block, Player* player)
 		return;
 	}
 
-	// LeafDebug();
+	LeafDebug();
 
 	// スポーン停止フラグが立っていない場合、新しい葉っぱを生成する
 	if (!mbStopSpawning && GetRand(100) < LeafSpawn)
