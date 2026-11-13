@@ -6,6 +6,26 @@
 #include <cmath>
 #include "Master.h"
 
+namespace
+{
+	void PlayBoulderSE(SoundManager::SOUND_SE se)
+	{
+		if (Master::mpGameManager && Master::mpGameManager->GetSoundManager())
+		{
+			Master::mpGameManager->GetSoundManager()->PlaySE(se);
+		}
+	}
+
+	void StopBoulderSE(SoundManager::SOUND_SE se)
+	{
+		if (Master::mpGameManager && Master::mpGameManager->GetSoundManager())
+		{
+			Master::mpGameManager->GetSoundManager()->StopSE(se);
+		}
+	}
+
+
+}
 RollingBoulder::RollingBoulder()
 {
 }
@@ -38,9 +58,12 @@ void RollingBoulder::Reset()
 	mVy = 0.0f;
 	mAngle = 0.0f;
 	mbTriggered = false;
+	mRollTimer = 0;
 	mbActive = true;
 	mDustList.clear();
 
+	StopBoulderSE(SoundManager::SE_STAGE2_BOULDER_LAND);
+	StopBoulderSE(SoundManager::SE_STAGE2_BOULDER_ROLL);
 }
 
 // 土煙・破片パーティクルを生成
@@ -106,6 +129,8 @@ void RollingBoulder::Update(BlockMap& blockMap, Player* player)
 			mVy = 0.0f;
 			mVx = 4.5f;
 			mState = State::Rolling;
+			mRollTimer = 0;
+			PlayBoulderSE(SoundManager::SE_STAGE2_BOULDER_LAND);
 
 			SpawnDust(mX, mY + mRadius, 45, 2.5f);
 		}
@@ -113,6 +138,13 @@ void RollingBoulder::Update(BlockMap& blockMap, Player* player)
 
 	case State::Rolling:
 	{
+		mRollTimer++;
+		if (mRollTimer == 15)
+		{
+			PlayBoulderSE(SoundManager::SE_STAGE2_BOULDER_ROLL);
+		}
+
+
 		auto GetFloorAtX = [&](float probeX) -> int {
 			int searchStart = static_cast<int>(mY + mRadius - 40.0f);
 			for (int py = searchStart; py < searchStart + 350 && py < 2160; ++py)
@@ -145,6 +177,7 @@ void RollingBoulder::Update(BlockMap& blockMap, Player* player)
 		if (foundFloor == -1 || mX >= 4750.0f)
 		{
 			mState = State::Pitfall;
+			StopBoulderSE(SoundManager::SE_STAGE2_BOULDER_ROLL);
 		}
 		else
 		{

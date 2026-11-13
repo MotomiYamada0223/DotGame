@@ -42,6 +42,12 @@ StageSelectScene::~StageSelectScene()
 // 初期化処理：リソースの読み込みとプレイヤー・フラグの初期位置設定を行う
 void StageSelectScene::Initialize()
 {
+	if (Master::mpGameManager && Master::mpGameManager->GetSoundManager())
+	{
+		Master::mpGameManager->GetSoundManager()->StopAllSE();
+		Master::mpGameManager->GetSoundManager()->PlayBGM(SoundManager::BGM_TITLE, false);
+	}
+
 	mapGraphHandle = LoadGraph(BackGroundGraphPath::SelectStageMap.c_str());
 	LoadDivGraph(
 		CharacterGraphPath::PlayerAnimation.c_str(),

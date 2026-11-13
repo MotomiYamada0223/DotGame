@@ -7,6 +7,26 @@
 #include <algorithm>
 #include "Master.h"
 
+namespace
+{
+	void PlayHotSpringSE(SoundManager::SOUND_SE se)
+	{
+		if (Master::mpGameManager && Master::mpGameManager->GetSoundManager())
+		{
+			Master::mpGameManager->GetSoundManager()->PlaySE(se);
+		}
+	}
+
+	void StopHotSpringSE(SoundManager::SOUND_SE se)
+	{
+		if (Master::mpGameManager && Master::mpGameManager->GetSoundManager())
+		{
+			Master::mpGameManager->GetSoundManager()->StopSE(se);
+		}
+	}
+}
+
+
 HotSpring::HotSpring()
 {
 }
@@ -27,8 +47,11 @@ void HotSpring::Reset()
 	mHealPulseTimer = 0;
 	mbPlayerInside = false;
 	mPlayerX = 0.0f;
+	StopHotSpringSE(SoundManager::SE_STAGE2_HOTSPRING_SPLASH);
+	StopHotSpringSE(SoundManager::SE_STAGE2_HP_HEAL);
 	mPlayerY = 0.0f;
 	mParticles.clear();
+	mbWasPlayerInside = false;
 	mFloatingTexts.clear();
 }
 
@@ -274,6 +297,10 @@ void HotSpring::Update(BlockMap& blockMap, Player* player)
 		if (pPos.x >= mLeftX - 5.0f && pPos.x <= mRightX + 5.0f && (pPos.y + 50.0f) >= mBaseWaterY + 15.0f)
 		{
 			mbPlayerInside = true;
+			if (!mbWasPlayerInside)
+			{
+				PlayHotSpringSE(SoundManager::SE_STAGE2_HOTSPRING_SPLASH);
+			}
 			mPlayerX = pPos.x;
 			mPlayerY = pPos.y;
 
@@ -361,6 +388,8 @@ void HotSpring::Update(BlockMap& blockMap, Player* player)
 		}
 		mHeatTimer = 0;
 	}
+
+	mbWasPlayerInside = mbPlayerInside;
 }
 
 void HotSpring::Draw(int scrollX, int scrollY)
