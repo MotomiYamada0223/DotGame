@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "GameConstants.h"
 #include "Object2D.h"
 #include <vector>
 #include <math.h>
@@ -244,6 +245,13 @@ private: // 復活処理関係
 	bool mbInHotSpring = false;
 	float mHotSpringHeat = 0.0f;
 	bool mbSpaceWasPressed = false;
+
+	// 3段階ジャンプ（小・中・大）用
+	PlayerConstants::JumpType mCurrentJumpType = PlayerConstants::JumpType::None;
+	int mJumpHoldFrames = 0;
+	float mJumpStartY = 0.0f;
+	bool mbJumpDetermined = false;
+	bool mbSpaceKeyWasDown = false;
 
 	void BeginDeath();        // 死亡処理の共通化
 	void StartDeathScatter(); // 天使カットイン後の飛び散り開始
