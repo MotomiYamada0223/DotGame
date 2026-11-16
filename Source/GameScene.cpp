@@ -106,7 +106,7 @@ void GameScene::Update()
 		mBlockMap.SetCameraLocked(true);
 	}
 
-	if (mpPlayer->GetPosition().x > 8200.0f);
+	if (mpPlayer->GetPosition().x > 8200.0f)
 	{
 		if (Master::mpGameManager && Master::mpGameManager->GetSoundManager())
 		{
