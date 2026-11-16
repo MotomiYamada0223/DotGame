@@ -42,8 +42,6 @@ StageSelectScene::~StageSelectScene()
 // 初期化処理：リソースの読み込みとプレイヤー・フラグの初期位置設定を行う
 void StageSelectScene::Initialize()
 {
-	
-
 	mapGraphHandle = LoadGraph(BackGroundGraphPath::SelectStageMap.c_str());
 	LoadDivGraph(
 		CharacterGraphPath::PlayerAnimation.c_str(),
@@ -313,6 +311,8 @@ void StageSelectScene::Update()
 	// Enterキーで現在の位置のステージへ入る処理
 	if (InputManager::CheckDownKey(KEY_INPUT_RETURN) && !mIsEnteringStage && !isHidden && !isMoving)
 	{
+		Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_DECIDE, 80);
+
 		int nodeIndex = 0;
 		if (playerX == 236.0f && playerY == 909.0f) nodeIndex = 1;
 		else if (playerX == 676.0f && playerY == 909.0f) nodeIndex = 2;

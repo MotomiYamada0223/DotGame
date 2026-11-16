@@ -375,18 +375,26 @@ void Player::PlayerMove(BlockMap& blockMap)
 	eKeyWasDown = eKeyIsDown;
 
 
+
+
+	// スペースキーの入力状態と押された瞬間を共通で取得する
+	bool spaceKeyIsDown = InputManager::CheckDownKey(KEY_INPUT_SPACE);
+	// 温泉用の押下トリガー（メンバ変数を使用する場合）
+	bool spacePressed = spaceKeyIsDown && !mbSpaceWasPressed;
+	mbSpaceWasPressed = spaceKeyIsDown;
+
+	//SEを鳴らす
+	if (spaceKeyIsDown)
+	{
+		Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_PLAYER_JUMP, 80);
+	}
 	// ジャンプ開始
 	if (mbInHotSpring)
 	{
-		Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_PLAYER_JUMP);
-
 		mActionState.hotSpring = true;
 		// 温泉のぬめり処理：
 		// 1回のジャンプではぬめりで上がれず、重い湯に引きずり込まれる
 		// スペースキーを連打（足掻き）すると少しずつ浮上・脱出可能
-		bool spaceDown = (CheckHitKey(KEY_INPUT_SPACE) == 1);
-		bool spacePressed = spaceDown && !mbSpaceWasPressed;
-		mbSpaceWasPressed = spaceDown;
 
 		if (spacePressed)
 		{
@@ -408,18 +416,14 @@ void Player::PlayerMove(BlockMap& blockMap)
 	}
 	else
 	{
-		// ジャンプ開始（着地後の再入力が必要なようにトリガー判定化）
-		static bool spaceKeyWasDown = false;
-		bool spaceKeyIsDown = (CheckHitKey(KEY_INPUT_SPACE) == 1);
-		if (!mbAutoWalking && !mbAutoWalkArrived && spaceKeyIsDown && !spaceKeyWasDown &&
-			isGrounded)
+		// 通常時のジャンプ開始（着地後の再入力が必要なようにトリガー判定化）
+		if (!mbAutoWalking && !mbAutoWalkArrived && spacePressed && isGrounded)
 		{
 			mActionState.jump = true;
 			mbIsJumping = true;
 			isGrounded = false;
 			velocityY = jumpPower;
 		}
-		spaceKeyWasDown = spaceKeyIsDown;
 	}
 
 

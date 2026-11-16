@@ -32,6 +32,8 @@ void SoundManager::Initialize()
 	LoadBGM(SOUND_BGM::BGM_ANGEL_BATTLE, "Resource/BGM/Angel_Boss.mp3");
 
 	// SE の読み込み
+	LoadSE(SOUND_SE::SE_DECIDE, "Resource/SE/System/Dicide.mp3");
+
 	LoadSE(SOUND_SE::SE_PLAYER_JUMP, "Resource/SE/Player_SE/Jump.mp3");
 	LoadSE(SOUND_SE::SE_PLAYER_BLINK, "Resource/SE/Player_SE/Blink.mp3");
 	LoadSE(SOUND_SE::SE_PLAYER_SWORD, "Resource/SE/Player_SE/Attack.mp3");
@@ -236,15 +238,15 @@ void SoundManager::PlaySE(SOUND_SE se, int volume)
 {
 	for (auto it = mnSeHandleList.begin(); it != mnSeHandleList.end(); it++)
 	{
-		// 一致した種類のSEがあれば
 		if (it->first == se)
 		{
-			// 再生前に音量を設定する
-			ChangeVolumeSoundMem(mnSeVolume * 255 / 100, it->second);
-			// SEをループ再生
-			PlaySoundMem(it->second, DX_PLAYTYPE_BACK); // バックグラウンド再生する
-			// 現在の再生種類を更新
+			// 個別音量(0~100) × 全体SE音量(0~100) を DxLib の 0 255 に変換
+			int finalVolume = volume * mnSeVolume * 255 / (100 * 100);
+			ChangeVolumeSoundMem(finalVolume, it->second);
+
+			PlaySoundMem(it->second, DX_PLAYTYPE_BACK);
 			mnNowPlayingSe = se;
+			break;
 		}
 	}
 }
