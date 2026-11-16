@@ -23,6 +23,11 @@ void TitleScene::Initialize()
 	// プレイヤーの生成 などをここで行う
 	// タイトル画面で必要なオブジェクトをここで生成する
 
+	if (Master::mpGameManager && Master::mpGameManager->GetSoundManager())
+	{
+		Master::mpGameManager->GetSoundManager()->StopAllSE();
+		Master::mpGameManager->GetSoundManager()->PlayBGM(SoundManager::BGM_TITLE, false);
+	}
 
 	// BGM再生
 	//Master::mpSoundManager->PlayBGM(SoundManager::BGM_TITLE);
