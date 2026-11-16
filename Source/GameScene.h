@@ -31,6 +31,8 @@ public:
 	virtual void Draw() override;
 	virtual void Finalize() override;
 
+	void InitBgm();
+
 	void SetTextUpdate(); // チュートリアルテキストの更新
 
 	Player* GetPlayer() { return mpPlayer; }

@@ -19,18 +19,20 @@ TitleScene::~TitleScene()
 
 void TitleScene::Initialize()
 {
-	// タイトルロゴのクラスの作成
-	// プレイヤーの生成 などをここで行う
-	// タイトル画面で必要なオブジェクトをここで生成する
-
-	if (Master::mpGameManager && Master::mpGameManager->GetSoundManager())
+	if (Master::mpGameManager == nullptr)
 	{
-		Master::mpGameManager->GetSoundManager()->StopAllSE();
-		Master::mpGameManager->GetSoundManager()->PlayBGM(SoundManager::BGM_TITLE, false);
+		return;
 	}
 
-	// BGM再生
-	//Master::mpSoundManager->PlayBGM(SoundManager::BGM_TITLE);
+	SoundManager* soundManager =
+		Master::mpGameManager->GetSoundManager();
+
+	if (soundManager == nullptr)
+	{
+		return;
+	}
+
+	soundManager->PlayBGM(SoundManager::BGM_TITLE);
 }
 
 
@@ -44,6 +46,7 @@ void TitleScene::Update()
 		switch (mnSelectIndex)
 		{
 		case 0:
+			Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_DECIDE);
 			Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_TYPE::SCENE_STAGESELECT);
 			break;
 

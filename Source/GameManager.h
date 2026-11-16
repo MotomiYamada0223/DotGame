@@ -18,6 +18,8 @@ public:
 
 	void Update();
 
+	void Initialize();
+
 	SceneManager* GetSceneManager();
 	SoundManager* GetSoundManager();
 	ResourceManager* GetResourceManager();
