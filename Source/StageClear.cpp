@@ -1380,7 +1380,7 @@ void StageClear::Draw() const
 	// 2. クラッカー本体描画（DoorAppearWait以降は非表示）
 	if (mState != State::PreCrackerDelay && mState < State::DoorAppearWait)
 	{
-		PlayStageSE(SoundManager::SE_STAGE1_CRACKER);
+		//PlayStageSE(SoundManager::SE_STAGE1_CRACKER);
 		DrawCrackers();
 		DrawMuzzleFlashes();
 	}
@@ -1391,7 +1391,7 @@ void StageClear::Draw() const
 	// 4. タイトルロゴ落下に伴う地面衝撃エフェクト（DoorAppearWait以降は非表示）
 	if (mState < State::DoorAppearWait)
 	{
-		PlayStageSE(SoundManager::SE_STAGE1_LOGO_DROP);
+		// PlayStageSE(SoundManager::SE_STAGE1_LOGO_DROP);
 		DrawLogoGroundImpact();
 		DrawImpactDust();
 	}

@@ -8,11 +8,11 @@
 
 namespace
 {
-	void PlayBoulderSE(SoundManager::SOUND_SE se)
+	void PlayBoulderSE(SoundManager::SOUND_SE se, int volume)
 	{
 		if (Master::mpGameManager && Master::mpGameManager->GetSoundManager())
 		{
-			Master::mpGameManager->GetSoundManager()->PlaySE(se);
+			Master::mpGameManager->GetSoundManager()->PlaySE(se, volume);
 		}
 	}
 
@@ -23,8 +23,6 @@ namespace
 			Master::mpGameManager->GetSoundManager()->StopSE(se);
 		}
 	}
-
-
 }
 RollingBoulder::RollingBoulder()
 {
@@ -130,7 +128,7 @@ void RollingBoulder::Update(BlockMap& blockMap, Player* player)
 			mVx = 4.5f;
 			mState = State::Rolling;
 			mRollTimer = 0;
-			PlayBoulderSE(SoundManager::SE_STAGE2_BOULDER_LAND);
+			PlayBoulderSE(SoundManager::SE_STAGE2_BOULDER_LAND, 70);
 
 			SpawnDust(mX, mY + mRadius, 45, 2.5f);
 		}
@@ -141,7 +139,7 @@ void RollingBoulder::Update(BlockMap& blockMap, Player* player)
 		mRollTimer++;
 		if (mRollTimer == 15)
 		{
-			PlayBoulderSE(SoundManager::SE_STAGE2_BOULDER_ROLL);
+			PlayBoulderSE(SoundManager::SE_STAGE2_BOULDER_ROLL, 50);
 		}
 
 

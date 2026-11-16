@@ -1724,7 +1724,12 @@ void BossEnemyDragon::DrawBossUI(Player* player, BlockMap& blockMap) const
 	// 2. ボスHPバー表示
 	bool shouldDrawHpBar = true;
 	float fillMultiplier = 1.0f;
-	if (mState == State::EntranceDrop)
+
+	if (player == nullptr || player->GetIsDead())
+	{
+		shouldDrawHpBar = false;
+	}
+	else if (mState == State::EntranceDrop)
 	{
 		shouldDrawHpBar = false;
 	}

@@ -54,6 +54,29 @@ GameScene::GameScene()
 	mbIsLoaded = false;
 }
 
+void GameScene::PlayBossBgm()
+{
+	if (mbBossBgmStarted) return;
+	if (Master::mpGameManager == nullptr) return;
+	SoundManager* sound = Master::mpGameManager->GetSoundManager();
+	if (sound == nullptr) return;
+
+	if (Master::gCurrentStageIndex == 1)
+	{
+		sound->PlayBGM(SoundManager::BGM_STAGE2_BOSS, true);
+	}
+	else if (Master::gCurrentStageIndex == 2)
+	{
+		sound->PlayBGM(SoundManager::BGM_STAGE3_BOSS, true);
+	}
+	else
+	{
+		sound->PlayBGM(SoundManager::BGM_STAGE1_BOSS, true);
+	}
+
+	mbBossBgmStarted = true;
+}
+
 GameScene::~GameScene()
 {
 
@@ -120,16 +143,9 @@ void GameScene::Update()
 		mBlockMap.SetCameraLocked(true);
 	}
 
-	if (mpPlayer->GetPosition().x > 8200.0f)
+	if (mBossIntro.IsActive())
 	{
-		if (Master::mpGameManager && Master::mpGameManager->GetSoundManager())
-		{
-			Master::mpGameManager->GetSoundManager()->PlayBGM(SoundManager::BGM_STAGE1_BOSS, true);
-		}
-		else
-		{
-			Master::mpGameManager->GetSoundManager()->PlayBGM(SoundManager::BGM_STAGE2_BOSS, true);
-		}
+		PlayBossBgm();
 	}
 
 	// チュートリアルテキストの更新

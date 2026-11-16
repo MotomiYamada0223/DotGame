@@ -32,6 +32,8 @@ public:
 	virtual void Finalize() override;
 
 	void InitBgm();
+	void PlayBossBgm();
+
 
 	void SetTextUpdate(); // チュートリアルテキストの更新
 
@@ -66,4 +68,5 @@ private:
 
 	// 円の描画
 	bool mbCircleFlag;
+	bool mbBossBgmStarted = false;   // ボスBGMに切り替え済みか
 };

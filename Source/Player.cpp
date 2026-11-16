@@ -86,7 +86,7 @@ void Player::UpdateStatusByProgress(GameProgress progress)
 	{
 	case GameProgress::Tutorial1:
 		mMaxHp = 15; mHp = 15;
-		mAttack = 5; mDefense = 5; mMagic = 5;
+		mAttack = 5000; mDefense = 5; mMagic = 5;
 		mIsBlinkWallDeathImmune = false;
 		break;
 	case GameProgress::PostTutorial1:
@@ -866,6 +866,7 @@ void Player::StartDeathScatter()
 	}
 
 	mDeadState = 1;
+	Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_PLAYER_SHATTER, 80);
 
 	const int fragSize = 16;
 	const int srcBaseX = mPlayerState.GetCurrentFrame() * PlayerAnimState::FRAME_WIDTH;
@@ -1310,92 +1311,6 @@ void Player::DeadProcess()
 	}
 }
 
-
-/*void Player::DeadProcess()
-{
-	if (mbDeath) return;
-
-	deadTimer++;
-
-	if (mDeadState == 1) // 飛び散り
-	{
-		for (auto& frag : mFragments)
-		{
-			frag.pos.x += frag.vel.x;
-
-			if (mpBlockMap &&
-				mCharacterPhysics.IsBlockCollision(
-					*mpBlockMap,
-					frag.pos.x,
-					frag.pos.y,
-					static_cast<float>(frag.width),
-					static_cast<float>(frag.height)))
-			{
-				frag.pos.x -= frag.vel.x;
-				frag.vel.x *= -0.6f;
-			}
-
-			frag.pos.y += frag.vel.y;
-
-			if (mpBlockMap &&
-				mCharacterPhysics.IsBlockCollision(
-					*mpBlockMap,
-					frag.pos.x,
-					frag.pos.y,
-					static_cast<float>(frag.width),
-					static_cast<float>(frag.height)))
-			{
-				frag.pos.y -= frag.vel.y;
-				frag.vel.y *= -0.4f;
-				frag.vel.x *= 0.9f; // 摩擦
-			}
-		}
-
-		if (deadTimer > 150) // 2.5秒経過
-		{
-			mDeadState = 2; // 戻り
-			deadTimer = 0;
-			for (auto& frag : mFragments)
-			{
-				frag.vel.y = -5.0f - ((float)GetRand(50) / 10.0f);
-				frag.vel.x = ((float)GetRand(100) / 100.0f * 4.0f) - 2.0f;
-			}
-		}
-	}
-	else if (mDeadState == 2) // 戻り
-	{
-		bool allReturned = true;
-
-		for (auto& frag : mFragments)
-		{
-			float targetX =
-				mSpawnPos.x -
-				(PlayerAnimState::FRAME_WIDTH / 2.0f) +
-				frag.srcX;
-
-			float targetY =
-				mSpawnPos.y -
-				(PlayerAnimState::FRAME_HEIGHT / 2.0f) +
-				(frag.srcY % PlayerAnimState::FRAME_HEIGHT);
-
-			float dx = targetX - frag.pos.x;
-			float dy = targetY - frag.pos.y;
-			float dist = sqrtf(dx * dx + dy * dy);
-
-			if (dist > 2.0f)
-			{
-				frag.pos.x += dx * 0.05f;
-				frag.pos.y += dy * 0.05f;
-				allReturned = false;
-			}
-			else
-			{
-				frag.pos.x = targetX;
-				frag.pos.y = targetY;
-			}
-		}
-	}
-}*/
 
 // 復活した時に位置とHPを戻す処理
 void Player::Revive()
