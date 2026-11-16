@@ -19,13 +19,13 @@ public:   // enum, struct などの定義
 		BGM_STAGE2_BOSS,   // ステージ2 ボス戦のBGM
 		BGM_STAGE3,        // ステージ3のBGM
 		BGM_STAGE3_BOSS,   // ステージ3 ボス戦のBGM
-		BGM_GAMEOVER,      // ゲームオーバーのBGM
 		BGM_ANGEL_BATTLE,  // 3Dバトル（天使戦）のBGM
 	};
 
 	enum SOUND_SE  // SEの種類
 	{
 		SE_DECIDE = 0,             // 決定音
+		SE_GAMEOVER,              // ゲームオーバーのBGM
 		SE_PLAYER_JUMP,            // プレイヤー：ジャンプSE
 		SE_PLAYER_BLINK,           // プレイヤー：ブリンクSE
 		SE_PLAYER_SWORD,           // プレイヤー：剣攻撃SE

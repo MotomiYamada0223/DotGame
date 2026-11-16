@@ -28,11 +28,12 @@ void SoundManager::Initialize()
 	LoadBGM(SOUND_BGM::BGM_STAGE2_BOSS, "Resource/BGM/Stage2_Boss.mp3");
 	LoadBGM(SOUND_BGM::BGM_STAGE3, "Resource/BGM/Stage_BGM.mp3");
 	LoadBGM(SOUND_BGM::BGM_STAGE3_BOSS, "Resource/BGM/Stage3_Boss.mp3");
-	LoadBGM(SOUND_BGM::BGM_GAMEOVER, "Resource/BGM/GameOver.mp3");
 	LoadBGM(SOUND_BGM::BGM_ANGEL_BATTLE, "Resource/BGM/Angel_Boss.mp3");
 
 	// SE の読み込み
 	LoadSE(SOUND_SE::SE_DECIDE, "Resource/SE/System/Dicide.mp3");
+	LoadSE(SOUND_SE::SE_GAMEOVER, "Resource/SE/System/GameOver.mp3");
+
 
 	LoadSE(SOUND_SE::SE_PLAYER_JUMP, "Resource/SE/Player_SE/Jump.mp3");
 	LoadSE(SOUND_SE::SE_PLAYER_BLINK, "Resource/SE/Player_SE/Blink.mp3");

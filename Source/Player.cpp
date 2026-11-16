@@ -16,10 +16,10 @@
 #include "PlayerActionState.h"
 #include "SoundManager.h"
 
-
 namespace
 {
 	const int kScatterFrames = 150;      // 飛び散りの時間（この後GAME OVER）
+	const int kGameOverTextFrames = 20;  // GAME OVERの文字が出始めるフレーム
 	const int kGameOverMenuFrames = 25;  // GAME OVER後、この時間から入力を受け付ける
 }
 
@@ -557,6 +557,13 @@ void Player::Update()
 		if (mDeathPhase == 3)
 		{
 			mGameOverFadeTimer++;
+
+			// GAME OVERの文字が表示され始めた瞬間に1回だけ鳴らす
+			if (mGameOverFadeTimer == kGameOverTextFrames)
+			{
+				Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_GAMEOVER, 50);
+			}
+
 			UpdateGameOver();
 		}
 		return;
@@ -802,22 +809,6 @@ void Player::Update()
 
 	if (mHp <= 0 && !isDead)
 	{
-		//isDead = true;
-		//mfCurrentSpeed = 0;
-		//Master::gPlayerLive -= 1;
-		//mlives = Master::gPlayerLive; // 表示用に同期
-
-		//const int stageIndex = Master::gCurrentStageIndex;
-		//if (stageIndex >= 0 && stageIndex < Master::MaxStageCount)
-		//{
-		//	// 現在のステージでの死亡回数
-		//	Master::gDeathCounts[stageIndex]++;
-
-		//	// これまでの累計死亡回数
-		//	Master::gTotalDeathCounts[stageIndex]++;
-		//}
-
-
 		BeginDeath();
 	}
 
@@ -1593,11 +1584,6 @@ void Player::DrawGameOver()
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, uiAlpha);
 
 	auto* font = Master::mpGameManager->GetFontManager();
-
-	if (Master::mpGameManager && Master::mpGameManager->GetSoundManager())
-	{
-		Master::mpGameManager->GetSoundManager()->PlayBGM(SoundManager::BGM_GAMEOVER, true, false);
-	}
 
 	// 1. GAME OVER 大見出し
 	const int titleX = ScreenSize::CenterX - 380;

@@ -7,7 +7,7 @@
 namespace
 {
 	// 葉っぱの挙動に関する定数
-	constexpr int   kSpawnWidthMargin = 800;       // 画面幅に対して左右に広げるスポーン範囲のマージン（画面外から自然に降らせるため）
+	constexpr int   kSpawnWidthMargin = 400;       // 画面幅に対して左右に広げるスポーン範囲のマージン（画面外から自然に降らせるため）
 	constexpr int   kSpawnOffsetLeft = 400;        // スポーン開始位置を画面左側にオフセットする幅（中央基準にするため）
 	constexpr float kSpawnTopOffset = 50.0f;       // 画面上部から少し上にスポーンさせるためのオフセット
 	constexpr float kMaxSpawnLimitX = 7800.0f;     // ステージの進行度に応じて葉っぱの生成を停止するX座標の閾値
