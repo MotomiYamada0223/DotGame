@@ -14,6 +14,14 @@
 
 StageClear* StageClear::sInstance = nullptr;
 
+static void PlayStageSE(SoundManager::SOUND_SE se)
+{
+	if (Master::mpGameManager && Master::mpGameManager->GetSoundManager())
+	{
+		Master::mpGameManager->GetSoundManager()->PlaySE(se);
+	}
+}
+
 StageClear::StageClear()
 	: mState(State::Inactive)
 	, mTimer(0)
@@ -709,6 +717,7 @@ void StageClear::DrawLogoGroundImpact(const BlockMap* pBlockMap) const
 	int groundY = static_cast<int>(StageClearConstants::LogoGroundY - shakeY);
 
 }
+
 void StageClear::Update(Player* player, BlockMap* pBlockMap)
 {
 	mpBlockMap = pBlockMap;
@@ -1371,6 +1380,7 @@ void StageClear::Draw() const
 	// 2. クラッカー本体描画（DoorAppearWait以降は非表示）
 	if (mState != State::PreCrackerDelay && mState < State::DoorAppearWait)
 	{
+		PlayStageSE(SoundManager::SE_STAGE1_CRACKER);
 		DrawCrackers();
 		DrawMuzzleFlashes();
 	}
@@ -1381,6 +1391,7 @@ void StageClear::Draw() const
 	// 4. タイトルロゴ落下に伴う地面衝撃エフェクト（DoorAppearWait以降は非表示）
 	if (mState < State::DoorAppearWait)
 	{
+		PlayStageSE(SoundManager::SE_STAGE1_LOGO_DROP);
 		DrawLogoGroundImpact();
 		DrawImpactDust();
 	}

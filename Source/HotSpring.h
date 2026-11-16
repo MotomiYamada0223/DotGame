@@ -35,6 +35,7 @@ private:
 	int mHeatTimer = 0;
 	int mHealPulseTimer = 0;
 	bool mbPlayerInside = false;
+	bool mbWasPlayerInside = false;
 	float mPlayerX = 0.0f;
 	float mPlayerY = 0.0f;
 

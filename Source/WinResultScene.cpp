@@ -18,6 +18,14 @@ WinResultScene::~WinResultScene()
 
 void WinResultScene::Initialize()
 {
+
+	if (Master::mpGameManager && Master::mpGameManager->GetSoundManager())
+	{
+		Master::mpGameManager->GetSoundManager()->StopAllSE();
+		Master::mpGameManager->GetSoundManager()->PlayBGM(SoundManager::BGM_TITLE, true);
+	}
+
+
 	// 天使のセッターとテキストのゲッターの紐づけをする
 	mSaint.SetIsTextCompletedChecker([this]()
 	{

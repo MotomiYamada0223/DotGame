@@ -14,6 +14,36 @@
 #include "FeintFloor.h"
 #include "ObjectManager.h"
 
+
+static void PlayStageSE(SoundManager::SOUND_SE se)
+{
+	if (Master::mpGameManager && Master::mpGameManager->GetSoundManager())
+	{
+		Master::mpGameManager->GetSoundManager()->PlaySE(se);
+	}
+}
+
+static void PlayStageBGM(bool isTop)
+{
+	if (Master::mpGameManager == nullptr) return;
+	SoundManager* sound = Master::mpGameManager->GetSoundManager();
+	if (sound == nullptr) return;
+
+	if (Master::gCurrentStageIndex == 1)
+	{
+		sound->PlayBGM(SoundManager::BGM_STAGE2, isTop);
+	}
+	else if (Master::gCurrentStageIndex == 2)
+	{
+		sound->PlayBGM(SoundManager::BGM_STAGE3, isTop);
+	}
+	else
+	{
+		sound->PlayBGM(SoundManager::BGM_STAGE1, isTop);
+	}
+}
+
+
 GameScene::GameScene()
 	:Scene()
 	, mSaint(VGet(Utility::SCREEN_WIDTH / 2.0f, 150.0f, 0.0f)) // 天使の作成
@@ -74,6 +104,18 @@ void GameScene::Update()
 	if (mStageClear.IsActive())
 	{
 		mBlockMap.SetCameraLocked(true);
+	}
+
+	if (mpPlayer->GetPosition().x > 8200.0f);
+	{
+		if (Master::mpGameManager && Master::mpGameManager->GetSoundManager())
+		{
+			Master::mpGameManager->GetSoundManager()->PlayBGM(SoundManager::BGM_STAGE1_BOSS, true);
+		}
+		else
+		{
+			Master::mpGameManager->GetSoundManager()->PlayBGM(SoundManager::BGM_STAGE2_BOSS, true);
+		}
 	}
 
 	// チュートリアルテキストの更新

@@ -14,6 +14,24 @@
 #include <cstdio>
 #include <cstdlib>
 
+namespace
+{
+	void PlayDragonSE(SoundManager::SOUND_SE se)
+	{
+		if (Master::mpGameManager && Master::mpGameManager->GetSoundManager())
+		{
+			Master::mpGameManager->GetSoundManager()->PlaySE(se);
+		}
+	}
+
+	void StopDragonSE(SoundManager::SOUND_SE se)
+	{
+		if (Master::mpGameManager && Master::mpGameManager->GetSoundManager())
+		{
+			Master::mpGameManager->GetSoundManager()->StopSE(se);
+		}
+	}
+}
 
 BossEnemyDragon::BossEnemyDragon(VECTOR initPos)
 	: Enemy("Resource/Enemy/Dragon/animation_dragon/new_idle/sprite_idle1.png", initPos)
@@ -276,6 +294,10 @@ void BossEnemyDragon::TriggerDefeatRetreat(GameScene* gameScene)
 	isDamaged = false;
 	isDeadBlinking = false;
 
+
+	StopDragonSE(SoundManager::SE_STAGE2_DRAGON_BREATH);
+
+
 	// 残っている炎や火の玉・アーチ炎・画面揺れをすべて即座にクリア
 	mFireGimmick.ClearAll();
 
@@ -432,6 +454,7 @@ void BossEnemyDragon::UpdateEntranceDrop(Player* player, GameScene* gameScene)
 	// 床に着地したら EntranceWait へ移行し、着陸アニメーション後半（砂煙エフェクト 3..6）を再生
 	if (isGrounded)
 	{
+		PlayDragonSE(SoundManager::SE_STAGE2_DRAGON_ROAR);
 		if (mpBlockMap != nullptr)
 		{
 			mpBlockMap->StartCameraShake(
@@ -678,6 +701,8 @@ void BossEnemyDragon::UpdateGroundAttack(float roomMinX, float roomMaxX)
 			mStateTimer = 0;
 			mAnimFrame = 2; // 溜めフレームを飛ばしてすぐ攻撃へ
 			mAnimTimer = 0;
+			PlayDragonSE(SoundManager::SE_STAGE2_DRAGON_NORMAL_ATTACK);
+
 		}
 	}
 	else if (mAttackPhase == 2 || mAttackPhase == 4)
@@ -952,6 +977,7 @@ void BossEnemyDragon::UpdateAirDiveAttack(Player* player, float dx, float roomMi
 			mStateTimer = 0;
 			mAnimFrame = 3; // 攻撃判定が発生する斬撃フレームへ即移行
 			mAnimTimer = 0;
+			PlayDragonSE(SoundManager::SE_STAGE2_DRAGON_NORMAL_ATTACK);
 
 			// 強襲着地時の火花＆画面揺れ
 			mFireGimmick.SpawnDiveLandingSparks(mvPosition.x, mFacingDirection);

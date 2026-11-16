@@ -48,6 +48,7 @@ private:
 	float mAngle = 0.0f;      // 転がり回転角度（ラジアン）
 	bool mbTriggered = false; // 起動済みフラグ
 	bool mbActive = true;     // アクティブフラグ
+	int mRollTimer = 0;       // 転がり経過フレーム（SEタイミング制御用）
 	int mGraphHandle = -1;    // 岩の画像ハンドル
 
 	// 岩の土煙・破片パーティクル

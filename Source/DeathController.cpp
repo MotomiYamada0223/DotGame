@@ -5,6 +5,7 @@
 #include "InputManager.h"
 #include "TutorialTextManager.h"
 #include <cmath>
+#include "SoundManager.h"
 
 // このファイル内だけで使用する定数・補助関数をまとめる。
 namespace
@@ -141,6 +142,7 @@ void DeathController::Update(const FrameContext& ctx)
 		mPreFlashTimer++;
 		if (mPreFlashTimer >= kPreFlashFrames)
 		{
+			Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_PLAYER_DEATH_FLASHBACK);
 			// 死因に対応する死亡テキストを開始
 			if (text) text->OnPlayerDead(mDeathType);
 			mPhase = Phase::CutIn;

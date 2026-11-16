@@ -217,6 +217,7 @@ private:
 private: // 復活処理関係
 	void Revive();
 	bool mbDeath = false; // 死亡判定
+	bool mbSe = false;
 
 	// ========== 死亡演出フェーズ管理 ==========
 	// 0: 通常

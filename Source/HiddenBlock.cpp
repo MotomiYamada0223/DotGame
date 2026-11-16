@@ -90,6 +90,9 @@ void HiddenBlock::Update()
             
             // プレイヤーの頭をぶつけさせて落下させる
             player->SetVelocityY(0.0f);
+            //Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_STAGE1_HEAD_BONK);
+
+
         }
     }
 }

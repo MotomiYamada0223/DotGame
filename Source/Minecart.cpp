@@ -6,6 +6,27 @@
 #include <cmath>
 #include "Master.h"
 
+
+namespace
+{
+	void PlayMinecartSE(SoundManager::SOUND_SE se)
+	{
+		if (Master::mpGameManager && Master::mpGameManager->GetSoundManager())
+		{
+			Master::mpGameManager->GetSoundManager()->PlaySE(se);
+		}
+	}
+
+	void StopMinecartSE(SoundManager::SOUND_SE se)
+	{
+		if (Master::mpGameManager && Master::mpGameManager->GetSoundManager())
+		{
+			Master::mpGameManager->GetSoundManager()->StopSE(se);
+		}
+	}
+}
+
+
 Minecart::Minecart()
 {
 }
@@ -52,6 +73,9 @@ void Minecart::Reset()
 	mbHasJumped = false;
 	mBobTimer = 0;
 	mParticles.clear();
+
+	StopMinecartSE(SoundManager::SE_STAGE2_MINECART_START);
+	StopMinecartSE(SoundManager::SE_STAGE2_MINECART_DASH);
 }
 
 // 三角台の当たり判定（コリジョン）を消去して破壊
@@ -170,6 +194,7 @@ void Minecart::Update(BlockMap& blockMap, Player* player)
 			{
 				mState = State::RollingLeft;
 				mVx = -2.5f; // ゆっくり線路へ向かう
+				PlayMinecartSE(SoundManager::SE_STAGE2_MINECART_START);
 				SpawnWheelSparks(mX - 18.0f, mY + 20.0f, true);
 				SpawnWheelSparks(mX + 18.0f, mY + 20.0f, true);
 			}
@@ -190,6 +215,7 @@ void Minecart::Update(BlockMap& blockMap, Player* player)
 		if (mX <= 5530.0f)
 		{
 			mState = State::SuperBoostLeft;
+			StopMinecartSE(SoundManager::SE_STAGE2_MINECART_START);
 			mVx = -26.0f; // 猛スピード！
 			SpawnBoostFlames(mX + 35.0f, mY, true);
 		}

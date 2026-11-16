@@ -4,9 +4,13 @@
 class Player;
 class BlockMap;
 
+
+
+
 class StageClear
 {
 public:
+
 	enum class State
 	{
 		Inactive,          

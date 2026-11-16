@@ -14,7 +14,20 @@
 #include "BlockAction.h"
 #include "InputManager.h"
 #include "PlayerActionState.h"
+#include "SoundManager.h"
 
+namespace
+{
+	bool sInfiniteHp = false;
+
+	void PlayPlayerSE(SoundManager::SOUND_SE se)
+	{
+		if (Master::mpGameManager && Master::mpGameManager->GetSoundManager())
+		{
+			Master::mpGameManager->GetSoundManager()->PlaySE(se);
+		}
+	}
+}
 
 namespace
 {
@@ -364,6 +377,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 	bool eKeyIsDown = ((CheckHitKey(KEY_INPUT_LSHIFT) == 1) || (CheckHitKey(KEY_INPUT_RSHIFT) == 1));
 	if (!mbAutoWalking && !mbAutoWalkArrived && eKeyIsDown && !eKeyWasDown && !isBlinking && blinkCooldownTimer <= 0 && mfMoveDirection != 0.0f)
 	{
+		PlayPlayerSE(SoundManager::SE_PLAYER_BLINK);
 		mActionState.blink = true;
 		isBlinking = true;
 		blinkTimer = blinkDuration;
@@ -375,6 +389,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 	// ジャンプ開始
 	if (mbInHotSpring)
 	{
+		PlayPlayerSE(SoundManager::SE_PLAYER_JUMP);
 		mActionState.hotSpring = true;
 		// 温泉のぬめり処理：
 		// 1回のジャンプではぬめりで上がれず、重い湯に引きずり込まれる
@@ -403,6 +418,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 	}
 	else
 	{
+		PlayPlayerSE(SoundManager::SE_PLAYER_JUMP);
 		// ジャンプ開始（着地後の再入力が必要なようにトリガー判定化）
 		static bool spaceKeyWasDown = false;
 		bool spaceKeyIsDown = (CheckHitKey(KEY_INPUT_SPACE) == 1);
@@ -424,6 +440,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 	if (!mbAutoWalking && !mbAutoWalkArrived && CheckHitKey(KEY_INPUT_F) == 1 &&
 		!isAttacking)
 	{
+		PlayPlayerSE(SoundManager::SE_PLAYER_SWORD);
 		mActionState.attack = true;
 		isAttacking = true;
 		attackTimer = attackDuration;
@@ -1279,6 +1296,12 @@ void Player::DeadProcess()
 	// 破片の物理（重力・ブロック衝突）。元の位置へは戻らない
 	for (auto& frag : mFragments)
 	{
+		if (!mbSe)
+		{
+			mbSe = true;
+			Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_PLAYER_DEATH_FLASHBACK);
+		}
+
 		frag.vel.y += 0.45f;
 
 		frag.pos.x += frag.vel.x;
@@ -1576,6 +1599,12 @@ void Player::DrawGameOver()
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, uiAlpha);
 
 	auto* font = Master::mpGameManager->GetFontManager();
+
+	if (Master::mpGameManager && Master::mpGameManager->GetSoundManager())
+	{
+		Master::mpGameManager->GetSoundManager()->StopAllSE();
+		Master::mpGameManager->GetSoundManager()->PlayBGM(SoundManager::BGM_GAMEOVER, true, false);
+	}
 
 	// 1. GAME OVER 大見出し
 	const int titleX = ScreenSize::CenterX - 380;
