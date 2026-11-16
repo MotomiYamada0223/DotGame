@@ -384,9 +384,9 @@ void Player::PlayerMove(BlockMap& blockMap)
 	mbSpaceWasPressed = spaceKeyIsDown;
 
 	//SEを鳴らす
-	if (spaceKeyIsDown)
+	if (spaceKeyIsDown && !mbIsJumping)
 	{
-		Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_PLAYER_JUMP, 80);
+		Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_PLAYER_JUMP, 40);
 	}
 	// ジャンプ開始
 	if (mbInHotSpring)

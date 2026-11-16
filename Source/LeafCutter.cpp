@@ -38,9 +38,6 @@ namespace
 	constexpr float kPlayerHalfWidth = 16.0f;      // プレイヤーの当たり判定の幅の半分
 	constexpr float kPlayerHalfHeight = 50.0f;     // プレイヤーの当たり判定の高さの半分
 	constexpr float kLeafHalfSize = 12.0f;         // 葉っぱの当たり判定の矩形サイズ（中心からの半径相当）
-
-	// 葉っぱ生成確率
-	constexpr int MaxLeafSpawn = 3; // 葉っぱの生成確率今は2%
 }
 
 LeafCutter::LeafCutter()
@@ -143,7 +140,7 @@ void LeafCutter::LeafUpdate(BlockMap& block, Player* player)
 
 	LeafDebug();
 	// 葉っぱの生成確率
-	constexpr int LeafSpawn = MaxLeafSpawn; // 1フレームごとの生成確率（2%）
+	constexpr int LeafSpawn = 2;
 
 	if (!mbStopSpawning && GetRand(100) < LeafSpawn)
 	{

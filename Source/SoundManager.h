@@ -102,7 +102,7 @@ public:   // サウンド再生系  こっちは関数
 	// SE再生
 	// SEは短い音なので最初から再生のは入れなくて良い
 	// 大きさ追した 0306 マスターまでに間に合うとよいがな
-	void PlaySE(SOUND_SE se, int volume = 255);
+	void PlaySE(SOUND_SE se, int volume = 100);
 
 	// BGMの読み込み
 	void LoadBGM(SOUND_BGM bgm, std::string filename);
