@@ -267,6 +267,7 @@ void BossEnemySlime::StartJumpAttack()
 
 void BossEnemySlime::HandleLanding(BlockMap& blockMap)
 {
+    Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_STAGE1_SLIME_LAND);
     mGroundY = FindGroundY(blockMap, mvPosition.x);
     mvPosition.y = GetLandingCenterY(mGroundY);
 
@@ -671,6 +672,8 @@ void BossEnemySlime::Update()
                 // 収束完了 -> ビーム照射（10, 11枚目再生）へ
                 mBeamPhase = BeamPhase::Firing;
                 mPhaseTimer = 0;
+
+                Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_STAGE1_BEAM_FIRE);
             }
         }
         else if (mBeamPhase == BeamPhase::Firing)

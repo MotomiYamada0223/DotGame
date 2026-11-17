@@ -237,6 +237,7 @@ void LeafCutter::LeafCollision(Player* player)
 				// プレイヤーと葉っぱの矩形が交差しているか判定する
 				if (leafRight > pLeft && leafLeft < pRight && leafBot > pTop && leafTop < pBot)
 				{
+					Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_STAGE1_LEAF_DEATH);
 					// 葉っぱによるダメージを適用して死亡原因を設定する
 					player->SetDeathReason(DeathReason::DeathType::Leaf);
 					player->TakeDamage(player->GetHp());

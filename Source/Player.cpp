@@ -639,6 +639,7 @@ void Player::Update()
 			// GAME OVERの文字が表示され始めた瞬間に1回だけ鳴らす
 			if (mGameOverFadeTimer == kGameOverTextFrames)
 			{
+				Master::mpGameManager->GetSoundManager()->StopBGM();
 				Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_GAMEOVER, 50);
 			}
 
