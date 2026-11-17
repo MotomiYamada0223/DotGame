@@ -42,6 +42,20 @@ namespace PlayerConstants
 	static const int PlayerDeathHeight = 3000;
 	// Wキー・Sキー長押しによるステージ裏・表落下判定フレーム数
 	static constexpr int FallThroughHoldFrames = 30;
+
+	// 3段階ジャンプ（小・中・大）用定数
+	enum class JumpType
+	{
+		None,
+		Small,  // 小ジャンプ
+		Mid,    // 中ジャンプ
+		Large   // 大ジャンプ
+	};
+
+	static constexpr int   SmallJumpMaxHoldFrames = 7;      // 小ジャンプ判定の最大押下フレーム数（〜約0.11秒）
+	static constexpr int   MidJumpMaxHoldFrames   = 18;     // 中ジャンプ判定の最大押下フレーム数（〜約0.30秒）
+	static constexpr float SmallJumpTargetHeight  = 105.0f; // 小ジャンプの目標頂点高さ（px）
+	static constexpr float MidJumpTargetHeight    = 205.0f; // 中ジャンプの目標頂点高さ（px）
 }
 
 // UI画像
@@ -604,7 +618,6 @@ namespace GameLoadDataConstants
 	static constexpr float ForestSlime2PosX = 4000.0f;
 	static constexpr float ForestSlime2PosY = 1500.0f;
 
-	// 針トラップ（NeedleTrap）
 	static constexpr float ForestNeedle1PosX = 1404.0f;
 	static constexpr float ForestNeedle1PosY = 1490.0f;
 

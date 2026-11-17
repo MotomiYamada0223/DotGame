@@ -15,6 +15,8 @@
 #include "InputManager.h"
 #include "PlayerActionState.h"
 #include "SoundManager.h"
+#include <algorithm>
+#include <cmath>
 
 namespace
 {
@@ -33,6 +35,11 @@ Player::Player(VECTOR initPos)
 	isGrounded = true;
 	mForceGroundedThisFrame = false;
 	velocityY = 0.0f;
+	mCurrentJumpType = PlayerConstants::JumpType::None;
+	mJumpHoldFrames = 0;
+	mJumpStartY = 0.0f;
+	mbJumpDetermined = false;
+	mbSpaceKeyWasDown = false;
 	isFacingRight = true;
 	isAttacking = false;
 	attackTimer = 0;
@@ -288,12 +295,73 @@ void Player::PlayerMove(BlockMap& blockMap)
 
 	// キャラクターの物理処理
 	float currentGravity = gravity;
+
+	// 3段階ジャンプ（小・中・大）の判定と高度調節
+	if (!isGrounded && velocityY < 0.0f && mbIsJumping)
+	{
+		if (!mbJumpDetermined)
+		{
+			const bool spaceHeld = (CheckHitKey(KEY_INPUT_SPACE) == 1);
+			if (spaceHeld)
+			{
+				mJumpHoldFrames++;
+				// 一定時間以上長押しした場合は大ジャンプに決定
+				if (mJumpHoldFrames > PlayerConstants::MidJumpMaxHoldFrames)
+				{
+					mCurrentJumpType = PlayerConstants::JumpType::Large;
+					mbJumpDetermined = true;
+				}
+			}
+			else
+			{
+				// キーが離されたタイミングでジャンプの種類を確定
+				mbJumpDetermined = true;
+				float targetHeight = 0.0f;
+
+				if (mJumpHoldFrames <= PlayerConstants::SmallJumpMaxHoldFrames)
+				{
+					// 小ジャンプ
+					mCurrentJumpType = PlayerConstants::JumpType::Small;
+					targetHeight = PlayerConstants::SmallJumpTargetHeight;
+				}
+				else
+				{
+					// 中ジャンプ
+					mCurrentJumpType = PlayerConstants::JumpType::Mid;
+					targetHeight = PlayerConstants::MidJumpTargetHeight;
+				}
+
+				// 現在の上昇量から目標高度に到達するために必要な速度を算出
+				const float currentRise = mJumpStartY - mvPosition.y;
+				const float remainingHeight = targetHeight - currentRise;
+				if (remainingHeight > 0.0f)
+				{
+					velocityY = -std::sqrt(2.0f * gravity * remainingHeight);
+				}
+				else
+				{
+					velocityY = 0.0f; // 既に目標高度を超えている場合は頂点とする
+				}
+			}
+		}
+	}
+	else
+	{
+		// 下降開始（頂点通過）または接地時は状態をリセット
+		mCurrentJumpType = PlayerConstants::JumpType::None;
+		mbJumpDetermined = false;
+		mJumpHoldFrames = 0;
+	}
+
 	if (isBlinking)
 	{
 		currentSpeed = blinkSpeed;
 		currentGravity = 0.0f;
 		velocityY = 0.0f; // 落下を止める
 		mfMoveDirection = blinkDirection; // ブリンク開始時の方向に固定
+		mCurrentJumpType = PlayerConstants::JumpType::None;
+		mbJumpDetermined = false;
+		mJumpHoldFrames = 0;
 	}
 
 	mfCurrentSpeed = currentSpeed; // 今の速さの代入
@@ -416,14 +484,24 @@ void Player::PlayerMove(BlockMap& blockMap)
 	}
 	else
 	{
+		// ジャンプ開始（着地後の再入力が必要なようにトリガー判定化）
+		bool spaceKeyIsDown = (CheckHitKey(KEY_INPUT_SPACE) == 1);
+		if (!mbAutoWalking && !mbAutoWalkArrived && spaceKeyIsDown && !mbSpaceKeyWasDown &&
+			isGrounded)
 		// 通常時のジャンプ開始（着地後の再入力が必要なようにトリガー判定化）
 		if (!mbAutoWalking && !mbAutoWalkArrived && spacePressed && isGrounded)
 		{
+			PlayPlayerSE(SoundManager::SE_PLAYER_JUMP);
 			mActionState.jump = true;
 			mbIsJumping = true;
 			isGrounded = false;
 			velocityY = jumpPower;
+			mCurrentJumpType = PlayerConstants::JumpType::None;
+			mJumpHoldFrames = 1;
+			mJumpStartY = mvPosition.y;
+			mbJumpDetermined = false;
 		}
+		mbSpaceKeyWasDown = spaceKeyIsDown;
 	}
 
 
@@ -1338,6 +1416,11 @@ void Player::Revive()
 	mbIsJumping = false;
 	isGrounded = true;
 	velocityY = 0.0f;
+	mCurrentJumpType = PlayerConstants::JumpType::None;
+	mJumpHoldFrames = 0;
+	mJumpStartY = 0.0f;
+	mbJumpDetermined = false;
+	mbSpaceKeyWasDown = false;
 
 	// ブリンク状態をリセット
 	isBlinking = false;
