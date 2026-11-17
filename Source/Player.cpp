@@ -833,6 +833,7 @@ void Player::Update()
 							if (dynamic_cast<EnemySlime*>(enemy) != nullptr)
 							{
 								mDeathReason = DeathReason::DeathType::EnemySlime;
+								Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_SLIME_EAT, 80);
 							}
 							else if (dynamic_cast<EnemySkeleton*>(enemy) != nullptr)
 							{

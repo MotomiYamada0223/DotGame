@@ -54,7 +54,6 @@ private:
     bool mIsCharging;
     bool mHasChargedThisAttack;
     int mChargeTimer;
-    bool mHasPlayedEatSE;   // 飛びつき接触時のEATを1回だけ鳴らすためのフラグ
 
 protected:
     float mMoveSpeed;
