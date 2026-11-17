@@ -1505,7 +1505,6 @@ void BossEnemySlime::DrawHpBar() const
     const int barRight = barLeft + totalWidth;
     const int barBottom = barTop + totalHeight;
 
-    // ボス名テキスト「キングスライミー」
     DrawFormatString(barLeft + 2, barTop - 22, GetColor(255, 255, 255), "キングスライミー");
 
     // バーの内側背景（黒〜暗色のベーススロット）
