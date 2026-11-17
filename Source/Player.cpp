@@ -20,20 +20,8 @@
 
 namespace
 {
-	bool sInfiniteHp = false;
-
-	void PlayPlayerSE(SoundManager::SOUND_SE se)
-	{
-		if (Master::mpGameManager && Master::mpGameManager->GetSoundManager())
-		{
-			Master::mpGameManager->GetSoundManager()->PlaySE(se);
-		}
-	}
-}
-
-namespace
-{
 	const int kScatterFrames = 150;      // 飛び散りの時間（この後GAME OVER）
+	const int kGameOverTextFrames = 20;  // GAME OVERの文字が出始めるフレーム
 	const int kGameOverMenuFrames = 25;  // GAME OVER後、この時間から入力を受け付ける
 }
 
@@ -105,7 +93,7 @@ void Player::UpdateStatusByProgress(GameProgress progress)
 	{
 	case GameProgress::Tutorial1:
 		mMaxHp = 15; mHp = 15;
-		mAttack = 5; mDefense = 5; mMagic = 5;
+		mAttack = 5000; mDefense = 5; mMagic = 5;
 		mIsBlinkWallDeathImmune = false;
 		break;
 	case GameProgress::PostTutorial1:
@@ -445,7 +433,8 @@ void Player::PlayerMove(BlockMap& blockMap)
 	bool eKeyIsDown = ((CheckHitKey(KEY_INPUT_LSHIFT) == 1) || (CheckHitKey(KEY_INPUT_RSHIFT) == 1));
 	if (!mbAutoWalking && !mbAutoWalkArrived && eKeyIsDown && !eKeyWasDown && !isBlinking && blinkCooldownTimer <= 0 && mfMoveDirection != 0.0f)
 	{
-		PlayPlayerSE(SoundManager::SE_PLAYER_BLINK);
+		Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_PLAYER_BLINK);
+
 		mActionState.blink = true;
 		isBlinking = true;
 		blinkTimer = blinkDuration;
@@ -454,17 +443,26 @@ void Player::PlayerMove(BlockMap& blockMap)
 	eKeyWasDown = eKeyIsDown;
 
 
+
+
+	// スペースキーの入力状態と押された瞬間を共通で取得する
+	bool spaceKeyIsDown = InputManager::CheckDownKey(KEY_INPUT_SPACE);
+	// 温泉用の押下トリガー（メンバ変数を使用する場合）
+	bool spacePressed = spaceKeyIsDown && !mbSpaceWasPressed;
+	mbSpaceWasPressed = spaceKeyIsDown;
+
+	//SEを鳴らす
+	if (spaceKeyIsDown && !mbIsJumping)
+	{
+		Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_PLAYER_JUMP, 40);
+	}
 	// ジャンプ開始
 	if (mbInHotSpring)
 	{
-		PlayPlayerSE(SoundManager::SE_PLAYER_JUMP);
 		mActionState.hotSpring = true;
 		// 温泉のぬめり処理：
 		// 1回のジャンプではぬめりで上がれず、重い湯に引きずり込まれる
 		// スペースキーを連打（足掻き）すると少しずつ浮上・脱出可能
-		bool spaceDown = (CheckHitKey(KEY_INPUT_SPACE) == 1);
-		bool spacePressed = spaceDown && !mbSpaceWasPressed;
-		mbSpaceWasPressed = spaceDown;
 
 		if (spacePressed)
 		{
@@ -490,6 +488,8 @@ void Player::PlayerMove(BlockMap& blockMap)
 		bool spaceKeyIsDown = (CheckHitKey(KEY_INPUT_SPACE) == 1);
 		if (!mbAutoWalking && !mbAutoWalkArrived && spaceKeyIsDown && !mbSpaceKeyWasDown &&
 			isGrounded)
+		// 通常時のジャンプ開始（着地後の再入力が必要なようにトリガー判定化）
+		if (!mbAutoWalking && !mbAutoWalkArrived && spacePressed && isGrounded)
 		{
 			PlayPlayerSE(SoundManager::SE_PLAYER_JUMP);
 			mActionState.jump = true;
@@ -511,7 +511,8 @@ void Player::PlayerMove(BlockMap& blockMap)
 	if (!mbAutoWalking && !mbAutoWalkArrived && CheckHitKey(KEY_INPUT_F) == 1 &&
 		!isAttacking)
 	{
-		PlayPlayerSE(SoundManager::SE_PLAYER_SWORD);
+		Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_PLAYER_SWORD);
+
 		mActionState.attack = true;
 		isAttacking = true;
 		attackTimer = attackDuration;
@@ -634,6 +635,13 @@ void Player::Update()
 		if (mDeathPhase == 3)
 		{
 			mGameOverFadeTimer++;
+
+			// GAME OVERの文字が表示され始めた瞬間に1回だけ鳴らす
+			if (mGameOverFadeTimer == kGameOverTextFrames)
+			{
+				Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_GAMEOVER, 50);
+			}
+
 			UpdateGameOver();
 		}
 		return;
@@ -879,22 +887,6 @@ void Player::Update()
 
 	if (mHp <= 0 && !isDead)
 	{
-		//isDead = true;
-		//mfCurrentSpeed = 0;
-		//Master::gPlayerLive -= 1;
-		//mlives = Master::gPlayerLive; // 表示用に同期
-
-		//const int stageIndex = Master::gCurrentStageIndex;
-		//if (stageIndex >= 0 && stageIndex < Master::MaxStageCount)
-		//{
-		//	// 現在のステージでの死亡回数
-		//	Master::gDeathCounts[stageIndex]++;
-
-		//	// これまでの累計死亡回数
-		//	Master::gTotalDeathCounts[stageIndex]++;
-		//}
-
-
 		BeginDeath();
 	}
 
@@ -952,6 +944,7 @@ void Player::StartDeathScatter()
 	}
 
 	mDeadState = 1;
+	Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_PLAYER_SHATTER, 80);
 
 	const int fragSize = 16;
 	const int srcBaseX = mPlayerState.GetCurrentFrame() * PlayerAnimState::FRAME_WIDTH;
@@ -1397,92 +1390,6 @@ void Player::DeadProcess()
 }
 
 
-/*void Player::DeadProcess()
-{
-	if (mbDeath) return;
-
-	deadTimer++;
-
-	if (mDeadState == 1) // 飛び散り
-	{
-		for (auto& frag : mFragments)
-		{
-			frag.pos.x += frag.vel.x;
-
-			if (mpBlockMap &&
-				mCharacterPhysics.IsBlockCollision(
-					*mpBlockMap,
-					frag.pos.x,
-					frag.pos.y,
-					static_cast<float>(frag.width),
-					static_cast<float>(frag.height)))
-			{
-				frag.pos.x -= frag.vel.x;
-				frag.vel.x *= -0.6f;
-			}
-
-			frag.pos.y += frag.vel.y;
-
-			if (mpBlockMap &&
-				mCharacterPhysics.IsBlockCollision(
-					*mpBlockMap,
-					frag.pos.x,
-					frag.pos.y,
-					static_cast<float>(frag.width),
-					static_cast<float>(frag.height)))
-			{
-				frag.pos.y -= frag.vel.y;
-				frag.vel.y *= -0.4f;
-				frag.vel.x *= 0.9f; // 摩擦
-			}
-		}
-
-		if (deadTimer > 150) // 2.5秒経過
-		{
-			mDeadState = 2; // 戻り
-			deadTimer = 0;
-			for (auto& frag : mFragments)
-			{
-				frag.vel.y = -5.0f - ((float)GetRand(50) / 10.0f);
-				frag.vel.x = ((float)GetRand(100) / 100.0f * 4.0f) - 2.0f;
-			}
-		}
-	}
-	else if (mDeadState == 2) // 戻り
-	{
-		bool allReturned = true;
-
-		for (auto& frag : mFragments)
-		{
-			float targetX =
-				mSpawnPos.x -
-				(PlayerAnimState::FRAME_WIDTH / 2.0f) +
-				frag.srcX;
-
-			float targetY =
-				mSpawnPos.y -
-				(PlayerAnimState::FRAME_HEIGHT / 2.0f) +
-				(frag.srcY % PlayerAnimState::FRAME_HEIGHT);
-
-			float dx = targetX - frag.pos.x;
-			float dy = targetY - frag.pos.y;
-			float dist = sqrtf(dx * dx + dy * dy);
-
-			if (dist > 2.0f)
-			{
-				frag.pos.x += dx * 0.05f;
-				frag.pos.y += dy * 0.05f;
-				allReturned = false;
-			}
-			else
-			{
-				frag.pos.x = targetX;
-				frag.pos.y = targetY;
-			}
-		}
-	}
-}*/
-
 // 復活した時に位置とHPを戻す処理
 void Player::Revive()
 {
@@ -1675,12 +1582,6 @@ void Player::DrawGameOver()
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, uiAlpha);
 
 	auto* font = Master::mpGameManager->GetFontManager();
-
-	if (Master::mpGameManager && Master::mpGameManager->GetSoundManager())
-	{
-		Master::mpGameManager->GetSoundManager()->StopAllSE();
-		Master::mpGameManager->GetSoundManager()->PlayBGM(SoundManager::BGM_GAMEOVER, true, false);
-	}
 
 	// 1. GAME OVER 大見出し
 	const int titleX = ScreenSize::CenterX - 380;

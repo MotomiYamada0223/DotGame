@@ -18,6 +18,14 @@ namespace ScreenSize
 	static const int CenterY = ScrrenHeight / 2;
 }
 
+// 音量に関する設定
+namespace SoundSetting
+{
+	static constexpr int VolumeMin = 0;
+	static constexpr int VolumeMax = 100;
+}
+
+
 // プレイヤー関係
 namespace PlayerConstants
 {

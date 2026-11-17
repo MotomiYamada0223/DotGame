@@ -1,14 +1,17 @@
 ﻿#include "SoundManager.h"
 #include "DxLib.h"
-#include <cmath>
+#include "Master.h"
+#include <fstream>
+#include "GameConstants.h"
 
 SoundManager::SoundManager()
-	: mnNowPlayingBgm((SOUND_BGM)-1)  // 初期は何も再生されていない状態
-	, mnNowPlayingSe((SOUND_SE)-1)    // 初期は何も再生されていない状態
-	, mnBgmVolume(255)
+	: mnNowPlayingBgm((SOUND_BGM)-1)
+	, mnNowPlayingSe((SOUND_SE)-1)
+	, mnBgmVolume(SoundSetting::VolumeMax)
+	, mnSeVolume(SoundSetting::VolumeMax)
 {
-
 }
+
 
 SoundManager::~SoundManager()
 {
@@ -25,10 +28,13 @@ void SoundManager::Initialize()
 	LoadBGM(SOUND_BGM::BGM_STAGE2_BOSS, "Resource/BGM/Stage2_Boss.mp3");
 	LoadBGM(SOUND_BGM::BGM_STAGE3, "Resource/BGM/Stage_BGM.mp3");
 	LoadBGM(SOUND_BGM::BGM_STAGE3_BOSS, "Resource/BGM/Stage3_Boss.mp3");
-	LoadBGM(SOUND_BGM::BGM_GAMEOVER, "Resource/BGM/GameOver.mp3");
 	LoadBGM(SOUND_BGM::BGM_ANGEL_BATTLE, "Resource/BGM/Angel_Boss.mp3");
 
 	// SE の読み込み
+	LoadSE(SOUND_SE::SE_DECIDE, "Resource/SE/System/Dicide.mp3");
+	LoadSE(SOUND_SE::SE_GAMEOVER, "Resource/SE/System/GameOver.mp3");
+
+
 	LoadSE(SOUND_SE::SE_PLAYER_JUMP, "Resource/SE/Player_SE/Jump.mp3");
 	LoadSE(SOUND_SE::SE_PLAYER_BLINK, "Resource/SE/Player_SE/Blink.mp3");
 	LoadSE(SOUND_SE::SE_PLAYER_SWORD, "Resource/SE/Player_SE/Attack.mp3");
@@ -60,22 +66,50 @@ void SoundManager::Initialize()
 	LoadSE(SOUND_SE::SE_STAGE2_DRAGON_BREATH, "Resource/SE/Stage2_SE/Dragon_Breath.mp3");
 	LoadSE(SOUND_SE::SE_STAGE2_DRAGON_FIREBALL_LAND, "Resource/SE/Stage2_SE/Dragon_FireBall.mp3");
 
-	/*LoadSE(SOUND_SE::SE_3D_PLAYER_COMBO1,            "Resource/SE/3DPlayer_SE/Three-stage_Attack1.mp3", 1.8f);
-	LoadSE(SOUND_SE::SE_3D_PLAYER_COMBO2,            "Resource/SE/3DPlayer_SE/Three-stage_Attack2.mp3", 1.8f);
-	LoadSE(SOUND_SE::SE_3D_PLAYER_COMBO3,            "Resource/SE/3DPlayer_SE/Three-stage_Attack3.mp3", 1.8f);
-	LoadSE(SOUND_SE::SE_3D_PLAYER_ICE_MAGIC,         "Resource/SE/3DPlayer_SE/Ice_Magic.mp3", 2.2f);
-	LoadSE(SOUND_SE::SE_3D_PLAYER_TIMESTOP,          "Resource/SE/3DPlayer_SE/Time_Stop.mp3", 3.5f);
-	LoadSE(SOUND_SE::SE_3D_PLAYER_FLURRY_HIT,        "Resource/SE/3DPlayer_SE/Wild_Slash.mp3", 2.6f, 12, true);
-	LoadSE(SOUND_SE::SE_3D_PLAYER_FLURRY_FINISH,     "Resource/SE/3DPlayer_SE/Vertical_Cut.mp3", 2.5f);
-	LoadSE(SOUND_SE::SE_3D_PLAYER_FREEZE_ULT,        "Resource/SE/3DPlayer_SE/Freeze.mp3");
-	LoadSE(SOUND_SE::SE_3D_PLAYER_FREEZE_SHATTER,    "Resource/SE/3DPlayer_SE/Freeze_Destruction.mp3");
-	LoadSE(SOUND_SE::SE_3D_PLAYER_CUTIN,             "Resource/SE/3DPlayer_SE/Cut_In.mp3", 2.0f);
-	LoadSE(SOUND_SE::SE_3D_ANGEL_LASER,              "Resource/SE/3DEnemy_SE/Angel_Beam.mp3", 2.4f);
-	LoadSE(SOUND_SE::SE_3D_ANGEL_DASH,               "Resource/SE/3DEnemy_SE/Angel_Charge.mp3", 2.0f);
-	LoadSE(SOUND_SE::SE_3D_ANGEL_THUNDER,            "Resource/SE/3DEnemy_SE/Lightning.mp3", 1.2f, 4, true);
-	LoadSE(SOUND_SE::SE_3D_ANGEL_CIRCLE_SHOT,        "Resource/SE/3DEnemy_SE/Magic_Boll.mp3", 1.2f, 4, true);*/
+	LoadVolume();
 }
 
+// 毎フレーム呼ばれる更新処理
+void SoundManager::Update()
+{
+	// 登録されている遅延SEを全部チェック
+	for (auto& s : seQueue)
+	{
+		s.timer--; // カウントダウン
+
+		// タイマーが0以下になったら再生
+		if (s.timer <= 0)
+		{
+			PlaySE((SOUND_SE)s.se); // SEを再生
+		}
+	}
+
+	// 再生し終わったものを削除する
+	seQueue.erase(
+		std::remove_if(seQueue.begin(), seQueue.end(),
+			[](DelayedSE& s)
+			{
+				return s.timer <= 0; // タイマー終わったやつ消す
+			}),
+		seQueue.end()
+	);
+
+	if (mbFadeOut)
+	{
+		mnFadeVolume -= 1;
+
+		if (mnFadeVolume < 0)
+			mnFadeVolume = 0;
+
+		ChangeVolume(mnFadeVolume);
+
+		if (mnFadeVolume == 0)
+		{
+			StopBGM();
+			mbFadeOut = false;
+		}
+	}
+}
 
 void SoundManager::Finalize()
 {
@@ -90,60 +124,128 @@ void SoundManager::Finalize()
 	{
 		DeleteSoundMem(it->second);
 	}
-	mnBgmHandleList.clear();
-	mnSeHandleList.clear();
-	mnOverlapSeList.clear();
-	mnNowPlayingBgm = (SOUND_BGM)-1;
-	mnNowPlayingSe = (SOUND_SE)-1;
-	mnBgmVolume = 255;
 }
 
-void SoundManager::PlayBGM(SOUND_BGM bgm, bool isTop, bool isLoop)
+
+void SoundManager::PlayBGM(SOUND_BGM bgm, bool isTop, int volume)
 {
-	// 現在再生されているBGMと同じ、かつ、最初からの再生ではないのであればそのまま継続する
+	mnFadeVolume = mnBgmVolume;
+	mbFadeOut = false;
+
+	// 現在再生されているBGMと同じかつ
+	// 最初からの再生ではないのであれば return する
 	if (mnNowPlayingBgm == bgm && !isTop)
 	{
-		for (auto it = mnBgmHandleList.begin(); it != mnBgmHandleList.end(); it++)
+		return;
+	}
+
+	//  現在再生中のBGMを止める
+	// 今流れているBGMを探して停メル
+	for (auto it = mnBgmHandleList.begin(); it != mnBgmHandleList.end(); it++)
+	{
+		if (it->first == mnNowPlayingBgm)
 		{
-			if (it->first == bgm && CheckSoundMem(it->second) == 1)
+			if (CheckSoundMem(it->second))
 			{
-				return;
+				StopSoundMem(it->second);
 			}
+			break;
 		}
 	}
 
-	// 別のBGMへの切り替え、または頭出し再生時は再生中のBGMをすべて停止する
-	StopBGM();
-
+	// 新しいBGMのハンドルを取得して再生
 	for (auto it = mnBgmHandleList.begin(); it != mnBgmHandleList.end(); it++)
 	{
-		// 一致した種類のBGMがあれば
 		if (it->first == bgm)
 		{
-			ChangeVolumeSoundMem(mnBgmVolume, it->second);
-			const int playType = isLoop ? DX_PLAYTYPE_LOOP : DX_PLAYTYPE_BACK;
-			PlaySoundMem(it->second, playType, isTop ? TRUE : FALSE);
+			// 再生する前に音量を設定する
+			ChangeVolumeSoundMem(volume * mnBgmVolume / 255, it->second);
+			//ChangeVolumeSoundMem(mnBgmVolume * 255 / 100, it->second);
+			// BGMをループ再生
+			PlaySoundMem(it->second, DX_PLAYTYPE_LOOP, TRUE); // ループ再生
 			// 現在の再生種類を更新
 			mnNowPlayingBgm = bgm;
+		}
+	}
+}
+
+
+// 音量変えたい
+void SoundManager::ChangeVolume(int volume)
+{
+	// 何も再生していないなら何もしない
+	if (mnNowPlayingBgm == BgmNone) return;
+
+	// すでに再生中のBGMがあるか確認
+	int currentHandle = -1;
+	for (auto it = mnBgmHandleList.begin(); it != mnBgmHandleList.end(); it++)
+	{
+		if (it->first == mnNowPlayingBgm)
+		{
+			currentHandle = it->second;
+			break;
+		}
+	}
+
+	// 見つかったら音量を変更
+	if (currentHandle != -1)
+	{
+		ChangeVolumeSoundMem(volume, currentHandle);
+	}
+}
+
+// 音量変えたいSE追加した
+void SoundManager::Change_SE_Volume(SOUND_SE se, int volume)
+{
+	// 指定されたSE探し
+	int targetHandle = -1;
+	for (auto it = mnSeHandleList.begin(); it != mnSeHandleList.end(); it++)
+	{
+		if (it->first == se)
+		{
+			targetHandle = it->second;
+			break;
+		}
+	}
+
+	// 見つかったらその SE の音量だけを変更
+	if (targetHandle != -1)
+	{
+		ChangeVolumeSoundMem(volume, targetHandle);
+	}
+}
+
+
+// 指定したSEを個別に止める関数
+void SoundManager::StopSE(SOUND_SE se)
+{
+	// SEのリストから 止めたいSEを探す
+	for (auto it = mnSeHandleList.begin(); it != mnSeHandleList.end(); it++)
+	{
+		if (it->first == se)
+		{
+			// 再生中かどうか確認して止める
+			if (CheckSoundMem(it->second))
+			{
+				StopSoundMem(it->second);
+			}
 			break;
 		}
 	}
 }
-void SoundManager::PlaySE(SOUND_SE se)
+
+
+void SoundManager::PlaySE(SOUND_SE se, int volume)
 {
 	for (auto it = mnSeHandleList.begin(); it != mnSeHandleList.end(); it++)
 	{
-		// 一致した種類のSEがあれば
 		if (it->first == se)
 		{
-			// 重ね再生が許可されていないSEは一度止めてから再生する
-			if (!IsOverlapSE(se) && CheckSoundMem(it->second) == 1)
-			{
-				StopSoundMem(it->second);
-			}
-			// SEを1回のみバックグラウンド再生する
-			PlaySoundMem(it->second, DX_PLAYTYPE_BACK, TRUE);
-			// 現在の再生種類を更新
+			// 個別音量(0~100) × 全体SE音量(0~100) を DxLib の 0 255 に変換
+			int finalVolume = volume * mnSeVolume * 255 / (100 * 100);
+			ChangeVolumeSoundMem(finalVolume, it->second);
+
+			PlaySoundMem(it->second, DX_PLAYTYPE_BACK);
 			mnNowPlayingSe = se;
 			break;
 		}
@@ -177,14 +279,12 @@ void SoundManager::LoadBGM(SOUND_BGM bgm, std::string filename)
 
 	// 読み込んだハンドルをリストに追加
 	// 読み込ん札ハンドルと、タイプ（種類）を一緒に追加
-
 	// std::pair の一個めの変数（種類）がfirst とされている
 	// pair の一つ目の要素を表していた
-
 	// strust
 	// {
 	//  SOUND_BGM bgm;
-	// int handle;
+	//  int handle;
 	// }
 	// が、std::pair<SOUND_BGM, int>
 
@@ -192,27 +292,7 @@ void SoundManager::LoadBGM(SOUND_BGM bgm, std::string filename)
 }
 
 
-namespace
-{
-	int BoostSample16SoftClip(int sample, float gain)
-	{
-		float x = (static_cast<float>(sample) / 32768.0f) * gain;
-		float ax = fabsf(x);
-		// 0.70まではリニア増幅し、それ以上はC1連続のtanhカーブで滑らかに抑えて音圧を稼ぐ
-		if (ax > 0.70f)
-		{
-			float over = (ax - 0.70f) / 0.30f;
-			float comp = 0.70f + 0.30f * tanhf(over);
-			x = (x >= 0.0f) ? comp : -comp;
-		}
-		int out = static_cast<int>(x * 32767.0f);
-		if (out > 32767) out = 32767;
-		if (out < -32767) out = -32767;
-		return out;
-	}
-}
-
-void SoundManager::LoadSE(SOUND_SE se, std::string filename, float gain, int bufferNum, bool allowOverlap)
+void SoundManager::LoadSE(SOUND_SE se, std::string filename)
 {
 	bool check = false; // 重複して読み込んでいるかどうか
 	for (auto it = mnSeHandleList.begin(); it != mnSeHandleList.end(); it++)
@@ -230,119 +310,206 @@ void SoundManager::LoadSE(SOUND_SE se, std::string filename, float gain, int buf
 		return;
 	}
 
-	int handle = -1;
-	if (gain > 1.001f)
-	{
-		int softHandle = LoadSoftSound(filename.c_str());
-		if (softHandle != -1)
-		{
-			int channels = 0;
-			int bitsPerSample = 0;
-			int samplesPerSec = 0;
-			int isFloatType = 0;
-			LONGLONG sampleNum = GetSoftSoundSampleNum(softHandle);
-			if (GetSoftSoundFormat(softHandle, &channels, &bitsPerSample, &samplesPerSec, &isFloatType) == 0 &&
-				isFloatType == 0 && bitsPerSample == 16 && sampleNum > 0)
-			{
-				for (LONGLONG i = 0; i < sampleNum; ++i)
-				{
-					int ch1 = 0;
-					int ch2 = 0;
-					ReadSoftSoundData(softHandle, i, &ch1, &ch2);
-					ch1 = BoostSample16SoftClip(ch1, gain);
-					if (channels >= 2)
-					{
-						ch2 = BoostSample16SoftClip(ch2, gain);
-					}
-					WriteSoftSoundData(softHandle, i, ch1, ch2);
-				}
-				handle = LoadSoundMemFromSoftSound(softHandle, bufferNum);
-			}
-			DeleteSoftSound(softHandle);
-		}
-	}
-
-	// 通常読み込み（またはSoftSound増幅からのフォールバック）
-	if (handle == -1)
-	{
-		handle = LoadSoundMem(filename.c_str(), bufferNum);
-	}
+	// ファイル読み込み
+	int handle = LoadSoundMem(filename.c_str());
 	if (handle == -1) // -1だと失敗
 	{
 		return;   // 読み込み失敗したら何もしない
 	}
 
 	mnSeHandleList.push_back(std::pair<SOUND_SE, int>(se, handle));
-	if (allowOverlap)
-	{
-		mnOverlapSeList.push_back(se);
-	}
 }
+
 
 void SoundManager::StopBGM()
 {
 	for (auto it = mnBgmHandleList.begin(); it != mnBgmHandleList.end(); it++)
 	{
-		if (CheckSoundMem(it->second))
+		// 今現在再生しているBGMと比較させる
+		if (it->first == mnNowPlayingBgm)
 		{
-			StopSoundMem(it->second); // BGMの停止
+			// BGMが再生されているかのif文
+			//          もし再生されていたら
+			if (CheckSoundMem(it->second))
+			{
+				StopSoundMem(it->second); // BGMの停止
+				break;
+			}
 		}
-		ChangeVolumeSoundMem(255, it->second);
 	}
-	mnNowPlayingBgm = (SOUND_BGM)-1;
-	mnBgmVolume = 255;
+
+	// チュートリアルから戻ったときにBGMが再生されないから
+	mnNowPlayingBgm = BgmNone;
 }
 
-void SoundManager::StopSE(SOUND_SE se)
+void SoundManager::PlaySE_Loop(SOUND_SE se, int volume)
 {
 	for (auto it = mnSeHandleList.begin(); it != mnSeHandleList.end(); it++)
 	{
 		if (it->first == se)
 		{
+			// すでに鳴っていたら二重に鳴らさない
 			if (CheckSoundMem(it->second))
 			{
-				StopSoundMem(it->second);
+				return;
 			}
+
+			// ボリューム
+			ChangeVolumeSoundMem(volume, it->second);
+			PlaySoundMem(it->second, DX_PLAYTYPE_LOOP);
 			break;
 		}
 	}
 }
 
-void SoundManager::StopAllSE()
+// 菊池
+// 遅延してSEを再生する
+void SoundManager::PlaySEDelay(SOUND_SE se, int delay)
 {
-	for (auto it = mnSeHandleList.begin(); it != mnSeHandleList.end(); it++)
-	{
-		if (CheckSoundMem(it->second))
-		{
-			StopSoundMem(it->second);
-		}
-	}
-	mnNowPlayingSe = (SOUND_SE)-1;
+	// 「このSEを〇フレーム後に鳴らす」という予約を追加
+	seQueue.push_back({ se, delay });
 }
 
+
+void SoundManager::StartFadeOut()
+{
+	if (mbFadeOut) return;
+
+	mbFadeOut = true;
+}
+
+// BGMの音量変えるやつ
 void SoundManager::SetBGMVolume(int volume)
 {
-	if (volume < 0) volume = 0;
-	if (volume > 255) volume = 255;
-	if (mnBgmVolume == volume)
+	if (volume < SoundSetting::VolumeMin)
 	{
-		return;
+		volume = SoundSetting::VolumeMin;
 	}
-	mnBgmVolume = volume;
-	for (auto it = mnBgmHandleList.begin(); it != mnBgmHandleList.end(); it++)
+	if (volume > SoundSetting::VolumeMax)
 	{
-		ChangeVolumeSoundMem(mnBgmVolume, it->second);
+		volume = SoundSetting::VolumeMax;
+	}
+
+	mnBgmVolume = volume;
+
+	for (auto& bgm : mnBgmHandleList)
+	{
+		if (bgm.first == mnNowPlayingBgm)
+		{
+			ChangeVolumeSoundMem(
+				mnBgmVolume,
+				bgm.second
+			);
+		}
 	}
 }
 
-bool SoundManager::IsOverlapSE(SOUND_SE se) const
+// SEの音量を変えるやつ
+void SoundManager::SetSEVolume(int volume)
 {
-	for (auto it = mnOverlapSeList.begin(); it != mnOverlapSeList.end(); it++)
+	if (volume < SoundSetting::VolumeMin)
 	{
-		if (*it == se)
+		volume = SoundSetting::VolumeMin;
+	}
+
+	if (volume > SoundSetting::VolumeMax)
+	{
+		volume = SoundSetting::VolumeMax;
+	}
+
+	mnSeVolume = volume;
+}
+// ボリュームのロード
+void SoundManager::SaveVolume()
+{
+	std::ofstream ofs("Volume.txt");
+
+	if (ofs)
+	{
+		ofs << "BGM=" << mnBgmVolume << std::endl;
+		ofs << "SE=" << mnSeVolume << std::endl;
+	}
+}
+
+
+void SoundManager::LoadVolume()
+{
+	// デフォルト値
+	mnBgmVolume = SoundSetting::VolumeMax;
+	mnSeVolume = SoundSetting::VolumeMax;
+
+	std::ifstream ifs("Volume.txt");
+
+	// ファイルが存在しない場合
+	if (!ifs)
+	{
+		SaveVolume();
+		return;
+	}
+
+	std::string line;
+
+	// BGM
+	if (std::getline(ifs, line))
+	{
+		size_t pos = line.find('=');
+
+		if (pos != std::string::npos)
 		{
-			return true;
+			try
+			{
+				int volume = std::stoi(line.substr(pos + 1));
+
+				if (volume >= SoundSetting::VolumeMin &&
+					volume <= SoundSetting::VolumeMax)
+				{
+					mnBgmVolume = volume;
+				}
+			}
+			catch (...)
+			{
+				// 数値として読めなかったらデフォルト100のまま
+			}
 		}
 	}
-	return false;
+
+	// SE
+	if (std::getline(ifs, line))
+	{
+		size_t pos = line.find('=');
+
+		if (pos != std::string::npos)
+		{
+			try
+			{
+				int volume = std::stoi(line.substr(pos + 1));
+
+				// 0～100なら採用
+				if (volume >= SoundSetting::VolumeMin && volume <= SoundSetting::VolumeMax)
+				{
+					mnSeVolume = volume;
+				}
+			}
+			catch (...)
+			{
+				// 数値として読めなかったらデフォルト100のまま
+			}
+		}
+	}
 }
+
+
+
+// ボリュームのセーブ
+int SoundManager::GetBGMVolume()
+{
+	return mnBgmVolume;
+}
+
+// SEのセーブ
+int SoundManager::GetSEVolume()
+{
+	return mnSeVolume;
+}
+
+

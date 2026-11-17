@@ -15,15 +15,7 @@
 #include "ObjectManager.h"
 
 
-static void PlayStageSE(SoundManager::SOUND_SE se)
-{
-	if (Master::mpGameManager && Master::mpGameManager->GetSoundManager())
-	{
-		Master::mpGameManager->GetSoundManager()->PlaySE(se);
-	}
-}
-
-static void PlayStageBGM(bool isTop)
+void GameScene::InitBgm()
 {
 	if (Master::mpGameManager == nullptr) return;
 	SoundManager* sound = Master::mpGameManager->GetSoundManager();
@@ -31,17 +23,18 @@ static void PlayStageBGM(bool isTop)
 
 	if (Master::gCurrentStageIndex == 1)
 	{
-		sound->PlayBGM(SoundManager::BGM_STAGE2, isTop);
+		sound->PlayBGM(SoundManager::BGM_STAGE2);
 	}
 	else if (Master::gCurrentStageIndex == 2)
 	{
-		sound->PlayBGM(SoundManager::BGM_STAGE3, isTop);
+		sound->PlayBGM(SoundManager::BGM_STAGE3);
 	}
 	else
 	{
-		sound->PlayBGM(SoundManager::BGM_STAGE1, isTop);
+		sound->PlayBGM(SoundManager::BGM_STAGE1);
 	}
 }
+
 
 
 GameScene::GameScene()
@@ -61,6 +54,29 @@ GameScene::GameScene()
 	mbIsLoaded = false;
 }
 
+void GameScene::PlayBossBgm()
+{
+	if (mbBossBgmStarted) return;
+	if (Master::mpGameManager == nullptr) return;
+	SoundManager* sound = Master::mpGameManager->GetSoundManager();
+	if (sound == nullptr) return;
+
+	if (Master::gCurrentStageIndex == 1)
+	{
+		sound->PlayBGM(SoundManager::BGM_STAGE2_BOSS, true);
+	}
+	else if (Master::gCurrentStageIndex == 2)
+	{
+		sound->PlayBGM(SoundManager::BGM_STAGE3_BOSS, true);
+	}
+	else
+	{
+		sound->PlayBGM(SoundManager::BGM_STAGE1_BOSS, true);
+	}
+
+	mbBossBgmStarted = true;
+}
+
 GameScene::~GameScene()
 {
 
@@ -68,6 +84,8 @@ GameScene::~GameScene()
 
 void GameScene::Initialize()
 {
+	InitBgm();
+
 	// 天使のセッターとテキストのゲッターの紐づけをする
 	mSaint.SetIsTextCompletedChecker([this]()
 	{
@@ -86,6 +104,25 @@ void GameScene::Initialize()
 	mStageClear.Reset();
 
 	MovingFloor::s_IsReverseAndDashTriggered = false;
+
+
+	if (Master::mpGameManager == nullptr) return;
+	SoundManager* sound = Master::mpGameManager->GetSoundManager();
+	if (sound == nullptr) return;
+
+	if (Master::gCurrentStageIndex == 1)
+	{
+		sound->PlayBGM(SoundManager::BGM_STAGE2);
+	}
+	else if (Master::gCurrentStageIndex == 2)
+	{
+		sound->PlayBGM(SoundManager::BGM_STAGE3);
+	}
+	else
+	{
+		sound->PlayBGM(SoundManager::BGM_STAGE1);
+	}
+
 
 	mbIsLoaded = true;
 }
@@ -106,16 +143,9 @@ void GameScene::Update()
 		mBlockMap.SetCameraLocked(true);
 	}
 
-	if (mpPlayer->GetPosition().x > 8200.0f);
+	if (mBossIntro.IsActive())
 	{
-		if (Master::mpGameManager && Master::mpGameManager->GetSoundManager())
-		{
-			Master::mpGameManager->GetSoundManager()->PlayBGM(SoundManager::BGM_STAGE1_BOSS, true);
-		}
-		else
-		{
-			Master::mpGameManager->GetSoundManager()->PlayBGM(SoundManager::BGM_STAGE2_BOSS, true);
-		}
+		PlayBossBgm();
 	}
 
 	// チュートリアルテキストの更新

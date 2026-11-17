@@ -1,16 +1,18 @@
 ﻿#include "GameManager.h"
 #include "Master.h"
 
+// GameManager.cpp
 GameManager::GameManager()
 {
 	mpSceneManager = std::make_unique<SceneManager>();
 	mpSoundManager = std::make_unique<SoundManager>();
 	mpResourceManager = std::make_unique<ResourceManager>();
 	mpFontManager = std::make_unique<FontManager>();
+}
 
-	// 初期化
+void GameManager::Initialize()
+{
 	mpFontManager->Initialize();
-	// サウンドの初期化
 	mpSoundManager->Initialize();
 	mpSceneManager->Initialize();
 }

@@ -42,6 +42,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	// Manager関係の初期化
 	//Master::mpGameManager->Initialize();
 	Master::mpGameManager = new GameManager();
+	Master::mpGameManager->Initialize();
 
 	// 描画先画面を裏画面に設定する
 	SetDrawScreen(DX_SCREEN_BACK);
@@ -91,6 +92,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	// 終了処理
 	// Manager関係の終了処理
 	delete Master::mpGameManager;
+	Master::mpGameManager = nullptr;
 
 
 	// DXライブラリ使用の終了

@@ -7,7 +7,7 @@
 namespace
 {
 	// 葉っぱの挙動に関する定数
-	constexpr int   kSpawnWidthMargin = 800;       // 画面幅に対して左右に広げるスポーン範囲のマージン（画面外から自然に降らせるため）
+	constexpr int   kSpawnWidthMargin = 400;       // 画面幅に対して左右に広げるスポーン範囲のマージン（画面外から自然に降らせるため）
 	constexpr int   kSpawnOffsetLeft = 400;        // スポーン開始位置を画面左側にオフセットする幅（中央基準にするため）
 	constexpr float kSpawnTopOffset = 50.0f;       // 画面上部から少し上にスポーンさせるためのオフセット
 	constexpr float kMaxSpawnLimitX = 7800.0f;     // ステージの進行度に応じて葉っぱの生成を停止するX座標の閾値
@@ -38,9 +38,6 @@ namespace
 	constexpr float kPlayerHalfWidth = 16.0f;      // プレイヤーの当たり判定の幅の半分
 	constexpr float kPlayerHalfHeight = 50.0f;     // プレイヤーの当たり判定の高さの半分
 	constexpr float kLeafHalfSize = 12.0f;         // 葉っぱの当たり判定の矩形サイズ（中心からの半径相当）
-
-	// 葉っぱ生成確率
-	constexpr int MaxLeafSpawn = 3; // 葉っぱの生成確率今は2%
 }
 
 LeafCutter::LeafCutter()
@@ -143,7 +140,7 @@ void LeafCutter::LeafUpdate(BlockMap& block, Player* player)
 
 	LeafDebug();
 	// 葉っぱの生成確率
-	constexpr int LeafSpawn = MaxLeafSpawn; // 1フレームごとの生成確率（2%）
+	constexpr int LeafSpawn = 2;
 
 	if (!mbStopSpawning && GetRand(100) < LeafSpawn)
 	{

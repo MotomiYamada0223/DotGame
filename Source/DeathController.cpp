@@ -250,10 +250,6 @@ void DeathController::UpdateAngelAnimation(bool textFinished)
 	}
 }
 
-// ---------------------------------------------------------------------------
-// 描画：現在の演出フェーズに対応する画面・画像を描く。
-// ---------------------------------------------------------------------------
-
 // フェーズごとに描画内容を切り替える。
 void DeathController::Draw(TutorialTextManager* text) const
 {

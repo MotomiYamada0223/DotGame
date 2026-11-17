@@ -42,12 +42,6 @@ StageSelectScene::~StageSelectScene()
 // 初期化処理：リソースの読み込みとプレイヤー・フラグの初期位置設定を行う
 void StageSelectScene::Initialize()
 {
-	if (Master::mpGameManager && Master::mpGameManager->GetSoundManager())
-	{
-		Master::mpGameManager->GetSoundManager()->StopAllSE();
-		Master::mpGameManager->GetSoundManager()->PlayBGM(SoundManager::BGM_TITLE, false);
-	}
-
 	mapGraphHandle = LoadGraph(BackGroundGraphPath::SelectStageMap.c_str());
 	LoadDivGraph(
 		CharacterGraphPath::PlayerAnimation.c_str(),
@@ -241,6 +235,16 @@ void StageSelectScene::Move()
 // 更新処理：ステージ移行フェード、タイトル帰還フェード、洞窟内のタイマー処理、キー入力を管理する
 void StageSelectScene::Update()
 {
+
+	// デバッグで解放している
+	if (InputManager::CheckDownKey(KEY_INPUT_8))
+	{
+		Master::gStageCleared[0] = true;
+		Master::gStageCleared[1] = true;
+		Master::gStageCleared[2] = true;
+	}
+
+
 	// ステージ突入時の演出タイマー処理
 	if (mIsEnteringStage) {
 		mEnterTimer++;
@@ -307,6 +311,8 @@ void StageSelectScene::Update()
 	// Enterキーで現在の位置のステージへ入る処理
 	if (InputManager::CheckDownKey(KEY_INPUT_RETURN) && !mIsEnteringStage && !isHidden && !isMoving)
 	{
+		Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_DECIDE, 80);
+
 		int nodeIndex = 0;
 		if (playerX == 236.0f && playerY == 909.0f) nodeIndex = 1;
 		else if (playerX == 676.0f && playerY == 909.0f) nodeIndex = 2;
