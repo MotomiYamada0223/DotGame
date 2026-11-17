@@ -240,8 +240,9 @@ void StageClear::TrackPlayerWithCracker(int crackerIdx, Player* player, BlockMap
 
 void StageClear::BurstCrackers()
 {
-	const float kPi = 3.14159265f;
+	PlayStageSE(SoundManager::SE_STAGE1_CRACKER);
 
+	const float kPi = DX_PI_F;
 	const int kColors[6][3] = {
 		{ 255, 60,  60  },
 		{ 255, 215, 0   },
@@ -615,6 +616,8 @@ void StageClear::UpdateLogo(Player* player, BlockMap* pBlockMap)
 			mLogoVy = 0.0f;
 			mbLogoLanded = true;
 			mLogoImpactTimer = 0;
+
+			PlayStageSE(SoundManager::SE_STAGE1_LOGO_DROP);
 
 			if (pBlockMap != nullptr)
 			{
@@ -1380,7 +1383,6 @@ void StageClear::Draw() const
 	// 2. クラッカー本体描画（DoorAppearWait以降は非表示）
 	if (mState != State::PreCrackerDelay && mState < State::DoorAppearWait)
 	{
-		//PlayStageSE(SoundManager::SE_STAGE1_CRACKER);
 		DrawCrackers();
 		DrawMuzzleFlashes();
 	}
@@ -1391,7 +1393,6 @@ void StageClear::Draw() const
 	// 4. タイトルロゴ落下に伴う地面衝撃エフェクト（DoorAppearWait以降は非表示）
 	if (mState < State::DoorAppearWait)
 	{
-		// PlayStageSE(SoundManager::SE_STAGE1_LOGO_DROP);
 		DrawLogoGroundImpact();
 		DrawImpactDust();
 	}
