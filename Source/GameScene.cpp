@@ -129,6 +129,12 @@ void GameScene::Initialize()
 
 void GameScene::Update()
 {
+	// デバッグ機能：1キーでボスエリア直前の安全な足場にワープ
+	if (InputManager::CheckDownKey(KEY_INPUT_1) || InputManager::CheckDownKey(KEY_INPUT_NUMPAD1))
+	{
+		DebugWarpToBossArea();
+	}
+
 	// 円のフェード更新
 	mCircleFade.UpdateCircleFade();
 	mLeaf.LeafUpdate(mBlockMap, mpPlayer);
@@ -248,6 +254,9 @@ void GameScene::Draw()
 		//mBlockMap.DebugDraw(); // ブロックマップデバッグ表示
 		//mTutorialText.DebugDraw(); // テキスト
 
+		// デバッグ用ワープキーのガイド表示
+		DrawFormatString(DebugWarpConstants::GuideTextX, DebugWarpConstants::GuideTextY, GetColor(0, 255, 0), "[1]: Warp to Boss Area");
+
 
 		// 天使・ハート・テキストの描画
 		bool isDeathPhase1 = mpPlayer->IsCutInSaint();
@@ -293,4 +302,24 @@ void GameScene::DrawBossOrder()
 	{
 		mBossIntro.DrawBoss(); // ボス画像の描画
 	}
+}
+
+void GameScene::DebugWarpToBossArea()
+{
+	if (mpPlayer == nullptr) return;
+
+	float warpX = DebugWarpConstants::ForestBossPreWarpX;
+	float warpY = DebugWarpConstants::ForestBossPreWarpY;
+
+	if (Master::gCurrentStageIndex == 1) // ステージ2: 洞窟
+	{
+		warpX = DebugWarpConstants::CaveBossPreWarpX;
+		warpY = DebugWarpConstants::CaveBossPreWarpY;
+	}
+
+	// プレイヤーの座標をワープ先に設定し、各種状態をリセット
+	mpPlayer->WarpTo(warpX, warpY);
+
+	// カメラをプレイヤーがスクロール領域内（画面中央800px付近）に収まるようにスナップ
+	mBlockMap.SnapCameraToPosition(warpX, warpY);
 }

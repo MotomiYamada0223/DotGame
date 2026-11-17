@@ -461,6 +461,21 @@ namespace KingSlimeAIConstants
 	static constexpr float DropletHpThresholdRatio   = 0.5f;   // 液体弾が発動するHP割合
 }
 
+// キングスライム地面衝撃波用の定数（反比例型＋上面ギザギザ波）
+namespace KingSlimeShockwaveConstants
+{
+	// 大ジャンプ必須の衝撃波（プレイヤー全高100px・中ジャンプ207pxを超える高さ、大ジャンプ334pxで回避可能）
+	static constexpr float Height          = 195.0f; // 先端最大高さ
+	static constexpr float Width           = 55.0f;  // 当たり判定幅（先端主要部）
+	static constexpr float Speed           = 6.0f;   // 地面を這う速度（px/frame）
+	static constexpr float VisualLength    = 135.0f; // 描画用の全長（後ろへの尾引き幅）
+	static constexpr int   SpikeCount      = 5;      // 上面ギザギザ（鋸歯スパイク）の数
+
+	static constexpr int   LifeFrames      = 240;    // 安全上の最大生存フレーム数
+	static constexpr float WallLimitX      = 650.0f; // 中央からの消滅開始指定座標までの距離
+	static constexpr int   Damage          = 1;      // ダメージ量
+}
+
 // キングスライムHPバー用定数
 namespace KingSlimeHpBarConstants
 {
@@ -680,6 +695,22 @@ namespace GameLoadDataConstants
 	static constexpr int DebugProgressTextY = 30;
 	static constexpr int DebugWarpTextX = 10;
 	static constexpr int DebugWarpTextY = 50;
+}
+
+// デバッグワープ機能用定数
+namespace DebugWarpConstants
+{
+	// 森ステージ（キングスライム戦前）の安全な足場
+	static constexpr float ForestBossPreWarpX = 7660.0f; // ボスエリア手前の高台足場中央
+	static constexpr float ForestBossPreWarpY = 1404.0f; // ブロック上面Y=1454に対するプレイヤー中心Y
+
+	// 洞窟ステージ（ドラゴン戦前）の安全な足場
+	static constexpr float CaveBossPreWarpX   = 7935.0f; // 壊せる壁通過後、ボスエリア直前の通路中央
+	static constexpr float CaveBossPreWarpY   = 1853.0f; // ブロック上面Y=1903に対するプレイヤー中心Y
+
+	// ガイドテキスト表示位置
+	static constexpr int GuideTextX = 10;
+	static constexpr int GuideTextY = 50;
 }
 
 // トロッコ（Minecart）関連定数

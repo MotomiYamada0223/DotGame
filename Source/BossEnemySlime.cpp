@@ -398,6 +398,12 @@ void BossEnemySlime::Update()
     // 着地時スライム液体弾の更新
     UpdateDroplets();
 
+    // 着地時地面衝撃波の更新
+    if (mpBlockMap != nullptr)
+    {
+        UpdateShockwaves(*mpBlockMap);
+    }
+
     mHpBarDrawnThisFrame = false;
 
     // HP減少の検知（TakeDamage以外で直接mHpが減った場合のセーフティ）
@@ -956,6 +962,12 @@ void BossEnemySlime::EnemyMove(BlockMap& blockMap)
                 mCurrentSlot = mTargetSlot;
                 mJumpPhase = JumpPhase::LandingReverse;
 
+                // 中央に着地した時は、常に地面を這う衝撃波（大ジャンプ回避）を左右に発生！
+                if (mCurrentSlot == BossPositionSlot::Center)
+                {
+                    SpawnCenterShockwaves(blockMap);
+                }
+
                 // 体力が半分以下になった後、すべてのジャンプ攻撃着地時に周囲へ円形液体弾を一斉散布
                 if (mHp <= static_cast<int>(static_cast<float>(mMaxHp) * KingSlimeAIConstants::DropletHpThresholdRatio))
                 {
@@ -1049,6 +1061,19 @@ bool BossEnemySlime::CheckAttackCollision(const VECTOR& targetPos, const VECTOR&
     if (hasHitDroplet)
     {
         return true;
+    }
+
+    // 3. 地面を這う衝撃波の当たり判定（指定座標でクリップされた有効領域のみ判定）
+    for (const auto& sw : mShockwaves)
+    {
+        VECTOR swPos, swSize;
+        if (GetShockwaveClippedHitbox(sw, swPos, swSize))
+        {
+            if (Collision::CheckRectToRect(targetPos, targetSize, swPos, swSize))
+            {
+                return true;
+            }
+        }
     }
 
     return false;
@@ -1181,6 +1206,9 @@ void BossEnemySlime::DrawSlime()
         // 4. 着地時スライム液体弾（ドロップレット）の描画
         DrawDroplets();
 
+        // 5. 地面を這う衝撃波の描画
+        DrawShockwaves();
+
 
 
         // 5. HPバーの描画（最前面UIとしてBossIntroDirectorで未描画の場合のフォールバック）
@@ -1251,16 +1279,17 @@ void BossEnemySlime::DrawJumpWarning(float screenX, float screenY, float fadeAlp
     // 4. 範囲中央の「！」マーク
     int midX = static_cast<int>(screenX);
     int midY = static_cast<int>(screenY - height * 0.45f);
-    float pulse = 1.0f + 0.1f * std::sin(static_cast<float>(mPhaseTimer) * 0.25f);
+    float pulse = 1.0f + 0.12f * std::sin(static_cast<float>(mPhaseTimer) * 0.25f);
 
     int markBodyAlpha = static_cast<int>(255.0f * fadeAlphaRatio);
     SetDrawBlendMode(DX_BLENDMODE_ALPHA, markBodyAlpha);
     int barWidth = 6;
     int barTop = midY - static_cast<int>(30.0f * pulse);
     int barBottom = midY + static_cast<int>(8.0f * pulse);
-    DrawBox(midX - barWidth, barTop, midX + barWidth + 1, barBottom, GetColor(255, 0, 0), TRUE);
     int dotTop = midY + static_cast<int>(16.0f * pulse);
     int dotBottom = midY + static_cast<int>(28.0f * pulse);
+
+    DrawBox(midX - barWidth, barTop, midX + barWidth + 1, barBottom, GetColor(255, 0, 0), TRUE);
     DrawBox(midX - barWidth, dotTop, midX + barWidth + 1, dotBottom, GetColor(255, 0, 0), TRUE);
 
     SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
@@ -1749,5 +1778,404 @@ void BossEnemySlime::DrawDroplets() const
             // 4. ハイライト光沢（白色のドット光沢）
             DrawCircle(static_cast<int>(scX - r * 0.3f), static_cast<int>(scY - r * 0.35f), static_cast<int>(r * 0.25f), GetColor(255, 255, 255), TRUE);
         }
+    }
+}
+
+void BossEnemySlime::SpawnCenterShockwaves(const BlockMap& blockMap)
+{
+    // 非アクティブな衝撃波を整理
+    mShockwaves.erase(
+        std::remove_if(mShockwaves.begin(), mShockwaves.end(),
+            [](const Shockwave& sw) { return !sw.isActive; }),
+        mShockwaves.end()
+    );
+
+    const float h = KingSlimeShockwaveConstants::Height;
+    const float w = KingSlimeShockwaveConstants::Width;
+    const float spd = KingSlimeShockwaveConstants::Speed;
+
+    // 左向き(-1)と右向き(+1)の2本の衝撃波を生成
+    for (int dir : { -1, 1 })
+    {
+        Shockwave sw;
+        sw.pos = VGet(mvPosition.x + static_cast<float>(dir) * 60.0f, mGroundY, 0.0f);
+        sw.speedX = static_cast<float>(dir) * spd;
+        sw.height = h;
+        sw.width = w;
+        sw.lifeTimer = KingSlimeShockwaveConstants::LifeFrames;
+        sw.isActive = true;
+        mShockwaves.push_back(sw);
+    }
+}
+
+void BossEnemySlime::UpdateShockwaves(const BlockMap& blockMap)
+{
+    for (auto& sw : mShockwaves)
+    {
+        if (!sw.isActive) continue;
+
+        const float dir = (sw.speedX > 0.0f) ? 1.0f : -1.0f;
+        const float vanishX = mBossAreaCenterX + dir * KingSlimeShockwaveConstants::WallLimitX;
+
+        // 指定座標に到達した後も同じ速度で前進を続け、通り過ぎた前側から順々に消滅させる
+        sw.pos.x += sw.speedX;
+        sw.lifeTimer--;
+
+        // 地形追従（指定座標より先の壁等でY座標が乱れないようクランプ）
+        float sampleX = sw.pos.x;
+        if (dir > 0.0f && sampleX > vanishX) sampleX = vanishX;
+        if (dir < 0.0f && sampleX < vanishX) sampleX = vanishX;
+        sw.pos.y = FindGroundY(blockMap, sampleX);
+
+        // 最後尾（尻尾の先端）まで指定座標に到達して通過したら完全に消滅
+        float frontX = sw.pos.x + dir * (sw.width * 0.5f);
+        float tailX  = frontX - dir * KingSlimeShockwaveConstants::VisualLength;
+        bool isFullyVanished = (dir > 0.0f) ? (tailX >= vanishX) : (tailX <= vanishX);
+        if (isFullyVanished || sw.lifeTimer <= 0)
+        {
+            sw.isActive = false;
+        }
+    }
+}
+
+bool BossEnemySlime::GetShockwaveClippedHitbox(const Shockwave& sw, VECTOR& outPos, VECTOR& outSize) const
+{
+    if (!sw.isActive) return false;
+
+    const bool facingRight = (sw.speedX > 0.0f);
+    const float dir = facingRight ? 1.0f : -1.0f;
+    const float vanishWorldX = mBossAreaCenterX + dir * KingSlimeShockwaveConstants::WallLimitX;
+
+    float rawLeft  = sw.pos.x - sw.width * 0.5f;
+    float rawRight = sw.pos.x + sw.width * 0.5f;
+
+    float hitLeft  = rawLeft;
+    float hitRight = rawRight;
+
+    // 指定座標を越えて消滅した前側部分をクリップ
+    if (facingRight)
+    {
+        if (hitRight > vanishWorldX) hitRight = vanishWorldX;
+    }
+    else
+    {
+        if (hitLeft < vanishWorldX) hitLeft = vanishWorldX;
+    }
+
+    float clippedWidth = hitRight - hitLeft;
+    if (clippedWidth <= 1.0f) return false;
+
+    outPos  = VGet(hitLeft, sw.pos.y - sw.height, 0.0f);
+    outSize = VGet(clippedWidth, sw.height, 0.0f);
+    return true;
+}
+
+void BossEnemySlime::DrawShockwaves() const
+{
+    if (mpBlockMap == nullptr) return;
+
+    struct Pt2D
+    {
+        float x;
+        float y;
+    };
+
+    // 半平面クリッピング付き三角形描画（指定座標を越えた部分を正確に切り落とす）
+    auto drawClippedTriangle = [](const Pt2D& a, const Pt2D& b, const Pt2D& c, float clipX, bool facingRight, unsigned int color)
+    {
+        auto isInside = [facingRight, clipX](float x) {
+            return facingRight ? (x <= clipX) : (x >= clipX);
+        };
+        Pt2D in[3] = { a, b, c };
+        Pt2D out[4];
+        int outCount = 0;
+
+        for (int i = 0; i < 3; i++)
+        {
+            const Pt2D& cur = in[i];
+            const Pt2D& prev = in[(i + 2) % 3];
+            bool curIn = isInside(cur.x);
+            bool prevIn = isInside(prev.x);
+
+            if (curIn)
+            {
+                if (!prevIn)
+                {
+                    float dx = cur.x - prev.x;
+                    float t = (std::abs(dx) > 0.0001f) ? (clipX - prev.x) / dx : 0.0f;
+                    out[outCount++] = { clipX, prev.y + t * (cur.y - prev.y) };
+                }
+                out[outCount++] = cur;
+            }
+            else if (prevIn)
+            {
+                float dx = cur.x - prev.x;
+                float t = (std::abs(dx) > 0.0001f) ? (clipX - prev.x) / dx : 0.0f;
+                out[outCount++] = { clipX, prev.y + t * (cur.y - prev.y) };
+            }
+        }
+
+        if (outCount == 3)
+        {
+            DrawTriangle(static_cast<int>(out[0].x), static_cast<int>(out[0].y),
+                         static_cast<int>(out[1].x), static_cast<int>(out[1].y),
+                         static_cast<int>(out[2].x), static_cast<int>(out[2].y), color, TRUE);
+        }
+        else if (outCount == 4)
+        {
+            DrawTriangle(static_cast<int>(out[0].x), static_cast<int>(out[0].y),
+                         static_cast<int>(out[1].x), static_cast<int>(out[1].y),
+                         static_cast<int>(out[2].x), static_cast<int>(out[2].y), color, TRUE);
+            DrawTriangle(static_cast<int>(out[0].x), static_cast<int>(out[0].y),
+                         static_cast<int>(out[2].x), static_cast<int>(out[2].y),
+                         static_cast<int>(out[3].x), static_cast<int>(out[3].y), color, TRUE);
+        }
+    };
+
+    // 半平面クリッピング付き線分描画
+    auto drawClippedLine = [](const Pt2D& a, const Pt2D& b, float clipX, bool facingRight, unsigned int color, int thick)
+    {
+        bool aIn = facingRight ? (a.x <= clipX) : (a.x >= clipX);
+        bool bIn = facingRight ? (b.x <= clipX) : (b.x >= clipX);
+        if (!aIn && !bIn) return;
+
+        Pt2D p1 = a;
+        Pt2D p2 = b;
+        if (!aIn)
+        {
+            float dx = b.x - a.x;
+            float t = (std::abs(dx) > 0.0001f) ? (clipX - a.x) / dx : 0.0f;
+            p1 = { clipX, a.y + t * (b.y - a.y) };
+        }
+        else if (!bIn)
+        {
+            float dx = b.x - a.x;
+            float t = (std::abs(dx) > 0.0001f) ? (clipX - a.x) / dx : 0.0f;
+            p2 = { clipX, a.y + t * (b.y - a.y) };
+        }
+        DrawLine(static_cast<int>(p1.x), static_cast<int>(p1.y),
+                 static_cast<int>(p2.x), static_cast<int>(p2.y), color, thick);
+    };
+
+    for (const auto& sw : mShockwaves)
+    {
+        if (!sw.isActive) continue;
+
+        const float screenX = ConvertToScreenX(sw.pos.x, mpBlockMap);
+        const float screenY = ConvertToScreenY(sw.pos.y, mpBlockMap);
+
+        // 画面外判定（余裕を持たせる）
+        if (screenX < -250.0f || screenX > ScreenSize::ScrrenWidth + 250.0f ||
+            screenY < -300.0f || screenY > ScreenSize::ScrrenHeight + 100.0f)
+        {
+            continue;
+        }
+
+        const bool facingRight = (sw.speedX > 0.0f);
+        const float dir = facingRight ? 1.0f : -1.0f;
+
+        // 指定座標（消滅境界）のワールド座標およびスクリーン座標
+        const float vanishWorldX  = mBossAreaCenterX + dir * KingSlimeShockwaveConstants::WallLimitX;
+        const float vanishScreenX = ConvertToScreenX(vanishWorldX, mpBlockMap);
+
+        const float frontWorldX = sw.pos.x + dir * (sw.width * 0.5f);
+        const float overshoot   = facingRight ? (frontWorldX - vanishWorldX) : (vanishWorldX - frontWorldX);
+        const bool  isVanishing = (overshoot > 0.0f);
+
+        // --- 1. 当たり判定（Hitbox）の可視化 ---
+        // GetShockwaveClippedHitbox を使い、指定座標でクリップされた有効な当たり判定をそのまま可視化
+        VECTOR hitPos, hitSize;
+        if (GetShockwaveClippedHitbox(sw, hitPos, hitSize))
+        {
+            int hitLeft   = static_cast<int>(ConvertToScreenX(hitPos.x, mpBlockMap));
+            int hitTop    = static_cast<int>(ConvertToScreenY(hitPos.y, mpBlockMap));
+            int hitRight  = static_cast<int>(ConvertToScreenX(hitPos.x + hitSize.x, mpBlockMap));
+            int hitBottom = static_cast<int>(ConvertToScreenY(hitPos.y + hitSize.y, mpBlockMap));
+
+            SetDrawBlendMode(DX_BLENDMODE_ALPHA, 70);
+            DrawBox(hitLeft, hitTop, hitRight, hitBottom, GetColor(255, 40, 40), TRUE);
+
+            SetDrawBlendMode(DX_BLENDMODE_ALPHA, 230);
+            DrawBox(hitLeft, hitTop, hitRight, hitBottom, GetColor(255, 30, 30), FALSE);
+            DrawBox(hitLeft + 1, hitTop + 1, hitRight - 1, hitBottom - 1, GetColor(255, 90, 90), FALSE);
+
+            DrawBox(hitLeft, hitTop - 3, hitRight, hitTop, GetColor(255, 20, 20), TRUE);
+            SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+        }
+
+        // --- 2. 衝撃波本体の描画（反比例減衰＋上面ギザギザ鋸歯状波） ---
+
+        float elapsed    = static_cast<float>(KingSlimeShockwaveConstants::LifeFrames - sw.lifeTimer);
+        float pulseScale = 1.0f + 0.05f * std::sin(elapsed * 0.45f);
+        float waveH      = sw.height * pulseScale;
+        float visualLen  = KingSlimeShockwaveConstants::VisualLength;
+
+        int baseY = static_cast<int>(screenY);
+        float basePosY = static_cast<float>(baseY);
+
+        // 衝撃波自身の本来の先端足元と後端足元（止まらず同じ速度で前進し続ける）
+        float frontFootX = screenX + dir * (sw.width * 0.5f);
+        float tailFootX  = frontFootX - dir * visualLen;
+
+        // 接地点の衝撃波楕円リング（先端が指定座標に入る前、または通過直後まで表示）
+        if (!isVanishing || overshoot < sw.width * 0.6f)
+        {
+            float ringAlphaRatio = isVanishing ? (1.0f - overshoot / (sw.width * 0.6f)) : 1.0f;
+            if (ringAlphaRatio > 0.0f)
+            {
+                SetDrawBlendMode(DX_BLENDMODE_ADD, static_cast<int>(170.0f * ringAlphaRatio));
+                int ringCenterX = static_cast<int>(isVanishing ? vanishScreenX : frontFootX);
+                DrawOval(ringCenterX, baseY - 3, static_cast<int>(sw.width * 0.7f * ringAlphaRatio), 10, GetColor(0, 140, 255), TRUE);
+                DrawOval(ringCenterX, baseY - 3, static_cast<int>(sw.width * 0.45f * ringAlphaRatio), 6, GetColor(100, 220, 255), TRUE);
+                DrawOval(ringCenterX, baseY - 3, static_cast<int>(sw.width * 0.22f * ringAlphaRatio), 3, GetColor(255, 255, 255), TRUE);
+            }
+        }
+
+        // 上面点列（後端 -> スパイク群 -> メインピーク）の構築
+        std::vector<Pt2D> topNodes;
+        topNodes.push_back({ tailFootX, basePosY });
+
+        const struct SpikeDef {
+            float u;
+            float valleyU;
+            float valleyRatio;
+        } spikes[] = {
+            { 0.12f, 0.18f, 0.65f },
+            { 0.26f, 0.33f, 0.65f },
+            { 0.42f, 0.50f, 0.68f },
+            { 0.60f, 0.70f, 0.70f },
+            { 0.80f, 0.90f, 0.72f },
+        };
+
+        for (int i = 0; i < 5; i++)
+        {
+            const auto& sp = spikes[i];
+            float u = sp.u;
+            float invDecay = 1.0f / (1.0f + 3.2f * (1.0f - u));
+            float spikePulse = 1.0f + 0.06f * std::sin(elapsed * 0.4f + static_cast<float>(i) * 1.3f);
+            float h = waveH * invDecay * spikePulse;
+            topNodes.push_back({ tailFootX + dir * (visualLen * u), basePosY - h });
+
+            float vu = sp.valleyU;
+            float vInvDecay = 1.0f / (1.0f + 3.2f * (1.0f - vu));
+            float vh = waveH * vInvDecay * sp.valleyRatio;
+            topNodes.push_back({ tailFootX + dir * (visualLen * vu), basePosY - vh });
+        }
+
+        // メインピーク（最先端手前でそびえ立つ最大高さ195px）
+        Pt2D peakPt    = { frontFootX - dir * 4.0f, basePosY - waveH };
+        topNodes.push_back(peakPt);
+
+        // 前面エッジの張り出し牙と先端足元
+        Pt2D frontMid  = { frontFootX + dir * 8.0f, basePosY - waveH * 0.45f };
+        Pt2D frontFoot = { frontFootX, basePosY };
+
+        // 4重加算ブレンドレイヤー
+        struct WaveLayer
+        {
+            float scaleY;
+            float scaleX;
+            unsigned int color;
+            int alpha;
+            int lineThick;
+        };
+
+        const WaveLayer layers[] = {
+            { 1.06f, 1.05f, GetColor(0, 90, 255),    110, 4 }, // 外側ダークブルーオーラ
+            { 1.00f, 1.00f, GetColor(0, 180, 255),   180, 3 }, // 外側ブライトシアン
+            { 0.74f, 0.85f, GetColor(100, 235, 255), 220, 2 }, // 中層ライトシアン
+            { 0.42f, 0.65f, GetColor(255, 255, 255), 255, 2 }, // 内側純白コア
+        };
+
+        for (const auto& layer : layers)
+        {
+            SetDrawBlendMode(DX_BLENDMODE_ADD, layer.alpha);
+
+            auto scalePt = [&](const Pt2D& pt) -> Pt2D {
+                float dx = pt.x - frontFootX;
+                float dy = pt.y - basePosY;
+                return { frontFootX + dx * layer.scaleX, basePosY + dy * layer.scaleY };
+            };
+
+            // 台形ストリップを2三角形ずつクリップ描画（重複ゼロ）
+            for (size_t i = 0; i + 1 < topNodes.size(); i++)
+            {
+                Pt2D t0 = scalePt(topNodes[i]);
+                Pt2D t1 = scalePt(topNodes[i + 1]);
+                Pt2D b0 = { t0.x, basePosY };
+                Pt2D b1 = { t1.x, basePosY };
+
+                drawClippedTriangle(t0, t1, b1, vanishScreenX, facingRight, layer.color);
+                drawClippedTriangle(t0, b1, b0, vanishScreenX, facingRight, layer.color);
+                drawClippedLine(t0, t1, vanishScreenX, facingRight, layer.color, layer.lineThick);
+            }
+
+            // 前面エッジ部分を2三角形でクリップ描画（重複ゼロ）
+            Pt2D sPeak       = scalePt(peakPt);
+            Pt2D sPeakGround = { sPeak.x, basePosY };
+            Pt2D sFrontMid   = scalePt(frontMid);
+            Pt2D sFrontFoot  = scalePt(frontFoot);
+
+            drawClippedTriangle(sPeak, sFrontMid, sFrontFoot, vanishScreenX, facingRight, layer.color);
+            drawClippedTriangle(sPeak, sFrontFoot, sPeakGround, vanishScreenX, facingRight, layer.color);
+            drawClippedLine(sPeak, sFrontMid, vanishScreenX, facingRight, layer.color, layer.lineThick);
+            drawClippedLine(sFrontMid, sFrontFoot, vanishScreenX, facingRight, layer.color, layer.lineThick);
+        }
+
+        // --- 3. 舞い散るエネルギースパーク粒子（指定座標以内のみ描画） ---
+        SetDrawBlendMode(DX_BLENDMODE_ADD, 210);
+        for (int p = 0; p < 6; p++)
+        {
+            float seed = elapsed * 0.2f + static_cast<float>(p) * 1.05f;
+            float sparkU = std::fmod(elapsed * 0.04f + static_cast<float>(p) * 0.17f, 1.0f);
+            float sparkDistX = visualLen * sparkU;
+            float sparkX = frontFootX - dir * sparkDistX + dir * (std::sin(seed) * 8.0f);
+
+            // 指定座標を通過した粒子は描画しない
+            if (facingRight && sparkX > vanishScreenX) continue;
+            if (!facingRight && sparkX < vanishScreenX) continue;
+
+            float baseH = waveH / (1.0f + 3.2f * sparkU);
+            float sparkY = basePosY - baseH - std::fmod(elapsed * 2.5f + static_cast<float>(p) * 15.0f, 35.0f);
+            int sparkSize = (p % 2 == 0) ? 3 : 2;
+            DrawCircle(static_cast<int>(sparkX), static_cast<int>(sparkY), sparkSize, GetColor(220, 245, 255), TRUE);
+        }
+
+        // 接地面の電撃・光の筋（指定座標でクリップ）
+        SetDrawBlendMode(DX_BLENDMODE_ADD, 150);
+        for (int t = 0; t < 3; t++)
+        {
+            float offset = std::fmod(elapsed * 5.0f + static_cast<float>(t) * 40.0f, visualLen);
+            Pt2D sPt = { frontFootX - dir * offset, basePosY - 2.0f };
+            Pt2D ePt = { frontFootX - dir * (offset + 25.0f), basePosY - 2.0f };
+            drawClippedLine(sPt, ePt, vanishScreenX, facingRight, GetColor(120, 210, 255), 2);
+        }
+
+        // --- 4. 指定座標に到達して順々に消えている瞬間の切断面エネルギー分解エフェクト ---
+        if (isVanishing && overshoot < visualLen)
+        {
+            float uAtVanish = 1.0f - (overshoot / visualLen);
+            float cutH = waveH / (1.0f + 3.2f * (1.0f - uAtVanish));
+            int vx = static_cast<int>(vanishScreenX);
+            int topY = static_cast<int>(basePosY - cutH);
+
+            // 指定座標（切断面）に沿った縦の光柱ラインと散乱スパーク
+            SetDrawBlendMode(DX_BLENDMODE_ADD, 230);
+            DrawLine(vx, baseY, vx, topY, GetColor(255, 255, 255), 3);
+            DrawLine(vx, baseY, vx, topY - 12, GetColor(100, 220, 255), 1);
+
+            for (int k = 0; k < 4; k++)
+            {
+                float ratio = static_cast<float>(k + 1) / 5.0f;
+                int sy = static_cast<int>(basePosY - cutH * ratio);
+                float angleSeed = elapsed * 0.7f + static_cast<float>(k) * 1.9f;
+                int sx = vx - static_cast<int>(dir * (6.0f + 10.0f * std::abs(std::sin(angleSeed))));
+                int ey = sy - static_cast<int>(8.0f + 12.0f * std::abs(std::cos(angleSeed)));
+                DrawLine(vx, sy, sx, ey, GetColor(200, 245, 255), 2);
+                DrawCircle(sx, ey, 2, GetColor(255, 255, 255), TRUE);
+            }
+        }
+
+        SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
     }
 }

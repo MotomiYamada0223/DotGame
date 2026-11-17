@@ -90,6 +90,9 @@ public: // アクセサ
 	void SetSwordReadyStance(bool active) { mbSwordReadyStance = active; }
 	bool IsSwordReadyStance() const { return mbSwordReadyStance; }
 
+	// デバッグ用ワープ
+	void WarpTo(float x, float y);
+
 	// 接地中かの判定
 	bool GetIsGrounded() const { return isGrounded; }
 	// ジャンプ中かの判定
@@ -251,7 +254,7 @@ private: // 復活処理関係
 	int mJumpHoldFrames = 0;
 	float mJumpStartY = 0.0f;
 	bool mbJumpDetermined = false;
-	bool mbSpaceKeyWasDown = false;
+	bool mbIsVariableJump = false; // 通常ジャンプによる高度調節対象かどうかのフラグ
 
 	void BeginDeath();        // 死亡処理の共通化
 	void StartDeathScatter(); // 天使カットイン後の飛び散り開始

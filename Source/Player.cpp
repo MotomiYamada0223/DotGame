@@ -39,7 +39,7 @@ Player::Player(VECTOR initPos)
 	mJumpHoldFrames = 0;
 	mJumpStartY = 0.0f;
 	mbJumpDetermined = false;
-	mbSpaceKeyWasDown = false;
+	mbIsVariableJump = false;
 	isFacingRight = true;
 	isAttacking = false;
 	attackTimer = 0;
@@ -145,7 +145,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 
 
 	// Wキー/Sキー長押しによるステージ裏・表落下処理の判定
-	if (mFallMode == StageFallMode::None && !isDead && !mbAutoWalking)
+	if (mFallMode == StageFallMode::None && !isDead && !mbAutoWalking && !mbAutoWalkArrived && !mbIsEvading)
 	{
 		if (mvPosition.x <= 8000)
 		{
@@ -296,8 +296,8 @@ void Player::PlayerMove(BlockMap& blockMap)
 	// キャラクターの物理処理
 	float currentGravity = gravity;
 
-	// 3段階ジャンプ（小・中・大）の判定と高度調節
-	if (!isGrounded && velocityY < 0.0f && mbIsJumping)
+	// 3段階ジャンプ（小・中・大）の判定と高度調節（通常のスペースキージャンプ時のみ有効）
+	if (mbIsVariableJump && !isGrounded && velocityY < 0.0f && mbIsJumping)
 	{
 		if (!mbJumpDetermined)
 		{
@@ -351,6 +351,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 		mCurrentJumpType = PlayerConstants::JumpType::None;
 		mbJumpDetermined = false;
 		mJumpHoldFrames = 0;
+		mbIsVariableJump = false;
 	}
 
 	if (isBlinking)
@@ -362,6 +363,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 		mCurrentJumpType = PlayerConstants::JumpType::None;
 		mbJumpDetermined = false;
 		mJumpHoldFrames = 0;
+		mbIsVariableJump = false;
 	}
 
 	mfCurrentSpeed = currentSpeed; // 今の速さの代入
@@ -452,7 +454,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 	mbSpaceWasPressed = spaceKeyIsDown;
 
 	//SEを鳴らす
-	if (spaceKeyIsDown && !mbIsJumping)
+	if (!mbAutoWalking && !mbAutoWalkArrived && !mbIsEvading && spaceKeyIsDown && !mbIsJumping)
 	{
 		Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_PLAYER_JUMP, 40);
 	}
@@ -460,6 +462,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 	if (mbInHotSpring)
 	{
 		mActionState.hotSpring = true;
+		mbIsVariableJump = false; // 温泉内のもがきジャンプでは3段階調節を行わない
 		// 温泉のぬめり処理：
 		// 1回のジャンプではぬめりで上がれず、重い湯に引きずり込まれる
 		// スペースキーを連打（足掻き）すると少しずつ浮上・脱出可能
@@ -484,14 +487,9 @@ void Player::PlayerMove(BlockMap& blockMap)
 	}
 	else
 	{
-		// ジャンプ開始（着地後の再入力が必要なようにトリガー判定化）
-		bool spaceKeyIsDown = (CheckHitKey(KEY_INPUT_SPACE) == 1);
-		if (!mbAutoWalking && !mbAutoWalkArrived && spaceKeyIsDown && !mbSpaceKeyWasDown &&
-			isGrounded)
 		// 通常時のジャンプ開始（着地後の再入力が必要なようにトリガー判定化）
-		if (!mbAutoWalking && !mbAutoWalkArrived && spacePressed && isGrounded)
+		if (!mbAutoWalking && !mbAutoWalkArrived && !mbIsEvading && spacePressed && isGrounded)
 		{
-			PlayPlayerSE(SoundManager::SE_PLAYER_JUMP);
 			mActionState.jump = true;
 			mbIsJumping = true;
 			isGrounded = false;
@@ -500,8 +498,8 @@ void Player::PlayerMove(BlockMap& blockMap)
 			mJumpHoldFrames = 1;
 			mJumpStartY = mvPosition.y;
 			mbJumpDetermined = false;
+			mbIsVariableJump = true;
 		}
-		mbSpaceKeyWasDown = spaceKeyIsDown;
 	}
 
 
@@ -1420,7 +1418,7 @@ void Player::Revive()
 	mJumpHoldFrames = 0;
 	mJumpStartY = 0.0f;
 	mbJumpDetermined = false;
-	mbSpaceKeyWasDown = false;
+	mbIsVariableJump = false;
 
 	// ブリンク状態をリセット
 	isBlinking = false;
@@ -1501,10 +1499,16 @@ void Player::TriggerCinematicEvasion()
 	mActionState.blink = true;
 
 	// 右向きのまま背中側（左）へジャンプ飛び退き
+	// 通常の3段階ジャンプ高度調節に上書きされないよう変数を明示的に切り離す
 	isFacingRight = true;
 	velocityY = KingSlimeIntroConstants::EvasionJumpSpeedY;
 	isGrounded = false;
 	mbIsJumping = true;
+	mbIsVariableJump = false;
+	mbJumpDetermined = true;
+	mCurrentJumpType = PlayerConstants::JumpType::None;
+	mJumpHoldFrames = 0;
+	mJumpStartY = mvPosition.y;
 	mPlayerState.SetJump();
 
 	// 残像を即座に1つ生成
@@ -1525,6 +1529,7 @@ void Player::ResetBossIntroState()
 	mbEvadedBossSpawn = false;
 	mEvasionTimer = 0;
 	mbSwordReadyStance = false;
+	mbIsVariableJump = false;
 	mfMoveDirection = 0.0f;
 	mPlayerState.SetIdle();
 }
@@ -1535,6 +1540,7 @@ void Player::EndBossIntroLock()
 	mbAutoWalkArrived = false;
 	mbSwordReadyStance = false;
 	mbIsEvading = false;
+	mbIsVariableJump = false;
 	mPlayerState.SetIdle();
 }
 
@@ -1629,4 +1635,28 @@ void Player::DrawGameOver()
 		"W/S または ↑/↓ で選択 ・ SPACE / ENTER で決定");
 
 	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+}
+
+void Player::WarpTo(float x, float y)
+{
+	mvPosition = VGet(x, y, 0.0f);
+	velocityY = 0.0f;
+	mbIsJumping = false;
+	isGrounded = true;
+	mForceGroundedThisFrame = true;
+	mCurrentJumpType = PlayerConstants::JumpType::None;
+	mJumpHoldFrames = 0;
+	mJumpStartY = y;
+	mbJumpDetermined = false;
+	mbIsVariableJump = false;
+	isDead = false;
+	mFallMode = StageFallMode::None;
+	mbTouchingBossArea = false;
+	mbAutoWalking = false;
+	mbAutoWalkArrived = false;
+	mbIsEvading = false;
+	mEvasionTimer = 0;
+	mbSwordReadyStance = false;
+	isAttacking = false;
+	attackTimer = 0;
 }
