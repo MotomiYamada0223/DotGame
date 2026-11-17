@@ -491,7 +491,6 @@ void Player::PlayerMove(BlockMap& blockMap)
 		// 通常時のジャンプ開始（着地後の再入力が必要なようにトリガー判定化）
 		if (!mbAutoWalking && !mbAutoWalkArrived && spacePressed && isGrounded)
 		{
-			PlayPlayerSE(SoundManager::SE_PLAYER_JUMP);
 			mActionState.jump = true;
 			mbIsJumping = true;
 			isGrounded = false;
