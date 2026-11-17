@@ -11,6 +11,15 @@
 #include "BlockMap.h"
 #include "Player.h"
 
+
+static void PlaySlimeSE(SoundManager::SOUND_SE se, int volume = 100)
+{
+    if (Master::mpGameManager && Master::mpGameManager->GetSoundManager())
+    {
+        Master::mpGameManager->GetSoundManager()->PlaySE(se, volume);
+    }
+}
+
 EnemySlime::EnemySlime(VECTOR initPos)
     : Enemy(CharacterGraphPath::SlimeIdle, initPos)
     , mpAnimIdle(nullptr)
@@ -19,6 +28,7 @@ EnemySlime::EnemySlime(VECTOR initPos)
     , mpAnimDeath(nullptr)
     , mDeathState(DeathState::Alive)
     , mDeathTimer(0)
+    , mHasPlayedEatSE(false)
 {
     mMoveSpeed = 1.0f; // スライムの移動速度
 
@@ -215,6 +225,8 @@ void EnemySlime::EnemyMove(BlockMap& blockMap)
         mHasJumped = false;
         mIsChasing = false;
         mCurrentMoveDirection = 0.0f;
+        PlaySlimeSE(SoundManager::SE_SLIME_DEATH);
+
         if (mpAnimDeath)
         {
             mpAnimDeath->ResetAnimation();
@@ -311,6 +323,7 @@ void EnemySlime::EnemyMove(BlockMap& blockMap)
                         }
                         mbIsJumping = true;
                         mHasJumped = true;
+                        PlaySlimeSE(SoundManager::SE_SLIME_JUMP, 100);
 
                         // プレイヤーの最新位置に向けて突進目標を再設定
                         mTargetPlayerPos = playerObj->GetPosition();
@@ -352,6 +365,20 @@ void EnemySlime::EnemyMove(BlockMap& blockMap)
                 {
                     mMoveSpeed = std::abs(mJumpSpeedX);
                     mCurrentMoveDirection = (mJumpSpeedX > 0) ? 1.0f : -1.0f;
+
+                    // プレイヤーへの飛びつき接触時に EAT を1回だけ再生
+                    if (mHasJumped && !mHasPlayedEatSE)
+                    {
+                        const float contactRangeX = mfEnemyWidth * 0.5f + 20.0f;   // プレイヤーの半幅分を加味（要調整）
+                        const float contactRangeY = mfEnemyHeight * 0.5f + 20.0f;  // 同上
+
+                        if (std::abs(playerX - enemyX) <= contactRangeX &&
+                            std::abs(playerY - enemyY) <= contactRangeY)
+                        {
+                            mHasPlayedEatSE = true;
+                            PlaySlimeSE(SoundManager::SE_SLIME_EAT);
+                        }
+                    }
                 }
                 else
                 {
@@ -389,6 +416,7 @@ void EnemySlime::EnemyMove(BlockMap& blockMap)
                         mHasChargedThisAttack = false;
                         mChargeTimer = 0;
                         mTargetPlayerPos = VGet(0, 0, 0);
+                        mHasPlayedEatSE = false;
                         if (mpAnimAttack) mpAnimAttack->ResetAnimation();
 
                         // 攻撃時は確実にプレイヤーの方を向く

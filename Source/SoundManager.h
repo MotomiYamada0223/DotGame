@@ -54,6 +54,13 @@ public:   // enum, struct などの定義
 		SE_STAGE2_DRAGON_NORMAL_ATTACK,// ステージ2：ドラゴン通常攻撃SE
 		SE_STAGE2_DRAGON_BREATH,       // ステージ2：ドラゴンブレス攻撃SE
 		SE_STAGE2_DRAGON_FIREBALL_LAND,// ステージ2：ドラゴン真ん中火玉着弾SE
+
+		SE_SLIME_EAT, // スライムの攻撃
+		SE_SLIME_JUMP, // スライムのジャンプ
+		SE_SLIME_DEATH, // スライム死亡
+		
+		SE_SKELETON_IDEL, // 骸骨待機 ５秒に一回鳴らす
+		SE_SKELETON_DEATH, //　骸骨死亡
 	};
 
 	// 遅延再生用の構造体
