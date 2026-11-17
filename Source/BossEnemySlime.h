@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "GameConstants.h"
 #include "Enemy.h"
 #include "UnitStatus.h"
 #include "TextureAnimation.h"
@@ -77,6 +78,16 @@ public:
         int splashTimer;
     };
 
+    struct Shockwave
+    {
+        VECTOR pos;       // 現在の基準座標（World：当たり判定矩形の足元中央）
+        float speedX;     // 進行速度（正: 右、負: 左）
+        float height;     // 先端最大高さ
+        float width;      // 当たり判定幅
+        int lifeTimer;    // 安全上の最大生存フレーム数
+        bool isActive;    // 有効フラグ
+    };
+
     BossEnemySlime(VECTOR initPos, float groundY = 0.0f, Player* targetPlayer = nullptr);
     virtual ~BossEnemySlime();
 
@@ -120,6 +131,10 @@ private:
     void StartDeathSequence();
     void UpdateDroplets();
     void DrawDroplets() const;
+    void SpawnCenterShockwaves(const BlockMap& blockMap);
+    void UpdateShockwaves(const BlockMap& blockMap);
+    void DrawShockwaves() const;
+    bool GetShockwaveClippedHitbox(const Shockwave& sw, VECTOR& outPos, VECTOR& outSize) const;
 
 private:
     KingSlimeState mState;
@@ -169,5 +184,8 @@ private:
 
     // 着地時スライム液体弾（ドロップレット）
     mutable std::vector<SlimeDroplet> mSlimeDroplets;
+
+    // 着地時地面衝撃波
+    mutable std::vector<Shockwave> mShockwaves;
 };
 

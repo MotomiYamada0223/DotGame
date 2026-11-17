@@ -72,6 +72,9 @@ public:
     // スクロールリセット
     void ResetScroll();
 
+    // カメラを指定ワールド座標に瞬時にスナップ（カメラスクロール領域内にプレイヤーが収まるように移動）
+    void SnapCameraToPosition(float targetWorldX, float targetWorldY);
+
     // ボスエリア関連
     bool HasBossArea() const { return mbHasBossArea; }
     float GetBossAreaCenterX() const {

@@ -43,6 +43,9 @@ public:
 
 	void DrawBossOrder();
 
+	// デバッグ用：ボスエリア直前へのワープ処理
+	void DebugWarpToBossArea();
+
 private:
 	GameLoadData mLoadData;
 

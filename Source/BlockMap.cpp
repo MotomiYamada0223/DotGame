@@ -381,6 +381,27 @@ void BlockMap::ResetScroll()
     mCamera.ResetScrollInit();
 }
 
+void BlockMap::SnapCameraToPosition(float targetWorldX, float targetWorldY)
+{
+    // プレイヤーがカメラスクロール領域（ScrollStartLeftX〜ScrollStartRightX）の中央（800px）に収まるようにscrollXを算出
+    const int targetScreenX = (MapScrollConstants::ScrollStartLeftX + MapScrollConstants::ScrollStartRightX) / 2;
+    int scrollX = static_cast<int>(targetWorldX) - targetScreenX;
+    int maxScrollX = (std::max)(0, mnBackgroundWidth - ScreenSize::ScrrenWidth);
+    if (scrollX < 0) scrollX = 0;
+    if (scrollX > maxScrollX) scrollX = maxScrollX;
+
+    // 縦スクロール (targetWorldY - 720)
+    int maxScrollY = (std::max)(0, mnBackgroundHeight - ScreenSize::ScrrenHeight);
+    int scrollY = static_cast<int>(targetWorldY) - 720;
+    if (scrollY < 0) scrollY = 0;
+    if (scrollY > maxScrollY) scrollY = maxScrollY;
+
+    mCamera.SetLocked(false);
+    mCamera.SetScrollX(scrollX);
+    mCamera.SetScrollY(scrollY);
+    mCamera.ResetScrollInit();
+}
+
 bool BlockMap::BreakWallAtArea(float left, float top, float right, float bottom)
 {
     bool hitAny = false;
