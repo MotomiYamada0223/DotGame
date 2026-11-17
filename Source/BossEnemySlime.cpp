@@ -267,6 +267,7 @@ void BossEnemySlime::StartJumpAttack()
 
 void BossEnemySlime::HandleLanding(BlockMap& blockMap)
 {
+    Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_STAGE1_SLIME_LAND);
     mGroundY = FindGroundY(blockMap, mvPosition.x);
     mvPosition.y = GetLandingCenterY(mGroundY);
 
@@ -677,6 +678,8 @@ void BossEnemySlime::Update()
                 // 収束完了 -> ビーム照射（10, 11枚目再生）へ
                 mBeamPhase = BeamPhase::Firing;
                 mPhaseTimer = 0;
+
+                Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_STAGE1_BEAM_FIRE);
             }
         }
         else if (mBeamPhase == BeamPhase::Firing)
@@ -1516,6 +1519,8 @@ void BossEnemySlime::DrawHpBar() const
 
     // 登場演出の黒帯が消えて戦闘開始するまでは非表示
     if (!mIsBattleActive) return;
+    if (mpPlayer != nullptr && mpPlayer->GetIsDead()) return;
+
     if (mState == KingSlimeState::Death && (mDeathPhase == DeathPhase::Finished)) return;
 
     // バーの配置座標とサイズ（フェードやスムージングなしでそのまま表示）
@@ -1529,7 +1534,6 @@ void BossEnemySlime::DrawHpBar() const
     const int barRight = barLeft + totalWidth;
     const int barBottom = barTop + totalHeight;
 
-    // ボス名テキスト「キングスライミー」
     DrawFormatString(barLeft + 2, barTop - 22, GetColor(255, 255, 255), "キングスライミー");
 
     // バーの内側背景（黒〜暗色のベーススロット）

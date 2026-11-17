@@ -46,7 +46,7 @@ void TitleScene::Update()
 		switch (mnSelectIndex)
 		{
 		case 0:
-			Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_DECIDE, 80);
+			Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_DECIDE, 60);
 			Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_TYPE::SCENE_STAGESELECT);
 			break;
 

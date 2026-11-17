@@ -637,6 +637,7 @@ void Player::Update()
 			// GAME OVERの文字が表示され始めた瞬間に1回だけ鳴らす
 			if (mGameOverFadeTimer == kGameOverTextFrames)
 			{
+				Master::mpGameManager->GetSoundManager()->StopBGM();
 				Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_GAMEOVER, 50);
 			}
 
@@ -831,6 +832,7 @@ void Player::Update()
 							if (dynamic_cast<EnemySlime*>(enemy) != nullptr)
 							{
 								mDeathReason = DeathReason::DeathType::EnemySlime;
+								Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_SLIME_EAT, 80);
 							}
 							else if (dynamic_cast<EnemySkeleton*>(enemy) != nullptr)
 							{

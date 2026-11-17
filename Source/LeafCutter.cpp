@@ -13,7 +13,7 @@ namespace
 	constexpr float kMaxSpawnLimitX = 7800.0f;     // ステージの進行度に応じて葉っぱの生成を停止するX座標の閾値
 
 	// 物理挙動・ランダム値の係数
-	constexpr float kFallSpeedBase = 0.3f;         // 葉っぱの基本落下速度
+	constexpr float kFallSpeedBase = 0.5f;         // 葉っぱの基本落下速度
 	constexpr float kFallSpeedRandom = 150.0f;     // 落下速度のランダム幅を決める係数
 	constexpr float kSwaySpeedBase = 0.02f;        // 左右の揺れの基本速度
 	constexpr float kSwaySpeedRandom = 30.0f;      // 揺れ速度のランダム幅を決める係数
@@ -237,6 +237,7 @@ void LeafCutter::LeafCollision(Player* player)
 				// プレイヤーと葉っぱの矩形が交差しているか判定する
 				if (leafRight > pLeft && leafLeft < pRight && leafBot > pTop && leafTop < pBot)
 				{
+					Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_STAGE1_LEAF_DEATH);
 					// 葉っぱによるダメージを適用して死亡原因を設定する
 					player->SetDeathReason(DeathReason::DeathType::Leaf);
 					player->TakeDamage(player->GetHp());

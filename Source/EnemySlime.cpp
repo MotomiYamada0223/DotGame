@@ -11,6 +11,15 @@
 #include "BlockMap.h"
 #include "Player.h"
 
+
+static void PlaySlimeSE(SoundManager::SOUND_SE se, int volume = 100)
+{
+    if (Master::mpGameManager && Master::mpGameManager->GetSoundManager())
+    {
+        Master::mpGameManager->GetSoundManager()->PlaySE(se, volume);
+    }
+}
+
 EnemySlime::EnemySlime(VECTOR initPos)
     : Enemy(CharacterGraphPath::SlimeIdle, initPos)
     , mpAnimIdle(nullptr)
@@ -215,6 +224,8 @@ void EnemySlime::EnemyMove(BlockMap& blockMap)
         mHasJumped = false;
         mIsChasing = false;
         mCurrentMoveDirection = 0.0f;
+        PlaySlimeSE(SoundManager::SE_SLIME_DEATH);
+
         if (mpAnimDeath)
         {
             mpAnimDeath->ResetAnimation();
@@ -311,6 +322,7 @@ void EnemySlime::EnemyMove(BlockMap& blockMap)
                         }
                         mbIsJumping = true;
                         mHasJumped = true;
+                        PlaySlimeSE(SoundManager::SE_SLIME_JUMP, 100);
 
                         // プレイヤーの最新位置に向けて突進目標を再設定
                         mTargetPlayerPos = playerObj->GetPosition();
