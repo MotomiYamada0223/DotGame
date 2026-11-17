@@ -52,6 +52,7 @@ private:
     int mAttackCooldown;
 
     float mDrawScale;
+    int mIdleSETimer;
 
     State mState;
 };

@@ -70,8 +70,8 @@ void SoundManager::Initialize()
 	LoadSE(SOUND_SE::SE_SLIME_EAT, "Resource/SE/Enemy/Slime_eat.mp3");
 	LoadSE(SOUND_SE::SE_SLIME_JUMP, "Resource/SE/Enemy/Slime_jump.mp3");
 	LoadSE(SOUND_SE::SE_SLIME_DEATH, "Resource/SE/Enemy/Slime_Kill.mp3");
-	LoadSE(SOUND_SE::SE_SKELETON_IDEL, "Resource/SE/Enemy/Skeluton_Kill.mp3");
-	LoadSE(SOUND_SE::SE_SKELETON_DEATH, "Resource/SE/Enemy/Dicide.mp3");
+	LoadSE(SOUND_SE::SE_SKELETON_IDEL, "Resource/SE/Enemy/Skeleton_idle.mp3");
+	LoadSE(SOUND_SE::SE_SKELETON_DEATH, "Resource/SE/Enemy/Skeluton_Kill.mp3");
 
 	LoadVolume();
 }
