@@ -1490,6 +1490,8 @@ void BossEnemySlime::DrawHpBar() const
 
     // 登場演出の黒帯が消えて戦闘開始するまでは非表示
     if (!mIsBattleActive) return;
+    if (mpPlayer != nullptr && mpPlayer->GetIsDead()) return;
+
     if (mState == KingSlimeState::Death && (mDeathPhase == DeathPhase::Finished)) return;
 
     // バーの配置座標とサイズ（フェードやスムージングなしでそのまま表示）
