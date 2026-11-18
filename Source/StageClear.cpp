@@ -132,6 +132,8 @@ void StageClear::Start()
 		mDoorPopScale = 0.0f;
 		mDoorSmoke.clear();
 		InitLogo();
+
+		Master::mpGameManager->GetSoundManager()->StopBGM();
 	}
 }
 
