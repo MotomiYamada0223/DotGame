@@ -70,7 +70,6 @@ void DeathController::LoadGraphs()
 	mAngelLaughHandles[0] = LoadGraph("Resource/Saint/Smile/smile_L.png");
 	mAngelLaughHandles[1] = LoadGraph("Resource/Saint/Smile/smile_R.png");
 
-	mAngelPointHandles[0] = LoadGraph("Resource/Saint/Hidden/hidden_1.png");
 	mAngelPointHandles[1] = LoadGraph("Resource/Saint/Hidden/hidden_2.png");
 
 	mAngelHideHandles[0] = LoadGraph("Resource/Saint/Pointing/pointing_1.png");

@@ -445,10 +445,44 @@ void BossEnemyDragon::UpdateEntranceDrop(Player* player, GameScene* gameScene)
 		if (mAnimFrame < 2) mAnimFrame++;
 	}
 
-	// 天井の高さ（Y >= 980）に到達した瞬間に天井を破壊して岩片を降らせる
-	if (!mHasBrokenCeiling && mvPosition.y >= 980.0f && mpBlockMap != nullptr)
+	// 登場降下中、ドラゴンの体一つ分の幅だけ洞窟マップ上部の天井を砕きながら落下させる
+	if (mpBlockMap != nullptr)
 	{
-		mHasBrokenCeiling = true;
+		if (!mpBlockMap->IsCeilingBreakInitialized())
+		{
+			mpBlockMap->InitCeilingBreak(mvPosition.x);
+		}
+
+		const float dragonBottomY = mvPosition.y + mfEnemyHeight * 0.5f;
+
+		// 天井の厚みを砕きながら落ちる間だけ少し減速し、破砕完了後に再加速させる
+		if (dragonBottomY >= DragonCeilingBreakConstants::PenetrateStartY &&
+			dragonBottomY <= DragonCeilingBreakConstants::PenetrateEndY)
+		{
+			velocityY = DragonCeilingBreakConstants::PenetrateSpeedY;
+		}
+		else if (!isGrounded &&
+			dragonBottomY > DragonCeilingBreakConstants::PenetrateEndY &&
+			velocityY > 0.0f &&
+			velocityY < DragonCeilingBreakConstants::NormalDropSpeedY)
+		{
+			velocityY = DragonCeilingBreakConstants::NormalDropSpeedY;
+		}
+
+		mpBlockMap->ProgressCeilingBreak(dragonBottomY, mvPosition.x);
+
+		// 画面内に見えている天井の高さに到達した瞬間に破壊音＆軽い画面揺れを発生
+		if (!mHasBrokenCeiling && dragonBottomY >= DragonCeilingBreakConstants::VisibleCeilingTriggerY)
+		{
+			mHasBrokenCeiling = true;
+			PlayDragonSE(SoundManager::SE_STAGE2_BREAKABLE_WALL);
+			mpBlockMap->StartCameraShake(
+				DragonCeilingBreakConstants::BreakShakePower,
+				0.5f,
+				1.0f,
+				DragonCeilingBreakConstants::BreakShakeFrames
+			);
+		}
 	}
 
 	// 床に着地したら EntranceWait へ移行し、着陸アニメーション後半（砂煙エフェクト 3..6）を再生
@@ -1175,8 +1209,10 @@ void BossEnemyDragon::UpdateLanding()
 
 void BossEnemyDragon::UpdateDefeatRetreat()
 {
-	// 体力がゼロになった後、最初に出てきた天井の穴（X = 9500.0f）から上空へ飛んで帰還する演出
-	const float holeX = 9500.0f;
+	// 体力がゼロになった後、登場時に自分で突き破った天井の穴から上空へ飛んで帰還する演出
+	const float holeX = (mpBlockMap != nullptr && mpBlockMap->IsCeilingBreakInitialized())
+		? mpBlockMap->GetCeilingBreakCenterX()
+		: 9500.0f;
 	mStateTimer++;
 	mAnimTimer++;
 

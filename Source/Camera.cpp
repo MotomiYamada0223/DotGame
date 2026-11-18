@@ -28,7 +28,7 @@ Camera::~Camera()
 // プレイヤーの位置や移動方向に応じてカメラのスクロール位置を計算するため
 void Camera::Update(
     int playerScreenX,
-    int playerMapY,
+    float playerMapY,
     float moveDirection,
     float currentSpeed,
     int backgroundWidth,
@@ -51,30 +51,31 @@ void Camera::Update(
 
     int oldScrollPos = mScrollX;
 
-    // 横スクロール（丸めて整数化）
+    // 横スクロール（小数の坂道移動量も蓄積してズレやガタつきを防ぐ）
     if (playerScreenX > MapScrollConstants::ScrollStartRightX && moveDirection > 0.0f)
     {
-        mScrollX += static_cast<int>(std::round(currentSpeed * moveDirection));
+        mScrollXf += currentSpeed * moveDirection;
     }
     else if (playerScreenX < MapScrollConstants::ScrollStartLeftX && moveDirection < 0.0f)
     {
-        mScrollX += static_cast<int>(std::round(currentSpeed * moveDirection));
+        mScrollXf += currentSpeed * moveDirection;
     }
 
-    mScrollX = LimitValue(mScrollX, 0, mMaxScrollX);
+    mScrollXf = LimitValue(mScrollXf, 0.0f, static_cast<float>(mMaxScrollX));
+    mScrollX = LimitValue(static_cast<int>(std::round(mScrollXf)), 0, mMaxScrollX);
 
-    // 縦スクロール（補間も丸める）
-    int targetScrollY = LimitValue(playerMapY - 720, 0, mMaxScrollY);
+    // 縦スクロール（補間も小数精度のまま追従して最終値のみ丸める）
+    const float targetScrollYf = LimitValue(playerMapY - 720.0f, 0.0f, static_cast<float>(mMaxScrollY));
 
 
     if (mNeedScrollInit)
     {
-        mScrollYf = static_cast<float>(targetScrollY);
+        mScrollYf = targetScrollYf;
         mNeedScrollInit = false;
     }
     else
     {
-        mScrollYf += (targetScrollY - mScrollYf) * 0.15f;
+        mScrollYf += (targetScrollYf - mScrollYf) * 0.15f;
     }
     mScrollY = LimitValue(static_cast<int>(std::round(mScrollYf)), 0, mMaxScrollY);
 

@@ -9,7 +9,7 @@ public:
     // カメラの位置更新
     void Update(
         int playerScreenX,
-        int playerMapY,
+        float playerMapY,
         float moveDirection,
         float currentSpeed,
         int backgroundWidth,
@@ -39,7 +39,11 @@ public:
     bool GetIsScroll() const { return mIsScrolling; }
 
     // スクロール位置を直接設定
-    void SetScrollX(int scrollX) { mScrollX = scrollX; }
+    void SetScrollX(int scrollX)
+    {
+        mScrollX = scrollX;
+        mScrollXf = static_cast<float>(scrollX);
+    }
     void SetScrollY(int scrollY)
     {
         mScrollY = scrollY;
@@ -55,7 +59,8 @@ public:
 
 private:
     // clamp の代わりに使う範囲制限関数
-    static int LimitValue(int value, int minValue, int maxValue)
+    template <typename T>
+    static T LimitValue(T value, T minValue, T maxValue)
     {
         if (value < minValue) return minValue;
         if (value > maxValue) return maxValue;
@@ -63,6 +68,7 @@ private:
     }
 
 private:
+    float mScrollXf = 0.0f;
     float mScrollYf = 0.0f;
 
     int mScrollX;
