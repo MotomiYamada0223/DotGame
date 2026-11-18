@@ -249,10 +249,10 @@ void GameScene::Draw()
 		mBossIntro.Draw();
 		mStageClear.Draw();
 
-		//// デバッグ系
-		//mpPlayer->DebugDraw(); // ブロックデバッグ
-		//mBlockMap.DebugDraw(); // ブロックマップデバッグ表示
-		//mTutorialText.DebugDraw(); // テキスト
+		// デバッグ系
+		mpPlayer->DebugDraw(); // ブロックデバッグ
+		mBlockMap.DebugDraw(); // ブロックマップデバッグ表示
+		mTutorialText.DebugDraw(); // テキスト
 
 		// デバッグ用ワープキーのガイド表示
 		DrawFormatString(DebugWarpConstants::GuideTextX, DebugWarpConstants::GuideTextY, GetColor(0, 255, 0), "[1]: Warp to Boss Area");
