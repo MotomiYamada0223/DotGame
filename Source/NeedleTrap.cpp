@@ -42,6 +42,7 @@ NeedleTrap::NeedleTrap(VECTOR initPos, TrapType type, const std::string& graphPa
     {
         mvPosition.y = mBaseY;
         mTargetY = mBaseY;
+        mTrapSpeed = GameLoadDataConstants::CaveFallingNeedleFallSpeed;
     }
     else if (mType == TrapType::ShakingDummy)
     {

@@ -47,4 +47,12 @@ public:
         int* blockY = nullptr
     ) const;
 
+    // 階段状スロープ上の段差ガタつきを抑えるための描画・カメラ用平滑化Yオフセットを算出する
+    float CalcSmoothedSlopeOffsetY(
+        const BlockMap& blockMap,
+        const VECTOR& position,
+        float width,
+        float height
+    ) const;
+
 };

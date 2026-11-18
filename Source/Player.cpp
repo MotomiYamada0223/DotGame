@@ -206,7 +206,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 		}
 
 		const int playerScreenX = static_cast<int>(ConvertToScreenX(mvPosition.x, mpBlockMap));
-		const int playerMapY = static_cast<int>(mvPosition.y);
+		const float playerMapY = mvPosition.y;
 		blockMap.Move(
 			playerScreenX,
 			playerMapY,
@@ -394,6 +394,21 @@ void Player::PlayerMove(BlockMap& blockMap)
 		mForceGroundedThisFrame = false; // 消費
 	}
 
+	// 階段状の坂道コリジョンによる見た目とカメラの細かな上下ガタつきを抑える
+	if (isGrounded)
+	{
+		mSlopeVisualOffsetY = mCharacterPhysics.CalcSmoothedSlopeOffsetY(
+			blockMap, mvPosition, mfPlayerWidth, mfPlayerHeight);
+	}
+	else
+	{
+		mSlopeVisualOffsetY *= PlayerBlockCollision::SlopeAirOffsetDecay;
+		if (std::abs(mSlopeVisualOffsetY) < 0.05f)
+		{
+			mSlopeVisualOffsetY = 0.0f;
+		}
+	}
+
 	if (isBlinking && !mIsBlinkWallDeathImmune)
 	{
 		// X軸方向の移動がほとんどできなかった場合、壁に激突したとみなして即死
@@ -406,15 +421,18 @@ void Player::PlayerMove(BlockMap& blockMap)
 	}
 
 	// 当たり判定後にスクロール量を反映させるため、親クラスの共通関数を使用してプレイヤーのスクリーン座標を算出する
-	// 横方向は画面座標（境界判定のため）、縦方向はマップ座標（カメラ目標位置の計算のため）
-	const int playerScreenX = static_cast<int>(ConvertToScreenX(mvPosition.x, mpBlockMap));
-	const int playerMapY = static_cast<int>(mvPosition.y);
+	// 横方向は実移動量に合わせてスクロールさせ、坂道補正後の縦座標でカメラのガタつきも防ぐ
+	const int playerScreenX = static_cast<int>(std::round(ConvertToScreenX(mvPosition.x, mpBlockMap)));
+	const float playerMapY = mvPosition.y + mSlopeVisualOffsetY;
+	const float scrollSpeedX = (mfMoveDirection != 0.0f)
+		? std::abs(mvPosition.x - prevX)
+		: mfCurrentSpeed;
 
 	blockMap.Move(
 		playerScreenX,
 		playerMapY,
 		mfMoveDirection,
-		mfCurrentSpeed
+		scrollSpeedX
 	);
 
 
@@ -675,7 +693,7 @@ void Player::Update()
 		else if (blinkTimer % 2 == 0) // 2フレームに1回残像を生成
 		{
 			BlinkAfterimage img;
-			img.pos = mvPosition;
+			img.pos = VGet(mvPosition.x, mvPosition.y + mSlopeVisualOffsetY, mvPosition.z);
 			img.facingRight = isFacingRight;
 			img.alpha = 150.0f; // 半透明からスタート
 			mAfterimages.push_back(img);
@@ -1093,8 +1111,8 @@ void Player::DrawPlayerModel()
 		// 残像の描画
 		for (const auto& img : mAfterimages)
 		{
-			int ax = static_cast<int>(ConvertToScreenX(img.pos.x, mpBlockMap) - PlayerAnimState::FRAME_WIDTH / 2);
-			int ay = static_cast<int>(ConvertToScreenY(img.pos.y, mpBlockMap) - PlayerAnimState::FRAME_HEIGHT / 2);
+			int ax = static_cast<int>(std::round(ConvertToScreenX(img.pos.x, mpBlockMap))) - PlayerAnimState::FRAME_WIDTH / 2;
+			int ay = static_cast<int>(std::round(ConvertToScreenY(img.pos.y, mpBlockMap))) - PlayerAnimState::FRAME_HEIGHT / 2;
 			int aSrcX = srcX;
 			int aSrcY = mPlayerState.GetSrcY();
 			bool aFileX = !img.facingRight;
@@ -1149,8 +1167,8 @@ void Player::DrawPlayerModel()
 
 		// 指定の場所だけ描画する
 		// 親クラスの共通関数を使用してワールド座標からスクリーン座標へ変換する
-		const int screenX = static_cast<int>(ConvertToScreenX(mvPosition.x, mpBlockMap) - PlayerAnimState::FRAME_WIDTH / 2);
-		const int screenY = static_cast<int>(ConvertToScreenY(mvPosition.y, mpBlockMap) - PlayerAnimState::FRAME_HEIGHT / 2);
+		const int screenX = static_cast<int>(std::round(ConvertToScreenX(mvPosition.x, mpBlockMap))) - PlayerAnimState::FRAME_WIDTH / 2;
+		const int screenY = static_cast<int>(std::round(ConvertToScreenY(mvPosition.y + mSlopeVisualOffsetY, mpBlockMap))) - PlayerAnimState::FRAME_HEIGHT / 2;
 		const bool flipX = !isFacingRight;
 
 		DrawRectGraph(
@@ -1441,6 +1459,7 @@ void Player::Revive()
 	// 移動状態をリセット
 	mfMoveDirection = 0.0f;
 	mfCurrentSpeed = moveSpeed;
+	mSlopeVisualOffsetY = 0.0f;
 
 	// 行動ステートのリセット
 	mActionState.blink = false;
@@ -1646,6 +1665,7 @@ void Player::WarpTo(float x, float y)
 	mbIsJumping = false;
 	isGrounded = true;
 	mForceGroundedThisFrame = true;
+	mSlopeVisualOffsetY = 0.0f;
 	mCurrentJumpType = PlayerConstants::JumpType::None;
 	mJumpHoldFrames = 0;
 	mJumpStartY = y;

@@ -35,7 +35,7 @@ public:
         const std::string& collisionPath
     );
 
-    void Move(int playerScreenX, int playerMapY, float moveDirection, float currentSpeed);
+    void Move(int playerScreenX, float playerMapY, float moveDirection, float currentSpeed);
     void Draw();
     void DebugDraw();
 
@@ -74,6 +74,15 @@ public:
 
     // カメラを指定ワールド座標に瞬時にスナップ（カメラスクロール領域内にプレイヤーが収まるように移動）
     void SnapCameraToPosition(float targetWorldX, float targetWorldY);
+
+    // 洞窟ボス登場時の天井破砕演出
+    void InitCeilingBreak(float centerWorldX);
+    void ProgressCeilingBreak(float dragonBottomWorldY, float dragonCenterWorldX);
+    void UpdateCeilingBreak();
+    void DrawCeilingForegroundDebris() const;
+    void ResetCeilingBreak();
+    bool IsCeilingBreakInitialized() const { return mbCeilingBreakActive; }
+    float GetCeilingBreakCenterX() const { return mCeilingBreakCenterX; }
 
     // ボスエリア関連
     bool HasBossArea() const { return mbHasBossArea; }
@@ -118,4 +127,51 @@ private: // スクロール関係
     int mnBackgroundHeight;
     bool mbIsScrolling; // スクロール中かを判断
     float mfMoveDirection; // スクロール方向
+
+private: // 洞窟ボス登場時の天井破砕演出用データ
+    struct CeilingChunk
+    {
+        int graphHandle = -1;       // DerivationGraph で切り出した岩塊ハンドル
+        float origX = 0.0f;         // 元の左上ワールドX
+        float origY = 0.0f;         // 元の左上ワールドY
+        int size = 24;              // チャンク1辺のピクセルサイズ
+        bool isTarget = false;      // 破壊対象マスクに含まれるか（ギザギザ境界用）
+        bool hadCollision = false;  // 元々Blockコリジョンを持っていたか（リセット復元用）
+        bool isBroken = false;      // すでに砕けて落下中か
+        bool isFinished = false;    // 地面落下後に消滅完了したか
+        bool isForeground = false;  // ドラゴンの手前に描くか、奥に描くか
+        float x = 0.0f;             // 現在の中心ワールドX
+        float y = 0.0f;             // 現在の中心ワールドY
+        float vx = 0.0f;            // X速度
+        float vy = 0.0f;            // Y速度
+        float angle = 0.0f;         // 回転角(rad)
+        float rotSpeed = 0.0f;      // 回転角速度
+        float alpha = 255.0f;       // 不透明度
+        int bounceCount = 0;        // 床バウンド回数
+        float triggerDelayY = 0.0f; // 同一段での砕けタイミングのバラつき
+    };
+
+    struct CeilingDust
+    {
+        float x = 0.0f;
+        float y = 0.0f;
+        float vx = 0.0f;
+        float vy = 0.0f;
+        float radius = 6.0f;
+        float alpha = 200.0f;
+        int color = 0;
+    };
+
+    void DrawBrokenCeilingChunk(const CeilingChunk& chunk, int sx, int sy) const;
+
+    bool mbCeilingBreakActive = false;
+    int mCeilingRegionGraph = -1;
+    int mCeilingHoleLeft = 0;
+    int mCeilingHoleTop = 0;
+    int mCeilingHoleRight = 0;
+    int mCeilingHoleBottom = 0;
+    float mCeilingBreakCenterX = 0.0f;
+    float mLatestDragonBottomY = -9999.0f;
+    std::vector<CeilingChunk> mCeilingChunks;
+    std::vector<CeilingDust> mCeilingDusts;
 };

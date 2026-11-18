@@ -163,6 +163,7 @@ private:
 	// 移動関連
 	const float moveSpeed = 5.0f;
 	float mfCurrentSpeed = moveSpeed; // 合計の今の速さ
+	float mSlopeVisualOffsetY = 0.0f; // 階段状スロープ上の描画・カメラガタつきを抑える平滑化オフセットY
 	bool isFacingRight; // 右向きかどうか
 
 	// 攻撃関連

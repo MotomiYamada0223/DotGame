@@ -240,6 +240,22 @@ namespace PlayerBlockCollision
 	static constexpr float WallCheckMargin = 20.0f;
 	// 壁や床、天井の判定を行う際の厚み
 	static constexpr float CollisionThickness = 1.0f;
+	// 坂道・階段状コリジョンを滑らかに移動するための1回あたりの最大水平分割幅(px)
+	static constexpr float SlopeSubstepSize = 1.0f;
+	// 1pxの水平移動あたり自動で上り上げ可能な坂道の最大段差(px)
+	static constexpr int SlopeMaxStepUpPerPixel = 8;
+	// 接地中に1pxの水平移動あたり自動で足元を吸着させる下り坂の最大段差(px)
+	static constexpr int SlopeMaxStepDownPerPixel = 8;
+	// 坂道勾配測定に用いる左右のサンプル半幅(px)
+	static constexpr int SlopeMeasureHalfSpan = 8;
+	// 坂道高さを探索する上下プローブ範囲(px)
+	static constexpr int SlopeProbeRangeY = 24;
+	// 勾配がこの上下差(px)以下なら平地とみなして速度補正をかけない
+	static constexpr int SlopeFlatIgnoreDeltaY = 3;
+	// 坂道段差による描画・カメラY座標のガタつきを抑える平滑化半径(px)
+	static constexpr int SlopeVisualSmoothRadius = 6;
+	// 坂道から空中へ出た際の描画補正オフセット減衰率
+	static constexpr float SlopeAirOffsetDecay = 0.7f;
 }
 
 // 表示するテキストの位置
@@ -689,6 +705,7 @@ namespace GameLoadDataConstants
 	static constexpr float CaveFallingNeedleInitialY = 1000.0f;
 	static constexpr float CaveFallingNeedleFloorY = 1903.0f;
 	static constexpr float CaveFallingNeedleTriggerDistX = 90.0f;
+	static constexpr float CaveFallingNeedleFallSpeed = 38.0f; // 落下速度（元30.0fから少し上昇）
 
 	// --- デバッグ表示用座標 ---
 	static constexpr int DebugProgressTextX = 10;
@@ -749,4 +766,26 @@ namespace HotSpringConstants
 	static constexpr float RightX = 6508.0f;      // くぼみ右端（右壁 X=6508/6509）
 	static constexpr float BaseWaterY = 1905.0f;  // 水面基準高さ
 	static constexpr float FloorY = 2006.0f;      // くぼみ底面（マップ画像およびコリジョンの地面上面 Y=2006）
+}
+
+// 洞窟ボス（ドラゴン）登場時の天井破砕演出用定数
+namespace DragonCeilingBreakConstants
+{
+	static constexpr int   ChunkSize              = 24;      // 天井を砕くブロック1片のサイズ(px)
+	static constexpr int   Cols                   = 16;      // くり抜き領域の横ブロック数（16 * 24 = 384px）
+	static constexpr int   Rows                   = 19;      // くり抜き領域の縦ブロック数（19 * 24 = 456px）
+	static constexpr int   CeilingBottomY         = 1286;    // 洞窟天井の下端Y座標
+	static constexpr int   CeilingTopY            = CeilingBottomY - (Rows * ChunkSize); // 830
+	static constexpr float FloorY                 = 1903.0f; // ボスエリア地面Y座標
+
+	static constexpr float BreakFrontOffsetY      = 48.0f;   // ドラゴン先端の通過判定先行マージン（砕けながら先行落下させる）
+	static constexpr float ShakePreviewDistY      = 90.0f;   // 破壊直前に天井ブロックが振動する距離
+	static constexpr float VisibleCeilingTriggerY = 1085.0f; // 画面内天井へ突入した瞬間のSE・カメラシェイク発動Y
+	static constexpr float PenetrateStartY        = 1040.0f; // 天井抵抗で減速しながら砕き始めるY
+	static constexpr float PenetrateEndY          = 1300.0f; // 天井突破完了して再加速するY
+	static constexpr float PenetrateSpeedY        = 16.0f;   // 天井を砕きながら落ちる際の重厚な落下速度
+	static constexpr float NormalDropSpeedY       = 30.0f;   // 天井突破前後の通常急降下速度
+	static constexpr float ChunkGravity           = 0.65f;   // 落下する天井破片の重力加速度
+	static constexpr float BreakShakePower        = 14.0f;   // 天井貫通時の画面揺れ強度
+	static constexpr int   BreakShakeFrames       = 22;      // 天井貫通時の画面揺れフレーム数
 }

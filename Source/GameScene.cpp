@@ -185,6 +185,9 @@ void GameScene::Update()
 
 	// クラスのUpdate呼び出し
 	Scene::Update();
+
+	// 洞窟ボス登場時の天井破砕・落下破片エフェクトの更新
+	mBlockMap.UpdateCeilingBreak();
 }
 
 
@@ -301,6 +304,7 @@ void GameScene::DrawBossOrder()
 	if (Master::gCurrentStageIndex == 1)
 	{
 		mBossIntro.DrawBoss(); // ボス画像の描画
+		mBlockMap.DrawCeilingForegroundDebris(); // 手前側の天井破砕岩塊・砂煙を描画
 	}
 }
 

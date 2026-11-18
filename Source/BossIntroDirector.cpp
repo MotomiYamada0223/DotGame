@@ -152,6 +152,7 @@ void BossIntroDirector::Update(Player* player, BlockMap& blockMap)
 
 				mpBossDragon = new BossEnemyDragon(dragonSpawnPos);
 				mpBossDragon->StartEntrance();
+				blockMap.InitCeilingBreak(mWarningX);
 			}
 			else
 			{
@@ -558,6 +559,7 @@ void BossIntroDirector::Reset()
 	if (mpBlockMap != nullptr)
 	{
 		mpBlockMap->SetCameraLocked(false);
+		mpBlockMap->ResetCeilingBreak();
 	}
 	if (mpBossSlime != nullptr)
 	{

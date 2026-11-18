@@ -225,7 +225,7 @@ void MovingFloor::Move()
         // スクロールシステムへの対応（足場の横移動にカメラを連動させる）
         if (mpBlockMap != nullptr && std::abs(moveDelta.x) > 0.0001f) {
             int playerScreenX = static_cast<int>(ConvertToScreenX(playerPos.x, mpBlockMap));
-            int playerMapY = static_cast<int>(playerPos.y);
+            float playerMapY = playerPos.y;
             float moveDir = (moveDelta.x > 0.0f) ? 1.0f : -1.0f;
             float speed = std::abs(moveDelta.x);
 
