@@ -241,6 +241,7 @@ void StageClear::TrackPlayerWithCracker(int crackerIdx, Player* player, BlockMap
 void StageClear::BurstCrackers()
 {
 	PlayStageSE(SoundManager::SE_STAGE1_CRACKER);
+	PlayStageSE(SoundManager::SE_STAGE1_CHEER); // 拍手SE
 
 	const float kPi = DX_PI_F;
 	const int kColors[6][3] = {
