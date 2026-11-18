@@ -758,6 +758,7 @@ void Player::Update()
 		if (isWallBerak)
 		{
 			mActionState.wallbreak = true;
+			Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_STAGE2_BREAKABLE_WALL);
 		}
 	}
 
