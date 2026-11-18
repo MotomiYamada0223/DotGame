@@ -9,14 +9,7 @@
 
 namespace
 {
-	void PlayHotSpringSE(SoundManager::SOUND_SE se)
-	{
-		if (Master::mpGameManager && Master::mpGameManager->GetSoundManager())
-		{
-			Master::mpGameManager->GetSoundManager()->PlaySE(se);
-		}
-	}
-
+	
 	void StopHotSpringSE(SoundManager::SOUND_SE se)
 	{
 		if (Master::mpGameManager && Master::mpGameManager->GetSoundManager())
@@ -299,7 +292,7 @@ void HotSpring::Update(BlockMap& blockMap, Player* player)
 			mbPlayerInside = true;
 			if (!mbWasPlayerInside)
 			{
-				PlayHotSpringSE(SoundManager::SE_STAGE2_HOTSPRING_SPLASH);
+				Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_STAGE2_HOTSPRING_SPLASH);
 			}
 			mPlayerX = pPos.x;
 			mPlayerY = pPos.y;
@@ -318,12 +311,16 @@ void HotSpring::Update(BlockMap& blockMap, Player* player)
 			// 1.5秒（90フレーム）で半ハート回復
 			if (mHeatTimer == 90)
 			{
+				Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_STAGE2_HP_HEAL, 60);
+
 				player->HealHalfHeart();
 				TriggerHealBurst(pPos.x, pPos.y);
 			}
 			// 3.0秒（180フレーム）でさらに半ハート回復
 			else if (mHeatTimer == 180)
 			{
+				Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_STAGE2_HP_HEAL, 60);
+
 				player->HealHalfHeart();
 				TriggerHealBurst(pPos.x, pPos.y);
 			}
