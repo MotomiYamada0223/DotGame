@@ -307,6 +307,7 @@ void BoulderNeedleTrap::EnemyMove(BlockMap& blockMap)
         // ① プレイヤーがくぼみに入った場合：針に刺さって死亡！（針は飛ばない）
         if (pPos.x >= 4270.0f && pPos.x <= 4360.0f && pPos.y >= 1910.0f)
         {
+            Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_STAGE1_SPIKE_DEATH);
             mSpikeHeight = mSpikeMaxHeight;
             player->TakeDamage(9999);
             player->SetDeathReason(DeathReason::DeathType::NeedleTrapHit);
@@ -342,6 +343,7 @@ void BoulderNeedleTrap::EnemyMove(BlockMap& blockMap)
 
             if (pRight >= spLeft && pLeft <= spRight && pBottom >= spTop && pTop <= spBottom)
             {
+                Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_STAGE1_SPIKE_DEATH);
                 player->TakeDamage(9999);
                 player->SetDeathReason(DeathReason::DeathType::NeedleTrapHit);
             }

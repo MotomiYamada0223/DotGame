@@ -491,6 +491,8 @@ void BossEnemySlime::Update()
                 // 爆発の瞬間！画面揺れ＆全方位に液体弾を散布
                 if (mpBlockMap != nullptr)
                 {
+                    Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_STAGE1_SLIME_LAND);
+
                     mpBlockMap->StartCameraShake(
                         KingSlimeShakeConstants::ShakePower * 2.0f,
                         KingSlimeShakeConstants::RatioX,
@@ -817,6 +819,8 @@ void BossEnemySlime::Update()
                 // 体当たり着地の小画面揺れ
                 if (mpBlockMap != nullptr)
                 {
+                    Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_STAGE1_SLIME_LAND);
+
                     mGroundY = FindGroundY(*mpBlockMap, mvPosition.x);
                     mvPosition.y = GetLandingCenterY(mGroundY);
                     mpBlockMap->StartCameraShake(

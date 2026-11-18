@@ -55,7 +55,9 @@ public:
     int GetShakeOffsetX() const { return mCamera.GetShakeOffsetX(); }
     int GetShakeOffsetY() const { return mCamera.GetShakeOffsetY(); }
 
-    void StartCameraShake(float power, float ratioX, float ratioY, int durationFrames) {
+    void StartCameraShake(float power, float ratioX, float ratioY, int durationFrames)
+    {
+        
         mCamera.StartShake(power, ratioX, ratioY, durationFrames);
     }
 
