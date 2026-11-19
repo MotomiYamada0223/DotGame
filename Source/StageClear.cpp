@@ -37,11 +37,21 @@ StageClear::StageClear()
 	, mbLogoLanded(false)
 	, mLogoImpactTimer(0)
 	, mLogoReboundOffset(0.0f)
+	, mRopeGraph(-1)
+	, mRopeSegmentGraph(-1)
 	, mDoorWorldX(0.0f)
 	, mDoorWorldY(0.0f)
 	, mDoorAnimProgress(0.0f)
 	, mDoorCurrentFrame(0)
 	, mDoorPopScale(0.0f)
+	, mRopeTopY(0.0f)
+	, mRopeTargetBottomY(0.0f)
+	, mRopeCurrentBottomY(0.0f)
+	, mRopeDropStartBottomY(0.0f)
+	, mRopeSwayOffsetX(0.0f)
+	, mRopeClimbStartX(0.0f)
+	, mRopeFadeAlpha(0.0f)
+	, mbIsPlayerNearRope(false)
 	, mbDoorDrawnThisFrame(false)
 	, mpBlockMap(nullptr)
 {
@@ -76,6 +86,8 @@ StageClear::StageClear()
 		StageClearConstants::DoorFrameHeight,
 		mDoorGraphs
 	);
+
+	EnsureRopeGraphsLoaded();
 }
 
 StageClear::~StageClear()
@@ -106,6 +118,16 @@ StageClear::~StageClear()
 			mDoorGraphs[i] = -1;
 		}
 	}
+	if (mRopeSegmentGraph != -1)
+	{
+		DeleteGraph(mRopeSegmentGraph);
+		mRopeSegmentGraph = -1;
+	}
+	if (mRopeGraph != -1)
+	{
+		DeleteGraph(mRopeGraph);
+		mRopeGraph = -1;
+	}
 	if (sInstance == this)
 	{
 		sInstance = nullptr;
@@ -130,6 +152,14 @@ void StageClear::Start()
 		mDoorAnimProgress = 0.0f;
 		mDoorCurrentFrame = 0;
 		mDoorPopScale = 0.0f;
+		mRopeTopY = 0.0f;
+		mRopeTargetBottomY = 0.0f;
+		mRopeCurrentBottomY = 0.0f;
+		mRopeDropStartBottomY = 0.0f;
+		mRopeSwayOffsetX = 0.0f;
+		mRopeClimbStartX = 0.0f;
+		mRopeFadeAlpha = 0.0f;
+		mbIsPlayerNearRope = false;
 		mDoorSmoke.clear();
 		InitLogo();
 
@@ -158,6 +188,14 @@ void StageClear::Reset()
 	mDoorAnimProgress = 0.0f;
 	mDoorCurrentFrame = 0;
 	mDoorPopScale = 0.0f;
+	mRopeTopY = 0.0f;
+	mRopeTargetBottomY = 0.0f;
+	mRopeCurrentBottomY = 0.0f;
+	mRopeDropStartBottomY = 0.0f;
+	mRopeSwayOffsetX = 0.0f;
+	mRopeClimbStartX = 0.0f;
+	mRopeFadeAlpha = 0.0f;
+	mbIsPlayerNearRope = false;
 	mbDoorDrawnThisFrame = false;
 	mDoorSmoke.clear();
 	mpBlockMap = nullptr;
@@ -944,56 +982,59 @@ void StageClear::Update(Player* player, BlockMap* pBlockMap)
 	case State::DoorAppearWait:
 		UpdateConfetti();
 		UpdateImpactDust();
+		UpdateDoorSmoke();
 
-		// 全てのクリア演出が終了し、少ししたら扉が出現
+		// 洞窟ステージではロープが落ちてくる直前の予兆として、穴から砂埃をパラッと落とす
+		if (IsCaveStage() && mTimer == StageClearConstants::DoorAppearWaitFrames / 2 && pBlockMap != nullptr)
+		{
+			const float scrollX = static_cast<float>(pBlockMap->GetScrollX());
+			const float previewX = pBlockMap->IsCeilingBreakInitialized()
+				? pBlockMap->GetCeilingBreakCenterX()
+				: (StageClearConstants::DoorSpawnScreenX + scrollX);
+			SpawnRopeDropDust(previewX, static_cast<float>(DragonCeilingBreakConstants::CeilingBottomY));
+		}
+
+		// 全てのクリア演出が終了し、少ししたら扉（洞窟ステージではロープ）が出現
 		if (mTimer >= StageClearConstants::DoorAppearWaitFrames)
 		{
 			mState = State::DoorAppear;
 			mTimer = 0;
 
-			float scrollX = (pBlockMap != nullptr) ? static_cast<float>(pBlockMap->GetScrollX()) : 0.0f;
-			float scrollY = (pBlockMap != nullptr) ? static_cast<float>(pBlockMap->GetScrollY()) : 0.0f;
+			const float scrollX = (pBlockMap != nullptr) ? static_cast<float>(pBlockMap->GetScrollX()) : 0.0f;
+			const float scrollY = (pBlockMap != nullptr) ? static_cast<float>(pBlockMap->GetScrollY()) : 0.0f;
 
-			// 扉の配置ワールド座標を設定
-			mDoorWorldX = StageClearConstants::DoorSpawnScreenX + scrollX;
+			if (IsCaveStage())
+			{
+				// ドラゴンが天井を破壊した穴の中心からロープを下ろす
+				mDoorWorldX = (pBlockMap != nullptr && pBlockMap->IsCeilingBreakInitialized())
+					? pBlockMap->GetCeilingBreakCenterX()
+					: (StageClearConstants::DoorSpawnScreenX + scrollX);
+				mDoorWorldY = FindGroundSurfaceY(pBlockMap, mDoorWorldX, scrollY, player);
 
-			// 地面Y座標の検出（地形コリジョンから正確な接地高さを特定して宙浮きを解消）
-			float foundGroundY = -1.0f;
-			if (pBlockMap != nullptr)
-			{
-				int checkX = static_cast<int>(mDoorWorldX);
-				int startY = static_cast<int>(scrollY + 200.0f);
-				int maxY = (std::min)(static_cast<int>(scrollY + 1080.0f), 2160);
-				for (int y = startY; y < maxY; y++)
-				{
-					BlockMap::CollisionType col = pBlockMap->GetCollisionType(checkX, y);
-					if (col == BlockMap::CollisionType::Block || col == BlockMap::CollisionType::BossArea)
-					{
-						foundGroundY = static_cast<float>(y);
-						break;
-					}
-				}
-			}
+				mRopeTopY = static_cast<float>(DragonCeilingBreakConstants::CeilingTopY);
+				mRopeTargetBottomY = mDoorWorldY - StageClearConstants::RopeGroundClearanceY;
+				const float ceilingStart = static_cast<float>(DragonCeilingBreakConstants::CeilingBottomY) - StageClearConstants::RopeDropStartOffsetY;
+				mRopeDropStartBottomY = (std::min)(ceilingStart, mRopeTargetBottomY - 80.0f);
+				mRopeCurrentBottomY = mRopeDropStartBottomY;
+				mRopeSwayOffsetX = 0.0f;
+				mRopeFadeAlpha = 0.0f;
+				mbIsPlayerNearRope = false;
 
-			if (foundGroundY > 0.0f)
-			{
-				mDoorWorldY = foundGroundY;
-			}
-			else if (player != nullptr && !player->GetIsDead() && std::abs(player->GetVelocityY()) < 0.01f)
-			{
-				mDoorWorldY = player->GetPosition().y + player->GetPlayerHeight() * 0.5f;
+				SpawnRopeDropDust(mDoorWorldX, static_cast<float>(DragonCeilingBreakConstants::CeilingBottomY));
 			}
 			else
 			{
-				mDoorWorldY = StageClearConstants::DoorGroundFallbackY + scrollY;
+				// 扉の配置ワールド座標を設定
+				mDoorWorldX = StageClearConstants::DoorSpawnScreenX + scrollX;
+				mDoorWorldY = FindGroundSurfaceY(pBlockMap, mDoorWorldX, scrollY, player);
+
+				mDoorAnimProgress = 0.0f;
+				mDoorCurrentFrame = 0;
+				mDoorPopScale = 0.0f;
+
+				// 煙演出の発生
+				SpawnDoorSmoke(mDoorWorldX, mDoorWorldY);
 			}
-
-			mDoorAnimProgress = 0.0f;
-			mDoorCurrentFrame = 0;
-			mDoorPopScale = 0.0f;
-
-			// 煙演出の発生
-			SpawnDoorSmoke(mDoorWorldX, mDoorWorldY);
 		}
 		break;
 
@@ -1001,17 +1042,51 @@ void StageClear::Update(Player* player, BlockMap* pBlockMap)
 	{
 		UpdateDoorSmoke();
 
-		float t = static_cast<float>(mTimer) / static_cast<float>(StageClearConstants::DoorAppearFrames);
-		if (t > 1.0f) t = 1.0f;
-
-		// 煙の中からポンッと飛び出すバウンススケール (0.0 -> 1.2 -> 1.0)
-		mDoorPopScale = t * (1.0f + 0.20f * std::sin(t * 3.14159f));
-
-		if (mTimer >= StageClearConstants::DoorAppearFrames)
+		if (IsCaveStage())
 		{
-			mDoorPopScale = 1.0f;
-			mState = State::DoorActive;
-			mTimer = 0;
+			const float kPi = 3.14159265f;
+			const float kDropPhaseEnd = 0.62f;
+			float t = static_cast<float>(mTimer) / static_cast<float>(StageClearConstants::RopeAppearFrames);
+			if (t > 1.0f) t = 1.0f;
+
+			if (t <= kDropPhaseEnd)
+			{
+				const float p = t / kDropPhaseEnd;
+				const float eased = p * p;
+				const float overshootTargetY = mRopeTargetBottomY + StageClearConstants::RopeDropOvershootY;
+				mRopeCurrentBottomY = mRopeDropStartBottomY + (overshootTargetY - mRopeDropStartBottomY) * eased;
+				mRopeSwayOffsetX = std::sin(p * kPi * 2.5f) * 8.0f;
+			}
+			else
+			{
+				const float bp = (t - kDropPhaseEnd) / (1.0f - kDropPhaseEnd);
+				const float verticalBounce = StageClearConstants::RopeDropOvershootY * std::exp(-4.5f * bp) * std::cos(bp * kPi * 2.5f);
+				mRopeCurrentBottomY = mRopeTargetBottomY + verticalBounce;
+				mRopeSwayOffsetX = std::sin(bp * kPi * 3.0f) * (1.0f - bp) * 14.0f;
+			}
+
+			if (mTimer >= StageClearConstants::RopeAppearFrames)
+			{
+				mRopeCurrentBottomY = mRopeTargetBottomY;
+				mRopeSwayOffsetX = 0.0f;
+				mState = State::DoorActive;
+				mTimer = 0;
+			}
+		}
+		else
+		{
+			float t = static_cast<float>(mTimer) / static_cast<float>(StageClearConstants::DoorAppearFrames);
+			if (t > 1.0f) t = 1.0f;
+
+			// 煙の中からポンッと飛び出すバウンススケール (0.0 -> 1.2 -> 1.0)
+			mDoorPopScale = t * (1.0f + 0.20f * std::sin(t * 3.14159f));
+
+			if (mTimer >= StageClearConstants::DoorAppearFrames)
+			{
+				mDoorPopScale = 1.0f;
+				mState = State::DoorActive;
+				mTimer = 0;
+			}
 		}
 	}
 	break;
@@ -1020,60 +1095,129 @@ void StageClear::Update(Player* player, BlockMap* pBlockMap)
 	{
 		UpdateDoorSmoke();
 
-		bool isPlayerInRange = false;
-		if (player != nullptr && !player->GetIsDead())
+		if (IsCaveStage())
 		{
-			float playerHalfH = player->GetPlayerHeight() * 0.5f;
-			float dx = std::abs(player->GetPosition().x - mDoorWorldX);
-			float dy = std::abs(player->GetPosition().y - (mDoorWorldY - playerHalfH));
+			mRopeCurrentBottomY = mRopeTargetBottomY;
+			mRopeSwayOffsetX = std::sin(static_cast<float>(mTimer) * 0.045f) * 3.0f;
 
-			if (dx <= StageClearConstants::DoorInteractRangeX && dy <= StageClearConstants::DoorInteractRangeY)
+			mbIsPlayerNearRope = false;
+			if (player != nullptr && !player->GetIsDead())
 			{
-				isPlayerInRange = true;
+				const VECTOR pPos = player->GetPosition();
+				const float dx = std::abs(pPos.x - mDoorWorldX);
+				if (dx <= StageClearConstants::RopeInteractRangeX &&
+					pPos.y >= mRopeTopY &&
+					pPos.y <= mDoorWorldY + 30.0f)
+				{
+					mbIsPlayerNearRope = true;
+				}
 			}
-		}
 
-		if (isPlayerInRange)
-		{
-			// 範囲内：アニメーションを順再生（上限3.0fで停止、ループなし）
-			mDoorAnimProgress += StageClearConstants::DoorAnimSpeed;
-			if (mDoorAnimProgress > 3.0f)
+			const bool grabTriggered = mbIsPlayerNearRope && (
+				InputManager::CheckDownKey(KEY_INPUT_RETURN) == 1 ||
+				InputManager::CheckDownKey(KEY_INPUT_UP) == 1);
+
+			if (grabTriggered && player != nullptr)
 			{
-				mDoorAnimProgress = 3.0f;
+				mState = State::RopeClimbing;
+				mTimer = 0;
+				mRopeClimbStartX = player->GetPosition().x;
+				mRopeFadeAlpha = 0.0f;
+				mbIsPlayerNearRope = false;
+				player->StartRopeClimb();
+				PlayStageSE(SoundManager::SE_PLAYER_JUMP);
 			}
 		}
 		else
 		{
-			// 離れた：現在の画像の枚数のところから逆再生（下限0.0fで停止、ループなし）
-			mDoorAnimProgress -= StageClearConstants::DoorAnimSpeed;
-			if (mDoorAnimProgress < 0.0f)
+			bool isPlayerInRange = false;
+			if (player != nullptr && !player->GetIsDead())
 			{
-				mDoorAnimProgress = 0.0f;
+				float playerHalfH = player->GetPlayerHeight() * 0.5f;
+				float dx = std::abs(player->GetPosition().x - mDoorWorldX);
+				float dy = std::abs(player->GetPosition().y - (mDoorWorldY - playerHalfH));
+
+				if (dx <= StageClearConstants::DoorInteractRangeX && dy <= StageClearConstants::DoorInteractRangeY)
+				{
+					isPlayerInRange = true;
+				}
+			}
+
+			if (isPlayerInRange)
+			{
+				// 範囲内：アニメーションを順再生（上限3.0fで停止、ループなし）
+				mDoorAnimProgress += StageClearConstants::DoorAnimSpeed;
+				if (mDoorAnimProgress > 3.0f)
+				{
+					mDoorAnimProgress = 3.0f;
+				}
+			}
+			else
+			{
+				// 離れた：現在の画像の枚数のところから逆再生（下限0.0fで停止、ループなし）
+				mDoorAnimProgress -= StageClearConstants::DoorAnimSpeed;
+				if (mDoorAnimProgress < 0.0f)
+				{
+					mDoorAnimProgress = 0.0f;
+				}
+			}
+
+			// 現在のコマ番号（0〜3）を決定
+			int frame = static_cast<int>(mDoorAnimProgress);
+			if (frame < 0) frame = 0;
+			if (frame > 3) frame = 3;
+			mDoorCurrentFrame = frame;
+
+			// 扉へのインタラクト：プレイヤーが扉範囲内にいて、Enterキーが押された時のみ遷移（上キーや範囲外でのEnterは無効）
+			bool enterKeyAtDoor = isPlayerInRange && (InputManager::CheckDownKey(KEY_INPUT_RETURN) == 1);
+
+			if (enterKeyAtDoor)
+			{
+				CompleteStageClear();
 			}
 		}
+	}
+	break;
 
-		// 現在のコマ番号（0〜3）を決定
-		int frame = static_cast<int>(mDoorAnimProgress);
-		if (frame < 0) frame = 0;
-		if (frame > 3) frame = 3;
-		mDoorCurrentFrame = frame;
+	case State::RopeClimbing:
+	{
+		UpdateDoorSmoke();
 
-		// 扉へのインタラクト：プレイヤーが扉範囲内にいて、Enterキーが押された時のみ遷移（上キーや範囲外でのEnterは無効）
-		bool enterKeyAtDoor = isPlayerInRange && (InputManager::CheckDownKey(KEY_INPUT_RETURN) == 1);
-
-		if (enterKeyAtDoor)
+		if (player == nullptr || player->GetIsDead())
 		{
-			// 現在のステージをクリア済みにする（次のステージのロックが解除される）
-			if (Master::gCurrentStageIndex >= 0 && Master::gCurrentStageIndex < Master::MaxStageCount)
-			{
-				Master::gStageCleared[Master::gCurrentStageIndex] = true;
-			}
+			CompleteStageClear();
+			break;
+		}
 
-			mState = State::Finished;
-			if (Master::mpGameManager && Master::mpGameManager->GetSceneManager())
-			{
-				Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_WINRESULT);
-			}
+		const float scrollY = (pBlockMap != nullptr) ? static_cast<float>(pBlockMap->GetScrollY()) : 0.0f;
+		const float nextY = player->GetPosition().y - StageClearConstants::RopeClimbSpeedY;
+
+		// 最初の数フレームでロープ中心Xへ滑らかに寄せ、その後は交互登り風のわずかな揺れを付ける
+		constexpr int kAlignFrames = 8;
+		float alignT = static_cast<float>(mTimer) / static_cast<float>(kAlignFrames);
+		if (alignT > 1.0f) alignT = 1.0f;
+		const float climbWobble = std::sin(static_cast<float>(mTimer) * 0.25f) * StageClearConstants::RopeClimbWobbleX;
+		const float climbX = mRopeClimbStartX + (mDoorWorldX - mRopeClimbStartX) * alignT + climbWobble;
+		const bool facingRight = ((mTimer / StageClearConstants::RopeClimbAnimFlipInterval) % 2 == 0);
+
+		mRopeSwayOffsetX = std::sin(static_cast<float>(mTimer) * 0.25f) * 5.0f;
+		player->UpdateRopeClimbStep(climbX, nextY, facingRight);
+
+		const float fadeStartY = scrollY + static_cast<float>(StageClearConstants::RopeClimbFadeStartYOffset);
+		const float exitY = scrollY - static_cast<float>(StageClearConstants::RopeClimbExitYOffset);
+		if (nextY <= fadeStartY)
+		{
+			const float fadeSpan = (std::max)(1.0f, fadeStartY - exitY);
+			float fadeT = (fadeStartY - nextY) / fadeSpan;
+			if (fadeT < 0.0f) fadeT = 0.0f;
+			if (fadeT > 1.0f) fadeT = 1.0f;
+			mRopeFadeAlpha = 255.0f * fadeT;
+		}
+
+		if (nextY <= exitY)
+		{
+			player->StopRopeClimb();
+			CompleteStageClear();
 		}
 	}
 	break;
@@ -1265,6 +1409,7 @@ void StageClear::SpawnDoorSmoke(float x, float y)
 
 		s.life = 35 + GetRand(20); // 35〜55フレーム
 		s.timer = 0;
+		s.isRisingSmoke = true;
 		s.isActive = true;
 
 		mDoorSmoke.push_back(s);
@@ -1279,10 +1424,18 @@ void StageClear::UpdateDoorSmoke()
 
 		s.x += s.vx;
 		s.y += s.vy;
-		s.vx *= 0.90f; // 空気抵抗で徐々に減速
-		s.vy *= 0.90f;
-		s.vy -= 0.08f; // ふわふわと上昇
-		s.size += 0.55f; // モクモクと膨張
+		if (s.isRisingSmoke)
+		{
+			s.vx *= 0.90f; // 空気抵抗で徐々に減速
+			s.vy *= 0.90f;
+			s.vy -= 0.08f; // ふわふわと上昇
+			s.size += 0.55f; // モクモクと膨張
+		}
+		else
+		{
+			s.vx *= 0.97f;
+			s.vy += 0.22f; // 穴から落ちる砂埃・小石は下向きに加速落下
+		}
 		s.timer++;
 
 		if (s.timer >= s.life)
@@ -1311,25 +1464,210 @@ void StageClear::DrawDoorSmoke() const
 		float screenX = s.x - scrollX - shakeX;
 		float screenY = s.y - scrollY - shakeY;
 
-		// 煙の外周（立体感のある薄い影）
-		SetDrawBlendMode(DX_BLENDMODE_ALPHA, currentAlpha / 2);
-		DrawCircleAA(screenX, screenY, s.size + 2.0f, 16, GetColor(180, 175, 165), TRUE);
+		if (s.isRisingSmoke)
+		{
+			// 煙の外周（立体感のある薄い影）
+			SetDrawBlendMode(DX_BLENDMODE_ALPHA, currentAlpha / 2);
+			DrawCircleAA(screenX, screenY, s.size + 2.0f, 16, GetColor(180, 175, 165), TRUE);
+		}
 
-		// 煙本体（やわらかな白・クリーム色）
+		// パーティクル本体
 		SetDrawBlendMode(DX_BLENDMODE_ALPHA, currentAlpha);
 		DrawCircleAA(screenX, screenY, s.size, 16, GetColor(s.r, s.g, s.b), TRUE);
 	}
 	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 }
 
+bool StageClear::IsCaveStage() const
+{
+	return Master::gCurrentStageIndex == GameLoadDataConstants::StageIndexCave;
+}
+
+void StageClear::EnsureRopeGraphsLoaded() const
+{
+	if (mRopeGraph == -1)
+	{
+		mRopeGraph = LoadGraph(CharacterGraphPath::ClearRope.c_str());
+	}
+	if (mRopeSegmentGraph == -1 && mRopeGraph != -1)
+	{
+		mRopeSegmentGraph = DerivationGraph(
+			0,
+			0,
+			StageClearConstants::RopeTexWidth,
+			StageClearConstants::RopeSegmentHeight,
+			mRopeGraph);
+	}
+}
+
+float StageClear::FindGroundSurfaceY(const BlockMap* pBlockMap, float worldX, float scrollY, Player* player) const
+{
+	if (pBlockMap != nullptr)
+	{
+		const int checkX = static_cast<int>(worldX);
+		const int startY = static_cast<int>(scrollY + 200.0f);
+		const int maxY = (std::min)(static_cast<int>(scrollY + 1080.0f), 2160);
+		for (int y = startY; y < maxY; y++)
+		{
+			const BlockMap::CollisionType col = pBlockMap->GetCollisionType(checkX, y);
+			if (col == BlockMap::CollisionType::Block || col == BlockMap::CollisionType::BossArea)
+			{
+				return static_cast<float>(y);
+			}
+		}
+	}
+
+	if (player != nullptr && !player->GetIsDead() && std::abs(player->GetVelocityY()) < 0.01f)
+	{
+		return player->GetPosition().y + player->GetPlayerHeight() * 0.5f;
+	}
+
+	return StageClearConstants::DoorGroundFallbackY + scrollY;
+}
+
+void StageClear::SpawnRopeDropDust(float x, float y)
+{
+	for (int i = 0; i < 16; i++)
+	{
+		DoorSmokeParticle s;
+		s.x = x + static_cast<float>(GetRand(70) - 35);
+		s.y = y + static_cast<float>(GetRand(16) - 8);
+		s.vx = static_cast<float>(GetRand(40) - 20) * 0.08f;
+		s.vy = 1.4f + static_cast<float>(GetRand(26)) * 0.12f;
+		s.size = 4.0f + static_cast<float>(GetRand(6));
+		s.alpha = 185 + GetRand(40);
+		const int shade = 105 + GetRand(35);
+		s.r = shade + 10;
+		s.g = shade + 4;
+		s.b = shade - 10;
+		s.life = 28 + GetRand(18);
+		s.timer = 0;
+		s.isRisingSmoke = false;
+		s.isActive = true;
+		mDoorSmoke.push_back(s);
+	}
+}
+
+void StageClear::CompleteStageClear()
+{
+	// 現在のステージをクリア済みにする（次のステージのロックが解除される）
+	if (Master::gCurrentStageIndex >= 0 && Master::gCurrentStageIndex < Master::MaxStageCount)
+	{
+		Master::gStageCleared[Master::gCurrentStageIndex] = true;
+	}
+
+	mState = State::Finished;
+	if (Master::mpGameManager && Master::mpGameManager->GetSceneManager())
+	{
+		Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_WINRESULT);
+	}
+}
+
+void StageClear::DrawRope(const BlockMap* pBlockMap) const
+{
+	EnsureRopeGraphsLoaded();
+	const int srcGraph = (mRopeSegmentGraph != -1) ? mRopeSegmentGraph : mRopeGraph;
+	if (srcGraph == -1) return;
+
+	const BlockMap* blockMap = (pBlockMap != nullptr) ? pBlockMap : mpBlockMap;
+	const int shakeX = (blockMap != nullptr) ? blockMap->GetShakeOffsetX() : 0;
+	const int shakeY = (blockMap != nullptr) ? blockMap->GetShakeOffsetY() : 0;
+	const float scrollX = (blockMap != nullptr) ? static_cast<float>(blockMap->GetScrollX()) : 0.0f;
+	const float scrollY = (blockMap != nullptr) ? static_cast<float>(blockMap->GetScrollY()) : 0.0f;
+
+	const float baseScreenX = mDoorWorldX - scrollX - static_cast<float>(shakeX);
+	const float topAnchorScreenY = mRopeTopY - scrollY - static_cast<float>(shakeY);
+	const float bottomScreenY = mRopeCurrentBottomY - scrollY - static_cast<float>(shakeY);
+	const float totalSpanY = (std::max)(1.0f, bottomScreenY - topAnchorScreenY);
+
+	// Rope.png の42pxループ区間を下端側から天井上端まで継ぎ目なく接続描画する
+	const float halfW = (static_cast<float>(StageClearConstants::RopeTexWidth) * StageClearConstants::RopeScale) * 0.5f;
+	const float segH = static_cast<float>(StageClearConstants::RopeSegmentHeight) * StageClearConstants::RopeScale;
+
+	auto calcCenterXAtY = [&](float screenY) -> float {
+		float ratio = (screenY - topAnchorScreenY) / totalSpanY;
+		if (ratio < 0.0f) ratio = 0.0f;
+		if (ratio > 1.0f) ratio = 1.0f;
+		return baseScreenX + mRopeSwayOffsetX * std::pow(ratio, 1.6f);
+	};
+
+	float curBotY = bottomScreenY;
+	while (curBotY > 0.0f && curBotY > topAnchorScreenY)
+	{
+		const float curTopY = curBotY - segH;
+		const float topCX = calcCenterXAtY(curTopY);
+		const float botCX = calcCenterXAtY(curBotY);
+
+		DrawModiGraphF(
+			topCX - halfW, curTopY,
+			topCX + halfW, curTopY,
+			botCX + halfW, curBotY,
+			botCX - halfW, curBotY,
+			srcGraph,
+			TRUE
+		);
+
+		curBotY = curTopY;
+	}
+}
+
+void StageClear::DrawRopeInteractGuide() const
+{
+	if (!Master::mpGameManager) return;
+	FontManager* fontMgr = Master::mpGameManager->GetFontManager();
+	if (!fontMgr) return;
+
+	const BlockMap* blockMap = mpBlockMap;
+	const int shakeX = (blockMap != nullptr) ? blockMap->GetShakeOffsetX() : 0;
+	const int shakeY = (blockMap != nullptr) ? blockMap->GetShakeOffsetY() : 0;
+	const float scrollX = (blockMap != nullptr) ? static_cast<float>(blockMap->GetScrollX()) : 0.0f;
+	const float scrollY = (blockMap != nullptr) ? static_cast<float>(blockMap->GetScrollY()) : 0.0f;
+
+	const float bobY = std::sin(static_cast<float>(mTimer) * 0.12f) * 4.0f;
+	const int centerX = static_cast<int>(mDoorWorldX + mRopeSwayOffsetX - scrollX - static_cast<float>(shakeX));
+	const int guideY = static_cast<int>(mRopeCurrentBottomY - scrollY - static_cast<float>(shakeY) - 96.0f + bobY);
+
+	const char* guideText = "Enter / ↑ で上る";
+	const int fontSize = 26;
+	const int textW = fontMgr->GetDotStringWidth(fontSize, guideText);
+	const int padX = 16;
+	const int padY = 8;
+	const int boxL = centerX - textW / 2 - padX;
+	const int boxR = centerX + textW / 2 + padX;
+	const int boxT = guideY - padY;
+	const int boxB = guideY + fontSize + padY;
+
+	SetDrawBlendMode(DX_BLENDMODE_ALPHA, 210);
+	DrawBox(boxL, boxT, boxR, boxB, GetColor(24, 20, 16), TRUE);
+	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+	DrawBox(boxL, boxT, boxR, boxB, GetColor(255, 225, 105), FALSE);
+	fontMgr->DrawDotString(centerX - textW / 2, guideY, fontSize, GetColor(255, 240, 140), guideText);
+}
+
+void StageClear::DrawRopeExitFade() const
+{
+	if (mRopeFadeAlpha <= 0.0f) return;
+	int alpha = static_cast<int>(mRopeFadeAlpha);
+	if (alpha > 255) alpha = 255;
+	SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
+	DrawBox(0, 0, ScreenSize::ScrrenWidth, ScreenSize::ScrrenHeight, GetColor(0, 0, 0), TRUE);
+	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+}
+
 void StageClear::DrawDoor(const BlockMap* pBlockMap) const
 {
-	if (mState != State::DoorAppear && mState != State::DoorActive)
+	if (mState != State::DoorAppear && mState != State::DoorActive && mState != State::RopeClimbing)
 	{
 		return;
 	}
 
 	mbDoorDrawnThisFrame = true;
+
+	if (IsCaveStage())
+	{
+		DrawRope(pBlockMap);
+		return;
+	}
 
 	if (mDoorCurrentFrame < 0 || mDoorCurrentFrame >= StageClearConstants::DoorFrameCount)
 	{
@@ -1403,19 +1741,36 @@ void StageClear::Draw() const
 		DrawImpactDust();
 	}
 
-	// 5. 扉描画（GameScene::Drawで呼ばれなかった場合のフェイルセーフ）
-	if (!mbDoorDrawnThisFrame && (mState == State::DoorAppear || mState == State::DoorActive))
+	// 5. 扉／ロープ描画（GameScene::Drawで呼ばれなかった場合のフェイルセーフ）
+	if (!mbDoorDrawnThisFrame &&
+		(mState == State::DoorAppear || mState == State::DoorActive || mState == State::RopeClimbing))
 	{
 		DrawDoor(mpBlockMap);
 	}
 
-	// 6. 扉出現の煙エフェクト描画
-	if (mState == State::DoorAppear || mState == State::DoorActive)
+	// 6. 扉出現の煙・穴落下砂煙エフェクト描画
+	if (mState == State::DoorAppearWait ||
+		mState == State::DoorAppear ||
+		mState == State::DoorActive ||
+		mState == State::RopeClimbing)
 	{
 		DrawDoorSmoke();
 	}
 
-	// 6. 「ステージクリア」特大文字描画（点滅・常時表示・フェードアウト）
+	// 7. 洞窟ロープの操作ガイドおよび天井穴脱出時の白フェード描画
+	if (IsCaveStage())
+	{
+		if (mState == State::DoorActive && mbIsPlayerNearRope)
+		{
+			DrawRopeInteractGuide();
+		}
+		else if (mState == State::RopeClimbing)
+		{
+			DrawRopeExitFade();
+		}
+	}
+
+	// 8. 「ステージクリア」特大文字描画（点滅・常時表示・フェードアウト）
 	if (mState != State::Blink && mState != State::Display && mState != State::ClearCleanUp)
 	{
 		return;

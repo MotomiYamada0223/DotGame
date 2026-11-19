@@ -90,6 +90,12 @@ public: // アクセサ
 	void SetSwordReadyStance(bool active) { mbSwordReadyStance = active; }
 	bool IsSwordReadyStance() const { return mbSwordReadyStance; }
 
+	// クリア時のロープ登り演出
+	void StartRopeClimb();
+	void UpdateRopeClimbStep(float worldX, float worldY, bool facingRight);
+	void StopRopeClimb();
+	bool IsClimbingRope() const { return mbIsClimbingRope; }
+
 	// デバッグ用ワープ
 	void WarpTo(float x, float y);
 
@@ -244,6 +250,7 @@ private: // 復活処理関係
 	bool mbEvadedBossSpawn = false;
 	int mEvasionTimer = 0;
 	bool mbSwordReadyStance = false;
+	bool mbIsClimbingRope = false;
 
 
 	bool mbInHotSpring = false;

@@ -112,6 +112,7 @@ namespace CharacterGraphPath
 	static const std::string Needle = "Resource/Enemy/Trap/Needle.png"; // 針の罠画像
 	static const std::string BloodNeedle = "Resource/Image/BloodNeedle.png"; // 洞窟ステージの血糊針画像
 	static const std::string CaveRamp = "Resource/Image/Cave_Ramp.png"; // 洞窟ステージの三角台足場画像
+	static const std::string ClearRope = "Resource/Image/Rope.png"; // 洞窟ステージクリア時の脱出ロープ画像
 
 	// スライム画像
 	static const std::string Slime = "Resource/Enemy/Slime/slime_idle.png"; // スライム画像
@@ -131,6 +132,7 @@ namespace CharacterGraphPath
 
 	// スケルトン画像
 	static const std::string SkeletonIdel = "Resource/Enemy/KingSlime/kingSlime_death.png";
+	static const std::string SkeletonDeath = "Resource/Enemy/skeleton_animation/skeleton_animation/skeleton_death.png";
 
 
 	// 天使の画像
@@ -364,6 +366,17 @@ namespace SlimeDeathConstants
 	static constexpr int   AnimInterval    = 8;    // コマ送り間隔
 	static constexpr int   FadeOutDuration = 60;   // 消滅時間
 	static constexpr float SinkSpeed       = 0.5f; // 沈み込む速度
+}
+
+// スケルトン死亡演出用の定数
+namespace SkeletonDeathConstants
+{
+	static constexpr int AnimTotalFrames      = 8;   // skeleton_death.png の総コマ数
+	static constexpr int FrameWidth           = 300; // 1コマ横幅(px)
+	static constexpr int FrameHeight          = 300; // 1コマ縦幅(px)
+	static constexpr int AnimInterval         = 6;   // 死亡アニメのコマ送り間隔(frame)
+	static constexpr int CorpseFadeFrameIndex = 5;   // 最終コマ再生後に切り替える6フレーム目(0始まり)
+	static constexpr int FadeOutDuration      = 60;  // 6フレーム目表示中のフェードアウト時間(frame)
 }
 
 // ボス戦開始演出用の定数
@@ -602,6 +615,21 @@ namespace StageClearConstants
 	static constexpr float DoorInteractRangeY    = 150.0f; 
 	static constexpr float DoorAnimSpeed         = 0.15f;  // アニメーション再生速度
 	static constexpr float DoorGroundFallbackY   = 770.0f;    
+
+	// 洞窟ステージ クリアロープ演出用定数
+	static constexpr int   RopeTexWidth              = 20;     // Rope.png 画像幅(px)
+	static constexpr int   RopeSegmentHeight         = 42;     // 結び目1周期分の切り出し高さ(px)
+	static constexpr float RopeScale                 = 1.5f;   // 描画倍率（マップ・プレイヤーの3pxドット密度に統一）
+	static constexpr float RopeGroundClearanceY      = 45.0f;  // 地面からロープ下端までの隙間(px)
+	static constexpr float RopeDropStartOffsetY      = 180.0f; // 天井穴下端から上方に引いた落下開始オフセット(px)
+	static constexpr int   RopeAppearFrames          = 38;     // ロープが穴から垂れ切るまでのフレーム数
+	static constexpr float RopeDropOvershootY        = 18.0f;  // 停止時の下方向へのバウンド伸び量(px)
+	static constexpr float RopeInteractRangeX        = 75.0f;  // ロープを掴める横幅許容距離(px)
+	static constexpr float RopeClimbSpeedY           = 6.5f;   // ロープ登り上昇速度(px/frame)
+	static constexpr float RopeClimbWobbleX          = 2.5f;   // 登り中の左右の体の揺れ幅(px)
+	static constexpr int   RopeClimbAnimFlipInterval = 10;     // 手足交互登り風の向き反転間隔(frame)
+	static constexpr int   RopeClimbFadeStartYOffset = 140;    // 画面上端付近で白フェードを開始する余白(px)
+	static constexpr int   RopeClimbExitYOffset      = 50;     // 画面上端を完全に抜けてクリア遷移する余白(px)
 }
 
 // GameLoadData用定数

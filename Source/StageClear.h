@@ -24,9 +24,10 @@ public:
 		Blink,             // ステージクリア文字の点滅
 		Display,           // 常時表示フェーズ
 		ClearCleanUp,      // クラッカー・文字・ロゴの退出・フェードアウト
-		DoorAppearWait,    // 扉出現前の静寂
-		DoorAppear,        // 煙演出とともに扉出現
-		DoorActive,        // 扉設置完了
+		DoorAppearWait,    // 扉/ロープ出現前の静寂
+		DoorAppear,        // 煙演出とともに扉出現 / 天井穴からロープ落下
+		DoorActive,        // 扉設置完了 / ロープ待機中
+		RopeClimbing,      // 洞窟ステージ：ロープを伝って天井穴へ上昇中
 		Finished           
 	};
 	// StageClear.h に追加
@@ -104,6 +105,7 @@ public:
 		int r, g, b;
 		int life;
 		int timer;
+		bool isRisingSmoke;
 		bool isActive;
 	};
 
@@ -159,6 +161,14 @@ private:
 	void SpawnDoorSmoke(float x, float y);
 	void UpdateDoorSmoke();
 	void DrawDoorSmoke() const;
+	bool IsCaveStage() const;
+	void EnsureRopeGraphsLoaded() const;
+	float FindGroundSurfaceY(const BlockMap* pBlockMap, float worldX, float scrollY, Player* player) const;
+	void SpawnRopeDropDust(float x, float y);
+	void DrawRope(const BlockMap* pBlockMap) const;
+	void DrawRopeInteractGuide() const;
+	void DrawRopeExitFade() const;
+	void CompleteStageClear();
 
 private:
 	State mState;
@@ -185,13 +195,23 @@ private:
 	float mLogoReboundOffset; // 着地時の微小リバウンド振動オフセット
 
 	int mDoorGraphs[4];      // OpenDoor.png 分割画像ハンドル
-	float mDoorWorldX;       // 扉ワールドX座標
-	float mDoorWorldY;       // 扉接地ワールドY座標
+	mutable int mRopeGraph;        // Rope.png 画像ハンドル
+	mutable int mRopeSegmentGraph; // Rope.png の1結び目周期（20x42）切り出しハンドル
+	float mDoorWorldX;       // 扉/ロープ配置ワールドX座標
+	float mDoorWorldY;       // 扉/ロープ基準地面ワールドY座標
 	float mDoorAnimProgress; // 扉開閉アニメーション進行度
 	int mDoorCurrentFrame;   // 現在描画するコマ
 	float mDoorPopScale;     // 出現時のポップ弾性拡縮率
-	mutable bool mbDoorDrawnThisFrame; // フレーム内での扉描画済みフラグ
-	std::vector<DoorSmokeParticle> mDoorSmoke; // 扉出現煙パーティクル
+	float mRopeTopY;         // ロープ上端アンカー（穴奥）ワールドY座標
+	float mRopeTargetBottomY;// ロープ静止時の先端ワールドY座標
+	float mRopeCurrentBottomY;// ロープ現在の先端ワールドY座標
+	float mRopeDropStartBottomY; // 落下開始時の先端ワールドY座標
+	float mRopeSwayOffsetX;  // ロープ先端の左右揺れオフセット
+	float mRopeClimbStartX;  // 掴み開始時のプレイヤーX座標
+	float mRopeFadeAlpha;    // 穴脱出時の白フェード不透明度(0..255)
+	bool mbIsPlayerNearRope; // プレイヤーがロープを掴める範囲にいるか
+	mutable bool mbDoorDrawnThisFrame; // フレーム内での扉/ロープ描画済みフラグ
+	std::vector<DoorSmokeParticle> mDoorSmoke; // 扉出現煙・穴落下砂煙パーティクル
 
 	const BlockMap* mpBlockMap;
 	static StageClear* sInstance;

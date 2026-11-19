@@ -1,4 +1,4 @@
-#include "EnemySkeleton.h"
+ï»¿#include "EnemySkeleton.h"
 #include "DxLib.h"
 #include "BlockMap.h"
 #include "Master.h"
@@ -11,7 +11,7 @@
 #include <cmath>
 #include <algorithm>
 
-// “GƒLƒƒƒ‰ƒNƒ^[iƒXƒPƒ‹ƒgƒ“j‚Ì‰Šú‰»ˆ—
+// æ•µã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ï¼ˆã‚¹ã‚±ãƒ«ãƒˆãƒ³ï¼‰ã®åˆæœŸåŒ–å‡¦ç†
 EnemySkeleton::EnemySkeleton(VECTOR initPos)
     : Enemy(CharacterGraphPath::Skeleton, initPos)
     , mAnimFrame(0)
@@ -25,11 +25,13 @@ EnemySkeleton::EnemySkeleton(VECTOR initPos)
     , mbArrowShotInThisAnim(false)
     , mState(State::Idle)
     , mIdleSETimer(0)
+    , mDeathState(DeathState::Alive)
+    , mDeathTimer(0)
 {
-    // is“x‚É‰‚¶‚½ƒXƒe[ƒ^ƒXiHPEUŒ‚—Í‚È‚Çj‚ğİ’è‚·‚é
+    // é€²è¡Œåº¦ã«å¿œã˜ãŸã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ï¼ˆHPãƒ»æ”»æ’ƒåŠ›ãªã©ï¼‰ã‚’è¨­å®šã™ã‚‹
     UpdateStatusByProgress(GameProgress::Tutorial2);
 
-    // ‘Ò‹@ƒAƒjƒ[ƒVƒ‡ƒ“—p‚Ì‰æ‘œ‚ğ˜A‘±‚µ‚Ä“Ç‚İ‚Ş
+    // å¾…æ©Ÿã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ç”¨ã®ç”»åƒã‚’é€£ç¶šã—ã¦èª­ã¿è¾¼ã‚€
     for (int i = 1; i <= 6; ++i)
     {
         char buf[256];
@@ -37,7 +39,7 @@ EnemySkeleton::EnemySkeleton(VECTOR initPos)
         mIdleAnim.push_back(LoadGraph(buf));
     }
 
-    // ˆÚ“®ƒAƒjƒ[ƒVƒ‡ƒ“—p‚Ì‰æ‘œ‚ğ˜A‘±‚µ‚Ä“Ç‚İ‚Ş
+    // ç§»å‹•ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ç”¨ã®ç”»åƒã‚’é€£ç¶šã—ã¦èª­ã¿è¾¼ã‚€
     for (int i = 1; i <= 7; ++i)
     {
         char buf[256];
@@ -45,7 +47,7 @@ EnemySkeleton::EnemySkeleton(VECTOR initPos)
         mMoveAnim.push_back(LoadGraph(buf));
     }
 
-    // UŒ‚ƒAƒjƒ[ƒVƒ‡ƒ“—p‚Ì‰æ‘œ‚ğ˜A‘±‚µ‚Ä“Ç‚İ‚Ş
+    // æ”»æ’ƒã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ç”¨ã®ç”»åƒã‚’é€£ç¶šã—ã¦èª­ã¿è¾¼ã‚€
     for (int i = 1; i <= 7; ++i)
     {
         char buf[256];
@@ -53,52 +55,68 @@ EnemySkeleton::EnemySkeleton(VECTOR initPos)
         mAttackAnim.push_back(LoadGraph(buf));
     }
 
-    // UŒ‚—p‚Ì–î‚ÌƒOƒ‰ƒtƒBƒbƒN‚ª–¢“Ç‚Ìê‡‚É‚Ì‚İ“Ç‚İ‚Ş
+    // æ­»äº¡ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ç”¨ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã‚·ãƒ¼ãƒˆï¼ˆ8ã‚³ãƒæ¨ªä¸¦ã³ï¼‰ã‚’èª­ã¿è¾¼ã‚€
+    mDeathAnim.resize(SkeletonDeathConstants::AnimTotalFrames, -1);
+    LoadDivGraph(
+        CharacterGraphPath::SkeletonDeath.c_str(),
+        SkeletonDeathConstants::AnimTotalFrames,
+        SkeletonDeathConstants::AnimTotalFrames,
+        1,
+        SkeletonDeathConstants::FrameWidth,
+        SkeletonDeathConstants::FrameHeight,
+        mDeathAnim.data()
+    );
+
+    // æ”»æ’ƒç”¨ã®çŸ¢ã®ã‚°ãƒ©ãƒ•ã‚£ãƒƒã‚¯ãŒæœªèª­è¾¼ã®å ´åˆã«ã®ã¿èª­ã¿è¾¼ã‚€
     if (mArrowHandle == -1)
     {
         mArrowHandle = LoadGraph("Resource/Enemy/skeleton_animation/skeleton_arrow.png");
     }
 
     // Scale-adjusted collision box (scale: 0.75)
-    // ƒXƒP[ƒ‹0.75‚ğl—¶‚µ‚½“–‚½‚è”»’èƒTƒCƒY
+    // ã‚¹ã‚±ãƒ¼ãƒ«0.75ã‚’è€ƒæ…®ã—ãŸå½“ãŸã‚Šåˆ¤å®šã‚µã‚¤ã‚º
     mfEnemyWidth = 42.0f;
     mfEnemyHeight = 105.0f;
     moveSpeed = 0.8f;
     gravity = 0.5f;
 }
 
-// “GƒLƒƒƒ‰ƒNƒ^[‚Ì”jŠüˆ—‚ÆƒŠƒ\[ƒX‰ğ•ú
+// æ•µã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®ç ´æ£„å‡¦ç†ã¨ãƒªã‚½ãƒ¼ã‚¹è§£æ”¾
 EnemySkeleton::~EnemySkeleton()
 {
-    // •Û‚µ‚Ä‚¢‚éƒAƒjƒ[ƒVƒ‡ƒ“—pƒnƒ“ƒhƒ‹‚ğ‰ğ•ú‚·‚é
+    // ä¿æŒã—ã¦ã„ã‚‹ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ç”¨ãƒãƒ³ãƒ‰ãƒ«ã‚’è§£æ”¾ã™ã‚‹
     for (int h : mIdleAnim) DeleteGraph(h);
     for (int h : mMoveAnim) DeleteGraph(h);
     for (int h : mAttackAnim) DeleteGraph(h);
+    for (int h : mDeathAnim)
+    {
+        if (h != -1) DeleteGraph(h);
+    }
 
-    // –î‚ÌƒOƒ‰ƒtƒBƒbƒNƒnƒ“ƒhƒ‹‚ª‘¶İ‚·‚éê‡‚Í‰ğ•ú‚·‚é
+    // çŸ¢ã®ã‚°ãƒ©ãƒ•ã‚£ãƒƒã‚¯ãƒãƒ³ãƒ‰ãƒ«ãŒå­˜åœ¨ã™ã‚‹å ´åˆã¯è§£æ”¾ã™ã‚‹
     if (mArrowHandle != -1) {
         DeleteGraph(mArrowHandle);
         mArrowHandle = -1;
     }
 }
 
-// ƒQ[ƒ€‚Ìis“x‚É‰‚¶‚ÄƒXƒe[ƒ^ƒX‚ğXV‚·‚é
+// ã‚²ãƒ¼ãƒ ã®é€²è¡Œåº¦ã«å¿œã˜ã¦ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ã‚’æ›´æ–°ã™ã‚‹
 void EnemySkeleton::UpdateStatusByProgress(GameProgress progress)
 {
-    // is“x‚²‚Æ‚ÉHPEUŒ‚—ÍE‘¦€UŒ‚‚Ì—L–³‚ğİ’è‚·‚é
+    // é€²è¡Œåº¦ã”ã¨ã«HPãƒ»æ”»æ’ƒåŠ›ãƒ»å³æ­»æ”»æ’ƒã®æœ‰ç„¡ã‚’è¨­å®šã™ã‚‹
     switch (progress)
     {
     case GameProgress::Tutorial1:
     case GameProgress::PostTutorial1:
     case GameProgress::Tutorial2:
-        // ˜”Õ‚Ìis“x‚Å‚Í“¯‚¶ƒXƒe[ƒ^ƒX‚ğİ’è‚·‚é
+        // åºç›¤ã®é€²è¡Œåº¦ã§ã¯åŒã˜ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ã‚’è¨­å®šã™ã‚‹
         mMaxHp = 25; mHp = 25;
         mAttack = 15;
         mHasInstantKillAttack = false;
         mIsGiantInvincible = false;
         break;
     default:
-        // ‚»‚êˆÈŠO‚Ìis“x‚Å‚àŒ»ó‚Í“¯‚¶ƒXƒe[ƒ^ƒX‚ğİ’è‚·‚é
+        // ãã‚Œä»¥å¤–ã®é€²è¡Œåº¦ã§ã‚‚ç¾çŠ¶ã¯åŒã˜ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ã‚’è¨­å®šã™ã‚‹
         mMaxHp = 25; mHp = 25;
         mAttack = 15;
         mHasInstantKillAttack = false;
@@ -107,35 +125,35 @@ void EnemySkeleton::UpdateStatusByProgress(GameProgress progress)
     }
 }
 
-// –ˆƒtƒŒ[ƒ€‚ÌXVˆ—
+// æ¯ãƒ•ãƒ¬ãƒ¼ãƒ ã®æ›´æ–°å‡¦ç†
 void EnemySkeleton::Update()
 {
-    // Šî’êƒNƒ‰ƒXiEnemyj‚Ì‹¤’ÊXVˆ—‚ğÀs‚·‚é
+    // åŸºåº•ã‚¯ãƒ©ã‚¹ï¼ˆEnemyï¼‰ã®å…±é€šæ›´æ–°å‡¦ç†ã‚’å®Ÿè¡Œã™ã‚‹
     Enemy::Update();
 
-    // ƒXƒPƒ‹ƒgƒ“‚Ìó‘Ô‚ÉŠÖŒW‚È‚­A”­ËÏ‚İ‚Ì–î‚ÌXV‚ğs‚¤
+    // ã‚¹ã‚±ãƒ«ãƒˆãƒ³ã®çŠ¶æ…‹ã«é–¢ä¿‚ãªãã€ç™ºå°„æ¸ˆã¿ã®çŸ¢ã®æ›´æ–°ã‚’è¡Œã†
     GameScene* scene = dynamic_cast<GameScene*>(Master::mpGameManager->GetSceneManager()->GetCurrentScene());
     Player* player = scene ? scene->GetPlayer() : nullptr;
     BlockMap* blockMap = mpBlockMap;
-    // ƒ}ƒbƒvî•ñ‚ª–¢İ’è‚Ìê‡‚ÍƒV[ƒ“‚©‚çæ“¾‚·‚é
+    // ãƒãƒƒãƒ—æƒ…å ±ãŒæœªè¨­å®šã®å ´åˆã¯ã‚·ãƒ¼ãƒ³ã‹ã‚‰å–å¾—ã™ã‚‹
     if (!blockMap && scene) blockMap = &scene->GetBlockMap();
 
-    // ”­ËÏ‚İ‚Ì‚·‚×‚Ä‚Ì–î‚ÌˆÊ’u‚â”»’è‚ğXV‚·‚é
+    // ç™ºå°„æ¸ˆã¿ã®ã™ã¹ã¦ã®çŸ¢ã®ä½ç½®ã‚„åˆ¤å®šã‚’æ›´æ–°ã™ã‚‹
     for (auto& arr : mArrows) {
         if (!arr.active) continue;
 
-        // –î‚ÌˆÊ’u‚ğ‘¬“x•ª‚¾‚¯ˆÚ“®‚³‚¹Aõ–½‚ğ1Œ¸‚ç‚·
+        // çŸ¢ã®ä½ç½®ã‚’é€Ÿåº¦åˆ†ã ã‘ç§»å‹•ã•ã›ã€å¯¿å‘½ã‚’1æ¸›ã‚‰ã™
         arr.x += arr.vx;
         arr.y += arr.vy;
         arr.life--;
 
-        // õ–½‚ªs‚«‚½–î‚Í”ñƒAƒNƒeƒBƒu‚É‚·‚é
+        // å¯¿å‘½ãŒå°½ããŸçŸ¢ã¯éã‚¢ã‚¯ãƒ†ã‚£ãƒ–ã«ã™ã‚‹
         if (arr.life <= 0) {
             arr.active = false;
             continue;
         }
 
-        // ’nŒ`ƒuƒƒbƒN‚Æ‚ÌÕ“Ë”»’è‚ğs‚¢A•Ç“™‚É“–‚½‚Á‚½‚ç–î‚ğÁ–Å‚³‚¹‚é
+        // åœ°å½¢ãƒ–ãƒ­ãƒƒã‚¯ã¨ã®è¡çªåˆ¤å®šã‚’è¡Œã„ã€å£ç­‰ã«å½“ãŸã£ãŸã‚‰çŸ¢ã‚’æ¶ˆæ»…ã•ã›ã‚‹
         if (blockMap) {
             BlockMap::CollisionType cType = blockMap->GetCollisionType(static_cast<int>(arr.x), static_cast<int>(arr.y));
             if (cType == BlockMap::CollisionType::Block || cType == BlockMap::CollisionType::BreakableBlock) {
@@ -144,22 +162,22 @@ void EnemySkeleton::Update()
             }
         }
 
-        // ƒvƒŒƒCƒ„[‚Æ‚ÌÕ“Ë”»’è‚ğs‚¢A“–‚½‚Á‚½ê‡‚Íƒ_ƒ[ƒW‚ğ—^‚¦‚é
+        // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã¨ã®è¡çªåˆ¤å®šã‚’è¡Œã„ã€å½“ãŸã£ãŸå ´åˆã¯ãƒ€ãƒ¡ãƒ¼ã‚¸ã‚’ä¸ãˆã‚‹
         if (player && !player->GetIsDead()) {
             VECTOR pPos = player->GetPosition();
             const float pW = static_cast<float>(PlayerConstants::PlayerCollisionWidth);
             const float pH = static_cast<float>(PlayerConstants::PlayerCollisionHeight);
 
-            // ƒvƒŒƒCƒ„[‚Ì“–‚½‚è”»’è‚Ì¶ãÀ•W‚ÆƒTƒCƒY‚ğ‹‚ß‚éiˆÊ’u‚Í’†SŠî€j
+            // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®å½“ãŸã‚Šåˆ¤å®šã®å·¦ä¸Šåº§æ¨™ã¨ã‚µã‚¤ã‚ºã‚’æ±‚ã‚ã‚‹ï¼ˆä½ç½®ã¯ä¸­å¿ƒåŸºæº–ï¼‰
             VECTOR myPos = VGet(pPos.x - pW * 0.5f, pPos.y - pH * 0.5f, 0.0f);
             VECTOR mySize = VGet(pW, pH, 0.0f);
 
             // Arrow collision box
-            // –î‚Ì“–‚½‚è”»’èi–î‚Ì’†S‚©‚ç¶‰E20pxAã‰º7px‚Ì‹éŒ`j
+            // çŸ¢ã®å½“ãŸã‚Šåˆ¤å®šï¼ˆçŸ¢ã®ä¸­å¿ƒã‹ã‚‰å·¦å³20pxã€ä¸Šä¸‹7pxã®çŸ©å½¢ï¼‰
             VECTOR arrPos = VGet(arr.x - 20.0f, arr.y - 7.0f, 0.0f);
             VECTOR arrSize = VGet(40.0f, 14.0f, 0.0f);
 
-            // –î‚ªƒvƒŒƒCƒ„[‚É“–‚½‚Á‚½ê‡Aƒ_ƒ[ƒW‚Æ€ˆö‚ğİ’è‚µ‚Ä–î‚ğÁ‚·
+            // çŸ¢ãŒãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã«å½“ãŸã£ãŸå ´åˆã€ãƒ€ãƒ¡ãƒ¼ã‚¸ã¨æ­»å› ã‚’è¨­å®šã—ã¦çŸ¢ã‚’æ¶ˆã™
             if (Collision::CheckRectToRect(myPos, mySize, arrPos, arrSize)) {
                 player->TakeDamage(5);
                 player->SetDeathReason(DeathReason::DeathType::EnemySkeleton);
@@ -171,7 +189,7 @@ void EnemySkeleton::Update()
 
     if (mHp > 0)
     {
-        // ƒvƒŒƒCƒ„[‚Æ‚Ì‹——£‚ğ‹‚ß‚é
+        // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã¨ã®è·é›¢ã‚’æ±‚ã‚ã‚‹
         bool isPlayerNear = false;
         if (player && !player->GetIsDead())
         {
@@ -192,7 +210,7 @@ void EnemySkeleton::Update()
         }
         else
         {
-            // —£‚ê‚Ä‚¢‚éŠÔ‚Íƒ^ƒCƒ}[‚ğƒŠƒZƒbƒg‚·‚é
+            // é›¢ã‚Œã¦ã„ã‚‹é–“ã¯ã‚¿ã‚¤ãƒãƒ¼ã‚’ãƒªã‚»ãƒƒãƒˆã™ã‚‹
             mIdleSETimer = 0;
         }
     }
@@ -201,32 +219,62 @@ void EnemySkeleton::Update()
         mIdleSETimer = 0;
     }
 
-    // •s—v‚Æ‚È‚Á‚½i”ñƒAƒNƒeƒBƒu‚Èj–î‚ğƒRƒ“ƒeƒi‚©‚çíœ‚·‚é
+    // ä¸è¦ã¨ãªã£ãŸï¼ˆéã‚¢ã‚¯ãƒ†ã‚£ãƒ–ãªï¼‰çŸ¢ã‚’ã‚³ãƒ³ãƒ†ãƒŠã‹ã‚‰å‰Šé™¤ã™ã‚‹
     mArrows.erase(std::remove_if(mArrows.begin(), mArrows.end(), [](const Arrow& a) { return !a.active; }), mArrows.end());
-    if (mHp <= 0)
-    {
-        if (!isDeadBlinking)
-        {
-            // €–S‚ÌÅ‰‚ÌƒtƒŒ[ƒ€‚¾‚¯“_–Å‚Æ€–SSE‚ğŠJn‚·‚é
-            isDeadBlinking = true;
-            deadBlinkTimer = 60;
-            Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_SKELETON_DEATH);
-        }
 
-        deadBlinkTimer--;
-        if (deadBlinkTimer <= 0)
+    if (mHp <= 0 && mDeathState == DeathState::Alive)
+    {
+        mDeathState = DeathState::PlayingAnim;
+        mAnimFrame = 0;
+        mAnimTimer = 0;
+        mDeathTimer = 0;
+        isDamaged = false;
+        isDeadBlinking = false;
+        Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_SKELETON_DEATH);
+    }
+
+    if (mDeathState != DeathState::Alive)
+    {
+        if (mDeathState == DeathState::PlayingAnim)
         {
-            SetDeleteFlag(true);
+            if (mDeathAnim.empty())
+            {
+                SetDeleteFlag(true);
+                return;
+            }
+
+            mAnimTimer++;
+            if (mAnimTimer >= SkeletonDeathConstants::AnimInterval)
+            {
+                mAnimTimer = 0;
+                mAnimFrame++;
+
+                // æœ€çµ‚ãƒ•ãƒ¬ãƒ¼ãƒ ï¼ˆ8ã‚³ãƒç›®ï¼‰ã¾ã§å†ç”Ÿã—çµ‚ãˆãŸã‚‰ã€6ãƒ•ãƒ¬ãƒ¼ãƒ ç›®ï¼ˆindex 5ï¼‰ã¸åˆ‡ã‚Šæ›¿ãˆã¦ãƒ•ã‚§ãƒ¼ãƒ‰é–‹å§‹
+                if (mAnimFrame >= static_cast<int>(mDeathAnim.size()))
+                {
+                    mDeathState = DeathState::FadingOut;
+                    mDeathTimer = 0;
+                    mAnimFrame = (std::min)(SkeletonDeathConstants::CorpseFadeFrameIndex, static_cast<int>(mDeathAnim.size()) - 1);
+                }
+            }
+        }
+        else if (mDeathState == DeathState::FadingOut)
+        {
+            mDeathTimer++;
+            if (mDeathTimer >= SkeletonDeathConstants::FadeOutDuration)
+            {
+                SetDeleteFlag(true);
+            }
         }
         return;
     }
 
-    // ó‘Ô‚É‰‚¶‚ÄƒAƒjƒ[ƒVƒ‡ƒ“‚ÌƒtƒŒ[ƒ€XVŠÔŠuiƒEƒFƒCƒgj‚ğ•ÏX‚·‚é
+    // çŠ¶æ…‹ã«å¿œã˜ã¦ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã®ãƒ•ãƒ¬ãƒ¼ãƒ æ›´æ–°é–“éš”ï¼ˆã‚¦ã‚§ã‚¤ãƒˆï¼‰ã‚’å¤‰æ›´ã™ã‚‹
     int ticksPerFrame = 8;
     if (mState == State::Move) ticksPerFrame = 6;
     else if (mState == State::Attack) ticksPerFrame = 7;
 
-    // XVŠÔŠu‚É’B‚µ‚½‚çƒAƒjƒ[ƒVƒ‡ƒ“ƒtƒŒ[ƒ€‚ğ1‚Âi‚ß‚é
+    // æ›´æ–°é–“éš”ã«é”ã—ãŸã‚‰ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’1ã¤é€²ã‚ã‚‹
     mAnimTimer++;
     if (mAnimTimer >= ticksPerFrame) {
         mAnimTimer = 0;
@@ -236,16 +284,16 @@ void EnemySkeleton::Update()
         // Height is aligned exactly with the bow position in the animation:
         // In the 300x300 image, feet are at Y=242, arrow center is at Y=110.5.
         // Distance above feet = 131.5px. Scaled = 131.5f * mDrawScale.
-        // UŒ‚ƒAƒjƒ[ƒVƒ‡ƒ“‚Ì“Á’è‚Ìƒ^ƒCƒ~ƒ“ƒO‚ÅV‹K‚Ì–î‚ğ¶¬‚µ”­Ë‚·‚é
+        // æ”»æ’ƒã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã®ç‰¹å®šã®ã‚¿ã‚¤ãƒŸãƒ³ã‚°ã§æ–°è¦ã®çŸ¢ã‚’ç”Ÿæˆã—ç™ºå°„ã™ã‚‹
         if (mState == State::Attack && mAnimFrame == 5 && !mbArrowShotInThisAnim) {
             mbArrowShotInThisAnim = true;
             Arrow arr;
             arr.facing = mFacingDirection;
-            // ‹|‚ÌˆÊ’uiƒXƒPƒ‹ƒgƒ“‚ÌŒü‚¢‚Ä‚¢‚é‘¤E‘«Œ³‚©‚ç‚Ì‚‚³j‚É–î‚ğ”z’u‚·‚é
+            // å¼“ã®ä½ç½®ï¼ˆã‚¹ã‚±ãƒ«ãƒˆãƒ³ã®å‘ã„ã¦ã„ã‚‹å´ãƒ»è¶³å…ƒã‹ã‚‰ã®é«˜ã•ï¼‰ã«çŸ¢ã‚’é…ç½®ã™ã‚‹
             arr.x = mvPosition.x + mFacingDirection * (30.0f * mDrawScale);
             const float feetY = mvPosition.y + mfEnemyHeight * 0.5f;
             arr.y = feetY - (131.5f * mDrawScale);
-            // Œü‚¢‚Ä‚¢‚é•ûŒü‚Öˆê’è‘¬“x‚Å”ò‚Î‚·
+            // å‘ã„ã¦ã„ã‚‹æ–¹å‘ã¸ä¸€å®šé€Ÿåº¦ã§é£›ã°ã™
             arr.vx = mFacingDirection * 8.0f;
             arr.vy = 0.0f;
             arr.active = true;
@@ -253,7 +301,7 @@ void EnemySkeleton::Update()
             mArrows.push_back(arr);
         }
 
-        // UŒ‚ƒAƒjƒ[ƒVƒ‡ƒ“‚ªI—¹‚µ‚½‚ç‘Ò‹@ó‘Ô‚É–ß‚µAŸ‚ÌUŒ‚‚Ü‚Å‚ÌƒN[ƒ‹ƒ_ƒEƒ“‚ğİ’è‚·‚é
+        // æ”»æ’ƒã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ãŒçµ‚äº†ã—ãŸã‚‰å¾…æ©ŸçŠ¶æ…‹ã«æˆ»ã—ã€æ¬¡ã®æ”»æ’ƒã¾ã§ã®ã‚¯ãƒ¼ãƒ«ãƒ€ã‚¦ãƒ³ã‚’è¨­å®šã™ã‚‹
         if (mState == State::Attack && mAnimFrame >= static_cast<int>(mAttackAnim.size())) {
             mState = State::Idle;
             mAnimFrame = 0;
@@ -265,10 +313,10 @@ void EnemySkeleton::Update()
     }
 }
 
-// “GƒLƒƒƒ‰ƒNƒ^[‚¨‚æ‚Ñ”­Ë‚³‚ê‚½–î‚Ì•`‰æˆ—
+// æ•µã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ãŠã‚ˆã³ç™ºå°„ã•ã‚ŒãŸçŸ¢ã®æç”»å‡¦ç†
 void EnemySkeleton::Draw()
 {
-    // •`‰æ‚Ég‚¤ƒ}ƒbƒvî•ñ‚ğæ“¾‚·‚éi–¢İ’è‚È‚çƒV[ƒ“‚©‚çæ“¾j
+    // æç”»ã«ä½¿ã†ãƒãƒƒãƒ—æƒ…å ±ã‚’å–å¾—ã™ã‚‹ï¼ˆæœªè¨­å®šãªã‚‰ã‚·ãƒ¼ãƒ³ã‹ã‚‰å–å¾—ï¼‰
     BlockMap* blockMap = mpBlockMap;
     if (!blockMap) {
         Scene* scene = Master::mpGameManager->GetSceneManager()->GetCurrentScene();
@@ -277,36 +325,70 @@ void EnemySkeleton::Draw()
     }
 
     // 1. Draw Active Arrows
-    // ‰æ–Êã‚É‘¶İ‚·‚éƒAƒNƒeƒBƒu‚È–î‚ğ•`‰æ‚·‚é
+    // ç”»é¢ä¸Šã«å­˜åœ¨ã™ã‚‹ã‚¢ã‚¯ãƒ†ã‚£ãƒ–ãªçŸ¢ã‚’æç”»ã™ã‚‹
     for (const auto& arr : mArrows) {
         if (!arr.active) continue;
-        // ƒ[ƒ‹ƒhÀ•W‚ğ‰æ–ÊÀ•W‚É•ÏŠ·‚·‚é
+        // ãƒ¯ãƒ¼ãƒ«ãƒ‰åº§æ¨™ã‚’ç”»é¢åº§æ¨™ã«å¤‰æ›ã™ã‚‹
         const int sx = static_cast<int>(ConvertToScreenX(arr.x, blockMap));
         const int sy = static_cast<int>(ConvertToScreenY(arr.y, blockMap));
-        bool reverse = (arr.facing > 0.0f); // Default –î.png faces left; reverse when flying right
+        bool reverse = (arr.facing > 0.0f); // Default çŸ¢.png faces left; reverse when flying right
 
         if (mArrowHandle != -1) {
             // Center of arrow graphic in 300x300 canvas is at (148, 110)
-            // –î‰æ‘œ‚Ì’†S“_‚ğŠî€‚É‰ñ“]EŠg‘å‚µ‚Ä•`‰æ‚·‚é
+            // çŸ¢ç”»åƒã®ä¸­å¿ƒç‚¹ã‚’åŸºæº–ã«å›è»¢ãƒ»æ‹¡å¤§ã—ã¦æç”»ã™ã‚‹
             DrawRotaGraph2(sx, sy, 148, 110, mDrawScale, 0.0, mArrowHandle, TRUE, reverse);
         }
         else {
-            // ‰æ‘œ‚ª“Ç‚İ‚ß‚È‚©‚Á‚½ê‡‚Í‘ã‚í‚è‚Éü‚ğ•`‰æ‚·‚é
+            // ç”»åƒãŒèª­ã¿è¾¼ã‚ãªã‹ã£ãŸå ´åˆã¯ä»£ã‚ã‚Šã«ç·šã‚’æç”»ã™ã‚‹
             DrawLine(sx - 15, sy, sx + 15, sy, GetColor(220, 220, 220), 3);
         }
     }
 
     // 2. Draw Skeleton
-    // ƒXƒPƒ‹ƒgƒ“–{‘Ì‚Ì•`‰æƒAƒjƒ[ƒVƒ‡ƒ“ƒf[ƒ^‚ğæ“¾‚·‚é
-    // ó‘Ô‚É‰‚¶‚Ä‘Ò‹@EˆÚ“®EUŒ‚‚ÌƒAƒjƒ[ƒVƒ‡ƒ“‰æ‘œƒŠƒXƒg‚ğ‘I‚Ô
+    // æœ¬ä½“ã®ç”»é¢ä¸Šã®Xåº§æ¨™ãƒ»è¶³å…ƒåŸºæº–ã®Yåº§æ¨™ãƒ»åè»¢ãƒ•ãƒ©ã‚°ã‚’å…±é€šç®—å‡ºã™ã‚‹
+    const int screenX = static_cast<int>(ConvertToScreenX(mvPosition.x, blockMap));
+    const float feetWorldY = mvPosition.y + mfEnemyHeight * 0.5f;
+    const int screenY = static_cast<int>(ConvertToScreenY(feetWorldY - (92.0f * mDrawScale), blockMap));
+    const bool reverse = (mFacingDirection > 0.0f);
+
+    if (mDeathState != DeathState::Alive)
+    {
+        if (mDeathAnim.empty()) return;
+
+        int deathFrame = mAnimFrame;
+        if (mDeathState == DeathState::FadingOut)
+        {
+            deathFrame = SkeletonDeathConstants::CorpseFadeFrameIndex;
+        }
+        deathFrame = (std::max)(0, (std::min)(deathFrame, static_cast<int>(mDeathAnim.size()) - 1));
+        const int deathHandle = mDeathAnim[deathFrame];
+        if (deathHandle == -1) return;
+
+        int alpha = 255;
+        if (mDeathState == DeathState::FadingOut)
+        {
+            float progress = static_cast<float>(mDeathTimer) / static_cast<float>(SkeletonDeathConstants::FadeOutDuration);
+            if (progress > 1.0f) progress = 1.0f;
+            alpha = static_cast<int>(255.0f * (1.0f - progress));
+            if (alpha <= 0) return;
+            SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
+        }
+
+        SetDrawBright(255, 255, 255);
+        DrawRotaGraph(screenX, screenY, mDrawScale, 0.0, deathHandle, TRUE, reverse);
+        SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+        return;
+    }
+
+    // çŠ¶æ…‹ã«å¿œã˜ã¦å¾…æ©Ÿãƒ»ç§»å‹•ãƒ»æ”»æ’ƒã®ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ç”»åƒãƒªã‚¹ãƒˆã‚’é¸ã¶
     const std::vector<int>* anim = &mIdleAnim;
     if (mState == State::Move) anim = &mMoveAnim;
     else if (mState == State::Attack) anim = &mAttackAnim;
 
-    // ‰æ‘œ‚ª–³‚¢ê‡‚Í•`‰æ‚µ‚È‚¢
+    // ç”»åƒãŒç„¡ã„å ´åˆã¯æç”»ã—ãªã„
     if (anim->empty()) return;
 
-    // Œ»İ‚ÌƒtƒŒ[ƒ€”Ô†‚ğ‹‚ß‚éiUŒ‚’†‚ÍÅŒã‚ÌƒtƒŒ[ƒ€‚Å~‚ß‚éj
+    // ç¾åœ¨ã®ãƒ•ãƒ¬ãƒ¼ãƒ ç•ªå·ã‚’æ±‚ã‚ã‚‹ï¼ˆæ”»æ’ƒä¸­ã¯æœ€å¾Œã®ãƒ•ãƒ¬ãƒ¼ãƒ ã§æ­¢ã‚ã‚‹ï¼‰
     int frameIdx = mAnimFrame % anim->size();
     if (mState == State::Attack) {
         frameIdx = mAnimFrame;
@@ -314,87 +396,65 @@ void EnemySkeleton::Draw()
     }
     int handle = (*anim)[frameIdx];
 
-    // €–S‚Ì“_–Å•\Œ»—pƒtƒ‰ƒO§Œä
-    bool shouldDraw = true;
-    if (isDeadBlinking) {
-        // 6ƒtƒŒ[ƒ€‚²‚Æ‚É•\¦E”ñ•\¦‚ğØ‚è‘Ö‚¦‚é
-        if ((deadBlinkTimer / 6) % 2 == 0) shouldDraw = false;
-    }
-
-    // ”íƒ_ƒ[ƒW‚â€–S‚Ì“_–Å’†‚ÍÔF‚Å•`‰æ‚·‚é
-    if (isDamaged || isDeadBlinking) SetDrawBright(255, 0, 0);
+    // è¢«ãƒ€ãƒ¡ãƒ¼ã‚¸æ™‚ã¯èµ¤è‰²ã§æç”»ã™ã‚‹
+    if (isDamaged) SetDrawBright(255, 0, 0);
     else SetDrawBright(255, 255, 255);
 
-    // –{‘Ì‚Ì‰æ–Êã‚ÌXÀ•W‚ğ‹‚ß‚é
-    const int screenX = static_cast<int>(ConvertToScreenX(mvPosition.x, blockMap));
-    // Feet screen Y is at bottom of collision box (mvPosition.y + mfEnemyHeight * 0.5f)
-    // In 300x300 image, feet are at Y = 242 (+92px below center 150)
-    // Scale adjusts this visual distance to 92.0f * mDrawScale
-    // ‘«Œ³‚ÌˆÊ’u‚©‚ç‰æ‘œ‚Ì’†S‚ª‚¸‚ê‚é•ª‚ğ•â³‚µ‚ÄA‰æ–Êã‚ÌYÀ•W‚ğ‹‚ß‚é
-    const float feetWorldY = mvPosition.y + mfEnemyHeight * 0.5f;
-    const int screenY = static_cast<int>(ConvertToScreenY(feetWorldY - (92.0f * mDrawScale), blockMap));
-
-    // Default image faces left; reverse when facing right
-    // Œ³‰æ‘œ‚Í¶Œü‚«‚È‚Ì‚ÅA‰EŒü‚«‚Ì‚Æ‚«‚Í”½“]‚µ‚Ä•`‰æ‚·‚é
-    bool reverse = (mFacingDirection > 0.0f);
-
-    // •`‰æƒtƒ‰ƒO‚ª—LŒø‚Èê‡‚Ì‚İƒXƒvƒ‰ƒCƒg‚ğ•`‰æ‚·‚é
-    if (shouldDraw) {
-        DrawRotaGraph(screenX, screenY, mDrawScale, 0.0, handle, TRUE, reverse);
-    }
-
-    // •`‰æó‘ÔiƒuƒŒƒ“ƒhE–¾‚é‚³j‚ğŒ³‚É–ß‚·
-    if (isDeadBlinking) SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+    DrawRotaGraph(screenX, screenY, mDrawScale, 0.0, handle, TRUE, reverse);
     SetDrawBright(255, 255, 255);
 }
 
-// “GƒLƒƒƒ‰ƒNƒ^[‚ÌˆÚ“®‚¨‚æ‚ÑAIvlˆ—
+// æ•µã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®ç§»å‹•ãŠã‚ˆã³AIæ€è€ƒå‡¦ç†
 void EnemySkeleton::EnemyMove(BlockMap& blockMap)
 {
-    // €–SŒã‚ÍˆÚ“®‚âAIˆ—‚ğs‚í‚È‚¢
-    if (mHp <= 0) return;
     mpBlockMap = &blockMap;
-
-    // UŒ‚ƒN[ƒ‹ƒ_ƒEƒ“ƒ^ƒCƒ}[‚ği‚ß‚é
-    if (mAttackCooldown > 0) {
-        mAttackCooldown--;
-    }
-
-    // UŒ‚’†‚ÍˆÚ“®‚ğs‚í‚¸Ad—ÍŒvZ‚Ì‚İ“K—p‚·‚é
-    if (mState == State::Attack) {
-        // Stationary bow draw and release; still subject to gravity
-        // ‚»‚Ìê‚Å‹|‚ğ\‚¦‚Ä•ú‚Â‚½‚ß…•½•ûŒü‚ÌˆÚ“®‚Í‚¹‚¸Ad—Í‚Ì‚İ“K—p‚·‚é
+    // æ­»äº¡æ¼”å‡ºä¸­ã¯AIç§»å‹•ã‚’æ­¢ã‚ã€ç©ºä¸­ã«ã„ãŸå ´åˆã®ã¿è‡ªç„¶ã«ç€åœ°ã•ã›ã‚‹
+    if (mHp <= 0 || mDeathState != DeathState::Alive)
+    {
         mCharacterPhysics.UpdateMoveAndCollision(mvPosition, velocityY, isGrounded, mbIsJumping, blockMap, mfEnemyWidth, mfEnemyHeight, gravity, 0.0f, 0.0f);
         return;
     }
 
-    // Œ»İ‚ÌƒV[ƒ“‚©‚çƒvƒŒƒCƒ„[‚ğæ“¾‚·‚é
+    // æ”»æ’ƒã‚¯ãƒ¼ãƒ«ãƒ€ã‚¦ãƒ³ã‚¿ã‚¤ãƒãƒ¼ã‚’é€²ã‚ã‚‹
+    if (mAttackCooldown > 0) {
+        mAttackCooldown--;
+    }
+
+    // æ”»æ’ƒä¸­ã¯ç§»å‹•ã‚’è¡Œã‚ãšã€é‡åŠ›è¨ˆç®—ã®ã¿é©ç”¨ã™ã‚‹
+    if (mState == State::Attack) {
+        // Stationary bow draw and release; still subject to gravity
+        // ãã®å ´ã§å¼“ã‚’æ§‹ãˆã¦æ”¾ã¤ãŸã‚æ°´å¹³æ–¹å‘ã®ç§»å‹•ã¯ã›ãšã€é‡åŠ›ã®ã¿é©ç”¨ã™ã‚‹
+        mCharacterPhysics.UpdateMoveAndCollision(mvPosition, velocityY, isGrounded, mbIsJumping, blockMap, mfEnemyWidth, mfEnemyHeight, gravity, 0.0f, 0.0f);
+        return;
+    }
+
+    // ç¾åœ¨ã®ã‚·ãƒ¼ãƒ³ã‹ã‚‰ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’å–å¾—ã™ã‚‹
     GameScene* scene = dynamic_cast<GameScene*>(Master::mpGameManager->GetSceneManager()->GetCurrentScene());
     Player* player = scene ? scene->GetPlayer() : nullptr;
 
     bool seePlayer = false;
     bool inShootingRange = false;
 
-    // ƒvƒŒƒCƒ„[‚ÌˆÊ’u‚ğŠÏ‘ª‚µAË’ö”ÍˆÍ“à‚©‚Ç‚¤‚©‚Ì”»’è‚ğs‚¤
+    // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ä½ç½®ã‚’è¦³æ¸¬ã—ã€å°„ç¨‹ç¯„å›²å†…ã‹ã©ã†ã‹ã®åˆ¤å®šã‚’è¡Œã†
     if (player && !player->GetIsDead()) {
         float dx = player->GetPosition().x - mvPosition.x;
         float dy = player->GetPosition().y - mvPosition.y;
 
         // Archer detection: within 550px horizontal, 200px vertical
-        // ‹ŠE”ÍˆÍ“à‚Å‚ ‚ê‚ÎƒvƒŒƒCƒ„[‚ğ”F¯‚µA•ûŒü‚ğŒü‚­
+        // è¦–ç•Œç¯„å›²å†…ã§ã‚ã‚Œã°ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’èªè­˜ã—ã€æ–¹å‘ã‚’å‘ã
         if (std::abs(dy) <= 200.0f && std::abs(dx) <= 550.0f) {
             seePlayer = true;
             mFacingDirection = (dx >= 0.0f) ? 1.0f : -1.0f;
 
             // Bow shooting trigger range: between 30px and 480px
-            // UŒ‚‰Â”\‚È‹——£‚©‚ÂƒN[ƒ‹ƒ_ƒEƒ“‚ª–¾‚¯‚Ä‚¢‚ê‚ÎËŒ‚ó‘Ô‚ÉˆÚs‚·‚é
+            // æ”»æ’ƒå¯èƒ½ãªè·é›¢ã‹ã¤ã‚¯ãƒ¼ãƒ«ãƒ€ã‚¦ãƒ³ãŒæ˜ã‘ã¦ã„ã‚Œã°å°„æ’ƒçŠ¶æ…‹ã«ç§»è¡Œã™ã‚‹
             if (std::abs(dx) <= 480.0f && std::abs(dx) >= 30.0f && mAttackCooldown <= 0) {
                 inShootingRange = true;
             }
         }
     }
 
-    // ËŒ‚”ÍˆÍ“à‚Å‚ ‚ê‚ÎUŒ‚ó‘Ô‚ÉˆÚs‚·‚é
+    // å°„æ’ƒç¯„å›²å†…ã§ã‚ã‚Œã°æ”»æ’ƒçŠ¶æ…‹ã«ç§»è¡Œã™ã‚‹
     if (inShootingRange) {
         mState = State::Attack;
         mAnimFrame = 0;
@@ -404,30 +464,30 @@ void EnemySkeleton::EnemyMove(BlockMap& blockMap)
     }
 
     float currentMove = 0.0f;
-    // ƒvƒŒƒCƒ„[‚ğ”­Œ©‚µ‚Ä‚¢‚é‚ªË’öŠO‚Ìê‡‚Í‹ß‚Ã‚­‚æ‚¤‚ÉˆÚ“®‚·‚é
+    // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’ç™ºè¦‹ã—ã¦ã„ã‚‹ãŒå°„ç¨‹å¤–ã®å ´åˆã¯è¿‘ã¥ãã‚ˆã†ã«ç§»å‹•ã™ã‚‹
     if (seePlayer) {
         // If spotted player but not shooting yet, walk toward player
-        // Ë’öŠO‚È‚çƒvƒŒƒCƒ„[‚É‹ß‚Ã‚­‚æ‚¤‚ÉˆÚ“®‚·‚é
+        // å°„ç¨‹å¤–ãªã‚‰ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã«è¿‘ã¥ãã‚ˆã†ã«ç§»å‹•ã™ã‚‹
         mState = State::Move;
         mMoveDirection = mFacingDirection;
         moveSpeed = 1.2f;
         currentMove = mMoveDirection;
     }
-    // ƒvƒŒƒCƒ„[–¢”­Œ©‚Í’èŠú“I‚É‘Ò‹@‚ÆˆÚ“®‚ğØ‚è‘Ö‚¦‚é
+    // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼æœªç™ºè¦‹æ™‚ã¯å®šæœŸçš„ã«å¾…æ©Ÿã¨ç§»å‹•ã‚’åˆ‡ã‚Šæ›¿ãˆã‚‹
     else {
         moveSpeed = 0.7f;
         mActionTimer++;
         if (mActionTimer > 150) {
-            // ˆê’èŠÔ‚²‚Æ‚É‘Ò‹@‚ÆˆÚ“®‚ğØ‚è‘Ö‚¦‚é
+            // ä¸€å®šæ™‚é–“ã”ã¨ã«å¾…æ©Ÿã¨ç§»å‹•ã‚’åˆ‡ã‚Šæ›¿ãˆã‚‹
             mActionTimer = 0;
             if (mState == State::Idle) {
-                // ‘Ò‹@’†‚È‚çAƒ‰ƒ“ƒ_ƒ€‚È•ûŒü‚ÖˆÚ“®‚ğŠJn‚·‚é
+                // å¾…æ©Ÿä¸­ãªã‚‰ã€ãƒ©ãƒ³ãƒ€ãƒ ãªæ–¹å‘ã¸ç§»å‹•ã‚’é–‹å§‹ã™ã‚‹
                 mState = State::Move;
                 mMoveDirection = (GetRand(1) == 0) ? -1.0f : 1.0f;
                 mFacingDirection = mMoveDirection;
             }
             else {
-                // ˆÚ“®’†‚È‚ç‘Ò‹@‚É–ß‚é
+                // ç§»å‹•ä¸­ãªã‚‰å¾…æ©Ÿã«æˆ»ã‚‹
                 mState = State::Idle;
             }
         }
@@ -437,22 +497,22 @@ void EnemySkeleton::EnemyMove(BlockMap& blockMap)
     }
 
     // Cliff detection ahead: prevent stepping off ledges or falling into pits
-    // ŠR‚©‚ç‚Ì—‰º‚ğ–h‚®‚½‚ßAis•ûŒü‚Ì‘«Œ³‚ÉƒuƒƒbƒN‚ª‘¶İ‚·‚é‚©Šm”F‚·‚é
+    // å´–ã‹ã‚‰ã®è½ä¸‹ã‚’é˜²ããŸã‚ã€é€²è¡Œæ–¹å‘ã®è¶³å…ƒã«ãƒ–ãƒ­ãƒƒã‚¯ãŒå­˜åœ¨ã™ã‚‹ã‹ç¢ºèªã™ã‚‹
     if (mState == State::Move && isGrounded) {
-        // is•ûŒü‚Ì­‚µæE‘«Œ³‚ÌˆÊ’u‚ğ’²‚×‚é
+        // é€²è¡Œæ–¹å‘ã®å°‘ã—å…ˆãƒ»è¶³å…ƒã®ä½ç½®ã‚’èª¿ã¹ã‚‹
         float checkX = mvPosition.x + mMoveDirection * (mfEnemyWidth * 0.5f + 10.0f);
         float checkY = mvPosition.y + mfEnemyHeight * 0.5f + 10.0f;
 
         BlockMap::CollisionType cType = blockMap.GetCollisionType(static_cast<int>(checkX), static_cast<int>(checkY));
         if (cType == BlockMap::CollisionType::None) {
             if (!seePlayer) {
-                // ŠR‚È‚çis•ûŒü‚ğ”½“]‚·‚é
+                // å´–ãªã‚‰é€²è¡Œæ–¹å‘ã‚’åè»¢ã™ã‚‹
                 mMoveDirection *= -1.0f;
                 mFacingDirection = mMoveDirection;
                 currentMove = mMoveDirection;
             }
             else {
-                // ƒvƒŒƒCƒ„[‚ğ’Ç‚¢‚©‚¯‚Ä‚¢‚éê‡‚ÍŠR‚Ìè‘O‚Å~‚Ü‚é
+                // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’è¿½ã„ã‹ã‘ã¦ã„ã‚‹å ´åˆã¯å´–ã®æ‰‹å‰ã§æ­¢ã¾ã‚‹
                 currentMove = 0.0f;
                 mState = State::Idle;
             }
@@ -460,11 +520,11 @@ void EnemySkeleton::EnemyMove(BlockMap& blockMap)
     }
 
     float oldX = mvPosition.x;
-    // •¨—‰‰Z‚ğ—p‚¢‚ÄˆÚ“®‚ÆƒRƒŠƒWƒ‡ƒ“”»’è‚ğXV‚·‚é
+    // ç‰©ç†æ¼”ç®—ã‚’ç”¨ã„ã¦ç§»å‹•ã¨ã‚³ãƒªã‚¸ãƒ§ãƒ³åˆ¤å®šã‚’æ›´æ–°ã™ã‚‹
     mCharacterPhysics.UpdateMoveAndCollision(mvPosition, velocityY, isGrounded, mbIsJumping, blockMap, mfEnemyWidth, mfEnemyHeight, gravity, moveSpeed, currentMove);
 
     // Wall detection
-    // ˆÚ“®’†‚Å•Ç‚É‘j‚Ü‚ê‚Äi‚ß‚È‚­‚È‚Á‚½ê‡Ais•ûŒü‚ğ”½“]‚³‚¹‚é
+    // ç§»å‹•ä¸­ã§å£ã«é˜»ã¾ã‚Œã¦é€²ã‚ãªããªã£ãŸå ´åˆã€é€²è¡Œæ–¹å‘ã‚’åè»¢ã•ã›ã‚‹
     if (mState == State::Move && isGrounded && oldX == mvPosition.x && currentMove != 0.0f) {
         if (!seePlayer) {
             mMoveDirection *= -1.0f;
@@ -480,6 +540,6 @@ bool EnemySkeleton::IsAttacking() const
 
 void EnemySkeleton::GetAttackHitbox(float& left, float& top, float& right, float& bottom) const
 {
-    // ‹ßÚUŒ‚‚Ís‚í‚È‚¢‚½‚ßA‚·‚×‚Ä0‚É‚µ‚Ä•Ô‚·
+    // è¿‘æ¥æ”»æ’ƒã¯è¡Œã‚ãªã„ãŸã‚ã€ã™ã¹ã¦0ã«ã—ã¦è¿”ã™
     left = top = right = bottom = 0.0f;
 }
