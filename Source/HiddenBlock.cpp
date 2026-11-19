@@ -88,11 +88,9 @@ void HiddenBlock::Update()
                 mpBlockMap->SetCollisionBlock(mapX, mapY, static_cast<int>(mWidth), static_cast<int>(mHeight), BlockMap::CollisionType::Block);
             }
             
+            Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_STAGE1_HEAD_BONK);
             // プレイヤーの頭をぶつけさせて落下させる
             player->SetVelocityY(0.0f);
-            //Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_STAGE1_HEAD_BONK);
-
-
         }
     }
 }

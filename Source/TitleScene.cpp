@@ -46,7 +46,7 @@ void TitleScene::Update()
 		switch (mnSelectIndex)
 		{
 		case 0:
-			Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_DECIDE, 60);
+			Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_DECIDE, SoundSetting::DecideVolume);
 			Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_TYPE::SCENE_STAGESELECT);
 			break;
 
@@ -70,6 +70,8 @@ void TitleScene::Update()
 // キー入力で選択
 void TitleScene::UpdateSelectString()
 {
+	int oldIndex = mnSelectIndex;
+
 	if (InputManager::CheckDownKey(KEY_INPUT_W) || InputManager::CheckDownKey(KEY_INPUT_UP))
 	{
 		mnSelectIndex--;
@@ -85,6 +87,11 @@ void TitleScene::UpdateSelectString()
 		{
 			mnSelectIndex = 0;
 		}
+	}
+
+	if (oldIndex != mnSelectIndex)
+	{
+		Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_DECIDE, SoundSetting::DecideVolume);
 	}
 }
 
@@ -108,7 +115,7 @@ void TitleScene::DrawSelectString()
 		int posY = stringY + (i - 1) * lineSpacing;
 
 		// 選択中か、それ以外かの処理を三項演算子でやってる
-		int Color = (i == SelectNow) ? GetColor(255, 255, 100) : GetColor(255, 100, 100);
+		int Color = (i == SelectNow) ? GetColor(255, 255, 100) : GetColor(200, 50, 50);
 		Master::mpGameManager->GetFontManager()->DrawDotString(
 			stringX, posY, fontSize,
 			Color, "%s", selectList[i].c_str());

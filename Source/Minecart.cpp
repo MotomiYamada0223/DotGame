@@ -214,8 +214,8 @@ void Minecart::Update(BlockMap& blockMap, Player* player)
 		// レールの赤色部分（X=5719～5746）に接触した瞬間、超加速発動！
 		if (mX <= 5530.0f)
 		{
-			mState = State::SuperBoostLeft;
-			StopMinecartSE(SoundManager::SE_STAGE2_MINECART_START);
+			mState = State::SuperBoostLeft; 
+			PlayMinecartSE(SoundManager::SE_STAGE2_MINECART_DASH);
 			mVx = -26.0f; // 猛スピード！
 			SpawnBoostFlames(mX + 35.0f, mY, true);
 		}
@@ -282,6 +282,7 @@ void Minecart::Update(BlockMap& blockMap, Player* player)
 		{
 			if (player->GetPosition().x >= 5780.0f)
 			{
+				PlayMinecartSE(SoundManager::SE_STAGE2_MINECART_DASH);
 				mState = State::ReturningRight;
 				// プレイヤーの画面外左（約950px手前）から超スピードで突入
 				mX = player->GetPosition().x - 950.0f;
@@ -303,6 +304,7 @@ void Minecart::Update(BlockMap& blockMap, Player* player)
 		//   これでそのまま歩いていれば勝手に避けられるのにビビってジャンプしたらトロッコもジャンプしてきて死ぬっていうことができる。」
 		if (player && !player->GetIsDead())
 		{
+			PlayMinecartSE(SoundManager::SE_STAGE2_MINECART_START);
 			VECTOR pPos = player->GetPosition();
 
 			// トロッコが背後約230pxに迫った時、大ジャンプ発動！

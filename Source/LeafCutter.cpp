@@ -24,7 +24,7 @@ namespace
 	constexpr float kRotationSpeedScale = 800.0f;  // 回転速度を滑らかにするためのスケーリング用 divisor
 	constexpr float kScaleBase = 0.2f;             // 葉っぱの基本拡大率（最小サイズ）
 	constexpr float kScaleRandom = 20.0f;          // 拡大率のランダム幅を決める係数
-	constexpr int   kShadowProbability = 50;       // 葉っぱが影（背景演出）になる確率（50%）
+	constexpr int   kShadowProbability = 60;       // 葉っぱが影（背景演出）になる確率（50%）
 	constexpr float kWindScaleFactor = 0.01f;      // スケール（大きさ）に応じて風の影響を受けやすくするための係数
 	constexpr float kSwoopPhaseFactor = 0.7f;      // 縦方向のふらつき（周期）を変化させるための位相係数
 	constexpr float kSwoopAmpFactor = 0.6f;        // 縦方向のふらつきの強さを調整する係数
@@ -139,10 +139,12 @@ void LeafCutter::LeafUpdate(BlockMap& block, Player* player)
 	}
 
 	LeafDebug();
+
 	// 葉っぱの生成確率
 	constexpr int LeafSpawn = 2;
+	constexpr size_t kMaxLeaves = 12;
+	if (!mbStopSpawning && mLeaves.size() < kMaxLeaves && GetRand(100) < LeafSpawn)
 
-	if (!mbStopSpawning && GetRand(100) < LeafSpawn)
 	{
 		LeafParticle p;
 

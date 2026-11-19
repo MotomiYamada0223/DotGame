@@ -25,7 +25,7 @@ public:   // enum, struct などの定義
 	enum SOUND_SE  // SEの種類
 	{
 		SE_DECIDE = 0,             // 決定音
-		SE_GAMEOVER,              // ゲームオーバーのBGM
+		SE_GAMEOVER,              // ゲームオーバーのSE
 		SE_PLAYER_JUMP,            // プレイヤー：ジャンプSE
 		SE_PLAYER_BLINK,           // プレイヤー：ブリンクSE
 		SE_PLAYER_SWORD,           // プレイヤー：剣攻撃SE

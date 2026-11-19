@@ -776,6 +776,7 @@ void Player::Update()
 		if (isWallBerak)
 		{
 			mActionState.wallbreak = true;
+			Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_STAGE2_BREAKABLE_WALL);
 		}
 	}
 
@@ -821,6 +822,7 @@ void Player::Update()
 				if (enemyStatus && enemyStatus->mHasInstantKillAttack) dmg = mHp;
 				if (mHp - dmg <= 0)
 				{
+					Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_STAGE1_SPIKE_DEATH);
 					// ニードルに当たった時に表示するもの
 					mDeathReason = DeathReason::DeathType::NeedleTrapHit;
 				}
