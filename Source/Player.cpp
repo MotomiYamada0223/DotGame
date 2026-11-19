@@ -143,6 +143,14 @@ void Player::PlayerMove(BlockMap& blockMap)
 		return;
 	}
 
+	// ロープ登りクリア演出中は通常物理・入力を停止し、StageClear 側の登り制御に委ねる
+	if (mbIsClimbingRope)
+	{
+		mPlayerState.SetJump();
+		mPlayerState.Update();
+		return;
+	}
+
 
 	// Wキー/Sキー長押しによるステージ裏・表落下処理の判定
 	if (mFallMode == StageFallMode::None && !isDead && !mbAutoWalking && !mbAutoWalkArrived && !mbIsEvading)
@@ -719,6 +727,12 @@ void Player::Update()
 			mfMoveDirection = 0.0f;
 			mPlayerState.SetSwordReady();
 		}
+	}
+
+	if (mbIsClimbingRope)
+	{
+		Object2D::Update();
+		return;
 	}
 
 	ObjectManager* objManager = Master::mpGameManager->GetSceneManager()->GetCurrentScene()->GetObjectManager();
@@ -1462,6 +1476,7 @@ void Player::Revive()
 	mfMoveDirection = 0.0f;
 	mfCurrentSpeed = moveSpeed;
 	mSlopeVisualOffsetY = 0.0f;
+	mbIsClimbingRope = false;
 
 	// 行動ステートのリセット
 	mActionState.blink = false;
@@ -1567,6 +1582,36 @@ void Player::EndBossIntroLock()
 	mPlayerState.SetIdle();
 }
 
+void Player::StartRopeClimb()
+{
+	mbIsClimbingRope = true;
+	mbAutoWalking = false;
+	mbAutoWalkArrived = false;
+	mbIsEvading = false;
+	isBlinking = false;
+	isAttacking = false;
+	velocityY = 0.0f;
+	mfMoveDirection = 0.0f;
+	mSlopeVisualOffsetY = 0.0f;
+	isGrounded = false;
+	mbIsJumping = true;
+	mPlayerState.SetJump();
+}
+
+void Player::UpdateRopeClimbStep(float worldX, float worldY, bool facingRight)
+{
+	mvPosition.x = worldX;
+	mvPosition.y = worldY;
+	isFacingRight = facingRight;
+	velocityY = 0.0f;
+	mPlayerState.SetJump();
+}
+
+void Player::StopRopeClimb()
+{
+	mbIsClimbingRope = false;
+}
+
 
 DeathController::AngelMotion Player::GetAngelMotionForDeathType(DeathReason::DeathType type) const
 {
@@ -1668,6 +1713,7 @@ void Player::WarpTo(float x, float y)
 	isGrounded = true;
 	mForceGroundedThisFrame = true;
 	mSlopeVisualOffsetY = 0.0f;
+	mbIsClimbingRope = false;
 	mCurrentJumpType = PlayerConstants::JumpType::None;
 	mJumpHoldFrames = 0;
 	mJumpStartY = y;
