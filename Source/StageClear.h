@@ -29,7 +29,8 @@ public:
 		DoorActive,        // 扉設置完了
 		Finished           
 	};
-
+	// StageClear.h に追加
+	void DebugDrawLogoTip(const BlockMap* pBlockMap) const;
 	struct CrackerData
 	{
 		float x;
