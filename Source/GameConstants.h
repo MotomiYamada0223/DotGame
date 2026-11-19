@@ -23,6 +23,9 @@ namespace SoundSetting
 {
 	static constexpr int VolumeMin = 0;
 	static constexpr int VolumeMax = 100;
+
+	// 共通シーンで使用する音量
+	static constexpr int DecideVolume = 40; // 決定音
 }
 
 

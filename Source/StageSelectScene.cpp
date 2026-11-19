@@ -311,7 +311,7 @@ void StageSelectScene::Update()
 	// Enterキーで現在の位置のステージへ入る処理
 	if (InputManager::CheckDownKey(KEY_INPUT_RETURN) && !mIsEnteringStage && !isHidden && !isMoving)
 	{
-		Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_DECIDE, 60);
+		Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_DECIDE, SoundSetting::DecideVolume);
 
 		int nodeIndex = 0;
 		if (playerX == 236.0f && playerY == 909.0f) nodeIndex = 1;

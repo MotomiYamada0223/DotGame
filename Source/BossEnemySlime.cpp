@@ -644,6 +644,7 @@ void BossEnemySlime::Update()
                 mBeamPhase = BeamPhase::Charging;
                 mPhaseTimer = 0;
                 InitChargeParticles();
+                Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_STAGE1_LASER_CHARGE);
             }
             else
             {
