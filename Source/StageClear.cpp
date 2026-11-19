@@ -578,54 +578,6 @@ void StageClear::UpdateLogo(Player* player, BlockMap* pBlockMap)
 	float sinA = std::sin(StageClearConstants::LogoTiltAngleRad);
 	float cosA = std::cos(StageClearConstants::LogoTiltAngleRad);
 
-
-
-	if (!mbLogoLanded)
-	{
-		// 先に進める位置を仮計算
-		float nextY = mLogoY + mLogoVy;
-		mLogoVy += StageClearConstants::LogoFallGravity;
-		if (mLogoVy > StageClearConstants::LogoFallMaxSpeed)
-		{
-			mLogoVy = StageClearConstants::LogoFallMaxSpeed;
-		}
-
-		// 次の位置で先端が Block に入るか調べる
-		bool hitGround = false;
-		if (pBlockMap != nullptr)
-		{
-			float scrollX = static_cast<float>(pBlockMap->GetScrollX());
-			float scrollY = static_cast<float>(pBlockMap->GetScrollY());
-
-			float tipScreenX = ScreenSize::CenterX + tipRelX;
-			float tipScreenY = nextY + tipRelY;
-
-			int checkX = static_cast<int>(tipScreenX + scrollX);
-			int checkY = static_cast<int>(tipScreenY + scrollY);
-
-			if (pBlockMap->GetCollisionType(checkX, checkY) == BlockMap::CollisionType::Block)
-			{
-				hitGround = true;
-			}
-		}
-
-		if (hitGround)
-		{
-			// 着地：今の位置で止める（めり込ませない）
-			mbLogoLanded = true;
-			mLogoVy = 0.0f;
-			mLogoImpactTimer = 0;
-			PlayStageSE(SoundManager::SE_STAGE1_LOGO_DROP);
-			// カメラシェイク・土煙は既存の処理をここに移す
-		}
-		else
-		{
-			mLogoY = nextY;
-		}
-	}
-
-
-
 	if (!mbLogoLanded)
 	{
 		mLogoY += mLogoVy;
