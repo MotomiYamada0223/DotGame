@@ -9,6 +9,7 @@ TitleScene::TitleScene()
 	: Scene()     // 基底クラスのコンストラクタを呼び出しておく
 	, mTitleLogo()
 	, mnSelectIndex(0)
+	, mbSceneChangeRequested(false)
 {
 }
 
@@ -41,13 +42,13 @@ void TitleScene::Update()
 	UpdateSelectString();
 
 	// Enterでゲーム画面へ
-	if (InputManager::CheckDownKey(KEY_INPUT_RETURN))
+	if (InputManager::CheckDownKey(KEY_INPUT_RETURN) && mFade.IsIdle())
 	{
 		switch (mnSelectIndex)
 		{
 		case 0:
+			mFade.StartFadeOut(30);   // 30フレームで暗転
 			Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_DECIDE, SoundSetting::DecideVolume);
-			Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_TYPE::SCENE_STAGESELECT);
 			break;
 
 		case 1:
@@ -60,7 +61,14 @@ void TitleScene::Update()
 		}
 	}
 
+	if (mFade.IsFadeOutFinished() && !mbSceneChangeRequested)
+	{
+		mbSceneChangeRequested = true;
+		Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_TYPE::SCENE_STAGESELECT);
+	}
+
 	mTitleLogo.Update();
+	mFade.Update();
 
 	// 基底クラスの更新処理を呼びだす
 	Scene::Update();
@@ -147,6 +155,9 @@ void TitleScene::Draw()
 
 	// 基底クラスの更新処理を呼びだす
 	Scene::Draw();
+
+	// 通常の描画処理
+	mFade.Draw();
 }
 
 

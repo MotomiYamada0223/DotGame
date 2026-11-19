@@ -1,6 +1,7 @@
 #pragma once
 #include "Scene.h" // シーン継承したいからインクルード
 #include "TitleLogo.h"
+#include "FadeController.h"
 
 
 class TitleScene : public Scene
@@ -24,8 +25,10 @@ public:
 
 private:
 	TitleLogo mTitleLogo;
+	FadeController mFade;
 
 	int mnSelectIndex;
 	const int MAX_SELECT = 2;
+	bool mbSceneChangeRequested;
 };
 

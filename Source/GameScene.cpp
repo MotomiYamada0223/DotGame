@@ -104,26 +104,6 @@ void GameScene::Initialize()
 	mStageClear.Reset();
 
 	MovingFloor::s_IsReverseAndDashTriggered = false;
-
-
-	if (Master::mpGameManager == nullptr) return;
-	SoundManager* sound = Master::mpGameManager->GetSoundManager();
-	if (sound == nullptr) return;
-
-	if (Master::gCurrentStageIndex == 1)
-	{
-		sound->PlayBGM(SoundManager::BGM_STAGE2);
-	}
-	else if (Master::gCurrentStageIndex == 2)
-	{
-		sound->PlayBGM(SoundManager::BGM_STAGE3);
-	}
-	else
-	{
-		sound->PlayBGM(SoundManager::BGM_STAGE1);
-	}
-
-
 	mbIsLoaded = true;
 }
 

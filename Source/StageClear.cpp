@@ -439,7 +439,7 @@ void StageClear::UpdateBullets(Player* player, BlockMap* pBlockMap)
 		{
 			auto clampVal = [](float val, float minV, float maxV) {
 				return (val < minV) ? minV : ((val > maxV) ? maxV : val);
-			};
+				};
 			float cx = clampVal(b.x, pScreenX - halfW, pScreenX + halfW);
 			float cy = clampVal(b.y, pScreenY - halfH, pScreenY + halfH);
 			float dx = b.x - cx;
@@ -570,73 +570,61 @@ void StageClear::DrawImpactDust() const
 	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 }
 
+
+
+
 void StageClear::UpdateLogo(Player* player, BlockMap* pBlockMap)
 {
 	float sinA = std::sin(StageClearConstants::LogoTiltAngleRad);
 	float cosA = std::cos(StageClearConstants::LogoTiltAngleRad);
 
+	// 可視先端の画像中心からの相対位置（傾き・拡大率を考慮）
+	float tipRelX = (42.0f - 305.5f) * mLogoScale * cosA - (209.0f - 167.0f) * mLogoScale * sinA;
+	float tipRelY = (42.0f - 305.5f) * mLogoScale * sinA + (209.0f - 167.0f) * mLogoScale * cosA;
+
+
+
 	if (!mbLogoLanded)
 	{
-		mLogoY += mLogoVy;
+		// 先に進める位置を仮計算
+		float nextY = mLogoY + mLogoVy;
 		mLogoVy += StageClearConstants::LogoFallGravity;
 		if (mLogoVy > StageClearConstants::LogoFallMaxSpeed)
 		{
 			mLogoVy = StageClearConstants::LogoFallMaxSpeed;
 		}
 
-		float scrollX = (pBlockMap != nullptr) ? static_cast<float>(pBlockMap->GetScrollX()) : 0.0f;
-		float scrollY = (pBlockMap != nullptr) ? static_cast<float>(pBlockMap->GetScrollY()) : 0.0f;
-
-		// プレイヤー押し潰し判定
-		// 画像の透明余白を除外し、狭く適正化した当たり判定で判定
-		if (player != nullptr && !player->GetIsDead())
+		// 次の位置で先端が Block に入るか調べる
+		bool hitGround = false;
+		if (pBlockMap != nullptr)
 		{
-			float pScreenX = player->GetPosition().x - scrollX;
-			float pScreenY = player->GetPosition().y - scrollY;
-			float halfW = player->GetPlayerWidth() * 0.40f;
-			float halfH = player->GetPlayerHeight() * 0.45f;
+			float scrollX = static_cast<float>(pBlockMap->GetScrollX());
+			float scrollY = static_cast<float>(pBlockMap->GetScrollY());
 
-			float logoLeft = ScreenSize::CenterX - StageClearConstants::LogoHitboxHalfWidth;
-			float logoRight = ScreenSize::CenterX + StageClearConstants::LogoHitboxHalfWidth;
-			float logoBottom = mLogoY + StageClearConstants::LogoHitboxHalfHeight;
-			float logoTop = mLogoY - StageClearConstants::LogoHitboxHalfHeight;
+			float tipScreenX = ScreenSize::CenterX + tipRelX;
+			float tipScreenY = nextY + tipRelY;
 
-			bool xOverlap = (pScreenX + halfW >= logoLeft) && (pScreenX - halfW <= logoRight);
-			bool yOverlap = (pScreenY + halfH >= logoTop) && (pScreenY - halfH <= logoBottom);
+			int checkX = static_cast<int>(tipScreenX + scrollX);
+			int checkY = static_cast<int>(tipScreenY + scrollY);
 
-			if (xOverlap && yOverlap)
+			if (pBlockMap->GetCollisionType(checkX, checkY) == BlockMap::CollisionType::Block)
 			{
-				player->SetDeathReason(DeathReason::DeathType::NormalDeath);
-				player->TakeDamage(player->GetHp());
-				mState = State::Inactive;
-				return;
+				hitGround = true;
 			}
 		}
 
-		if (mLogoY >= mLogoTargetY)
+		if (hitGround)
 		{
-			mLogoY = mLogoTargetY;
-			mLogoVy = 0.0f;
+			// 着地：今の位置で止める（めり込ませない）
 			mbLogoLanded = true;
+			mLogoVy = 0.0f;
 			mLogoImpactTimer = 0;
-
 			PlayStageSE(SoundManager::SE_STAGE1_LOGO_DROP);
-
-			if (pBlockMap != nullptr)
-			{
-				pBlockMap->StartCameraShake(
-					StageClearConstants::LogoShakePower,
-					0.4f,
-					1.0f,
-					StageClearConstants::LogoShakeDuration
-				);
-			}
-
-			// 可視先端の着地点に土煙エフェクトを発生
-			float rx = (42.0f - 305.5f) * mLogoScale;
-			float ry = (209.0f - 167.0f) * mLogoScale;
-			float tipRelX = rx * cosA - ry * sinA;
-			SpawnImpactDust(ScreenSize::CenterX + tipRelX, StageClearConstants::LogoGroundY);
+			// カメラシェイク・土煙は既存の処理をここに移す
+		}
+		else
+		{
+			mLogoY = nextY;
 		}
 	}
 	else
@@ -651,7 +639,7 @@ void StageClear::UpdateLogo(Player* player, BlockMap* pBlockMap)
 		else
 		{
 			mLogoReboundOffset = 0.0f;
-	mpBlockMap = nullptr;
+			mpBlockMap = nullptr;
 		}
 	}
 }
@@ -1466,3 +1454,71 @@ void StageClear::Draw() const
 		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 	}
 }
+
+
+
+
+//if (!mbLogoLanded)
+//{
+//	mLogoY += mLogoVy;
+//	mLogoVy += StageClearConstants::LogoFallGravity;
+//	if (mLogoVy > StageClearConstants::LogoFallMaxSpeed)
+//	{
+//		mLogoVy = StageClearConstants::LogoFallMaxSpeed;
+//	}
+
+//	float scrollX = (pBlockMap != nullptr) ? static_cast<float>(pBlockMap->GetScrollX()) : 0.0f;
+//	float scrollY = (pBlockMap != nullptr) ? static_cast<float>(pBlockMap->GetScrollY()) : 0.0f;
+
+//	// プレイヤー押し潰し判定
+//	// 画像の透明余白を除外し、狭く適正化した当たり判定で判定
+//	if (player != nullptr && !player->GetIsDead())
+//	{
+//		float pScreenX = player->GetPosition().x - scrollX;
+//		float pScreenY = player->GetPosition().y - scrollY;
+//		float halfW = player->GetPlayerWidth() * 0.40f;
+//		float halfH = player->GetPlayerHeight() * 0.45f;
+
+//		float logoLeft = ScreenSize::CenterX - StageClearConstants::LogoHitboxHalfWidth;
+//		float logoRight = ScreenSize::CenterX + StageClearConstants::LogoHitboxHalfWidth;
+//		float logoBottom = mLogoY + StageClearConstants::LogoHitboxHalfHeight;
+//		float logoTop = mLogoY - StageClearConstants::LogoHitboxHalfHeight;
+
+//		bool xOverlap = (pScreenX + halfW >= logoLeft) && (pScreenX - halfW <= logoRight);
+//		bool yOverlap = (pScreenY + halfH >= logoTop) && (pScreenY - halfH <= logoBottom);
+
+//		if (xOverlap && yOverlap)
+//		{
+//			player->SetDeathReason(DeathReason::DeathType::NormalDeath);
+//			player->TakeDamage(player->GetHp());
+//			mState = State::Inactive;
+//			return;
+//		}
+//	}
+
+//	if (mLogoY >= mLogoTargetY)
+//	{
+//		mLogoY = mLogoTargetY;
+//		mLogoVy = 0.0f;
+//		mbLogoLanded = true;
+//		mLogoImpactTimer = 0;
+
+//		PlayStageSE(SoundManager::SE_STAGE1_LOGO_DROP);
+
+//		if (pBlockMap != nullptr)
+//		{
+//			pBlockMap->StartCameraShake(
+//				StageClearConstants::LogoShakePower,
+//				0.4f,
+//				1.0f,
+//				StageClearConstants::LogoShakeDuration
+//			);
+//		}
+
+//		// 可視先端の着地点に土煙エフェクトを発生
+//		float rx = (42.0f - 305.5f) * mLogoScale;
+//		float ry = (209.0f - 167.0f) * mLogoScale;
+//		float tipRelX = rx * cosA - ry * sinA;
+//		SpawnImpactDust(ScreenSize::CenterX + tipRelX, StageClearConstants::LogoGroundY);
+//	}
+//}

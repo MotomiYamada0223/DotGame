@@ -225,6 +225,9 @@
     <ClCompile Include="Source\WinResultScene.cpp">
       <Filter>ソース ファイル\Text関系</Filter>
     </ClCompile>
+    <ClCompile Include="Source\FadeController.cpp">
+      <Filter>ソース ファイル\Controller系</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Collision.h">
@@ -421,6 +424,9 @@
     </ClInclude>
     <ClInclude Include="Source\DragonFireGimmick.h">
       <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\FadeController.h">
+      <Filter>ソース ファイル\Controller系</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -75,6 +75,8 @@ void StageSelectScene::Initialize()
 	{
 		Master::gDeathCounts[i] = 0;
 	}
+
+	mFade.StartFadeIn(30);
 }
 
 // 移動処理：プレイヤーの移動アニメーションや自動ルート分岐、キー入力による移動先の設定を行う
@@ -235,6 +237,7 @@ void StageSelectScene::Move()
 // 更新処理：ステージ移行フェード、タイトル帰還フェード、洞窟内のタイマー処理、キー入力を管理する
 void StageSelectScene::Update()
 {
+	mFade.Update();
 
 	// デバッグで解放している
 	if (InputManager::CheckDownKey(KEY_INPUT_8))
@@ -248,13 +251,13 @@ void StageSelectScene::Update()
 	// ステージ突入時の演出タイマー処理
 	if (mIsEnteringStage) {
 		mEnterTimer++;
-		if (mEnterTimer > 60) {
+		if (mFade.IsFadeOutFinished()) {
 			if (Master::gDeathCounts[Master::gCurrentStageIndex] == -1)
 			{
 
 
-				 Master::gTotalDeathCounts[Master::gCurrentStageIndex] += Master::gDeathCounts[Master::gCurrentStageIndex];
-				 Master::gDeathCounts[Master::gCurrentStageIndex] = 0;
+				Master::gTotalDeathCounts[Master::gCurrentStageIndex] += Master::gDeathCounts[Master::gCurrentStageIndex];
+				Master::gDeathCounts[Master::gCurrentStageIndex] = 0;
 			}
 			Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_GAME);
 		}
@@ -263,7 +266,7 @@ void StageSelectScene::Update()
 	// タイトル帰還時の演出タイマー処理
 	if (mIsReturningTitle) {
 		mReturnTimer++;
-		if (mReturnTimer > 60) {
+		if (mFade.IsFadeOutFinished()) {
 			Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_TITLE);
 		}
 		return;
@@ -306,6 +309,7 @@ void StageSelectScene::Update()
 	{
 		mIsReturningTitle = true;
 		mReturnTimer = 0;
+		mFade.StartFadeOut(60);
 	}
 
 	// Enterキーで現在の位置のステージへ入る処理
@@ -328,6 +332,7 @@ void StageSelectScene::Update()
 			Master::gCurrentStageIndex = nodeIndex;
 			mIsEnteringStage = true;
 			mEnterTimer = 0;
+			mFade.StartFadeOut(60);
 		}
 	}
 
@@ -353,8 +358,8 @@ void StageSelectScene::Draw()
 
 		// 指定の場所だけ描画する   
 		// 親クラスの共通関数を使用してワールド座標からスクリーン座標へ変換する   
-		const int screenX = static_cast<int>((playerX) - PlayerAnimState::FRAME_WIDTH / 2);
-		const int screenY = static_cast<int>((playerY) - PlayerAnimState::FRAME_HEIGHT / 2);
+		const int screenX = static_cast<int>((playerX)-PlayerAnimState::FRAME_WIDTH / 2);
+		const int screenY = static_cast<int>((playerY)-PlayerAnimState::FRAME_HEIGHT / 2);
 
 
 		DrawRectGraph(screenX, screenY, 1, 0,
@@ -373,17 +378,8 @@ void StageSelectScene::Draw()
 		TitleDrawString();
 	}
 
-	// シーン遷移時のフェードアウト用黒画面の描画
-	if (mIsEnteringStage || mIsReturningTitle) {
-		int timer = mIsEnteringStage ? mEnterTimer : mReturnTimer;
-		int fadeAlpha = (timer * 255) / 60;
-		if (fadeAlpha > 255) fadeAlpha = 255;
-		SetDrawBlendMode(DX_BLENDMODE_ALPHA, fadeAlpha);
-		DrawBox(0, 0, Utility::SCREEN_WIDTH, Utility::SCREEN_HEIGHT, GetColor(0, 0, 0), TRUE);
-		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
-	}
-
 	Scene::Draw();
+	mFade.Draw();
 }
 
 void StageSelectScene::TitleDrawString()
@@ -417,7 +413,7 @@ void StageSelectScene::DrawStageString()
 	bool locked = false;
 	int nodeIndex = 0;
 
-	
+
 	// プレイヤーの座標に応じてどのステージにいるかを判定する
 	if (playerX == 236.0f && playerY == 232.0f) {
 		nodeIndex = 0;
@@ -469,7 +465,7 @@ void StageSelectScene::DrawStageString()
 			GetColor(255, 255, 255),
 			200,
 			1
-			);
+		);
 
 		// ロック状態に応じて枠線の色を変化させる（ロック中：赤、アンロック：灰色）
 		unsigned int borderColor = locked ? GetColor(255, 50, 50) : GetColor(200, 200, 200);

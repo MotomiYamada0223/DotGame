@@ -2,6 +2,7 @@
 #include "Scene.h"
 #include <string>
 #include "BackgroundBox.h"
+#include "FadeController.h"
 
 class StageSelectScene : public Scene
 {
@@ -32,7 +33,7 @@ public:
 private:
 	// 背景のBox描画のクラス
 	BackgroundBox mBackgroundBox;
-
+	FadeController mFade;
 
 	int mapGraphHandle;
 
