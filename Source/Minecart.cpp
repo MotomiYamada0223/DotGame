@@ -386,6 +386,8 @@ void Minecart::Update(BlockMap& blockMap, Player* player)
 		// 画面右外（X > 7600）へ突き抜けたら終了
 		if (mX > 7600.0f)
 		{
+			StopMinecartSE(SoundManager::SE_STAGE2_MINECART_START);
+			StopMinecartSE(SoundManager::SE_STAGE2_MINECART_DASH);
 			mState = State::Finished;
 		}
 		break;

@@ -23,7 +23,7 @@ namespace
 	// セリフ表示完了後、キーによるスキップを受け付けるまでの待ち時間。
 	const int kPostTextSkipFrames = 6;
 	// セリフ表示完了後、自動で次の演出へ進むまでの待ち時間。
-	const int kPostTextWaitFrames = 85;
+	const int kPostTextWaitFrames = 120;
 	// 通常モーション時に、まばたきを開始する間隔。
 	const int kAngelBlinkIntervalFrames = 150;
 	// まばたき状態を維持する長さ。
@@ -51,6 +51,12 @@ DeathController::DeathController()
 	, mbAngelBlinking(false)
 	, mAngelTextBoxHandle(-1)
 {
+	// 未読み込みを -1 で明示しておく
+	for (int& h : mAngelNormalHandles) h = -1;
+	for (int& h : mAngelLaughHandles)  h = -1;
+	for (int& h : mAngelPointHandles)  h = -1;
+	for (int& h : mAngelHideHandles)   h = -1;
+
 	LoadGraphs();
 }
 
@@ -70,6 +76,7 @@ void DeathController::LoadGraphs()
 	mAngelLaughHandles[0] = LoadGraph("Resource/Saint/Smile/smile_L.png");
 	mAngelLaughHandles[1] = LoadGraph("Resource/Saint/Smile/smile_R.png");
 
+	mAngelPointHandles[0] = LoadGraph("Resource/Saint/Hidden/hidden_1.png");
 	mAngelPointHandles[1] = LoadGraph("Resource/Saint/Hidden/hidden_2.png");
 
 	mAngelHideHandles[0] = LoadGraph("Resource/Saint/Pointing/pointing_1.png");
