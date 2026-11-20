@@ -181,6 +181,10 @@ namespace BlockMapGraphPath
 	// 1-2ステージ 洞窟
 	static const char* CaveMap = "Resource/Map/CaveMap.png";
 	static const char* CaveMapCollision = "Resource/Map/CaveMapCollision.png";
+
+	// 1-2ステージ 洞窟オープニング
+	static const char* CaveOpening = "Resource/Map/Cave_Opening.png";
+	static const char* CaveOpeningCollision = "Resource/Map/Cave_OpeningCollision.png";
 }
 
 // スクロール背景のパス
@@ -823,4 +827,40 @@ namespace DragonCeilingBreakConstants
 	static constexpr float ChunkGravity           = 0.65f;   // 落下する天井破片の重力加速度
 	static constexpr float BreakShakePower        = 14.0f;   // 天井貫通時の画面揺れ強度
 	static constexpr int   BreakShakeFrames       = 22;      // 天井貫通時の画面揺れフレーム数
+}
+
+// 洞窟オープニング（Cave_Opening）用定数
+namespace CaveOpeningConstants
+{
+	// オープニング開始座標（床面Y=828に足元接地）
+	static constexpr float PlayerSpawnX = 100.0f;
+	static constexpr float PlayerSpawnY = 778.0f;
+
+	// 通路上下範囲と崩落穴（オレンジ色領域）のデフォルト座標
+	static constexpr int CorridorTopY    = 324;
+	static constexpr int CorridorBottomY = 827;
+	static constexpr int PitLeftX        = 2999;
+	static constexpr int PitRightX       = 3822;
+	static constexpr int PitTopY         = 828;
+	static constexpr int PitBottomY      = 1367;
+
+	// 右端から洞窟外へ続くように見せる光の演出定数
+	static constexpr float ExitLightWidth     = 720.0f; // 右端から洞窟内へ差し込む光の到達幅(px)
+	static constexpr float ExitLightCoreWidth = 110.0f; // 出口境界付近の最も強い光の幅(px)
+	static constexpr int   ExitLightRayCount  = 3;      // 斜めに差し込む光条の数
+	static constexpr int   ExitLightDustCount = 22;     // 光の中を漂う塵パーティクル数
+
+	// 床崩落破片エフェクト定数
+	static constexpr int   PitChunkSize        = 48;    // 床破片チャンクの1辺サイズ(px)
+	static constexpr float PitChunkGravity     = 0.72f; // 落下破片の重力加速度
+	static constexpr float PitBreakShakePower  = 9.0f;  // 床崩壊時の画面揺れ強度
+	static constexpr int   PitBreakShakeFrames = 18;    // 床崩壊時の画面揺れフレーム数
+
+	// 穴落下後から洞窟本編（CaveMap）への遷移・落下登場定数
+	static constexpr float TransitionFadeStartY    = 1160.0f; // 暗転フェード開始する穴内Y座標
+	static constexpr int   TransitionFadeOutFrames = 14;      // 暗転フェードアウト所要フレーム数
+	static constexpr int   TransitionFadeInFrames  = 18;      // 本編登場時フェードイン所要フレーム数
+	static constexpr float MainCaveDropStartY      = 415.0f;  // CaveMap開始時の上空落下開始Y（天井Y=360直下）
+	static constexpr float MainCaveDropInitialVy   = 10.0f;   // 本編側での最低落下初速Y
+	static constexpr float MainCaveDropMaxCarryVy  = 14.0f;   // 引き継ぐ落下速度の上限
 }

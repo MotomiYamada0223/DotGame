@@ -505,6 +505,9 @@ void TutorialTextManager::Reset()
 	mnCurrentID = 0;
 	mfCurrentTriggerX = 0;
 	mCompletedXStepIDs.clear();
+	mStep = nullptr;
+	mDisplayText.clear();
+	mbIsTextCompleted = false;
 	mfIdelTimer = 0.0f;
 	mfCharTimer = 0.0f;
 	mnDisplayByteCount = 0;

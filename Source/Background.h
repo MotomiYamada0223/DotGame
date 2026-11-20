@@ -13,6 +13,7 @@ public:
 
 	// 背景読み込み
 	bool Load(const std::string& image_path);
+	void Reset();
 
 	void Move(int speed, bool scrolling, float blockMap_moveDirection);
 	void Draw(int shakeX = 0, int shakeY = 0);

@@ -96,6 +96,12 @@ public: // アクセサ
 	void StopRopeClimb();
 	bool IsClimbingRope() const { return mbIsClimbingRope; }
 
+	// 洞窟オープニング〜本編遷移用制御
+	void SetSpawnPos(const VECTOR& spawnPos) { mSpawnPos = spawnPos; }
+	void ForceStartFall(float initialVy = 1.5f);
+	void StartAirDrop(float x, float y, float initialVy);
+	void SetSuppressFallDeath(bool suppress) { mbSuppressFallDeath = suppress; }
+
 	// デバッグ用ワープ
 	void WarpTo(float x, float y);
 
@@ -256,6 +262,7 @@ private: // 復活処理関係
 	bool mbInHotSpring = false;
 	float mHotSpringHeat = 0.0f;
 	bool mbSpaceWasPressed = false;
+	bool mbSuppressFallDeath = false;
 
 	// 3段階ジャンプ（小・中・大）用
 	PlayerConstants::JumpType mCurrentJumpType = PlayerConstants::JumpType::None;

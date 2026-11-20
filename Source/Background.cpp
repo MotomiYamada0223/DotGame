@@ -33,6 +33,14 @@ bool Background::Load(const std::string& image_path)
 	return true;
 }
 
+void Background::Reset()
+{
+	mnBackgroundGraph = -1;
+	mnScrollX = 0;
+	mbIsLoaded = false;
+	mfScrollSpeed = 0.0f;
+}
+
 // 背景画像の移動処理
 void Background::Move(int speed, bool scrolling, float blockMap_moveDirection)
 {

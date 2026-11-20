@@ -35,6 +35,8 @@ public:
     void DebugUpdate();
     void DebugDraw();
 
+    void StageCaveOpening();
+    void StageCave();
 private:
     Player*& mpPlayer;
     GameProgress& mProgress;
@@ -49,7 +51,6 @@ private:
 
     // 各ステージで読み込むための処理
     void StageForest();
-    void StageCave();
 
     int mnLoadNumber = 0;
 };
