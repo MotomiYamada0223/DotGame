@@ -817,6 +817,8 @@ void BossEnemySlime::Update()
             // モーション完了（最後まで再生）で待機へ移行
             if (mpAnimAttack->IsFinished())
             {
+                Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_SLIME_EAT, 80);
+
                 // 体当たり着地の小画面揺れ
                 if (mpBlockMap != nullptr)
                 {

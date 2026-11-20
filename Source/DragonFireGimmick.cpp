@@ -2,6 +2,7 @@
 #include "BlockMap.h"
 #include "Player.h"
 #include <cmath>
+#include "Master.h"
 
 namespace
 {
@@ -405,13 +406,19 @@ void DragonFireGimmick::UpdateCenterFireball(Player* player, BlockMap* blockMap,
 			}
 		}
 
-		// 地面に着弾したら周辺を大爆発させ、左右にアーチ状で地面を沿う炎を放つ！
+		// 地面に着弾したら周辺を大爆発させ、左右にアーチ状で地面を沿う炎を放つ
 		if (mCenterFireball.y >= floorY - 10.0f)
 		{
 			mCenterFireball.y = floorY;
 			mCenterFireball.exploding = true;
 			mCenterFireball.explosionTimer = mCenterFireball.maxExplosionTimer;
 			mCenterFireball.explosionRadius = 40.0f;
+
+			// 中央火球の着弾SE
+			if (Master::mpGameManager && Master::mpGameManager->GetSoundManager())
+			{
+				Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_STAGE2_DRAGON_FIREBALL_LAND);
+			}
 
 			// 爆発の火花を四方八方に吹き飛ばす
 			for (int s = 0; s < 40; ++s)
