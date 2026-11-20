@@ -374,6 +374,8 @@ void EnemySlime::EnemyMove(BlockMap& blockMap)
                 // 攻撃終了判定 (アニメーションが最後までいったか、着地後)
                 if (currentFrame >= 6 || (mHasJumped && isGrounded && velocityY >= 0))
                 {
+                    Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_SLIME_EAT, 80);
+
                     mIsAttacking = false;
                     mHasJumped = false;
                     mIsCharging = false;
