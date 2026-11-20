@@ -15,6 +15,13 @@ private:
 	const int TitleBoxWidth = 380;
 	const int TitleBoxHeight = 100;
 
+	// プレイヤーの移動位置
+	const float PlayerY = 900.0f;
+	const float PlayerInitX = -100.0f;
+
+	const float Stage1_X = 300.0f;
+	const float Stage2_X = 960.0f;
+	const float Stage3_X = 1615.0f;
 
 public:
 	StageSelectScene();

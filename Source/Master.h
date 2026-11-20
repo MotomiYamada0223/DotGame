@@ -16,8 +16,8 @@
 
 struct SaveSlot {
 	bool isUsed;
-	bool stageCleared[4];
-	int deathCounts[4];
+	bool stageCleared[3];
+	int deathCounts[3];
 };
 
 
@@ -28,12 +28,12 @@ public:
 	static ObjectManager* mpObjectManager;
 	static GameManager* mpGameManager; // ゲームマネージャーのポインタ
 
-	static const int MaxStageCount = 4;
+	static const int MaxStageCount = 3;
 
 
-	static bool gStageCleared[4];
-	static int gDeathCounts[4];
-	static int gTotalDeathCounts[4];
+	static bool gStageCleared[3];
+	static int gDeathCounts[3];
+	static int gTotalDeathCounts[3];
 
 	static int gCurrentStageRunDeathCount;
 	static int gCurrentStageIndex;

@@ -908,6 +908,11 @@ void BossEnemyDragon::UpdateAirBreathAttack(Player* player, float dx)
 	{
 		mAnimTimer = 0;
 		mAnimFrame++;
+
+		if (mAnimFrame == 3)
+		{
+			PlayDragonSE(SoundManager::SE_STAGE2_DRAGON_BREATH);
+		}
 		if (mAnimFrame >= static_cast<int>(mAirAttackAnim.size()))
 		{
 			mState = State::Landing;

@@ -202,10 +202,10 @@ void EnemySkeleton::Update()
         if (isPlayerNear)
         {
             mIdleSETimer++;
-            if (mIdleSETimer >= 600)
+            if (mIdleSETimer >= 60)
             {
                 mIdleSETimer = 0;
-                Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_SKELETON_IDEL, 60);
+                Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_SKELETON_IDEL, 40);
             }
         }
         else
