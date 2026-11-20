@@ -8,7 +8,16 @@
 #include "GameConstants.h"
 #include "PlayerAnimState.h"
 
-// コンストラクタ：各種変数の初期化を行う
+
+namespace
+{
+	constexpr int   kEnterAnimFrames = 60;     // 演出の長さ（フェードアウトと合わせる）
+	constexpr float kEnterRiseY = 30.0f;  // 最終的に上へずらす量（px）
+	constexpr float kEnterMinScale = 0.80f;  // 最終的な拡大率
+}
+
+
+// コンストラクタ
 StageSelectScene::StageSelectScene()
 	: Scene()
 	, mBackgroundBox()
@@ -53,10 +62,12 @@ void StageSelectScene::Initialize()
 		playerGraphHandles
 	);
 
-	playerX = 236.0f;
-	playerY = -100.0f;
-	targetX = 236.0f;
-	targetY = 232.0f;
+	playerX = PlayerInitX;
+	playerY = PlayerY;
+	targetX = Stage1_X;
+	targetY = PlayerY;
+	isMoving = true;
+
 	isMoving = true;
 	lastSignal = "None";
 	facingRight = true;
@@ -106,66 +117,6 @@ void StageSelectScene::Move()
 			playerY = targetY;
 			isMoving = false;
 			animCounter = 0;
-
-			// 特定の座標に到達した際、自動で次の移動先へつなげる自動ルーティング処理
-			if (playerX == 1250.0f && playerY == 909.0f)
-			{
-				if (lastSignal == "DOWN")
-				{
-					targetX = 1590.0f;
-					targetY = 909.0f;
-					isMoving = true;
-					lastSignal = "RIGHT";
-				}
-				else if (lastSignal == "LEFT")
-				{
-					targetX = 1250.0f;
-					targetY = 806.0f;
-					isMoving = true;
-					lastSignal = "UP";
-				}
-			}
-			else if (playerX == 1590.0f && playerY == 909.0f)
-			{
-				if (lastSignal == "RIGHT")
-				{
-					targetX = 1590.0f;
-					targetY = 551.0f;
-					isMoving = true;
-					lastSignal = "UP";
-				}
-				else if (lastSignal == "DOWN")
-				{
-					targetX = 1250.0f;
-					targetY = 909.0f;
-					isMoving = true;
-					lastSignal = "LEFT";
-				}
-			}
-			else if (playerX == 676.0f && playerY == 525.0f) // 上側洞窟の入り口
-			{
-				if (lastSignal == "UP")
-				{
-					isHidden = true;
-					caveTimer = 180;
-					isMoving = false;
-					lastSignal = "UP_FROM_LEFT";
-				}
-			}
-			else if (playerX == 1250.0f && playerY == 806.0f) // 右側洞窟の出口
-			{
-				if (lastSignal == "UP")
-				{
-					isHidden = true;
-					caveTimer = 180;
-					isMoving = false;
-					lastSignal = "UP_FROM_RIGHT";
-				}
-			}
-
-			if (!isMoving && caveTimer == 0) {
-				lastSignal = "None";
-			}
 		}
 		else
 		{
@@ -176,58 +127,37 @@ void StageSelectScene::Move()
 	}
 	else
 	{
-		// 停止中のキー入力による移動先ノードの決定
-		if (CheckHitKey(KEY_INPUT_W) == 1)
+		if (CheckHitKey(KEY_INPUT_A) == 1)
 		{
-			if (playerX == 236.0f && playerY == 909.0f)
-			{
-				lastSignal = "UP";
-				targetX = 236.0f;
-				targetY = 232.0f;
-				isMoving = true;
-			}
-			else if (playerX == 676.0f && playerY == 909.0f) // ノード2から上側洞窟へ
-			{
-				lastSignal = "UP";
-				targetX = 676.0f;
-				targetY = 525.0f;
-				isMoving = true;
-			}
-		}
-		else if (CheckHitKey(KEY_INPUT_S) == 1)
-		{
-			if (playerX == 236.0f && playerY == 232.0f)
-			{
-				lastSignal = "DOWN";
-				targetX = 236.0f;
-				targetY = 909.0f;
-				isMoving = true;
-			}
-			else if (playerX == 1590.0f && playerY == 551.0f) // お城から下方へ
-			{
-				lastSignal = "DOWN";
-				targetX = 1590.0f;
-				targetY = 909.0f;
-				isMoving = true;
-			}
-		}
-		else if (CheckHitKey(KEY_INPUT_A) == 1)
-		{
-			if (playerX == 676.0f && playerY == 909.0f)
+			if (playerX == Stage3_X && playerY == PlayerY)
 			{
 				lastSignal = "LEFT";
-				targetX = 236.0f;
-				targetY = 909.0f;
+				targetX = Stage2_X;
+				targetY = PlayerY;
+				isMoving = true;
+			}
+			else if (playerX == Stage2_X && playerY == PlayerY)
+			{
+				lastSignal = "LEFT";
+				targetX = Stage1_X;
+				targetY = PlayerY;
 				isMoving = true;
 			}
 		}
 		else if (CheckHitKey(KEY_INPUT_D) == 1)
 		{
-			if (playerX == 236.0f && playerY == 909.0f)
+			if (playerX == Stage1_X && playerY == PlayerY)
 			{
 				lastSignal = "RIGHT";
-				targetX = 676.0f;
-				targetY = 909.0f;
+				targetX = Stage2_X;
+				targetY = PlayerY;
+				isMoving = true;
+			}
+			else if (playerX == Stage2_X && playerY == PlayerY)
+			{
+				lastSignal = "RIGHT";
+				targetX = Stage3_X;
+				targetY = PlayerY;
 				isMoving = true;
 			}
 		}
@@ -271,35 +201,7 @@ void StageSelectScene::Update()
 		}
 		return;
 	}
-	// 洞窟内でのワープ（移動演出）中のタイマー処理
-	if (caveTimer > 0)
-	{
-		caveTimer--;
-		if (caveTimer == 0)
-		{
-			isHidden = false;
-			if (lastSignal == "UP_FROM_LEFT")
-			{
-				playerX = 1250.0f;
-				playerY = 806.0f;
-				targetX = 1250.0f;
-				targetY = 909.0f;
-				isMoving = true;
-				lastSignal = "DOWN";
-			}
-			else if (lastSignal == "UP_FROM_RIGHT")
-			{
-				playerX = 676.0f;
-				playerY = 525.0f;
-				targetX = 676.0f;
-				targetY = 909.0f;
-				isMoving = true;
-				lastSignal = "DOWN";
-			}
-		}
-		Scene::Update();
-		return;
-	}
+	
 
 	// プレイヤーの移動処理を呼び出し
 	Move();
@@ -317,15 +219,17 @@ void StageSelectScene::Update()
 	{
 		Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_DECIDE, SoundSetting::DecideVolume);
 
-		int nodeIndex = 0;
-		if (playerX == 236.0f && playerY == 909.0f) nodeIndex = 1;
-		else if (playerX == 676.0f && playerY == 909.0f) nodeIndex = 2;
-		else if (playerX == 1590.0f && playerY == 551.0f) nodeIndex = 3;
+		int nodeIndex = -1;
+		if (playerX == Stage1_X && playerY == PlayerY) nodeIndex = 0;
+		else if (playerX == Stage2_X && playerY == PlayerY) nodeIndex = 1;
+		else if (playerX == Stage3_X && playerY == PlayerY) nodeIndex = 2;
 
+		// Enter処理
 		bool locked = false;
-		if (nodeIndex == 1) locked = !Master::gStageCleared[0];
-		else if (nodeIndex == 2) locked = !Master::gStageCleared[1];
-		else if (nodeIndex == 3) locked = !Master::gStageCleared[2];
+		if (nodeIndex == 0) locked = false;                          // 1-1 は常に解放
+		else if (nodeIndex == 1) locked = !Master::gStageCleared[0]; // 1-2 は 1-1 クリアで解放
+		else if (nodeIndex == 2) locked = !Master::gStageCleared[1]; // 1-3 は 1-2 クリアで解放
+
 
 		// ロックされていなければステージへ進む
 		if (!locked) {
@@ -356,20 +260,35 @@ void StageSelectScene::Draw()
 		int baseFrame = isMoving ? 4 : 0;
 		int currentFrame = baseFrame + ((animCounter / 10) % 4);
 
-		// 指定の場所だけ描画する   
-		// 親クラスの共通関数を使用してワールド座標からスクリーン座標へ変換する   
-		const int screenX = static_cast<int>((playerX)-PlayerAnimState::FRAME_WIDTH / 2);
-		const int screenY = static_cast<int>((playerY)-PlayerAnimState::FRAME_HEIGHT / 2);
+		// Enter押下後の演出進行度（0.0 → 1.0）
+		float enterT = 0.0f;
+		if (mIsEnteringStage)
+		{
+			enterT = static_cast<float>(mEnterTimer) / static_cast<float>(kEnterAnimFrames);
+			if (enterT > 1.0f) enterT = 1.0f;
+		}
+		// 最初は速く、後半はゆっくり動くイーズアウト
+		const float easeT = 1.0f - (1.0f - enterT) * (1.0f - enterT);
 
+		const float drawScale = 1.0f - (1.0f - kEnterMinScale) * easeT;
+		const float drawY = playerY - kEnterRiseY * easeT;
 
-		DrawRectGraph(screenX, screenY, 1, 0,
+		// 中心基準で描画するため、playerX / drawY をそのまま中心座標として使う
+		DrawRectRotaGraph(
+			static_cast<int>(playerX),
+			static_cast<int>(drawY),
+			1, 0,
 			PlayerAnimState::FRAME_WIDTH,
 			PlayerAnimState::FRAME_HEIGHT,
+			drawScale,
+			0.0,
 			playerGraphHandles[currentFrame],
-			true,
+			TRUE,
 			!facingRight
 		);
 	}
+
+
 
 	// 停止中で非表示でなければ、ステージ詳細情報を描画する
 	if (!isMoving && !isHidden)
@@ -411,32 +330,25 @@ void StageSelectScene::DrawStageString()
 	const char* stageName = nullptr;
 	const char* stageDesc = nullptr;
 	bool locked = false;
-	int nodeIndex = 0;
-
+	int nodeIndex = -1;
 
 	// プレイヤーの座標に応じてどのステージにいるかを判定する
-	if (playerX == 236.0f && playerY == 232.0f) {
+	if (playerX == Stage1_X && playerY == PlayerY) {
 		nodeIndex = 0;
 		stageName = "Stage 1-1 始まりの森林";
 		stageDesc = "「まずはチュートリアルをプレイしてね！」";
 	}
-	else if (playerX == 236.0f && playerY == 909.0f) {
+	else if (playerX == Stage2_X && playerY == PlayerY) {
 		nodeIndex = 1;
-		stageName = "Stage 1-2 緑の平原";
+		stageName = "Stage 1-2 マウンテン山々山";
 		locked = !Master::gStageCleared[0];
 		stageDesc = locked ? "【解放条件】 Stage 1-1をクリアしよう" : "「基本操作を活かして進んでみよう！」";
 	}
-	else if (playerX == 676.0f && playerY == 909.0f) {
+	else if (playerX == Stage3_X && playerY == PlayerY) {
 		nodeIndex = 2;
-		stageName = "Stage 1-3 洞窟前の試練";
+		stageName = "Stage 1-3 魔王の城 (BOSS)";
 		locked = !Master::gStageCleared[1];
-		stageDesc = locked ? "【解放条件】 Stage 1-2をクリアしよう" : "「洞窟を抜ければ、ボスの城はすぐそこだ！」";
-	}
-	else if (playerX == 1590.0f && playerY == 551.0f) {
-		nodeIndex = 3;
-		stageName = "Stage 1-4 魔王の城 (BOSS)";
-		locked = !Master::gStageCleared[2];
-		stageDesc = locked ? "【解放条件】 Stage 1-3をクリアしよう" : "「ついにボス戦！ 準備はいいか？」";
+		stageDesc = locked ? "【解放条件】 Stage 1-2をクリアしよう" : "「ついにボス戦！ 準備はいいか？」";
 	}
 
 	if (stageName)
@@ -444,18 +356,17 @@ void StageSelectScene::DrawStageString()
 		int px = (int)playerX;
 		int py = (int)playerY;
 
-		int boxW = 860;
-		int boxH = 150; // 3行分のテキストが収まるように高さを拡張
+		int boxW = 660;
+		int boxH = 180;
 		int boxX = px - boxW / 2;
-		int boxY = py - 300;
+		int boxY = py - 500;
 
 		// 画面外にはみ出さないように描画位置を調整する
 		if (boxX < 30) boxX = 30;
 		if (boxX + boxW > Utility::SCREEN_WIDTH - 30) boxX = Utility::SCREEN_WIDTH - 30 - boxW;
 		if (boxY < 20) boxY = py + 100;
 
-
-		// 背景のBoxの描画クラスの呼び出し
+		// 背景のBox
 		mBackgroundBox.DrawBackgroundBox(
 			boxX,
 			boxY,
@@ -471,43 +382,38 @@ void StageSelectScene::DrawStageString()
 		unsigned int borderColor = locked ? GetColor(255, 50, 50) : GetColor(200, 200, 200);
 		DrawBox(boxX + 3, boxY + 3, boxX + boxW - 3, boxY + boxH - 3, borderColor, FALSE);
 
+		FontManager* fontMgr = Master::mpGameManager->GetFontManager();
 
+		// 中央揃え用のヘルパー：ダイアログ中央に、指定サイズの文字列を描画する
+		auto drawCentered = [&](int y, int fontSize, unsigned int color, const char* text)
+			{
+				int textW = fontMgr->GetDotStringWidth(fontSize, text);
+				int x = boxX + (boxW - textW) / 2;
+				fontMgr->DrawDotString(x, y, fontSize, color, text);
+			};
 
+		// ステージタイトル（中央揃え）
+		drawCentered(boxY + 15, 36, GetColor(255, 255, 0), stageName);
 
-		// ステージタイトルの描画
-		Master::mpGameManager->GetFontManager()->DrawDotString(boxX + 25, boxY + 15, 36, GetColor(255, 255, 0), stageName);
-
-		// 死亡回数の描画
+		// 死亡回数（中央揃え）
 		char deathText[128];
+		sprintf_s(deathText, "今回の死亡回数: %d 回", Master::gDeathCounts[nodeIndex]);
+		drawCentered(boxY + 60, 24, GetColor(255, 100, 100), deathText);
 
-		sprintf_s(
-			deathText,
-			"今回の死亡回数: %d 回",
-			Master::gDeathCounts[nodeIndex]
-		);
-
-		Master::mpGameManager->GetFontManager()->DrawDotString(
-			boxX + 25,
-			boxY + 60,
-			24,
-			GetColor(255, 100, 100),
-			deathText
-		);
-
-		// ステージ説明文の描画
+		// ステージ説明文（中央揃え）
 		unsigned int descColor = locked ? GetColor(255, 100, 100) : GetColor(255, 255, 255);
-		Master::mpGameManager->GetFontManager()->DrawDotString(boxX + 25, boxY + 95, 32, descColor, stageDesc);
+		drawCentered(boxY + 95, 32, descColor, stageDesc);
 
-		// エンターキーを促すプロンプト、またはロック状態の文字列を描画
+		// エンターキーを促すプロンプト、またはロック状態の文字列（中央揃え）
 		if (!locked) {
 			unsigned int enterColor = GetColor(200, 200, 255);
 			if (mIsEnteringStage) {
 				enterColor = (mEnterTimer % 10 < 5) ? GetColor(255, 255, 0) : GetColor(150, 150, 0);
 			}
-			Master::mpGameManager->GetFontManager()->DrawDotString(boxX + boxW - 300, boxY + 115, 24, enterColor, "Press ENTER to Start");
+			drawCentered(boxY + 125, 24, enterColor, "Press ENTER to Start");
 		}
 		else {
-			Master::mpGameManager->GetFontManager()->DrawDotString(boxX + boxW - 300, boxY + 115, 24, GetColor(100, 100, 100), "LOCKED");
+			drawCentered(boxY + 125, 24, GetColor(100, 100, 100), "LOCKED");
 		}
 	}
 }
