@@ -6,6 +6,28 @@
 #include <cmath>
 #include "Camera.h"
 
+void BlockMap::UpdateDustParticles(std::vector<CeilingDust>& dusts, float gravity, float fadeSpeed)
+{
+    for (auto it = dusts.begin(); it != dusts.end(); )
+    {
+        it->x += it->vx;
+        it->y += it->vy;
+        it->vy += gravity;
+        it->vx *= 0.96f;
+        it->radius += 0.25f;
+        it->alpha -= fadeSpeed;
+
+        if (it->alpha <= 0.0f)
+        {
+            it = dusts.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
+    }
+}
+
 
 BlockMap::BlockMap()
     : mnBackgroundGraph(-1)
@@ -17,6 +39,11 @@ BlockMap::BlockMap()
     , mbHasBossArea(false)
     , mnBossAreaLeft(0)
     , mnBossAreaRight(0)
+    , mbHasBreakableBounds(false)
+    , mnBreakableMinX(0)
+    , mnBreakableMinY(0)
+    , mnBreakableMaxX(0)
+    , mnBreakableMaxY(0)
     , mnBackgroundWidth(0)
     , mnBackgroundHeight(0)
     , mfMoveDirection(0.0f)
@@ -27,7 +54,49 @@ BlockMap::BlockMap()
 
 BlockMap::~BlockMap()
 {
+    Unload();
+}
+
+void BlockMap::Unload()
+{
     ResetCeilingBreak();
+    ResetOpeningPitBreak();
+
+    if (mnCollisionSoftImage != -1)
+    {
+        DeleteSoftImage(mnCollisionSoftImage);
+        mnCollisionSoftImage = -1;
+    }
+
+    mCollisionData.clear();
+    mWalls.clear();
+
+    mnBackgroundGraph = -1;
+    mnBackgroundWidth = 0;
+    mnBackgroundHeight = 0;
+    mnCollisionWidth = 0;
+    mnCollisionHeight = 0;
+    mbIsLoaded = false;
+    mbHasBossArea = false;
+    mnBossAreaLeft = 0;
+    mnBossAreaRight = 0;
+    mbHasBreakableBounds = false;
+    mnBreakableMinX = 0;
+    mnBreakableMinY = 0;
+    mnBreakableMaxX = 0;
+    mnBreakableMaxY = 0;
+    mbHasBreakableBounds = false;
+    mnBreakableMinX = 0;
+    mnBreakableMinY = 0;
+    mnBreakableMaxX = 0;
+    mnBreakableMaxY = 0;
+    mbIsScrolling = false;
+    mfMoveDirection = 0.0f;
+
+    mCamera.SetScrollX(0);
+    mCamera.SetScrollY(0);
+    mCamera.SetLocked(false);
+    mCamera.ResetScrollInit();
 }
 
 // マップ読み込み
@@ -37,10 +106,11 @@ bool BlockMap::Load(
 {
     if (mbIsLoaded) { return true; }
     ResetCeilingBreak();
+    ResetOpeningPitBreak();
 
-    // 破壊可能壁の読み込み（洞窟ステージ専用）
+    // 破壊可能壁の読み込み（洞窟本編 CaveMap 専用：Cave_Opening には読み込まない）
     mWalls.clear();
-    if (backgroundPath.find("Stage1-2") != std::string::npos || backgroundPath.find("Cave") != std::string::npos)
+    if (backgroundPath.find("Stage1-2") != std::string::npos || backgroundPath.find("CaveMap") != std::string::npos)
     {
         FILE* fp = nullptr;
         fopen_s(&fp, "Resource/Map/Cave_WallConfig.txt", "r");
@@ -118,6 +188,11 @@ bool BlockMap::Load(
     mbHasBossArea = false;
     mnBossAreaLeft = 0;
     mnBossAreaRight = 0;
+    mbHasBreakableBounds = false;
+    mnBreakableMinX = 0;
+    mnBreakableMinY = 0;
+    mnBreakableMaxX = 0;
+    mnBreakableMaxY = 0;
 
     // 当たり判定画像を1ピクセルずつ調べる
     for (int y = 0; y < mnCollisionHeight; y++)
@@ -160,6 +235,22 @@ bool BlockMap::Load(
                 mCollisionData[
                     GetCollisionIndex(x, y)
                 ] = CollisionType::BreakableBlock;
+
+                if (!mbHasBreakableBounds)
+                {
+                    mbHasBreakableBounds = true;
+                    mnBreakableMinX = x;
+                    mnBreakableMaxX = x;
+                    mnBreakableMinY = y;
+                    mnBreakableMaxY = y;
+                }
+                else
+                {
+                    if (x < mnBreakableMinX) { mnBreakableMinX = x; }
+                    if (x > mnBreakableMaxX) { mnBreakableMaxX = x; }
+                    if (y < mnBreakableMinY) { mnBreakableMinY = y; }
+                    if (y > mnBreakableMaxY) { mnBreakableMaxY = y; }
+                }
 
                 continue;
             }
@@ -243,6 +334,40 @@ bool BlockMap::Load(
 }
 
 
+void BlockMap::DrawBackgroundWithCutout(
+    int sx, int sy, int sw, int sh,
+    int holeLeft, int holeTop, int holeRight, int holeBottom) const
+{
+    const int cx1 = (std::max)(holeLeft, sx);
+    const int cx2 = (std::min)(holeRight, sx + sw);
+    const int cy1 = (std::max)(holeTop, sy);
+    const int cy2 = (std::min)(holeBottom, sy + sh);
+
+    if (cx1 >= cx2 || cy1 >= cy2)
+    {
+        DrawRectGraph(0, 0, sx, sy, sw, sh, mnBackgroundGraph, TRUE);
+        return;
+    }
+
+    // くり抜き領域を除いた周囲4帯を切り出して描画（穴の奥に背景が透けて見える）
+    if (cx1 > sx)
+    {
+        DrawRectGraph(0, 0, sx, sy, cx1 - sx, sh, mnBackgroundGraph, TRUE);
+    }
+    if (sx + sw > cx2)
+    {
+        DrawRectGraph(cx2 - sx, 0, cx2, sy, (sx + sw) - cx2, sh, mnBackgroundGraph, TRUE);
+    }
+    if (cy1 > sy)
+    {
+        DrawRectGraph(cx1 - sx, 0, cx1, sy, cx2 - cx1, cy1 - sy, mnBackgroundGraph, TRUE);
+    }
+    if (sy + sh > cy2)
+    {
+        DrawRectGraph(cx1 - sx, cy2 - sy, cx1, cy2, cx2 - cx1, (sy + sh) - cy2, mnBackgroundGraph, TRUE);
+    }
+}
+
 // 背景描画
 void BlockMap::Draw()
 {
@@ -253,44 +378,40 @@ void BlockMap::Draw()
     const int sw = ScreenSize::ScrrenWidth;
     const int sh = ScreenSize::ScrrenHeight;
 
-    bool drawSplitForCeilingHole = false;
-    int cx1 = 0, cx2 = 0, cy1 = 0, cy2 = 0;
-
     if (mbCeilingBreakActive)
     {
-        cx1 = (std::max)(mCeilingHoleLeft, sx);
-        cx2 = (std::min)(mCeilingHoleRight, sx + sw);
-        cy1 = (std::max)(mCeilingHoleTop, sy);
-        cy2 = (std::min)(mCeilingHoleBottom, sy + sh);
-        if (cx1 < cx2 && cy1 < cy2)
-        {
-            drawSplitForCeilingHole = true;
-        }
+        DrawBackgroundWithCutout(sx, sy, sw, sh, mCeilingHoleLeft, mCeilingHoleTop, mCeilingHoleRight, mCeilingHoleBottom);
     }
-
-    if (!drawSplitForCeilingHole)
+    else if (mbOpeningMapMode && mbOpeningPitBroken)
+    {
+        DrawBackgroundWithCutout(sx, sy, sw, sh, mOpeningPitLeft, mOpeningPitTop, mOpeningPitRight + 1, mOpeningPitBottom + 1);
+    }
+    else
     {
         // 通常時：背景画像を1回で描画
         DrawRectGraph(0, 0, sx, sy, sw, sh, mnBackgroundGraph, TRUE);
     }
-    else
+
+    if (mbOpeningMapMode)
     {
-        // 天井破砕領域を除いた周囲4帯を切り出して描画（穴の奥に背景が透けて見える）
-        if (cx1 > sx)
+        DrawOpeningExitLight(sx, sy);
+
+        if (mbOpeningPitBroken)
         {
-            DrawRectGraph(0, 0, sx, sy, cx1 - sx, sh, mnBackgroundGraph, TRUE);
-        }
-        if (sx + sw > cx2)
-        {
-            DrawRectGraph(cx2 - sx, 0, cx2, sy, (sx + sw) - cx2, sh, mnBackgroundGraph, TRUE);
-        }
-        if (cy1 > sy)
-        {
-            DrawRectGraph(cx1 - sx, 0, cx1, sy, cx2 - cx1, cy1 - sy, mnBackgroundGraph, TRUE);
-        }
-        if (sy + sh > cy2)
-        {
-            DrawRectGraph(cx1 - sx, cy2 - sy, cx1, cy2, cx2 - cx1, (sy + sh) - cy2, mnBackgroundGraph, TRUE);
+            for (const auto& chunk : mOpeningPitChunks)
+            {
+                if (!chunk.isFinished)
+                {
+                    DrawBrokenCeilingChunk(chunk, sx, sy);
+                }
+            }
+            for (const auto& d : mOpeningPitDusts)
+            {
+                if (d.alpha <= 0.0f) continue;
+                SetDrawBlendMode(DX_BLENDMODE_ALPHA, static_cast<int>(d.alpha));
+                DrawCircle(static_cast<int>(d.x) - sx, static_cast<int>(d.y) - sy, static_cast<int>(d.radius), d.color, TRUE);
+            }
+            SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
         }
     }
 
@@ -600,6 +721,8 @@ void BlockMap::InitCeilingBreak(float centerWorldX)
             chunk.origX = static_cast<float>(origX);
             chunk.origY = static_cast<float>(origY);
             chunk.size  = chunkSize;
+            chunk.width = chunkSize;
+            chunk.height = chunkSize;
             chunk.isTarget = (c >= leftStartCol && c <= rightEndCol);
             chunk.isBroken = false;
             chunk.isFinished = false;
@@ -746,24 +869,7 @@ void BlockMap::UpdateCeilingBreak()
     }
 
     // 砂煙・岩粉パーティクルの更新
-    for (auto it = mCeilingDusts.begin(); it != mCeilingDusts.end(); )
-    {
-        it->x += it->vx;
-        it->y += it->vy;
-        it->vy += 0.18f;
-        it->vx *= 0.96f;
-        it->radius += 0.25f;
-        it->alpha -= 6.5f;
-
-        if (it->alpha <= 0.0f)
-        {
-            it = mCeilingDusts.erase(it);
-        }
-        else
-        {
-            ++it;
-        }
-    }
+    UpdateDustParticles(mCeilingDusts, 0.18f, 6.5f);
 }
 
 void BlockMap::DrawBrokenCeilingChunk(const CeilingChunk& chunk, int sx, int sy) const
@@ -780,18 +886,19 @@ void BlockMap::DrawBrokenCeilingChunk(const CeilingChunk& chunk, int sx, int sy)
                       1.0,
                       static_cast<double>(chunk.angle),
                       chunk.graphHandle,
-                      FALSE);
+                      TRUE);
     }
     else if (mnBackgroundGraph != -1)
     {
         // 万一オフスクリーン派生に失敗した場合も元マップから直接矩形描画で破片を表示する
-        const int halfSize = chunk.size / 2;
-        DrawRectGraph(static_cast<int>(chunk.x) - halfSize - sx,
-                      static_cast<int>(chunk.y) - halfSize - sy,
+        const int halfW = chunk.width / 2;
+        const int halfH = chunk.height / 2;
+        DrawRectGraph(static_cast<int>(chunk.x) - halfW - sx,
+                      static_cast<int>(chunk.y) - halfH - sy,
                       static_cast<int>(chunk.origX),
                       static_cast<int>(chunk.origY),
-                      chunk.size,
-                      chunk.size,
+                      chunk.width,
+                      chunk.height,
                       mnBackgroundGraph,
                       TRUE);
     }
@@ -822,6 +929,355 @@ void BlockMap::DrawCeilingForegroundDebris() const
         if (d.alpha <= 0.0f) continue;
         SetDrawBlendMode(DX_BLENDMODE_ALPHA, static_cast<int>(d.alpha));
         DrawCircle(static_cast<int>(d.x) - sx, static_cast<int>(d.y) - sy, static_cast<int>(d.radius), d.color, TRUE);
+    }
+
+    SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+}
+
+void BlockMap::ResetOpeningPitBreak()
+{
+    for (auto& chunk : mOpeningPitChunks)
+    {
+        if (chunk.graphHandle != -1)
+        {
+            DeleteGraph(chunk.graphHandle);
+            chunk.graphHandle = -1;
+        }
+    }
+    mOpeningPitChunks.clear();
+
+    if (mOpeningPitRegionGraph != -1)
+    {
+        DeleteGraph(mOpeningPitRegionGraph);
+        mOpeningPitRegionGraph = -1;
+    }
+
+    mOpeningPitDusts.clear();
+    mOpeningLightDusts.clear();
+    mbOpeningMapMode = false;
+    mbOpeningPitBroken = false;
+    mOpeningPitLeft = 0;
+    mOpeningPitTop = 0;
+    mOpeningPitRight = 0;
+    mOpeningPitBottom = 0;
+    mOpeningLightTimer = 0;
+}
+
+void BlockMap::InitOpeningPitBreak()
+{
+    ResetOpeningPitBreak();
+    if (!mbIsLoaded || mnBackgroundGraph == -1) return;
+
+    mbOpeningMapMode = true;
+    mbOpeningPitBroken = false;
+    mOpeningLightTimer = 0;
+
+    if (mbHasBreakableBounds)
+    {
+        mOpeningPitLeft = mnBreakableMinX;
+        mOpeningPitTop = mnBreakableMinY;
+        mOpeningPitRight = mnBreakableMaxX;
+        mOpeningPitBottom = mnBreakableMaxY;
+    }
+    else
+    {
+        mOpeningPitLeft = CaveOpeningConstants::PitLeftX;
+        mOpeningPitTop = CaveOpeningConstants::PitTopY;
+        mOpeningPitRight = CaveOpeningConstants::PitRightX;
+        mOpeningPitBottom = CaveOpeningConstants::PitBottomY;
+    }
+
+    // 右端の出口風ライト内に漂う塵パーティクルを初期化
+    const float lightStartX = (std::max)(0.0f, static_cast<float>(mnBackgroundWidth) - CaveOpeningConstants::ExitLightWidth + 40.0f);
+    const float lightWidth = (std::max)(60.0f, static_cast<float>(mnBackgroundWidth) - lightStartX - 10.0f);
+    const float minY = static_cast<float>(CaveOpeningConstants::CorridorTopY + 18);
+    const float heightY = static_cast<float>((CaveOpeningConstants::CorridorBottomY - 18) - (CaveOpeningConstants::CorridorTopY + 18));
+
+    mOpeningLightDusts.reserve(CaveOpeningConstants::ExitLightDustCount);
+    for (int i = 0; i < CaveOpeningConstants::ExitLightDustCount; ++i)
+    {
+        OpeningLightDust d;
+        d.x = lightStartX + (static_cast<float>(GetRand(1000)) / 1000.0f) * lightWidth;
+        d.y = minY + (static_cast<float>(GetRand(1000)) / 1000.0f) * heightY;
+        d.vx = -0.18f - (static_cast<float>(GetRand(25)) * 0.01f);
+        d.vy = (static_cast<float>(GetRand(20) - 10) * 0.015f);
+        d.phase = static_cast<float>(GetRand(628)) * 0.01f;
+        d.size = (GetRand(2) == 0) ? 4 : 3;
+        mOpeningLightDusts.push_back(d);
+    }
+}
+
+bool BlockMap::CheckAndTriggerOpeningPit(
+    float playerX, float playerY,
+    float playerWidth, float playerHeight,
+    bool isGrounded, float velocityY)
+{
+    if (!mbOpeningMapMode || mbOpeningPitBroken) return false;
+
+    const float halfW = playerWidth * 0.5f;
+    const float halfH = playerHeight * 0.5f;
+    const float footY = playerY + halfH;
+    const float pitTopF = static_cast<float>(mOpeningPitTop);
+
+    // 左端の赤ブロック(<=PitLeft-1)へ足を引っ掛けず確実に落下させるため、足幅が完全に穴範囲へ乗った瞬間に即時崩壊させる
+    const bool horizontallyOnPit =
+        (playerX >= static_cast<float>(mOpeningPitLeft) + halfW) &&
+        (playerX <= static_cast<float>(mOpeningPitRight) - halfW);
+
+    const bool steppingOnSurface =
+        (isGrounded || velocityY >= 0.0f) &&
+        (footY >= pitTopF - 4.0f) &&
+        (footY <= pitTopF + 20.0f);
+
+    if (horizontallyOnPit && steppingOnSurface)
+    {
+        TriggerOpeningPitBreak(playerX);
+        return true;
+    }
+    return false;
+}
+
+void BlockMap::TriggerOpeningPitBreak(float playerWorldX)
+{
+    if (!mbOpeningMapMode || mbOpeningPitBroken) return;
+    if (!mbIsLoaded || mnBackgroundGraph == -1) return;
+
+    mbOpeningPitBroken = true;
+
+    // 対象領域の物理当たり判定（BreakableBlock）を即時すべて削除する
+    const int pitW = (mOpeningPitRight - mOpeningPitLeft) + 1;
+    const int pitH = (mOpeningPitBottom - mOpeningPitTop) + 1;
+    SetCollisionBlock(mOpeningPitLeft, mOpeningPitTop, pitW, pitH, CollisionType::None);
+
+    // 背景マップ画像から床領域をオフスクリーン転写し、タイル状の落下破片を切り出す
+    mOpeningPitRegionGraph = MakeScreen(pitW, pitH, TRUE);
+    if (mOpeningPitRegionGraph != -1)
+    {
+        const int prevScreen = GetDrawScreen();
+        SetDrawScreen(mOpeningPitRegionGraph);
+        ClearDrawScreen();
+        DrawRectGraph(0, 0,
+                      mOpeningPitLeft, mOpeningPitTop,
+                      pitW, pitH,
+                      mnBackgroundGraph, TRUE);
+        SetDrawScreen(prevScreen);
+    }
+
+    const int chunkSize = CaveOpeningConstants::PitChunkSize;
+    int row = 0;
+    for (int py = mOpeningPitTop; py <= mOpeningPitBottom; py += chunkSize, ++row)
+    {
+        const int tileH = (std::min)(chunkSize, (mOpeningPitBottom + 1) - py);
+        for (int px = mOpeningPitLeft; px <= mOpeningPitRight; px += chunkSize)
+        {
+            const int tileW = (std::min)(chunkSize, (mOpeningPitRight + 1) - px);
+            CeilingChunk chunk;
+            chunk.origX = static_cast<float>(px);
+            chunk.origY = static_cast<float>(py);
+            chunk.size = chunkSize;
+            chunk.width = tileW;
+            chunk.height = tileH;
+            chunk.isTarget = true;
+            chunk.isBroken = true;
+            chunk.isFinished = false;
+            chunk.x = chunk.origX + static_cast<float>(tileW) * 0.5f;
+            chunk.y = chunk.origY + static_cast<float>(tileH) * 0.5f;
+            chunk.alpha = 255.0f;
+
+            const float dirFromPlayer = (chunk.x >= playerWorldX) ? 1.0f : -1.0f;
+            const float spread = static_cast<float>(GetRand(100)) * 0.01f;
+
+            if (row <= 1)
+            {
+                // 表面の破片は左右へ弾けながら崩落（CrumbleFloor 風の手応え）
+                chunk.vx = dirFromPlayer * (1.2f + spread * 3.0f);
+                chunk.vy = -2.2f + static_cast<float>(row) * 1.8f + (static_cast<float>(GetRand(20) - 10) * 0.1f);
+                chunk.rotSpeed = dirFromPlayer * (0.03f + spread * 0.06f);
+            }
+            else
+            {
+                chunk.vx = dirFromPlayer * (0.5f + spread * 1.8f);
+                chunk.vy = 2.0f + static_cast<float>(row) * 0.85f;
+                chunk.rotSpeed = dirFromPlayer * (0.015f + spread * 0.04f);
+            }
+
+            chunk.graphHandle = (mOpeningPitRegionGraph != -1)
+                ? DerivationGraph(px - mOpeningPitLeft, py - mOpeningPitTop, tileW, tileH, mOpeningPitRegionGraph)
+                : -1;
+
+            mOpeningPitChunks.push_back(chunk);
+        }
+    }
+
+    // 表面の砂煙パーティクルを生成
+    for (int i = 0; i < 28; ++i)
+    {
+        CeilingDust dust;
+        dust.x = static_cast<float>(mOpeningPitLeft + GetRand(pitW));
+        dust.y = static_cast<float>(mOpeningPitTop + GetRand(36) - 6);
+        dust.vx = static_cast<float>(GetRand(40) - 20) * 0.14f;
+        dust.vy = -static_cast<float>(GetRand(22) + 4) * 0.16f;
+        dust.radius = static_cast<float>(GetRand(7) + 6);
+        dust.alpha = 185.0f;
+        const int shade = 95 + GetRand(35);
+        dust.color = GetColor(shade + 10, shade + 6, shade - 8);
+        mOpeningPitDusts.push_back(dust);
+    }
+
+    if (Master::mpGameManager && Master::mpGameManager->GetSoundManager())
+    {
+        Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_STAGE2_BREAKABLE_WALL);
+    }
+    StartCameraShake(CaveOpeningConstants::PitBreakShakePower, 0.7f, 1.0f, CaveOpeningConstants::PitBreakShakeFrames);
+}
+
+void BlockMap::UpdateOpeningPitBreak()
+{
+    if (!mbOpeningMapMode) return;
+
+    mOpeningLightTimer++;
+
+    const float lightLeft = (std::max)(0.0f, static_cast<float>(mnBackgroundWidth) - CaveOpeningConstants::ExitLightWidth + 20.0f);
+    const float lightRight = static_cast<float>(mnBackgroundWidth) - 8.0f;
+    const float topBound = static_cast<float>(CaveOpeningConstants::CorridorTopY + 14);
+    const float botBound = static_cast<float>(CaveOpeningConstants::CorridorBottomY - 14);
+
+    for (auto& d : mOpeningLightDusts)
+    {
+        d.x += d.vx;
+        d.y += d.vy + std::sinf(static_cast<float>(mOpeningLightTimer) * 0.03f + d.phase) * 0.12f;
+        if (d.x < lightLeft)
+        {
+            d.x = lightRight;
+            d.y = topBound + (static_cast<float>(GetRand(1000)) / 1000.0f) * (botBound - topBound);
+        }
+        if (d.y < topBound) d.y = botBound;
+        if (d.y > botBound) d.y = topBound;
+    }
+
+    if (!mbOpeningPitBroken) return;
+
+    for (auto& chunk : mOpeningPitChunks)
+    {
+        if (chunk.isFinished) continue;
+
+        chunk.vx *= 0.99f;
+        chunk.vy += CaveOpeningConstants::PitChunkGravity;
+        if (chunk.vy > 28.0f) chunk.vy = 28.0f;
+
+        chunk.x += chunk.vx;
+        chunk.y += chunk.vy;
+        chunk.angle += chunk.rotSpeed;
+
+        if (chunk.y > static_cast<float>(mnBackgroundHeight) + 60.0f)
+        {
+            chunk.alpha -= 20.0f;
+            if (chunk.alpha <= 0.0f)
+            {
+                chunk.alpha = 0.0f;
+                chunk.isFinished = true;
+            }
+        }
+    }
+
+    UpdateDustParticles(mOpeningPitDusts, 0.14f, 5.5f);
+}
+
+void BlockMap::DrawOpeningExitLight(int sx, int sy) const
+{
+    if (!mbOpeningMapMode || mnBackgroundWidth <= 0) return;
+
+    const float exitWorldX = static_cast<float>(mnBackgroundWidth);
+    const float lightStartWorldX = (std::max)(0.0f, exitWorldX - CaveOpeningConstants::ExitLightWidth);
+    if (exitWorldX < static_cast<float>(sx) || lightStartWorldX > static_cast<float>(sx + ScreenSize::ScrrenWidth))
+    {
+        return;
+    }
+
+    const int topY = CaveOpeningConstants::CorridorTopY - sy;
+    const int bottomY = (CaveOpeningConstants::CorridorBottomY + 1) - sy;
+    const float pulse = 0.92f + 0.08f * std::sinf(static_cast<float>(mOpeningLightTimer) * 0.04f);
+
+    // 1. 洞窟出口から通路内へ広がる柔らかい外光グラデーション
+    const int hazeStrips = 24;
+    const float hazeWidth = exitWorldX - lightStartWorldX;
+    for (int i = 0; i < hazeStrips; ++i)
+    {
+        const float t0 = static_cast<float>(i) / static_cast<float>(hazeStrips);
+        const float t1 = static_cast<float>(i + 1) / static_cast<float>(hazeStrips);
+        const float tMid = (t0 + t1) * 0.5f;
+
+        const int x0 = static_cast<int>(lightStartWorldX + hazeWidth * t0) - sx;
+        const int x1 = static_cast<int>(lightStartWorldX + hazeWidth * t1) - sx;
+        const int alpha = static_cast<int>(tMid * tMid * 95.0f * pulse);
+        if (alpha <= 0 || x1 <= x0) continue;
+
+        SetDrawBlendMode(DX_BLENDMODE_ADD, alpha);
+        DrawBox(x0, topY, x1, bottomY, GetColor(255, 244, 198), TRUE);
+    }
+
+    // 2. 斜めに差し込む光条（ゴッドレイ）
+    const int rayColor = GetColor(255, 242, 185);
+    const int exitScreenX = static_cast<int>(exitWorldX) - sx;
+
+    const int ray1Alpha = static_cast<int>((22.0f + 6.0f * std::sinf(static_cast<float>(mOpeningLightTimer) * 0.03f)) * pulse);
+    SetDrawBlendMode(DX_BLENDMODE_ADD, ray1Alpha);
+    DrawQuadrangle(
+        static_cast<int>(exitWorldX - 240.0f) - sx, topY,
+        static_cast<int>(exitWorldX - 110.0f) - sx, topY,
+        static_cast<int>(exitWorldX - 490.0f) - sx, bottomY,
+        static_cast<int>(exitWorldX - 650.0f) - sx, bottomY,
+        rayColor, TRUE);
+
+    const int ray2Alpha = static_cast<int>((30.0f + 7.0f * std::sinf(static_cast<float>(mOpeningLightTimer) * 0.045f + 1.4f)) * pulse);
+    SetDrawBlendMode(DX_BLENDMODE_ADD, ray2Alpha);
+    DrawQuadrangle(
+        static_cast<int>(exitWorldX - 115.0f) - sx, topY,
+        exitScreenX, topY,
+        static_cast<int>(exitWorldX - 315.0f) - sx, bottomY,
+        static_cast<int>(exitWorldX - 470.0f) - sx, bottomY,
+        rayColor, TRUE);
+
+    const int ray3Alpha = static_cast<int>((34.0f + 6.0f * std::sinf(static_cast<float>(mOpeningLightTimer) * 0.05f + 2.8f)) * pulse);
+    SetDrawBlendMode(DX_BLENDMODE_ADD, ray3Alpha);
+    DrawQuadrangle(
+        exitScreenX, topY + 40,
+        exitScreenX, topY + 210,
+        static_cast<int>(exitWorldX - 105.0f) - sx, bottomY,
+        static_cast<int>(exitWorldX - 285.0f) - sx, bottomY,
+        rayColor, TRUE);
+
+    // 3. 右端出口境界の強い輝きコア
+    const int coreStrips = 10;
+    const float coreStartX = (std::max)(0.0f, exitWorldX - CaveOpeningConstants::ExitLightCoreWidth);
+    const float coreW = exitWorldX - coreStartX;
+    for (int i = 0; i < coreStrips; ++i)
+    {
+        const float t0 = static_cast<float>(i) / static_cast<float>(coreStrips);
+        const float t1 = static_cast<float>(i + 1) / static_cast<float>(coreStrips);
+        const float tMid = (t0 + t1) * 0.5f;
+
+        const int x0 = static_cast<int>(coreStartX + coreW * t0) - sx;
+        const int x1 = static_cast<int>(coreStartX + coreW * t1) - sx;
+        const int alpha = static_cast<int>(tMid * tMid * 155.0f * pulse);
+        if (alpha <= 0 || x1 <= x0) continue;
+
+        SetDrawBlendMode(DX_BLENDMODE_ADD, alpha);
+        DrawBox(x0, topY, x1, bottomY, GetColor(255, 252, 232), TRUE);
+    }
+
+    // 4. 光の中に浮かぶ塵パーティクル
+    for (const auto& d : mOpeningLightDusts)
+    {
+        const float distRatio = (std::max)(0.0f, (std::min)(1.0f, (d.x - lightStartWorldX) / hazeWidth));
+        const float twinkle = 0.55f + 0.45f * std::sinf(static_cast<float>(mOpeningLightTimer) * 0.06f + d.phase);
+        const int alpha = static_cast<int>(150.0f * distRatio * twinkle);
+        if (alpha <= 0) continue;
+
+        const int dx = static_cast<int>(d.x) - sx;
+        const int dy = static_cast<int>(d.y) - sy;
+        SetDrawBlendMode(DX_BLENDMODE_ADD, alpha);
+        DrawBox(dx, dy, dx + d.size, dy + d.size, GetColor(255, 248, 200), TRUE);
     }
 
     SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);

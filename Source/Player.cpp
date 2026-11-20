@@ -226,7 +226,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 	}
 
 
-	if (!mbDeath && mvPosition.y >= PlayerConstants::PlayerDeathHeight)
+	if (!mbSuppressFallDeath && !mbDeath && mvPosition.y >= PlayerConstants::PlayerDeathHeight)
 	{
 		// 死因を設定してからHPを0にする
 		mDeathReason = DeathReason::DeathType::Fall;
@@ -234,14 +234,16 @@ void Player::PlayerMove(BlockMap& blockMap)
 		mbDeath = true;
 	}
 
-	// 移動領域の設定
-	if (mvPosition.x <= static_cast<float>(PlayerConstants::PlayerCollisionWidth))
+	// 移動領域の設定（マップ外側へのはみ出しを防止）
+	const float minBoundaryX = static_cast<float>(PlayerConstants::PlayerCollisionWidth);
+	const float maxBoundaryX = static_cast<float>(mpBlockMap->GetCurrentWidth() - PlayerConstants::PlayerCollisionWidth);
+	if (mvPosition.x <= minBoundaryX)
 	{
-		mvPosition.x = static_cast<float>(PlayerConstants::PlayerCollisionWidth);
+		mvPosition.x = minBoundaryX;
 	}
-	if (mvPosition.x >= static_cast<float>(mpBlockMap->GetCurrentWidth() - PlayerConstants::PlayerCollisionWidth))
+	if (mvPosition.x >= maxBoundaryX)
 	{
-		mvPosition.x = static_cast<float>(mpBlockMap->GetCurrentWidth() - PlayerConstants::PlayerCollisionWidth);
+		mvPosition.x = maxBoundaryX;
 	}
 
 
@@ -394,6 +396,19 @@ void Player::PlayerMove(BlockMap& blockMap)
 	// ボスエリア接触判定の更新
 	mbTouchingBossArea = (collisionType == BlockMap::CollisionType::BossArea);
 
+	// 物理移動・ブリンク後の位置もマップ範囲内に確定クランプ（飛び越え時にステージ外側へ出ないようにする）
+	bool hitOuterBoundary = false;
+	if (mvPosition.x <= minBoundaryX)
+	{
+		mvPosition.x = minBoundaryX;
+		hitOuterBoundary = true;
+	}
+	else if (mvPosition.x >= maxBoundaryX)
+	{
+		mvPosition.x = maxBoundaryX;
+		hitOuterBoundary = true;
+	}
+
 	// 動く床などによって強制接地フラグが立っている場合は、地形の判定を上書きする
 	if (mForceGroundedThisFrame) {
 		isGrounded = true;
@@ -419,8 +434,16 @@ void Player::PlayerMove(BlockMap& blockMap)
 
 	if (isBlinking && !mIsBlinkWallDeathImmune)
 	{
+		// 壁ブロックが存在しないマップ端（開けた出口境界など）では壁激突死にしない
+		const bool blockedByOpenMapEdge = hitOuterBoundary && !mCharacterPhysics.IsBlockCollision(
+			blockMap,
+			(mvPosition.x - mfPlayerWidth * 0.5f) + blinkDirection * 2.0f,
+			mvPosition.y - mfPlayerHeight * 0.5f,
+			mfPlayerWidth,
+			mfPlayerHeight);
+
 		// X軸方向の移動がほとんどできなかった場合、壁に激突したとみなして即死
-		if (abs(mvPosition.x - prevX) < 1.0f)
+		if (!blockedByOpenMapEdge && abs(mvPosition.x - prevX) < 1.0f)
 		{
 			// 壁激突で即死とする
 			mDeathReason = DeathReason::DeathType::WallHit;
@@ -1610,6 +1633,50 @@ void Player::UpdateRopeClimbStep(float worldX, float worldY, bool facingRight)
 void Player::StopRopeClimb()
 {
 	mbIsClimbingRope = false;
+}
+
+void Player::ForceStartFall(float initialVy)
+{
+	isGrounded = false;
+	mbIsJumping = true;
+	mForceGroundedThisFrame = false;
+	if (velocityY < initialVy)
+	{
+		velocityY = initialVy;
+	}
+	mPlayerState.SetJump();
+}
+
+void Player::StartAirDrop(float x, float y, float initialVy)
+{
+	mvPosition = VGet(x, y, 0.0f);
+	velocityY = initialVy;
+	mbIsJumping = true;
+	isGrounded = false;
+	mForceGroundedThisFrame = false;
+	mSlopeVisualOffsetY = 0.0f;
+	mbIsClimbingRope = false;
+	mCurrentJumpType = PlayerConstants::JumpType::None;
+	mJumpHoldFrames = 0;
+	mJumpStartY = y;
+	mbJumpDetermined = false;
+	mbIsVariableJump = false;
+	isBlinking = false;
+	blinkTimer = 0;
+	mAfterimages.clear();
+	isDead = false;
+	mbDeath = false;
+	mbSuppressFallDeath = false;
+	mFallMode = StageFallMode::None;
+	mbTouchingBossArea = false;
+	mbAutoWalking = false;
+	mbAutoWalkArrived = false;
+	mbIsEvading = false;
+	mEvasionTimer = 0;
+	mbSwordReadyStance = false;
+	isAttacking = false;
+	attackTimer = 0;
+	mPlayerState.SetJump();
 }
 
 

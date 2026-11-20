@@ -7,6 +7,12 @@
 
 void StepLoader::LoadCSV(const std::string& path)
 {
+	steps.clear();
+	if (path.empty())
+	{
+		return;
+	}
+
 	std::ifstream file(path);
 
 	// ファイルが開けなかった場合

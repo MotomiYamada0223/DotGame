@@ -39,5 +39,6 @@ public:
 	static int gCurrentStageIndex;
 
 	static int gPlayerLive;
+	static bool gCaveOpeningCompleted;
 
 };

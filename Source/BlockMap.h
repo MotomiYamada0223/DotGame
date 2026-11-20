@@ -34,6 +34,7 @@ public:
         const std::string& backgroundPath,
         const std::string& collisionPath
     );
+    void Unload();
 
     void Move(int playerScreenX, float playerMapY, float moveDirection, float currentSpeed);
     void Draw();
@@ -86,6 +87,18 @@ public:
     bool IsCeilingBreakInitialized() const { return mbCeilingBreakActive; }
     float GetCeilingBreakCenterX() const { return mCeilingBreakCenterX; }
 
+    // 洞窟オープニング（Cave_Opening）の崩落穴・出口光演出
+    void InitOpeningPitBreak();
+    void ResetOpeningPitBreak();
+    bool CheckAndTriggerOpeningPit(float playerX, float playerY, float playerWidth, float playerHeight, bool isGrounded, float velocityY);
+    void TriggerOpeningPitBreak(float playerWorldX);
+    void UpdateOpeningPitBreak();
+    bool IsOpeningMapMode() const { return mbOpeningMapMode; }
+    bool IsOpeningPitBroken() const { return mbOpeningPitBroken; }
+    int GetOpeningPitLeft() const { return mOpeningPitLeft; }
+    int GetOpeningPitRight() const { return mOpeningPitRight; }
+    int GetOpeningPitTop() const { return mOpeningPitTop; }
+
     // ボスエリア関連
     bool HasBossArea() const { return mbHasBossArea; }
     float GetBossAreaCenterX() const {
@@ -113,6 +126,11 @@ private:
     bool mbHasBossArea;
     int mnBossAreaLeft;
     int mnBossAreaRight;
+    bool mbHasBreakableBounds;
+    int mnBreakableMinX;
+    int mnBreakableMinY;
+    int mnBreakableMaxX;
+    int mnBreakableMaxY;
 
     // 配列のインデックスを取得
     // 2次元座標を1次元配列の番号に変換する。
@@ -137,6 +155,8 @@ private: // 洞窟ボス登場時の天井破砕演出用データ
         float origX = 0.0f;         // 元の左上ワールドX
         float origY = 0.0f;         // 元の左上ワールドY
         int size = 24;              // チャンク1辺のピクセルサイズ
+        int width = 24;             // 実際の切り出し横幅
+        int height = 24;            // 実際の切り出し縦幅
         bool isTarget = false;      // 破壊対象マスクに含まれるか（ギザギザ境界用）
         bool hadCollision = false;  // 元々Blockコリジョンを持っていたか（リセット復元用）
         bool isBroken = false;      // すでに砕けて落下中か
@@ -164,7 +184,20 @@ private: // 洞窟ボス登場時の天井破砕演出用データ
         int color = 0;
     };
 
+    struct OpeningLightDust
+    {
+        float x = 0.0f;
+        float y = 0.0f;
+        float vx = 0.0f;
+        float vy = 0.0f;
+        float phase = 0.0f;
+        int size = 3;
+    };
+
+    void DrawBackgroundWithCutout(int sx, int sy, int sw, int sh, int holeLeft, int holeTop, int holeRight, int holeBottom) const;
     void DrawBrokenCeilingChunk(const CeilingChunk& chunk, int sx, int sy) const;
+    void DrawOpeningExitLight(int sx, int sy) const;
+    static void UpdateDustParticles(std::vector<CeilingDust>& dusts, float gravity, float fadeSpeed);
 
     bool mbCeilingBreakActive = false;
     int mCeilingRegionGraph = -1;
@@ -176,4 +209,17 @@ private: // 洞窟ボス登場時の天井破砕演出用データ
     float mLatestDragonBottomY = -9999.0f;
     std::vector<CeilingChunk> mCeilingChunks;
     std::vector<CeilingDust> mCeilingDusts;
+
+    // 洞窟オープニングの崩落穴・出口光演出用データ
+    bool mbOpeningMapMode = false;
+    bool mbOpeningPitBroken = false;
+    int mOpeningPitRegionGraph = -1;
+    int mOpeningPitLeft = 0;
+    int mOpeningPitTop = 0;
+    int mOpeningPitRight = 0;
+    int mOpeningPitBottom = 0;
+    int mOpeningLightTimer = 0;
+    std::vector<CeilingChunk> mOpeningPitChunks;
+    std::vector<CeilingDust> mOpeningPitDusts;
+    std::vector<OpeningLightDust> mOpeningLightDusts;
 };

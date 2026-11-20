@@ -12,6 +12,7 @@
 #include "MovingFloor.h"
 #include "FloorSpawner.h"
 #include "FeintFloor.h"
+#include <algorithm>
 #include "ObjectManager.h"
 
 
@@ -89,17 +90,40 @@ void GameScene::Initialize()
 	// 天使のセッターとテキストのゲッターの紐づけをする
 	mSaint.SetIsTextCompletedChecker([this]()
 	{
+		if ((mCavePhase == CavePhase::Opening || mCavePhase == CavePhase::TransitionToMain) &&
+			(mpPlayer == nullptr || !mpPlayer->IsCutInSaint()))
+		{
+			return true; // 洞窟オープニング中は喋らず口を閉じる
+		}
 		return mTutorialText.GetIsTextCompleted();
 	});
 
-	// プレイヤーの生成（各ステージに応じた地面接地座標からスタート）
+	const bool isCave = (Master::gCurrentStageIndex == GameLoadDataConstants::StageIndexCave);
+	const bool runCaveOpening = (isCave && !Master::gCaveOpeningCompleted);
+
+	// プレイヤーの生成（各ステージに応じた開始座標を設定）
 	VECTOR spawnPos = VGet(GameLoadDataConstants::ForestPlayerSpawnX, GameLoadDataConstants::ForestPlayerSpawnY, 0.0f);
-	if (Master::gCurrentStageIndex == GameLoadDataConstants::StageIndexCave)
+	if (runCaveOpening)
+	{
+		spawnPos = VGet(CaveOpeningConstants::PlayerSpawnX, CaveOpeningConstants::PlayerSpawnY, 0.0f);
+	}
+	else if (isCave)
 	{
 		spawnPos = VGet(GameLoadDataConstants::CavePlayerSpawnX, GameLoadDataConstants::CavePlayerSpawnY, 0.0f);
 	}
+
 	mpPlayer = new Player(spawnPos);
-	mLoadData.LoadInitialize(Master::gCurrentStageIndex);
+	if (runCaveOpening)
+	{
+		mCavePhase = CavePhase::Opening;
+		mLoadData.StageCaveOpening();
+	}
+	else
+	{
+		mCavePhase = isCave ? CavePhase::MainCave : CavePhase::None;
+		mLoadData.LoadInitialize(Master::gCurrentStageIndex);
+	}
+
 	mHotSpring.Initialize();
 	mStageClear.Reset();
 
@@ -115,8 +139,55 @@ void GameScene::Update()
 		DebugWarpToBossArea();
 	}
 
-	// 円のフェード更新
+	// 円のフェード・オープニング切替フェード更新
 	mCircleFade.UpdateCircleFade();
+	mOpeningFade.Update();
+
+	if (mCavePhase == CavePhase::Opening || mCavePhase == CavePhase::TransitionToMain)
+	{
+		if (mpPlayer != nullptr)
+		{
+			mpPlayer->SetSuppressFallDeath(mCavePhase == CavePhase::TransitionToMain);
+			mpPlayer->PlayerMove(mBlockMap);
+
+			if (mCavePhase == CavePhase::Opening && !mpPlayer->GetIsDead())
+			{
+				if (mBlockMap.CheckAndTriggerOpeningPit(
+					mpPlayer->GetPosition().x,
+					mpPlayer->GetPosition().y,
+					mpPlayer->GetPlayerWidth(),
+					mpPlayer->GetPlayerHeight(),
+					mpPlayer->GetIsGrounded(),
+					mpPlayer->GetVelocityY()))
+				{
+					mpPlayer->ForceStartFall();
+				}
+
+				if (mBlockMap.IsOpeningPitBroken() &&
+					mpPlayer->GetPosition().y >= CaveOpeningConstants::TransitionFadeStartY)
+				{
+					mCavePhase = CavePhase::TransitionToMain;
+					mOpeningFade.StartFadeOut(CaveOpeningConstants::TransitionFadeOutFrames);
+				}
+			}
+		}
+
+		SetTextUpdate();
+		if (mpPlayer != nullptr)
+		{
+			mBackground.Move(static_cast<int>(mpPlayer->GetCurrentSpeed()), mBlockMap.GetIsScrolling(), mBlockMap.GetScrollDirection());
+		}
+		mSaint.Update();
+		Scene::Update();
+		mBlockMap.UpdateOpeningPitBreak();
+
+		if (mCavePhase == CavePhase::TransitionToMain && mOpeningFade.IsFadeOutFinished())
+		{
+			SwitchToMainCave(true);
+		}
+		return;
+	}
+
 	mLeaf.LeafUpdate(mBlockMap, mpPlayer);
 	mRollingBoulder.Update(mBlockMap, mpPlayer);
 	mCart.Update(mBlockMap, mpPlayer);
@@ -189,6 +260,11 @@ void GameScene::SetTextUpdate()
 	// フェーズ1（天使テキスト表示中）のみテキスト更新
 	// フェーズ2以降（GAME OVER）はテキストを止める
 	bool isPhase1 = mpPlayer->IsCutInSaint(); // ← ここを新しい関数に置き換え！
+	if ((mCavePhase == CavePhase::Opening || mCavePhase == CavePhase::TransitionToMain) && !isPhase1)
+	{
+		return; // 洞窟オープニング中の通常時はセリフを進めない（無言）
+	}
+
 	if (!isPlayerDead || isPhase1)
 	{
 		mTutorialText.Update(1.0f / 60.0f, mpPlayer->GetPosition().x);
@@ -202,16 +278,24 @@ void GameScene::Draw()
 
 	if (mbCircleFlag)
 	{
+		const bool isOpeningPhase = (mCavePhase == CavePhase::Opening || mCavePhase == CavePhase::TransitionToMain);
+
 		// オブジェクトの描画
 		mBackground.Draw(mBlockMap.GetShakeOffsetX(), mBlockMap.GetShakeOffsetY()); // スクロール背景
 
-		// ステージクリア扉（プレイヤーの背面、背景の手前に描画）
-		mStageClear.DrawDoor(&mBlockMap);
+		if (!isOpeningPhase)
+		{
+			// ステージクリア扉（プレイヤーの背面、背景の手前に描画）
+			mStageClear.DrawDoor(&mBlockMap);
+		}
 
 		Scene::Draw();
 
-		// ステージ（ブロックマップ）の背面に突き刺さるタイトルロゴを描画
-		mStageClear.DrawBehindStage(&mBlockMap);
+		if (!isOpeningPhase)
+		{
+			// ステージ（ブロックマップ）の背面に突き刺さるタイトルロゴを描画
+			mStageClear.DrawBehindStage(&mBlockMap);
+		}
 
 		DrawBossOrder(); // ボスとブロックマップの描画をしている
 
@@ -220,17 +304,23 @@ void GameScene::Draw()
 		{
 			mpPlayer->DrawFront();
 		}
-		mLeaf.LeafDraw(mBlockMap);
-		mRollingBoulder.Draw(mBlockMap.GetScrollX(), mBlockMap.GetScrollY());
-		mCart.Draw(mBlockMap.GetScrollX(), mBlockMap.GetScrollY());
-		mHotSpring.Draw(mBlockMap.GetScrollX(), mBlockMap.GetScrollY());
 
+		if (!isOpeningPhase)
+		{
+			mLeaf.LeafDraw(mBlockMap);
+			mRollingBoulder.Draw(mBlockMap.GetScrollX(), mBlockMap.GetScrollY());
+			mCart.Draw(mBlockMap.GetScrollX(), mBlockMap.GetScrollY());
+			mHotSpring.Draw(mBlockMap.GetScrollX(), mBlockMap.GetScrollY());
+		}
 
 		// 一番手前に描画したいもの
 		mpPlayer->DrawFallDeath();
-		// ボス演出の黒帯
-		mBossIntro.Draw();
-		mStageClear.Draw();
+		if (!isOpeningPhase)
+		{
+			// ボス演出の黒帯
+			mBossIntro.Draw();
+			mStageClear.Draw();
+		}
 
 		// デバッグ系
 		mpPlayer->DebugDraw(); // ブロックデバッグ
@@ -265,6 +355,7 @@ void GameScene::Draw()
 		mbCircleFlag = true;
 	}
 	mCircleFade.DrawCircleFade(mpPlayer, mBlockMap);
+	mOpeningFade.Draw();
 }
 
 void GameScene::Finalize()
@@ -274,6 +365,12 @@ void GameScene::Finalize()
 
 void GameScene::DrawBossOrder()
 {
+	if (mCavePhase == CavePhase::Opening || mCavePhase == CavePhase::TransitionToMain)
+	{
+		mBlockMap.Draw();
+		return;
+	}
+
 	if (Master::gCurrentStageIndex == 0)
 	{
 		mBossIntro.DrawBoss(); // ボス画像の描画
@@ -288,9 +385,57 @@ void GameScene::DrawBossOrder()
 	}
 }
 
+void GameScene::SwitchToMainCave(bool dropFromAbove)
+{
+	float carryVy = CaveOpeningConstants::MainCaveDropInitialVy;
+	if (mpPlayer != nullptr)
+	{
+		carryVy = (std::min)(
+			CaveOpeningConstants::MainCaveDropMaxCarryVy,
+			(std::max)(CaveOpeningConstants::MainCaveDropInitialVy, mpPlayer->GetVelocityY()));
+	}
+
+	Master::gCaveOpeningCompleted = true;
+	mCavePhase = CavePhase::MainCave;
+
+	mLoadData.StageCave();
+	mHotSpring.Initialize();
+	mStageClear.Reset();
+	mbBossBgmStarted = false;
+	mbWasPlayerDead = false;
+
+	if (mpPlayer != nullptr)
+	{
+		mpPlayer->SetSpawnPos(VGet(GameLoadDataConstants::CavePlayerSpawnX, GameLoadDataConstants::CavePlayerSpawnY, 0.0f));
+		if (dropFromAbove)
+		{
+			mpPlayer->StartAirDrop(
+				GameLoadDataConstants::CavePlayerSpawnX,
+				CaveOpeningConstants::MainCaveDropStartY,
+				carryVy);
+		}
+		else
+		{
+			mpPlayer->SetSuppressFallDeath(false);
+			mpPlayer->WarpTo(GameLoadDataConstants::CavePlayerSpawnX, GameLoadDataConstants::CavePlayerSpawnY);
+		}
+		mBlockMap.SnapCameraToPosition(GameLoadDataConstants::CavePlayerSpawnX, GameLoadDataConstants::CavePlayerSpawnY);
+	}
+
+	if (dropFromAbove)
+	{
+		mOpeningFade.StartFadeIn(CaveOpeningConstants::TransitionFadeInFrames);
+	}
+}
+
 void GameScene::DebugWarpToBossArea()
 {
 	if (mpPlayer == nullptr) return;
+
+	if (mCavePhase == CavePhase::Opening || mCavePhase == CavePhase::TransitionToMain)
+	{
+		SwitchToMainCave(false);
+	}
 
 	float warpX = DebugWarpConstants::ForestBossPreWarpX;
 	float warpY = DebugWarpConstants::ForestBossPreWarpY;

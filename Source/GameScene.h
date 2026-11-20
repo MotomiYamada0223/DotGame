@@ -7,6 +7,7 @@
 #include "BossIntroDirector.h"
 #include "StageClear.h"
 #include "CircleFade.h"
+#include "FadeController.h"
 #include "LeafCutter.h"
 #include "GameLoadData.h"
 #include "RollingBoulder.h"
@@ -47,12 +48,23 @@ public:
 	void DebugWarpToBossArea();
 
 private:
+	enum class CavePhase
+	{
+		None,
+		Opening,
+		TransitionToMain,
+		MainCave
+	};
+
+	void SwitchToMainCave(bool dropFromAbove);
+
 	GameLoadData mLoadData;
 
 	Player* mpPlayer;
 
 	TutorialTextManager mTutorialText;
 	CircleFade mCircleFade;
+	FadeController mOpeningFade;
 	LeafCutter mLeaf;
 
 	GameProgress mProgress; // プレイヤーの座標を参照するために保持
@@ -72,4 +84,5 @@ private:
 	// 円の描画
 	bool mbCircleFlag;
 	bool mbBossBgmStarted = false;   // ボスBGMに切り替え済みか
+	CavePhase mCavePhase = CavePhase::None;
 };

@@ -154,6 +154,26 @@ void GameLoadData::StageForest()
 
 
 
+void GameLoadData::StageCaveOpening()
+{
+	// オープニング中は天使は何も話さない（死亡時のテキストCSVのみ読み込んでおく）
+	mTutorialText.Initialize("", CsvPath::TutorialDeathText);
+	mTutorialText.Reset();
+
+	mBlockMap.Unload();
+	if (!mBlockMap.Load(
+		BlockMapGraphPath::CaveOpening,
+		BlockMapGraphPath::CaveOpeningCollision
+	))
+	{
+		return;
+	}
+	mBlockMap.InitOpeningPitBreak();
+
+	mBackground.Reset();
+	mBackground.Load(ScrollGraphPath::StageCave);
+}
+
 void GameLoadData::StageCave()
 {
 	using namespace GameLoadDataConstants;
@@ -169,7 +189,8 @@ void GameLoadData::StageCave()
 		&mRollingBoulder
 	);
 
-	// 背景画像と当たり判定画像読み込み
+	// 背景画像と当たり判定画像読み込み（オープニングからの切替時も確実に再読込する）
+	mBlockMap.Unload();
 	if (!mBlockMap.Load(
 		BlockMapGraphPath::CaveMap,
 		BlockMapGraphPath::CaveMapCollision
@@ -177,6 +198,7 @@ void GameLoadData::StageCave()
 	{
 		return;
 	}
+	mBackground.Reset();
 	mBackground.Load(ScrollGraphPath::StageCave);
 
 
