@@ -4,9 +4,6 @@
 class Player;
 class BlockMap;
 
-
-
-
 class StageClear
 {
 public:

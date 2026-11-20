@@ -59,7 +59,7 @@ public:   // enum, struct などの定義
 		SE_SLIME_JUMP, // スライムのジャンプ
 		SE_SLIME_DEATH, // スライム死亡
 		
-		SE_SKELETON_IDEL, // 骸骨待機 ５秒に一回鳴らす
+		SE_SKELETON_IDEL, // 骸骨待機 3秒に一回鳴らす
 		SE_SKELETON_DEATH, //　骸骨死亡
 	};
 
