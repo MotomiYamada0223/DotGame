@@ -96,7 +96,13 @@ void BlockMap::Unload()
     mCamera.SetScrollX(0);
     mCamera.SetScrollY(0);
     mCamera.SetLocked(false);
+    mCamera.SetRightScrollExtra(0);
     mCamera.ResetScrollInit();
+}
+
+void BlockMap::SetAllowScrollPastRight(bool allow)
+{
+    mCamera.SetRightScrollExtra(allow ? CaveOpeningConstants::PostBossRightScrollExtra : 0);
 }
 
 // マップ読み込み
@@ -377,19 +383,23 @@ void BlockMap::Draw()
     const int sy = mCamera.GetDrawScrollY();
     const int sw = ScreenSize::ScrrenWidth;
     const int sh = ScreenSize::ScrrenHeight;
+    const int drawSw = (std::max)(0, (std::min)(sw, mnBackgroundWidth - sx));
 
-    if (mbCeilingBreakActive)
+    if (drawSw > 0)
     {
-        DrawBackgroundWithCutout(sx, sy, sw, sh, mCeilingHoleLeft, mCeilingHoleTop, mCeilingHoleRight, mCeilingHoleBottom);
-    }
-    else if (mbOpeningMapMode && mbOpeningPitBroken)
-    {
-        DrawBackgroundWithCutout(sx, sy, sw, sh, mOpeningPitLeft, mOpeningPitTop, mOpeningPitRight + 1, mOpeningPitBottom + 1);
-    }
-    else
-    {
-        // 通常時：背景画像を1回で描画
-        DrawRectGraph(0, 0, sx, sy, sw, sh, mnBackgroundGraph, TRUE);
+        if (mbCeilingBreakActive)
+        {
+            DrawBackgroundWithCutout(sx, sy, drawSw, sh, mCeilingHoleLeft, mCeilingHoleTop, mCeilingHoleRight, mCeilingHoleBottom);
+        }
+        else if (mbOpeningMapMode && mbOpeningPitBroken)
+        {
+            DrawBackgroundWithCutout(sx, sy, drawSw, sh, mOpeningPitLeft, mOpeningPitTop, mOpeningPitRight + 1, mOpeningPitBottom + 1);
+        }
+        else
+        {
+            // 通常時：背景画像を1回で描画
+            DrawRectGraph(0, 0, sx, sy, drawSw, sh, mnBackgroundGraph, TRUE);
+        }
     }
 
     if (mbOpeningMapMode)
@@ -580,7 +590,7 @@ void BlockMap::SnapCameraToPosition(float targetWorldX, float targetWorldY)
     // プレイヤーがカメラスクロール領域（ScrollStartLeftX〜ScrollStartRightX）の中央（800px）に収まるようにscrollXを算出
     const int targetScreenX = (MapScrollConstants::ScrollStartLeftX + MapScrollConstants::ScrollStartRightX) / 2;
     int scrollX = static_cast<int>(targetWorldX) - targetScreenX;
-    int maxScrollX = (std::max)(0, mnBackgroundWidth - ScreenSize::ScrrenWidth);
+    int maxScrollX = (std::max)(0, (mnBackgroundWidth + mCamera.GetRightScrollExtra()) - ScreenSize::ScrrenWidth);
     if (scrollX < 0) scrollX = 0;
     if (scrollX > maxScrollX) scrollX = maxScrollX;
 
@@ -591,6 +601,7 @@ void BlockMap::SnapCameraToPosition(float targetWorldX, float targetWorldY)
     if (scrollY > maxScrollY) scrollY = maxScrollY;
 
     mCamera.SetLocked(false);
+    mCamera.SetMaxScroll(maxScrollX, maxScrollY);
     mCamera.SetScrollX(scrollX);
     mCamera.SetScrollY(scrollY);
     mCamera.ResetScrollInit();
@@ -765,6 +776,23 @@ void BlockMap::InitCeilingBreak(float centerWorldX)
     }
 
     mbCeilingBreakActive = true;
+}
+
+void BlockMap::InitBrokenCeilingHoleImmediate(float centerWorldX)
+{
+    InitCeilingBreak(centerWorldX);
+    if (!mbCeilingBreakActive) return;
+
+    mLatestDragonBottomY = -9999.0f;
+    for (auto& chunk : mCeilingChunks)
+    {
+        if (chunk.isTarget)
+        {
+            chunk.isBroken = true;
+            chunk.isFinished = true;
+            chunk.alpha = 0.0f;
+        }
+    }
 }
 
 void BlockMap::ProgressCeilingBreak(float dragonBottomWorldY, float dragonCenterWorldX)
@@ -1005,6 +1033,17 @@ void BlockMap::InitOpeningPitBreak()
         d.size = (GetRand(2) == 0) ? 4 : 3;
         mOpeningLightDusts.push_back(d);
     }
+}
+
+void BlockMap::SetOpeningPitAlreadyBroken()
+{
+    InitOpeningPitBreak();
+    if (!mbOpeningMapMode) return;
+
+    mbOpeningPitBroken = true;
+    const int pitW = (mOpeningPitRight - mOpeningPitLeft) + 1;
+    const int pitH = (mOpeningPitBottom - mOpeningPitTop) + 1;
+    SetCollisionBlock(mOpeningPitLeft, mOpeningPitTop, pitW, pitH, CollisionType::None);
 }
 
 bool BlockMap::CheckAndTriggerOpeningPit(
@@ -1278,6 +1317,25 @@ void BlockMap::DrawOpeningExitLight(int sx, int sy) const
         const int dy = static_cast<int>(d.y) - sy;
         SetDrawBlendMode(DX_BLENDMODE_ADD, alpha);
         DrawBox(dx, dy, dx + d.size, dy + d.size, GetColor(255, 248, 200), TRUE);
+    }
+
+    // 5. 右端（X >= 4176）より外側の空間へ続くような明かり（ボスクリア後のフェイク出口空間）
+    if (mCamera.GetRightScrollExtra() > 0 && exitScreenX < ScreenSize::ScrrenWidth)
+    {
+        const int outsideLeft = (std::max)(0, exitScreenX);
+        const int outsideW = ScreenSize::ScrrenWidth - outsideLeft;
+        const int outsideStrips = 12;
+        for (int i = 0; i < outsideStrips; ++i)
+        {
+            const float t = 1.0f - (static_cast<float>(i) / static_cast<float>(outsideStrips));
+            const int x0 = outsideLeft + (outsideW * i) / outsideStrips;
+            const int x1 = outsideLeft + (outsideW * (i + 1)) / outsideStrips;
+            const int alpha = static_cast<int>((45.0f + 135.0f * t * t) * pulse);
+            if (x1 <= x0 || alpha <= 0) continue;
+
+            SetDrawBlendMode(DX_BLENDMODE_ADD, alpha);
+            DrawBox(x0, 0, x1, ScreenSize::ScrrenHeight, GetColor(255, 250, 224), TRUE);
+        }
     }
 
     SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);

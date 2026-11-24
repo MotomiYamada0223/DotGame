@@ -73,6 +73,21 @@ void ObjectManager::DeleteAll2D()
 	}
 }
 
+void ObjectManager::DeleteAll2DExcept(Object2D* keepObject)
+{
+	for (auto itr = mObject2DList.begin(); itr != mObject2DList.end(); )
+	{
+		Object2D* temp = *itr;
+		if (temp == keepObject)
+		{
+			++itr;
+			continue;
+		}
+		itr = mObject2DList.erase(itr);
+		delete temp;
+	}
+}
+
 // 削除する必要のあるオブジェクトがあれば削除する
 void ObjectManager::DeleteAll2DIfNeeded()
 {

@@ -57,6 +57,15 @@ public:
     // 初回フレームでカメラ高さを即座に合わせる
     void ResetScrollInit() { mNeedScrollInit = true; }
 
+    // 右端側への追加スクロール余白（洞窟ボスクリア後の外光落下用）
+    void SetRightScrollExtra(int extra) { mRightScrollExtra = (extra > 0) ? extra : 0; }
+    int GetRightScrollExtra() const { return mRightScrollExtra; }
+    void SetMaxScroll(int maxX, int maxY)
+    {
+        mMaxScrollX = (maxX > 0) ? maxX : 0;
+        mMaxScrollY = (maxY > 0) ? maxY : 0;
+    }
+
 private:
     // clamp の代わりに使う範囲制限関数
     template <typename T>
@@ -79,6 +88,7 @@ private:
     // 最大スクロール量（Update で毎回更新）
     int mMaxScrollX = 0;
     int mMaxScrollY = 0;
+    int mRightScrollExtra = 0;
 
     // 画面揺れ関連
     float mShakePower;

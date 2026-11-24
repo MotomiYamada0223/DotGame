@@ -31,6 +31,7 @@ public:        // 2D系の関数宣言
 
 	// 2Dオブジェクト全削除
 	void DeleteAll2D();
+	void DeleteAll2DExcept(Object2D* keepObject);
 
 	// 削除する必要のあるオブジェクトがあれば削除する
 	// note: 全てのオブジェクトの更新が終わった後に呼び出す

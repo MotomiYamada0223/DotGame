@@ -64,6 +64,7 @@ public:
 
     void SetCameraLocked(bool locked) { mCamera.SetLocked(locked); }
     bool IsCameraLocked() const { return mCamera.IsLocked(); }
+    void SetAllowScrollPastRight(bool allow);
 
     // 背景画像の元の長さを取得する プレイヤーの移動領域のため
     int GetCurrentWidth() const { return mnBackgroundWidth; }
@@ -80,6 +81,7 @@ public:
 
     // 洞窟ボス登場時の天井破砕演出
     void InitCeilingBreak(float centerWorldX);
+    void InitBrokenCeilingHoleImmediate(float centerWorldX);
     void ProgressCeilingBreak(float dragonBottomWorldY, float dragonCenterWorldX);
     void UpdateCeilingBreak();
     void DrawCeilingForegroundDebris() const;
@@ -89,6 +91,7 @@ public:
 
     // 洞窟オープニング（Cave_Opening）の崩落穴・出口光演出
     void InitOpeningPitBreak();
+    void SetOpeningPitAlreadyBroken();
     void ResetOpeningPitBreak();
     bool CheckAndTriggerOpeningPit(float playerX, float playerY, float playerWidth, float playerHeight, bool isGrounded, float velocityY);
     void TriggerOpeningPitBreak(float playerWorldX);

@@ -81,6 +81,7 @@ void StageSelectScene::Initialize()
 
 	Master::gPlayerLive = PlayerConstants::MaxLive;
 	Master::gCaveOpeningCompleted = false;
+	Master::gCavePostBossPhase = 0;
 
 	// 現在のプレイ時の死亡回数だけリセットする
 	for (int i = 0; i < Master::MaxStageCount; ++i)
@@ -236,6 +237,7 @@ void StageSelectScene::Update()
 		if (!locked) {
 			Master::gCurrentStageIndex = nodeIndex;
 			Master::gCaveOpeningCompleted = false;
+			Master::gCavePostBossPhase = 0;
 			mIsEnteringStage = true;
 			mEnterTimer = 0;
 			mFade.StartFadeOut(60);

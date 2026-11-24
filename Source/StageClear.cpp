@@ -52,6 +52,7 @@ StageClear::StageClear()
 	, mRopeClimbStartX(0.0f)
 	, mRopeFadeAlpha(0.0f)
 	, mbIsPlayerNearRope(false)
+	, mbForceDoorMode(false)
 	, mbDoorDrawnThisFrame(false)
 	, mpBlockMap(nullptr)
 {
@@ -160,6 +161,7 @@ void StageClear::Start()
 		mRopeClimbStartX = 0.0f;
 		mRopeFadeAlpha = 0.0f;
 		mbIsPlayerNearRope = false;
+		mbForceDoorMode = false;
 		mDoorSmoke.clear();
 		InitLogo();
 
@@ -196,6 +198,7 @@ void StageClear::Reset()
 	mRopeClimbStartX = 0.0f;
 	mRopeFadeAlpha = 0.0f;
 	mbIsPlayerNearRope = false;
+	mbForceDoorMode = false;
 	mbDoorDrawnThisFrame = false;
 	mDoorSmoke.clear();
 	mpBlockMap = nullptr;
@@ -769,7 +772,7 @@ void StageClear::Update(Player* player, BlockMap* pBlockMap)
 {
 	mpBlockMap = pBlockMap;
 	mbDoorDrawnThisFrame = false;
-	if (mState == State::Inactive || mState == State::Finished)
+	if (mState == State::Inactive || mState == State::Finished || mState == State::CaveAscentComplete)
 	{
 		return;
 	}
@@ -985,7 +988,7 @@ void StageClear::Update(Player* player, BlockMap* pBlockMap)
 		UpdateDoorSmoke();
 
 		// 洞窟ステージではロープが落ちてくる直前の予兆として、穴から砂埃をパラッと落とす
-		if (IsCaveStage() && mTimer == StageClearConstants::DoorAppearWaitFrames / 2 && pBlockMap != nullptr)
+		if (IsRopeExitMode() && mTimer == StageClearConstants::DoorAppearWaitFrames / 2 && pBlockMap != nullptr)
 		{
 			const float scrollX = static_cast<float>(pBlockMap->GetScrollX());
 			const float previewX = pBlockMap->IsCeilingBreakInitialized()
@@ -1003,7 +1006,7 @@ void StageClear::Update(Player* player, BlockMap* pBlockMap)
 			const float scrollX = (pBlockMap != nullptr) ? static_cast<float>(pBlockMap->GetScrollX()) : 0.0f;
 			const float scrollY = (pBlockMap != nullptr) ? static_cast<float>(pBlockMap->GetScrollY()) : 0.0f;
 
-			if (IsCaveStage())
+			if (IsRopeExitMode())
 			{
 				// ドラゴンが天井を破壊した穴の中心からロープを下ろす
 				mDoorWorldX = (pBlockMap != nullptr && pBlockMap->IsCeilingBreakInitialized())
@@ -1042,7 +1045,7 @@ void StageClear::Update(Player* player, BlockMap* pBlockMap)
 	{
 		UpdateDoorSmoke();
 
-		if (IsCaveStage())
+		if (IsRopeExitMode())
 		{
 			const float kPi = 3.14159265f;
 			const float kDropPhaseEnd = 0.62f;
@@ -1095,7 +1098,7 @@ void StageClear::Update(Player* player, BlockMap* pBlockMap)
 	{
 		UpdateDoorSmoke();
 
-		if (IsCaveStage())
+		if (IsRopeExitMode())
 		{
 			mRopeCurrentBottomY = mRopeTargetBottomY;
 			mRopeSwayOffsetX = std::sin(static_cast<float>(mTimer) * 0.045f) * 3.0f;
@@ -1217,7 +1220,8 @@ void StageClear::Update(Player* player, BlockMap* pBlockMap)
 		if (nextY <= exitY)
 		{
 			player->StopRopeClimb();
-			CompleteStageClear();
+			mRopeFadeAlpha = 255.0f;
+			mState = State::CaveAscentComplete;
 		}
 	}
 	break;
@@ -1556,11 +1560,36 @@ void StageClear::CompleteStageClear()
 		Master::gStageCleared[Master::gCurrentStageIndex] = true;
 	}
 
+	Master::gCaveOpeningCompleted = false;
+	Master::gCavePostBossPhase = 0;
+
 	mState = State::Finished;
 	if (Master::mpGameManager && Master::mpGameManager->GetSceneManager())
 	{
 		Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_WINRESULT);
 	}
+}
+
+bool StageClear::ConsumeCaveAscentComplete()
+{
+	if (mState != State::CaveAscentComplete)
+	{
+		return false;
+	}
+	Reset();
+	return true;
+}
+
+void StageClear::SpawnImmediateDoor(float worldX, float worldY)
+{
+	Reset();
+	mbForceDoorMode = true;
+	mState = State::DoorActive;
+	mDoorWorldX = worldX;
+	mDoorWorldY = worldY;
+	mDoorAnimProgress = 0.0f;
+	mDoorCurrentFrame = 0;
+	mDoorPopScale = 1.0f;
 }
 
 void StageClear::DrawRope(const BlockMap* pBlockMap) const
@@ -1663,7 +1692,7 @@ void StageClear::DrawDoor(const BlockMap* pBlockMap) const
 
 	mbDoorDrawnThisFrame = true;
 
-	if (IsCaveStage())
+	if (IsRopeExitMode())
 	{
 		DrawRope(pBlockMap);
 		return;
@@ -1758,7 +1787,7 @@ void StageClear::Draw() const
 	}
 
 	// 7. 洞窟ロープの操作ガイドおよび天井穴脱出時の白フェード描画
-	if (IsCaveStage())
+	if (IsRopeExitMode())
 	{
 		if (mState == State::DoorActive && mbIsPlayerNearRope)
 		{
