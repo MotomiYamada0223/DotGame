@@ -234,9 +234,11 @@ void Player::PlayerMove(BlockMap& blockMap)
 		mbDeath = true;
 	}
 
-	// 移動領域の設定（マップ外側へのはみ出しを防止）
+	// 移動領域の設定（マップ外側へのはみ出しを防止。ボスクリア後のフェイク出口のみ右端超過を許可）
 	const float minBoundaryX = static_cast<float>(PlayerConstants::PlayerCollisionWidth);
-	const float maxBoundaryX = static_cast<float>(mpBlockMap->GetCurrentWidth() - PlayerConstants::PlayerCollisionWidth);
+	const float maxBoundaryX = mbAllowExitRight
+		? (static_cast<float>(mpBlockMap->GetCurrentWidth()) + CaveOpeningConstants::PostBossRightPlayerLimitOffset)
+		: static_cast<float>(mpBlockMap->GetCurrentWidth() - PlayerConstants::PlayerCollisionWidth);
 	if (mvPosition.x <= minBoundaryX)
 	{
 		mvPosition.x = minBoundaryX;

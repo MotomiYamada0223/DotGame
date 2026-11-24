@@ -174,6 +174,28 @@ void GameLoadData::StageCaveOpening()
 	mBackground.Load(ScrollGraphPath::StageCave);
 }
 
+void GameLoadData::StageCaveBossClearReturn()
+{
+	// ボス撃破後、穴から再度ボスエリアへ戻った状態（敵や道中トラップは再配置しない）
+	mTutorialText.Initialize("", CsvPath::TutorialDeathText);
+	mTutorialText.Reset();
+
+	mRollingBoulder.Reset();
+	mCart.Reset();
+
+	mBlockMap.Unload();
+	if (!mBlockMap.Load(
+		BlockMapGraphPath::CaveMap,
+		BlockMapGraphPath::CaveMapCollision
+	))
+	{
+		return;
+	}
+
+	mBackground.Reset();
+	mBackground.Load(ScrollGraphPath::StageCave);
+}
+
 void GameLoadData::StageCave()
 {
 	using namespace GameLoadDataConstants;

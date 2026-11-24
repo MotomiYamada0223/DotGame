@@ -863,4 +863,13 @@ namespace CaveOpeningConstants
 	static constexpr float MainCaveDropStartY      = 415.0f;  // CaveMap開始時の上空落下開始Y（天井Y=360直下）
 	static constexpr float MainCaveDropInitialVy   = 10.0f;   // 本編側での最低落下初速Y
 	static constexpr float MainCaveDropMaxCarryVy  = 14.0f;   // 引き継ぐ落下速度の上限
+
+	// ボス撃破後ロープ登頂〜右側足場＆再度降りてのクリア扉定数
+	static constexpr float PostBossSpawnX               = 3880.0f; // 割れた穴（X=2999〜3822）の右側足場出現X座標
+	static constexpr float PostBossScrollUnlockX        = 4020.0f; // 光へ向かって前進した際に右端先の空間が見え始めるX座標
+	static constexpr int   PostBossRightScrollExtra     = 360;     // 右端の光方向へ進める追加カメラスクロール幅(px)
+	static constexpr float PostBossRightPlayerLimitOffset = 420.0f;// 右端外落下用のプレイヤーX許容追加幅(px)
+	static constexpr float BossReturnDropStartY         = 1120.0f; // 割れた穴から再降下した時のボス天井穴Y座標
+	static constexpr float BossReturnDoorX              = 9650.0f; // ボスエリア右側に出現するクリア扉ワールドX座標
+	static constexpr float BossReturnDoorGroundY        = 1903.0f; // ボスエリア床Y座標
 }

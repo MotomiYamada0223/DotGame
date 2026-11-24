@@ -101,6 +101,8 @@ public: // アクセサ
 	void ForceStartFall(float initialVy = 1.5f);
 	void StartAirDrop(float x, float y, float initialVy);
 	void SetSuppressFallDeath(bool suppress) { mbSuppressFallDeath = suppress; }
+	void SetAllowExitRight(bool allow) { mbAllowExitRight = allow; }
+	void SetFacingRight(bool right) { isFacingRight = right; }
 
 	// デバッグ用ワープ
 	void WarpTo(float x, float y);
@@ -263,6 +265,7 @@ private: // 復活処理関係
 	float mHotSpringHeat = 0.0f;
 	bool mbSpaceWasPressed = false;
 	bool mbSuppressFallDeath = false;
+	bool mbAllowExitRight = false;
 
 	// 3段階ジャンプ（小・中・大）用
 	PlayerConstants::JumpType mCurrentJumpType = PlayerConstants::JumpType::None;

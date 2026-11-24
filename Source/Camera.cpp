@@ -38,7 +38,7 @@ void Camera::Update(
 )
 {
     // 最大スクロール量を保存（描画時のクランプで使用）
-    mMaxScrollX = (std::max)(0, backgroundWidth - screenWidth);
+    mMaxScrollX = (std::max)(0, (backgroundWidth + mRightScrollExtra) - screenWidth);
     mMaxScrollY = (std::max)(0, backgroundHeight - screenHeight);
 
 

@@ -40,5 +40,6 @@ public:
 
 	static int gPlayerLive;
 	static bool gCaveOpeningCompleted;
+	static int gCavePostBossPhase;
 
 };

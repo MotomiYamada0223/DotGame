@@ -37,6 +37,7 @@ public:
 
     void StageCaveOpening();
     void StageCave();
+    void StageCaveBossClearReturn();
 private:
     Player*& mpPlayer;
     GameProgress& mProgress;

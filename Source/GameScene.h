@@ -53,10 +53,17 @@ private:
 		None,
 		Opening,
 		TransitionToMain,
-		MainCave
+		MainCave,
+		PostBossSurface,
+		TransitionToBossRoom
 	};
 
+	bool IsOpeningMapPhase() const;
+	bool IsSilentAngelPhase() const;
+	void CleanupNonPlayerObjects();
 	void SwitchToMainCave(bool dropFromAbove);
+	void SetupPostBossSurface(bool withFadeIn);
+	void SetupBossRoomClearDoor(bool dropFromCeiling, float carryVy);
 
 	GameLoadData mLoadData;
 

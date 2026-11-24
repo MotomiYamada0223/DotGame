@@ -13,3 +13,4 @@ int Master::gCurrentStageIndex = 0;
 int Master::gCurrentStageRunDeathCount = 0;
 int Master::gPlayerLive = PlayerConstants::MaxLive;
 bool Master::gCaveOpeningCompleted = false;
+int Master::gCavePostBossPhase = 0;

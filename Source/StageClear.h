@@ -25,7 +25,8 @@ public:
 		DoorAppear,        // 煙演出とともに扉出現 / 天井穴からロープ落下
 		DoorActive,        // 扉設置完了 / ロープ待機中
 		RopeClimbing,      // 洞窟ステージ：ロープを伝って天井穴へ上昇中
-		Finished           
+		CaveAscentComplete,// 洞窟ステージ：ロープ登頂完了（オープニング右足場への遷移待ち）
+		Finished
 	};
 	// StageClear.h に追加
 	void DebugDrawLogoTip(const BlockMap* pBlockMap) const;
@@ -132,6 +133,10 @@ public:
 	bool IsActive() const { return mState != State::Inactive && mState != State::Finished; }
 	bool IsFinished() const { return mState == State::Finished; }
 
+	// 洞窟ボス後：ロープ登頂完了シグナル消費 / 再度下に降りた際の扉即時設置
+	bool ConsumeCaveAscentComplete();
+	void SpawnImmediateDoor(float worldX, float worldY);
+
 	// 静的アクセス用
 	static StageClear* GetInstance() { return sInstance; }
 	static void Trigger() { if (sInstance) sInstance->Start(); }
@@ -159,6 +164,7 @@ private:
 	void UpdateDoorSmoke();
 	void DrawDoorSmoke() const;
 	bool IsCaveStage() const;
+	bool IsRopeExitMode() const { return IsCaveStage() && !mbForceDoorMode; }
 	void EnsureRopeGraphsLoaded() const;
 	float FindGroundSurfaceY(const BlockMap* pBlockMap, float worldX, float scrollY, Player* player) const;
 	void SpawnRopeDropDust(float x, float y);
@@ -207,6 +213,7 @@ private:
 	float mRopeClimbStartX;  // 掴み開始時のプレイヤーX座標
 	float mRopeFadeAlpha;    // 穴脱出時の白フェード不透明度(0..255)
 	bool mbIsPlayerNearRope; // プレイヤーがロープを掴める範囲にいるか
+	bool mbForceDoorMode;    // 洞窟ボスクリア後に再度降りた際は扉モードで動作させる
 	mutable bool mbDoorDrawnThisFrame; // フレーム内での扉/ロープ描画済みフラグ
 	std::vector<DoorSmokeParticle> mDoorSmoke; // 扉出現煙・穴落下砂煙パーティクル
 
