@@ -193,12 +193,7 @@ void GameScene::Update()
 				}
 				else if (mCavePhase == CavePhase::PostBossSurface)
 				{
-					// 右側の光へ歩み寄るまではマップ右端でカメラを止め、踏み込んでから先の虚空を映す
-					if (pPos.x >= CaveOpeningConstants::PostBossScrollUnlockX)
-					{
-						mBlockMap.SetAllowScrollPastRight(true);
-					}
-
+					// ボス撃破後に縄で戻ったオープニング右側では右端より先へスクロールさせない
 					// 左側の割れた穴へ再度落ちた場合のみボス部屋へ戻す（右端の光へ進んだ場合はそのまま落下死亡）
 					const float pitLeft = static_cast<float>(mBlockMap.GetOpeningPitLeft()) - 40.0f;
 					const float pitRight = static_cast<float>(mBlockMap.GetOpeningPitRight()) + 40.0f;

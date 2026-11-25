@@ -102,6 +102,7 @@ private:
 	std::vector<int> mFlyAnim;
 	std::vector<int> mAirAttackAnim;
 	std::vector<int> mLandingAnim;
+	std::vector<int> mRoarAnim;
 
 	// --- 炎・火球・大爆発・アーチ波・延焼地面ギミック管理 ---
 	DragonFireGimmick mFireGimmick;
