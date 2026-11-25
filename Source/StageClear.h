@@ -28,7 +28,7 @@ public:
 		CaveAscentComplete,// 洞窟ステージ：ロープ登頂完了（オープニング右足場への遷移待ち）
 		Finished
 	};
-	// StageClear.h に追加
+
 	void DebugDrawLogoTip(const BlockMap* pBlockMap) const;
 	struct CrackerData
 	{
@@ -141,6 +141,10 @@ public:
 	static StageClear* GetInstance() { return sInstance; }
 	static void Trigger() { if (sInstance) sInstance->Start(); }
 	static bool IsStageClearActive() { return sInstance != nullptr && sInstance->IsActive(); }
+	// 洞窟で扉に入ったとき、ボス撃破後の地上シーンへ移行する状態にするため
+	void CompleteCaveAscent();
+	// 洞窟でもロープではなく扉を使うため、ロープ脱出は使用しない
+	bool IsRopeExitMode() const { return false; }
 
 private:
 	void InitCrackers();
@@ -164,7 +168,6 @@ private:
 	void UpdateDoorSmoke();
 	void DrawDoorSmoke() const;
 	bool IsCaveStage() const;
-	bool IsRopeExitMode() const { return IsCaveStage() && !mbForceDoorMode; }
 	void EnsureRopeGraphsLoaded() const;
 	float FindGroundSurfaceY(const BlockMap* pBlockMap, float worldX, float scrollY, Player* player) const;
 	void SpawnRopeDropDust(float x, float y);

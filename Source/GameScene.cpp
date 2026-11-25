@@ -16,6 +16,7 @@
 #include "ObjectManager.h"
 
 
+// ステージに応じた通常BGMを再生する
 void GameScene::InitBgm()
 {
 	if (Master::mpGameManager == nullptr) return;
@@ -37,7 +38,7 @@ void GameScene::InitBgm()
 }
 
 
-
+// ゲームシーンのコンストラクタ（天使とロードデータの生成）
 GameScene::GameScene()
 	:Scene()
 	, mSaint(VGet(Utility::SCREEN_WIDTH / 2.0f, 150.0f, 0.0f)) // 天使の作成
@@ -50,11 +51,12 @@ GameScene::GameScene()
 		mProgress,
 		mRollingBoulder,
 		mCart
-		)
+	)
 {
 	mbIsLoaded = false;
 }
 
+// ステージに応じたボス戦BGMを再生する（一度だけ再生）
 void GameScene::PlayBossBgm()
 {
 	if (mbBossBgmStarted) return;
@@ -78,25 +80,28 @@ void GameScene::PlayBossBgm()
 	mbBossBgmStarted = true;
 }
 
+// デストラクタ（現状は特に後始末なし）
 GameScene::~GameScene()
 {
 
 }
 
+// シーンの初期化処理（BGM・天使・プレイヤー・ステージデータの設定）
 void GameScene::Initialize()
 {
 	InitBgm();
 
 	// 天使のセッターとテキストのゲッターの紐づけをする
 	mSaint.SetIsTextCompletedChecker([this]()
-	{
-		if (IsSilentAngelPhase() && (mpPlayer == nullptr || !mpPlayer->IsCutInSaint()))
 		{
-			return true; // 無言フェーズ中は口パクを止める
-		}
-		return mTutorialText.GetIsTextCompleted();
-	});
+			if (IsSilentAngelPhase() && (mpPlayer == nullptr || !mpPlayer->IsCutInSaint()))
+			{
+				return true; // 無言フェーズ中は口パクを止める
+			}
+			return mTutorialText.GetIsTextCompleted();
+		});
 
+	// 洞窟ステージの進行状態を判定する
 	const bool isCave = (Master::gCurrentStageIndex == GameLoadDataConstants::StageIndexCave);
 	const int postBossPhase = isCave ? Master::gCavePostBossPhase : 0;
 	const bool runCaveOpening = (isCave && postBossPhase == 0 && !Master::gCaveOpeningCompleted);
@@ -143,10 +148,13 @@ void GameScene::Initialize()
 		mStageClear.Reset();
 	}
 
+	// 足場の反転・ダッシュ状態を初期化する
 	MovingFloor::s_IsReverseAndDashTriggered = false;
+	// 読み込み完了フラグを立てる
 	mbIsLoaded = true;
 }
 
+// ゲームシーンの毎フレーム更新処理
 void GameScene::Update()
 {
 	// デバッグ機能：1キーでボスエリア直前の安全な足場にワープ
@@ -159,20 +167,24 @@ void GameScene::Update()
 	mCircleFade.UpdateCircleFade();
 	mOpeningFade.Update();
 
+	// オープニングマップ中の処理（洞窟の穴落下・フェード切替）
 	if (IsOpeningMapPhase())
 	{
 		if (mpPlayer != nullptr)
 		{
+			// 落下死亡の抑止や右端移動の許可をフェーズに応じて設定する
 			const bool isTransitioning = (mCavePhase == CavePhase::TransitionToMain || mCavePhase == CavePhase::TransitionToBossRoom);
 			mpPlayer->SetSuppressFallDeath(isTransitioning);
 			mpPlayer->SetAllowExitRight(mCavePhase == CavePhase::PostBossSurface);
 			mpPlayer->PlayerMove(mBlockMap);
 
+			// 生存中のみ穴・遷移の判定を行う
 			if (!mpPlayer->GetIsDead())
 			{
 				const VECTOR pPos = mpPlayer->GetPosition();
 				if (mCavePhase == CavePhase::Opening)
 				{
+					// 穴の発動判定（踏んだら落下開始）
 					if (mBlockMap.CheckAndTriggerOpeningPit(
 						pPos.x,
 						pPos.y,
@@ -184,6 +196,7 @@ void GameScene::Update()
 						mpPlayer->ForceStartFall();
 					}
 
+					// 穴が割れた後、一定の高さまで落下したら本編へ遷移する
 					if (mBlockMap.IsOpeningPitBroken() &&
 						pPos.y >= CaveOpeningConstants::TransitionFadeStartY)
 					{
@@ -199,9 +212,11 @@ void GameScene::Update()
 						mBlockMap.SetAllowScrollPastRight(true);
 					}
 
-					// 左側の割れた穴へ再度落ちた場合のみボス部屋へ戻す（右端の光へ進んだ場合はそのまま落下死亡）
+					// 割れた穴の左右範囲を算出する
 					const float pitLeft = static_cast<float>(mBlockMap.GetOpeningPitLeft()) - 40.0f;
 					const float pitRight = static_cast<float>(mBlockMap.GetOpeningPitRight()) + 40.0f;
+
+					// 左側の割れた穴へ再度落ちた場合のみボス部屋へ戻す（右端の光へ進んだ場合はそのまま落下死亡）
 					if (pPos.y >= CaveOpeningConstants::TransitionFadeStartY &&
 						pPos.x >= pitLeft &&
 						pPos.x <= pitRight)
@@ -222,6 +237,7 @@ void GameScene::Update()
 		Scene::Update();
 		mBlockMap.UpdateOpeningPitBreak();
 
+		// フェードアウト完了後に次のフェーズへ切り替える
 		if (mOpeningFade.IsFadeOutFinished())
 		{
 			if (mCavePhase == CavePhase::TransitionToMain)
@@ -230,6 +246,7 @@ void GameScene::Update()
 			}
 			else if (mCavePhase == CavePhase::TransitionToBossRoom)
 			{
+				// 落下時の引き継ぎ速度を計算する
 				float carryVy = CaveOpeningConstants::MainCaveDropInitialVy;
 				if (mpPlayer != nullptr)
 				{
@@ -243,7 +260,10 @@ void GameScene::Update()
 		return;
 	}
 
+	// ボス帰還モードかどうかを判定する
 	const bool isBossReturnMode = (mCavePhase == CavePhase::MainCave && Master::gCavePostBossPhase == 2);
+
+	// リーフ・転がる岩・カート・温泉の更新
 	mLeaf.LeafUpdate(mBlockMap, mpPlayer);
 	if (!isBossReturnMode)
 	{
@@ -252,6 +272,7 @@ void GameScene::Update()
 		mHotSpring.Update(mBlockMap, mpPlayer);
 	}
 
+	// ボス帰還中は扉を即時出現させる
 	if (isBossReturnMode && mpPlayer != nullptr && !mpPlayer->GetIsDead() && !mStageClear.IsActive() && !mStageClear.IsFinished())
 	{
 		mStageClear.SpawnImmediateDoor(CaveOpeningConstants::BossReturnDoorX, CaveOpeningConstants::BossReturnDoorGroundY);
@@ -264,6 +285,7 @@ void GameScene::Update()
 		mBlockMap.SetCameraLocked(true);
 	}
 
+	// ボス登場演出中はボスBGMを再生する
 	if (mBossIntro.IsActive())
 	{
 		PlayBossBgm();
@@ -274,12 +296,16 @@ void GameScene::Update()
 	SetTextUpdate(); // テキスト更新の呼び出し
 	mBossIntro.Update(mpPlayer, mBlockMap);
 	mStageClear.Update(mpPlayer, &mBlockMap); // ステージクリア演出の更新
+
+	// ステージクリア演出後に洞窟の上昇が完了したら、ボス撃破後の地上シーンへ移行する
 	if (mStageClear.ConsumeCaveAscentComplete())
 	{
 		SetupPostBossSurface(true);
 		return;
 	}
 	mSaint.Update(); // 天使の更新（生存中 or フェーズ1の時のみ）
+
+	// 背景のスクロール
 	if (mpPlayer)
 	{
 		mBackground.Move(static_cast<int>(mpPlayer->GetCurrentSpeed()), mBlockMap.GetIsScrolling(), mBlockMap.GetScrollDirection());
@@ -311,6 +337,7 @@ void GameScene::Update()
 }
 
 
+// チュートリアルテキストの表示・更新を行う
 void GameScene::SetTextUpdate()
 {
 	// プレイヤーの死亡状態の確認
@@ -323,6 +350,7 @@ void GameScene::SetTextUpdate()
 		mTutorialText.Reset();
 	}
 
+	// 次フレームの復活判定のため現在の死亡状態を保存する
 	mbWasPlayerDead = isPlayerDead;
 
 	// フェーズ1（天使テキスト表示中）のみテキスト更新
@@ -336,6 +364,7 @@ void GameScene::SetTextUpdate()
 		return;
 	}
 
+	// 生存中、天使テキスト中、オープニング中のみ更新する
 	if (!isPlayerDead || isPhase1 || isOpeningPhase)
 	{
 		mTutorialText.Update(
@@ -344,6 +373,7 @@ void GameScene::SetTextUpdate()
 			mpPlayer->GetPosition().y);
 	}
 
+	// プレイヤーの行動状態をテキスト判定へ渡す
 	mTutorialText.SetActionState(mpPlayer->GetActionState());
 }
 
@@ -379,10 +409,12 @@ void GameScene::SetTextUpdate()
 //	mTutorialText.SetActionState(mpPlayer->GetActionState());
 //}
 
+// ゲームシーンの描画処理
 void GameScene::Draw()
 {
 	if (!mbIsLoaded) { return; }
 
+	// 円フェード完了後に描画を開始する
 	if (mbCircleFlag)
 	{
 		const bool isOpeningPhase = IsOpeningMapPhase();
@@ -405,6 +437,7 @@ void GameScene::Draw()
 			mStageClear.DrawBehindStage(&mBlockMap);
 		}
 
+		// ボス・ブロックマップの描画
 		DrawBossOrder(); // ボスとブロックマップの描画をしている
 
 		// Sキー（表側落下時）：プレイヤーをマップの手前側に描画
@@ -421,6 +454,7 @@ void GameScene::Draw()
 			mHotSpring.Draw(mBlockMap.GetScrollX(), mBlockMap.GetScrollY());
 		}
 
+		// 落下死亡時の演出・プレイヤー描画
 		// 一番手前に描画したいもの
 		mpPlayer->DrawFallDeath();
 		if (!isOpeningPhase)
@@ -458,27 +492,34 @@ void GameScene::Draw()
 		}
 	}
 
+	// 円フェードの開始状態を記録する
 	if (mCircleFade.GetStateFlag())
 	{
 		mbCircleFlag = true;
 	}
+
+	// 円フェードとオープニングフェードを描画
 	mCircleFade.DrawCircleFade(mpPlayer, mBlockMap);
 	mOpeningFade.Draw();
 }
 
+// 終了処理（現状は特に処理なし）
 void GameScene::Finalize()
 {
 
 }
 
+// ボス・ブロックマップ・天井破砕などの描画順を制御する
 void GameScene::DrawBossOrder()
 {
+	// オープニング中はブロックマップのみ描画する
 	if (IsOpeningMapPhase())
 	{
 		mBlockMap.Draw();
 		return;
 	}
 
+	// ステージ1はボスをブロックマップの背面に描画する
 	if (Master::gCurrentStageIndex == 0)
 	{
 		mBossIntro.DrawBoss(); // ボス画像の描画
@@ -493,6 +534,7 @@ void GameScene::DrawBossOrder()
 	}
 }
 
+// オープニング系のフェーズかどうかを判定する
 bool GameScene::IsOpeningMapPhase() const
 {
 	return mCavePhase == CavePhase::Opening ||
@@ -501,12 +543,14 @@ bool GameScene::IsOpeningMapPhase() const
 		mCavePhase == CavePhase::TransitionToBossRoom;
 }
 
+// 天使が無言になるフェーズかどうかを判定する
 bool GameScene::IsSilentAngelPhase() const
 {
 	// ボス撃破後の帰還モード（MainCave + postBossPhase==2）は無言
 	return (mCavePhase == CavePhase::MainCave && Master::gCavePostBossPhase == 2);
 }
 
+// プレイヤー以外のオブジェクト・演出状態を初期化する
 void GameScene::CleanupNonPlayerObjects()
 {
 	mBossIntro.Reset();
@@ -520,8 +564,10 @@ void GameScene::CleanupNonPlayerObjects()
 	mStageClear.Reset();
 }
 
+// 洞窟本編へ切り替える（落下演出の有無を指定）
 void GameScene::SwitchToMainCave(bool dropFromAbove)
 {
+	// 落下時の引き継ぎ速度を計算する
 	float carryVy = CaveOpeningConstants::MainCaveDropInitialVy;
 	if (mpPlayer != nullptr)
 	{
@@ -530,10 +576,12 @@ void GameScene::SwitchToMainCave(bool dropFromAbove)
 			(std::max)(CaveOpeningConstants::MainCaveDropInitialVy, mpPlayer->GetVelocityY()));
 	}
 
+	// 洞窟の進行状態を本編に設定する
 	Master::gCaveOpeningCompleted = true;
 	Master::gCavePostBossPhase = 0;
 	mCavePhase = CavePhase::MainCave;
 
+	// 前ステージの不要オブジェクトを削除し、本編のマップを読み込む
 	CleanupNonPlayerObjects();
 	mLoadData.StageCave();
 	mbBossBgmStarted = false;
@@ -541,8 +589,11 @@ void GameScene::SwitchToMainCave(bool dropFromAbove)
 
 	if (mpPlayer != nullptr)
 	{
+		// プレイヤーを本編の開始位置へ配置する
 		mpPlayer->SetAllowExitRight(false);
 		mpPlayer->SetSpawnPos(VGet(GameLoadDataConstants::CavePlayerSpawnX, GameLoadDataConstants::CavePlayerSpawnY, 0.0f));
+
+		// 上空からの落下、または直接ワープで配置する
 		if (dropFromAbove)
 		{
 			mpPlayer->StartAirDrop(
@@ -558,18 +609,22 @@ void GameScene::SwitchToMainCave(bool dropFromAbove)
 		mBlockMap.SnapCameraToPosition(GameLoadDataConstants::CavePlayerSpawnX, GameLoadDataConstants::CavePlayerSpawnY);
 	}
 
+	// 落下時のみフェードインを開始する
 	if (dropFromAbove)
 	{
 		mOpeningFade.StartFadeIn(CaveOpeningConstants::TransitionFadeInFrames);
 	}
 }
 
+// ボス撃破後の地上（右側の光へ進む場面）をセットアップする
 void GameScene::SetupPostBossSurface(bool withFadeIn)
 {
+	// 洞窟の進行状態を設定する
 	Master::gCaveOpeningCompleted = true;
 	Master::gCavePostBossPhase = 1;
 	mCavePhase = CavePhase::PostBossSurface;
 
+	// 不要オブジェクトを削除し、ボス撃破後の地上マップを読み込む
 	CleanupNonPlayerObjects();
 	mLoadData.StageCaveOpening();
 	// ボス撃破後の帰還シーンでは天使は無言なのでフェーズをNoneに上書き
@@ -579,11 +634,13 @@ void GameScene::SetupPostBossSurface(bool withFadeIn)
 	mbBossBgmStarted = false;
 	mbWasPlayerDead = false;
 
+	// フェードイン時のみBGMを切り替える
 	if (withFadeIn)
 	{
 		InitBgm();
 	}
 
+	// プレイヤーを地上の開始位置へ配置する
 	if (mpPlayer != nullptr)
 	{
 		mpPlayer->SetSuppressFallDeath(false);
@@ -600,26 +657,35 @@ void GameScene::SetupPostBossSurface(bool withFadeIn)
 	}
 }
 
+// ボス部屋の帰還用クリア扉をセットアップする（天井からの落下演出の有無を指定）
 void GameScene::SetupBossRoomClearDoor(bool dropFromCeiling, float carryVy)
 {
+	// 洞窟の進行状態を設定する
 	Master::gCaveOpeningCompleted = true;
 	Master::gCavePostBossPhase = 2;
 	mCavePhase = CavePhase::MainCave;
 
+	// 不要オブジェクトを削除し、帰還用マップを読み込む
 	CleanupNonPlayerObjects();
 	mLoadData.StageCaveBossClearReturn();
 	mBossIntro.EndIntro();
 	mbBossBgmStarted = false;
 	mbWasPlayerDead = false;
 
+	// ボスエリアの中心X座標を取得する
 	const float bossCenterX = mBlockMap.HasBossArea()
 		? mBlockMap.GetBossAreaCenterX()
 		: 8913.0f;
+
+	// 天井の穴を即時に開いた状態にする
 	mBlockMap.InitBrokenCeilingHoleImmediate(bossCenterX);
+
+	// 帰還用の扉を即時出現させる
 	mStageClear.SpawnImmediateDoor(CaveOpeningConstants::BossReturnDoorX, CaveOpeningConstants::BossReturnDoorGroundY);
 
 	if (mpPlayer != nullptr)
 	{
+		// プレイヤーの配置位置を計算する
 		const float floorPlayerY = CaveOpeningConstants::BossReturnDoorGroundY - mpPlayer->GetPlayerHeight() * 0.5f;
 		mpPlayer->SetAllowExitRight(false);
 		mpPlayer->SetSuppressFallDeath(false);
@@ -642,6 +708,7 @@ void GameScene::SetupBossRoomClearDoor(bool dropFromCeiling, float carryVy)
 	}
 }
 
+// デバッグ用：ボス直前の安全な足場へワープする
 void GameScene::DebugWarpToBossArea()
 {
 	if (mpPlayer == nullptr) return;
@@ -650,11 +717,13 @@ void GameScene::DebugWarpToBossArea()
 		return;
 	}
 
+	// 洞窟が本編前の段階ならまず本編へ切り替える
 	if (mCavePhase == CavePhase::Opening || mCavePhase == CavePhase::TransitionToMain)
 	{
 		SwitchToMainCave(false);
 	}
 
+	// ワープ先の座標を初期化する
 	float warpX = DebugWarpConstants::ForestBossPreWarpX;
 	float warpY = DebugWarpConstants::ForestBossPreWarpY;
 
