@@ -69,6 +69,24 @@ bool TutorialTextManager::IsXTriggerType(const std::string& type) const
 	return (type == "X" || type.rfind("X_", 0) == 0);
 }
 
+// 指定されたトリガータイプがY座標によるものかを判定するため
+bool TutorialTextManager::IsYTriggerType(const std::string& type) const
+{
+	return (type == "Y" || type.rfind("Y_", 0) == 0);
+}
+
+// X・Yいずれかの座標トリガーかを判定するため
+bool TutorialTextManager::IsPositionTriggerType(const std::string& type) const
+{
+	return IsXTriggerType(type) || IsYTriggerType(type);
+}
+
+// トリガーの軸に対応するプレイヤー座標を取得するため
+float TutorialTextManager::GetAxisPosition(const std::string& type, float playerX, float playerY) const
+{
+	return IsYTriggerType(type) ? playerY : playerX;
+}
+
 // 指定されたトリガータイプが時間によるものかを判定するため
 bool TutorialTextManager::IsTimeTriggerType(const std::string& type) const
 {
@@ -78,12 +96,12 @@ bool TutorialTextManager::IsTimeTriggerType(const std::string& type) const
 
 
 // プレイヤーの行動フラグなどに基づいてIF分岐条件を満たしているかを判定するため
-bool TutorialTextManager::CheckCondition(const std::string& type, float targetX, bool isCurrentlyTalking) const
+bool TutorialTextManager::CheckCondition(const std::string& type, float targetValue, bool isCurrentlyTalking) const
 {
-	if (type == "X" || type == "Time") return true;
-	
+	if (type == "X" || type == "Y" || type == "Time") return true;
+
 	std::string cond = type;
-	if (cond.rfind("X_", 0) == 0) cond = cond.substr(2);
+	if (cond.rfind("X_", 0) == 0 || cond.rfind("Y_", 0) == 0) cond = cond.substr(2);
 	else if (cond.rfind("Time_", 0) == 0) cond = cond.substr(5);
 
 	if (cond == "Blink")    return mbUsedBlink;
@@ -96,11 +114,9 @@ bool TutorialTextManager::CheckCondition(const std::string& type, float targetX,
 	if (cond == "NoMove")   return !mbUsedMove;
 
 	// 山々山の処理
-	if (cond == "WallBreak") return mbWallBreak;
+	if (cond == "WallBreak")   return mbWallBreak;
 	if (cond == "NoWallBreak") return !mbWallBreak;
-	if (cond == "HotSpring") return mbHotSpring;
-
-
+	if (cond == "HotSpring")   return mbHotSpring;
 
 
 	// 説明の途中で座標が変わった時
@@ -112,10 +128,13 @@ bool TutorialTextManager::CheckCondition(const std::string& type, float targetX,
 	{
 		return !isCurrentlyTalking;
 	}
-	// その座標（targetX）のセリフが出た後に1回以上死んだかどうか
-	bool diedAfterThisSpot = (mDiedAfterXCoords.find(targetX) != mDiedAfterXCoords.end());
-	if (cond == "Death")    return diedAfterThisSpot;
-	if (cond == "NoDeath")  return !diedAfterThisSpot;
+
+	// その座標（軸と値）のセリフが出た後に1回以上死んだかどうか
+	CoordKey key(IsYTriggerType(type), targetValue);
+	bool diedAfterThisSpot = (mDiedAfterCoords.find(key) != mDiedAfterCoords.end());
+	if (cond == "Death")   return diedAfterThisSpot;
+	if (cond == "NoDeath") return !diedAfterThisSpot;
+
 	return true;
 }
 
@@ -131,7 +150,7 @@ void TutorialTextManager::SetActionState(const PlayerActionState& state)
 
 
 // 次のステップID候補から条件を満たす分岐先を自動で解決、選択するため
-int TutorialTextManager::ResolveNextStepID(int candidateID, float playerX) const
+int TutorialTextManager::ResolveNextStepID(int candidateID, float playerX, float playerY) const
 {
 	for (int offset = 0; offset < 5; ++offset)
 	{
@@ -147,10 +166,11 @@ int TutorialTextManager::ResolveNextStepID(int candidateID, float playerX) const
 				return checkID;
 			}
 		}
-		else if (IsXTriggerType(s.completeType))
+		else if (IsPositionTriggerType(s.completeType))
 		{
-			// まだ到達していない未来のX座標ステップへ誤って飛ばないようにするため
-			if (s.completeValue > playerX)
+			// まだ到達していない未来の座標ステップへ誤って飛ばないようにするため
+			float pos = GetAxisPosition(s.completeType, playerX, playerY);
+			if (s.completeValue > pos)
 			{
 				return 0;
 			}
@@ -181,12 +201,20 @@ void TutorialTextManager::Initialize(
 	mfCharTimer = 0.0f;
 	mnDisplayByteCount = 0;
 
+	mfCurrentTriggerX = 0.0f;
+	mfCurrentTriggerY = 0.0f;
+	mbCurrentTriggerIsY = false;
+	mfPlayerX = 0.0f;
+	mfPlayerY = 0.0f;
+
 	mbUsedMove = false;
 	mbUsedBlink = false;
 	mbUsedJump = false;
 	mbUsedAttack = false;
 	mbWallBreak = false;
 	mbHotSpring = false;
+
+	mbInterruptedLastX = false;
 
 	// 通常チュートリアルCSVの読み込み
 	loader.LoadCSV(csvPath);
@@ -243,7 +271,7 @@ void TutorialTextManager::OnPlayerRevive()
 
 
 // 更新処理
-void TutorialTextManager::Update(float dt, float playerX)
+void TutorialTextManager::Update(float dt, float playerX, float playerY)
 {
 	if (mbIsDeathTextFinished && mbIsDeathTutorial)
 	{
@@ -252,39 +280,49 @@ void TutorialTextManager::Update(float dt, float playerX)
 
 	mfDeltaTime = dt;
 	mfPlayerX = playerX;
-
-	// プレイヤーのX座標に応じたステップの発生条件をチェックして切り替えるため
-	int bestID = 0;
-	float bestX = mfCurrentTriggerX;
-	bool bestHasCond = false; // 条件付きの処理をするかどうかのフラグ
+	mfPlayerY = playerY;
 
 	// 現在セリフの再生中かどうか
 	bool isCurrentlyTalking = (mnCurrentID != 0 && !mbIsTextCompleted);
 
-	for (const auto& pair : loader.steps)
+	int   bestID = 0;
+	float bestValue = 0.0f;
+	bool  bestIsY = false;
+	bool  bestHasCond = false; // 条件付きの処理をするかどうかのフラグ
+
+	// X軸を優先し、X軸で発生しなかった場合のみY軸を調べる
+	for (int pass = 0; pass < 2 && bestID == 0; ++pass)
 	{
-		const StepData& s = pair.second;
-		// CheckCondition に isCurrentlyTalking を渡して、条件を満たしているか判定する
-		bool isAvailable = (IsXTriggerType(s.completeType) &&
-			CheckCondition(s.completeType, s.completeValue, isCurrentlyTalking) &&
-			mCompletedXStepIDs.find(s.id) == mCompletedXStepIDs.end());
+		const bool isYPass = (pass == 1);
+		const float playerPos = isYPass ? mfPlayerY : mfPlayerX;
+		const float currentTrigger = isYPass ? mfCurrentTriggerY : mfCurrentTriggerX;
+		float passBestValue = currentTrigger;
 
-		if (isAvailable)
+		for (const auto& pair : loader.steps)
 		{
-			if (mfPlayerX >= s.completeValue && s.completeValue >= mfCurrentTriggerX)
-			{
-				bool hasCond = (s.completeType.find("Skip") != std::string::npos ||
-					s.completeType.find("Interrupt") != std::string::npos ||
-					s.completeType.find("途中") != std::string::npos);
+			const StepData& s = pair.second;
 
-				// より遠くのX座標、または同じX座標なら条件付きのものを優先的に選ぶ
-				if (s.completeValue > bestX ||
-					(s.completeValue == bestX && (bestID == 0 || (hasCond && !bestHasCond) || (hasCond == bestHasCond && s.id < bestID))))
-				{
-					bestX = s.completeValue;
-					bestID = s.id;
-					bestHasCond = hasCond;
-				}
+			if (!IsPositionTriggerType(s.completeType)) continue;
+			if (IsYTriggerType(s.completeType) != isYPass) continue;
+			if (mCompletedXStepIDs.find(s.id) != mCompletedXStepIDs.end()) continue;
+			if (!CheckCondition(s.completeType, s.completeValue, isCurrentlyTalking)) continue;
+
+			// プレイヤー座標がトリガー値以上に達し、かつ現在のトリガーより先の座標であること
+			if (!(playerPos >= s.completeValue && s.completeValue >= currentTrigger)) continue;
+
+			bool hasCond = (s.completeType.find("Skip") != std::string::npos ||
+				s.completeType.find("Interrupt") != std::string::npos ||
+				s.completeType.find("途中") != std::string::npos);
+
+			// より遠い座標、または同じ座標なら条件付きのものを優先する
+			if (s.completeValue > passBestValue ||
+				(s.completeValue == passBestValue && (bestID == 0 || (hasCond && !bestHasCond) || (hasCond == bestHasCond && s.id < bestID))))
+			{
+				passBestValue = s.completeValue;
+				bestValue = s.completeValue;
+				bestID = s.id;
+				bestHasCond = hasCond;
+				bestIsY = isYPass;
 			}
 		}
 	}
@@ -293,21 +331,29 @@ void TutorialTextManager::Update(float dt, float playerX)
 	if (bestID != 0)
 	{
 		// 現在セリフの再生中だったかどうかを保持しておくため
-		bool isCurrentlyTalking = (mnCurrentID != 0 && !mbIsTextCompleted);
 		mbInterruptedLastX = isCurrentlyTalking;
 
-		mfCurrentTriggerX = bestX;
+		mbCurrentTriggerIsY = bestIsY;
+		if (bestIsY)
+		{
+			mfCurrentTriggerY = bestValue;
+		}
+		else
+		{
+			mfCurrentTriggerX = bestValue;
+		}
 
-		// 同じX座標にある別の分岐行も完了扱いに登録して二重発生条件を防ぐため
+		// 同じ軸・同じ座標にある別の分岐行も完了扱いに登録して二重発生条件を防ぐため
 		for (const auto& pair : loader.steps)
 		{
 			const StepData& s = pair.second;
-			if (IsXTriggerType(s.completeType) && s.completeValue == bestX)
+			if (!IsPositionTriggerType(s.completeType)) continue;
+			if (IsYTriggerType(s.completeType) != bestIsY) continue;
+
+			if (s.completeValue == bestValue &&
+				!CheckCondition(s.completeType, bestValue, mbInterruptedLastX))
 			{
-				if (!CheckCondition(s.completeType, bestX, mbInterruptedLastX))
-				{
-					mCompletedXStepIDs.insert(s.id);
-				}
+				mCompletedXStepIDs.insert(s.id);
 			}
 		}
 
@@ -338,7 +384,7 @@ void TutorialTextManager::NextStepUpdate(bool mbCompleted)
 	// すべての文字が表示された後、
 	// 次のステップへ移行するまでの余韻時間を計測する
 	if (mbCompleted)
-	{ 
+	{
 		mfIdelTimer += mfDeltaTime;
 
 		float waitDuration = mStep->completeValue;
@@ -354,10 +400,10 @@ void TutorialTextManager::NextStepUpdate(bool mbCompleted)
 		// 待ち時間が完了したら次のステップへ切り替える
 		if (mfIdelTimer >= waitDuration)
 		{
-			// 次のステップIDが指定されている場合、条件を満たす分岐先へ進むため
+			// 次のステップIDが指定されている場合、条件を満たす分岐先へ進む
 			if (mStep->nextID != 0)
 			{
-				int resolvedID = ResolveNextStepID(mStep->nextID, mfPlayerX);
+				int resolvedID = ResolveNextStepID(mStep->nextID, mfPlayerX, mfPlayerY);
 				if (resolvedID != 0)
 				{
 					mCompletedXStepIDs.insert(resolvedID);
@@ -366,34 +412,39 @@ void TutorialTextManager::NextStepUpdate(bool mbCompleted)
 				}
 			}
 
-			// 同じX座標に設定された条件を満たす未表示の別行があれば自動で次へ進めるため
-			int sameXNextID = 0;
+			// 直近のトリガーと同じ軸・同じ座標の未表示行があれば次へ進める
+			float currentTrigger = mbCurrentTriggerIsY ? mfCurrentTriggerY : mfCurrentTriggerX;
+			int sameposNextID = 0;
 			for (const auto& pair : loader.steps)
 			{
 				const StepData& s = pair.second;
-				if (IsXTriggerType(s.completeType) && CheckCondition(s.completeType, s.completeValue, mbInterruptedLastX) &&
-					s.completeValue == mfCurrentTriggerX && mCompletedXStepIDs.find(s.id) == mCompletedXStepIDs.end())
+				if (!IsPositionTriggerType(s.completeType)) continue;
+				if (IsYTriggerType(s.completeType) != mbCurrentTriggerIsY) continue;
+
+				if (CheckCondition(s.completeType, s.completeValue, mbInterruptedLastX) &&
+					s.completeValue == currentTrigger &&
+					mCompletedXStepIDs.find(s.id) == mCompletedXStepIDs.end())
 				{
-					if (sameXNextID == 0 || s.id < sameXNextID)
+					if (sameposNextID == 0 || s.id < sameposNextID)
 					{
-						sameXNextID = s.id;
+						sameposNextID = s.id;
 					}
 				}
 			}
 
-			if (sameXNextID != 0)
+			if (sameposNextID != 0)
 			{
-				mCompletedXStepIDs.insert(sameXNextID);
-				ChangeStep(sameXNextID);
+				mCompletedXStepIDs.insert(sameposNextID);
+				ChangeStep(sameposNextID);
 				return;
 			}
 
 			// 次のステップへ進むか判定
 			if (mStep->nextID != 0)
 			{
-				bool waitForFutureX = false;
+				bool waitForFuturePos = false;
 
-				// nextID以降に、まだ到達していないXトリガーがあるか確認
+				// nextID以降に、まだ到達していない座標トリガーがあるか確認
 				for (int offset = 0; offset < 5; ++offset)
 				{
 					int checkID = mStep->nextID + offset;
@@ -402,17 +453,18 @@ void TutorialTextManager::NextStepUpdate(bool mbCompleted)
 					if (itr == loader.steps.end()) break;
 
 					const StepData& nextCandidate = itr->second;
+					if (!IsPositionTriggerType(nextCandidate.completeType)) continue;
 
-					if (IsXTriggerType(nextCandidate.completeType) &&
-						nextCandidate.completeValue > mfPlayerX)
+					float pos = GetAxisPosition(nextCandidate.completeType, mfPlayerX, mfPlayerY);
+					if (nextCandidate.completeValue > pos)
 					{
-						waitForFutureX = true;
+						waitForFuturePos = true;
 						break;
 					}
 				}
 
-				// 未来のX座標を待つ場合は、現在のテキストを維持する
-				if (waitForFutureX)
+				// 未来の座標を待つ場合は、現在のテキストを維持する
+				if (waitForFuturePos)
 				{
 					return;
 				}
@@ -503,7 +555,9 @@ void TutorialTextManager::UpdateString(const StepData* step)
 void TutorialTextManager::Reset()
 {
 	mnCurrentID = 0;
-	mfCurrentTriggerX = 0;
+	mfCurrentTriggerX = 0.0f;
+	mfCurrentTriggerY = 0.0f;
+	mbCurrentTriggerIsY = false;
 	mCompletedXStepIDs.clear();
 	mStep = nullptr;
 	mDisplayText.clear();
@@ -587,17 +641,17 @@ void TutorialTextManager::Draw(DrawPosition DrawPoisition)
 	int fontSize;
 	if (DrawPoisition == DrawPosition::TEXT_UP)
 	{
-		 baseX = TutorialTextControll::TextX;
-		 curX = baseX;
-		 curY = TutorialTextControll::TextY;
-		 fontSize = TutorialTextControll::TextSize;
+		baseX = TutorialTextControll::TextX;
+		curX = baseX;
+		curY = TutorialTextControll::TextY;
+		fontSize = TutorialTextControll::TextSize;
 	}
 	else
 	{
-		 baseX = TutorialTextControll::TextX- 450;
-		 curX = baseX;
-		 curY = TutorialTextControll::TextY + 750;
-		 fontSize = TutorialTextControll::DeathTextSize;
+		baseX = TutorialTextControll::TextX - 450;
+		curX = baseX;
+		curY = TutorialTextControll::TextY + 750;
+		fontSize = TutorialTextControll::DeathTextSize;
 	}
 
 	// フォント設定
@@ -606,9 +660,6 @@ void TutorialTextManager::Draw(DrawPosition DrawPoisition)
 		->GetDotFontHandle(fontSize);
 
 	if (fontHandle == -1) return;
-
-
-
 
 
 	unsigned int color = GetColor(255, 255, 255);
