@@ -323,23 +323,60 @@ void GameScene::SetTextUpdate()
 		mTutorialText.Reset();
 	}
 
-	// 今フレームの死亡状態を保存
 	mbWasPlayerDead = isPlayerDead;
 
 	// フェーズ1（天使テキスト表示中）のみテキスト更新
-	// フェーズ2以降（GAME OVER）はテキストを止める
-	bool isPhase1 = mpPlayer->IsCutInSaint(); // ← ここを新しい関数に置き換え！
-	if (IsSilentAngelPhase() && !isPhase1)
+
+	bool isPhase1 = mpPlayer->IsCutInSaint();
+	bool isOpeningPhase = IsOpeningMapPhase();
+
+	// オープニング中は通常チュートリアルを更新する
+	if (IsSilentAngelPhase() && !isPhase1 && !isOpeningPhase)
 	{
-		return; // 洞窟オープニング・帰還後の通常時はセリフを進めない（無言）
+		return;
 	}
 
-	if (!isPlayerDead || isPhase1)
+	if (!isPlayerDead || isPhase1 || isOpeningPhase)
 	{
-		mTutorialText.Update(1.0f / 60.0f, mpPlayer->GetPosition().x);
+		mTutorialText.Update(
+			1.0f / 60.0f,
+			mpPlayer->GetPosition().x);
 	}
+
 	mTutorialText.SetActionState(mpPlayer->GetActionState());
 }
+
+
+
+//void GameScene::SetTextUpdate()
+//{
+//	// プレイヤーの死亡状態の確認
+//	bool isPlayerDead = mpPlayer->GetIsDead();
+//
+//	// 復活した瞬間（フェーズ0 & 生存状態に戻った）
+//	if (!isPlayerDead && mbWasPlayerDead)
+//	{
+//		mTutorialText.OnPlayerRevive();
+//		mTutorialText.Reset();
+//	}
+//
+//	// 今フレームの死亡状態を保存
+//	mbWasPlayerDead = isPlayerDead;
+//
+//	// フェーズ1（天使テキスト表示中）のみテキスト更新
+//	// フェーズ2以降（GAME OVER）はテキストを止める
+//	bool isPhase1 = mpPlayer->IsCutInSaint(); // ← ここを新しい関数に置き換え！
+//	if (IsSilentAngelPhase() && !isPhase1)
+//	{
+//		return; // 洞窟オープニング・帰還後の通常時はセリフを進めない（無言）
+//	}
+//
+//	if (!isPlayerDead || isPhase1)
+//	{
+//		mTutorialText.Update(1.0f / 60.0f, mpPlayer->GetPosition().x);
+//	}
+//	mTutorialText.SetActionState(mpPlayer->GetActionState());
+//}
 
 void GameScene::Draw()
 {
@@ -465,8 +502,8 @@ bool GameScene::IsOpeningMapPhase() const
 
 bool GameScene::IsSilentAngelPhase() const
 {
-	return IsOpeningMapPhase() ||
-		(mCavePhase == CavePhase::MainCave && Master::gCavePostBossPhase == 2);
+	// ボス撃破後の帰還モード（MainCave + postBossPhase==2）は無言
+	return (mCavePhase == CavePhase::MainCave && Master::gCavePostBossPhase == 2);
 }
 
 void GameScene::CleanupNonPlayerObjects()
@@ -534,6 +571,8 @@ void GameScene::SetupPostBossSurface(bool withFadeIn)
 
 	CleanupNonPlayerObjects();
 	mLoadData.StageCaveOpening();
+	// ボス撃破後の帰還シーンでは天使は無言なのでフェーズをNoneに上書き
+	mTutorialText.SetCaveFallPhase(TutorialTextManager::CaveFallPhase::None);
 	mBlockMap.SetOpeningPitAlreadyBroken();
 	mBlockMap.SetAllowScrollPastRight(false);
 	mbBossBgmStarted = false;

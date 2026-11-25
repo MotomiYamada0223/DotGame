@@ -24,6 +24,14 @@ public:
 		TEXT_DOWN,
 	};
 
+	// 洞窟ステージにおける「穴に落ちる前」「落ちた後」を管理するフェーズ
+	enum class CaveFallPhase
+	{
+		None,       // 洞窟ステージ以外（森など）
+		BeforeFall, // オープニング：穴に落ちる前
+		AfterFall,  // 本編：穴に落ちた後
+	};
+
 	void Initialize(
 		const std::string& csvPath,
 		const std::string& deathCsvPath
@@ -58,6 +66,15 @@ public:
 
 	void SetActionState(const PlayerActionState& state);
 
+	// 洞窟落下フェーズのセッター・ゲッター
+	void SetCaveFallPhase(CaveFallPhase phase) { mCaveFallPhase = phase; }
+	CaveFallPhase GetCaveFallPhase() const { return mCaveFallPhase; }
+
+	// 穴に落ちる前かどうか
+	bool IsBeforeFall() const { return mCaveFallPhase == CaveFallPhase::BeforeFall; }
+	// 穴に落ちた後かどうか
+	bool IsAfterFall()  const { return mCaveFallPhase == CaveFallPhase::AfterFall; }
+
 
 
 private:
@@ -78,6 +95,9 @@ private:
 	void SelectDeathCountText();
 
 	DrawPosition mDrawPoisition;
+
+	// 洞窟における穴落下フェーズ（落ちる前 / 落ちた後）
+	CaveFallPhase mCaveFallPhase = CaveFallPhase::None;
 
 	// 通常チュートリアル用
 	StepLoader loader;
