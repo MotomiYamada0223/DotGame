@@ -99,6 +99,7 @@ BossEnemyDragon::~BossEnemyDragon()
 	for (int h : mFlyAnim) if (h != -1) DeleteGraph(h);
 	for (int h : mAirAttackAnim) if (h != -1) DeleteGraph(h);
 	for (int h : mLandingAnim) if (h != -1) DeleteGraph(h);
+	for (int h : mRoarAnim) if (h != -1) DeleteGraph(h);
 }
 
 void BossEnemyDragon::LoadAnimations()
@@ -164,6 +165,15 @@ void BossEnemyDragon::LoadAnimations()
 		sprintf_s(path, "Resource/Enemy/Dragon/animation_dragon/new_landing/sprite_landing%d.png", i);
 		int h = LoadGraph(path);
 		if (h != -1) mLandingAnim.push_back(h);
+	}
+
+	// 8. 咆哮アニメーション (7枚: roar1.png ~ roar7.png)
+	for (int i = 1; i <= 7; ++i)
+	{
+		char path[256];
+		sprintf_s(path, "Resource/Enemy/Dragon/animation_dragon/new_roar/roar%d.png", i);
+		int h = LoadGraph(path);
+		if (h != -1) mRoarAnim.push_back(h);
 	}
 }
 
@@ -488,7 +498,15 @@ void BossEnemyDragon::UpdateEntranceDrop(Player* player, GameScene* gameScene)
 	// 床に着地したら EntranceWait へ移行し、着陸アニメーション後半（砂煙エフェクト 3..6）を再生
 	if (isGrounded)
 	{
-		PlayDragonSE(SoundManager::SE_STAGE2_DRAGON_ROAR);
+		if (mRoarAnim.empty())
+		{
+			PlayDragonSE(SoundManager::SE_STAGE2_DRAGON_ROAR);
+		}
+		else
+		{
+			// 咆哮アニメがある場合は着地時に重い着地音を鳴らし、咆哮SEは咆哮モーションに合わせて再生
+			PlayDragonSE(SoundManager::SE_STAGE2_BOULDER_LAND);
+		}
 		if (mpBlockMap != nullptr)
 		{
 			mpBlockMap->StartCameraShake(
@@ -530,9 +548,31 @@ void BossEnemyDragon::UpdateEntranceWait(Player* player)
 	}
 	else if (mEntranceTimer > 105)
 	{
-		// 地面に着地した状態で待機ポーズ
-		if (mAnimTimer >= 10 && !mIdleAnim.empty())
+		// 着地後、飛び上がるまでの間（mEntranceTimer 212 -> 106）に咆哮モーションを再生
+		if (!mRoarAnim.empty())
 		{
+			static constexpr int kRoarFrameDurations[7] = { 7, 9, 12, 12, 22, 28, 16 };
+			int maxRoarIdx = static_cast<int>(mRoarAnim.size()) - 1;
+			int curIdx = (mAnimFrame <= maxRoarIdx) ? mAnimFrame : maxRoarIdx;
+			int dur = (curIdx < 7) ? kRoarFrameDurations[curIdx] : 14;
+			if (mAnimTimer >= dur && curIdx < maxRoarIdx)
+			{
+				mAnimTimer = 0;
+				mAnimFrame = curIdx + 1;
+				// 口を大きく開いて赤い咆哮エフェクトが出始める瞬間（roar4 = index 3）に咆哮SEと振動を再生
+				if (mAnimFrame == 3)
+				{
+					PlayDragonSE(SoundManager::SE_STAGE2_DRAGON_ROAR);
+					if (mpBlockMap != nullptr)
+					{
+						mpBlockMap->StartCameraShake(14.0f, 0.8f, 0.4f, 45);
+					}
+				}
+			}
+		}
+		else if (mAnimTimer >= 10 && !mIdleAnim.empty())
+		{
+			// 画像未ロード時のフォールバック：地面に着地した状態で待機ポーズ
 			mAnimTimer = 0;
 			mAnimFrame = (mAnimFrame + 1) % static_cast<int>(mIdleAnim.size());
 		}
@@ -579,6 +619,12 @@ void BossEnemyDragon::UpdateEntranceWait(Player* player)
 
 
 	if (mEntranceTimer > 0) mEntranceTimer--;
+	if (mEntranceTimer == 105)
+	{
+		// 描画が離陸アニメへ切り替わる瞬間にフレーム0から開始するよう同期
+		mAnimFrame = 0;
+		mAnimTimer = 0;
+	}
 	if (mEntranceTimer <= 0)
 	{
 		// 空中で飛んでいる状態（State::Fly）からバトルスタート！
@@ -1434,7 +1480,15 @@ void BossEnemyDragon::SelectCurrentSprite(int& outHandle, float& outFootOffset) 
 		}
 		else if (mEntranceTimer > 105)
 		{
-			if (!mIdleAnim.empty())
+			if (!mRoarAnim.empty())
+			{
+				int idx = mAnimFrame;
+				if (idx < 0) idx = 0;
+				if (idx >= static_cast<int>(mRoarAnim.size())) idx = static_cast<int>(mRoarAnim.size()) - 1;
+				outHandle = mRoarAnim[idx];
+				outFootOffset = 72.0f; // 400x400キャンバス基準（roar1~7）
+			}
+			else if (!mIdleAnim.empty())
 			{
 				outHandle = mIdleAnim[mAnimFrame % mIdleAnim.size()];
 				outFootOffset = 79.0f;
