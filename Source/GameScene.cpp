@@ -340,7 +340,8 @@ void GameScene::SetTextUpdate()
 	{
 		mTutorialText.Update(
 			1.0f / 60.0f,
-			mpPlayer->GetPosition().x);
+			mpPlayer->GetPosition().x,
+			mpPlayer->GetPosition().y);
 	}
 
 	mTutorialText.SetActionState(mpPlayer->GetActionState());
