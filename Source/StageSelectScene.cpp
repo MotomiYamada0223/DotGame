@@ -86,7 +86,7 @@ void StageSelectScene::Initialize()
 	// 現在のプレイ時の死亡回数だけリセットする
 	for (int i = 0; i < Master::MaxStageCount; ++i)
 	{
-		Master::gDeathCounts[i] = 0;
+		Master::gOldDeathCount[i] = Master::gDeathCounts[i];
 	}
 
 	mFade.StartFadeIn(30);
@@ -238,6 +238,10 @@ void StageSelectScene::Update()
 			Master::gCurrentStageIndex = nodeIndex;
 			Master::gCaveOpeningCompleted = false;
 			Master::gCavePostBossPhase = 0;
+
+			// 入るステージだけ今回分を0にする
+			Master::gDeathCounts[nodeIndex] = 0;
+
 			mIsEnteringStage = true;
 			mEnterTimer = 0;
 			mFade.StartFadeOut(60);
@@ -401,7 +405,7 @@ void StageSelectScene::DrawStageString()
 
 		// 死亡回数（中央揃え）
 		char deathText[128];
-		sprintf_s(deathText, "今回の死亡回数: %d 回", Master::gDeathCounts[nodeIndex]);
+		sprintf_s(deathText, "前回の死亡回数: %d 回", Master::gOldDeathCount[nodeIndex]);
 		drawCentered(boxY + 60, 24, GetColor(255, 100, 100), deathText);
 
 		// ステージ説明文（中央揃え）

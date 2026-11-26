@@ -34,6 +34,7 @@ public:
 	static bool gStageCleared[3];
 	static int gDeathCounts[3];
 	static int gTotalDeathCounts[3];
+	static int gOldDeathCount[3]; // ‘O‰ñ‚Ì’§í‚Å‚Ç‚ê‚®‚ç‚¢€–S‚µ‚½‚©
 
 	static int gCurrentStageRunDeathCount;
 	static int gCurrentStageIndex;

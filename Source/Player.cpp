@@ -992,7 +992,6 @@ void Player::StartDeathScatter()
 {
 	mDeathPhase = 2;
 	deadTimer = 0;
-	mFragments.clear();
 
 	// 落下死は飛び散らず、穴の下へ落ちていく
 	if (mDeathReason == DeathReason::DeathType::Fall ||
@@ -1005,32 +1004,19 @@ void Player::StartDeathScatter()
 	mDeadState = 1;
 	Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_PLAYER_SHATTER, 80);
 
-	const int fragSize = 16;
-	const int srcBaseX = mPlayerState.GetCurrentFrame() * PlayerAnimState::FRAME_WIDTH;
-	const int srcBaseY = mPlayerState.GetSrcY();
-	const float topLeftX = mvPosition.x - PlayerAnimState::FRAME_WIDTH / 2.0f;
-	const float topLeftY = mvPosition.y - PlayerAnimState::FRAME_HEIGHT / 2.0f;
+	// 画像と位置だけを渡して破片演出を任せる
+	DeathCountEffect::PlayerSpriteSource src{
+		mpTexture->GetHandle(),
+		mPlayerState.GetCurrentFrame() * PlayerAnimState::FRAME_WIDTH,
+		mPlayerState.GetSrcY(),
+		PlayerAnimState::FRAME_WIDTH,
+		PlayerAnimState::FRAME_HEIGHT
+	};
 
-	for (int y = 0; y < PlayerAnimState::FRAME_HEIGHT; y += fragSize)
-	{
-		for (int x = 0; x < PlayerAnimState::FRAME_WIDTH; x += fragSize)
-		{
-			PlayerFragment frag;
-			frag.pos = VGet(topLeftX + x, topLeftY + y, 0.0f);
-			frag.srcX = srcBaseX + x;
-			frag.srcY = srcBaseY + y;
-			frag.width = fragSize;
-			frag.height = fragSize;
-			frag.vel = VGet(
-				((float)GetRand(100) / 100.0f * 14.0f) - 7.0f,
-				((float)GetRand(100) / 100.0f * -14.0f) - 4.0f,
-				0.0f);
-
-			mFragments.push_back(frag);
-		}
-	}
+	const float screenX = ConvertToScreenX(mvPosition.x, mpBlockMap);
+	const float screenY = ConvertToScreenY(mvPosition.y, mpBlockMap);
+	mScatterEffect.StartShatter(src, screenX, screenY, 16);
 }
-
 
 void Player::UpdateGameOver()
 {
@@ -1072,6 +1058,10 @@ void Player::DrawFallDeath()
 		}
 		mDeath.Draw(gs ? &gs->GetTutorialText() : nullptr);
 	}
+	else if (mDeathPhase == 2)
+	{
+		mScatterEffect.Draw();
+	}
 	else if (mDeathPhase == 3)
 	{
 		DrawGameOver();
@@ -1103,46 +1093,7 @@ void Player::DrawPlayerModel()
 	if (isDead)
 	{
 		SetDrawBright(255, 255, 255); // 色をリセット
-		for (const auto& frag : mFragments)
-		{
-			if (mpTexture != nullptr)
-			{
-				// 死亡時の破片描画でも親クラスの共通関数を使用してスクロールを正確に反映させる   
-				int playerLeft = static_cast<int>(ConvertToScreenX(frag.pos.x, mpBlockMap));
-				int playerTop = static_cast<int>(ConvertToScreenY(frag.pos.y, mpBlockMap));
-
-
-				DrawRectGraph(
-					playerLeft,
-					playerTop,
-					frag.srcX,
-					frag.srcY,
-					frag.width,
-					frag.height,
-					mpTexture->GetHandle(),
-					true
-				);
-			}
-			else
-			{
-				int playerLeftX = static_cast<int>(ConvertToScreenX(frag.pos.x, mpBlockMap));
-				int playerRigthtX = static_cast<int>(ConvertToScreenX(frag.pos.x + frag.width, mpBlockMap));
-
-				int playerTopX = static_cast<int>(ConvertToScreenY(frag.pos.y, mpBlockMap));
-				int playerDownX = static_cast<int>(ConvertToScreenY(frag.pos.y + frag.height, mpBlockMap));
-
-				// テクスチャが無い場合の保険   
-				DrawBox(
-					playerLeftX,
-					playerTopX,
-					playerRigthtX,
-					playerDownX,
-					GetColor(255, 0, 0),
-					TRUE
-				);
-			}
-		}
-
+		mScatterEffect.Draw();
 		return;
 	}
 
@@ -1351,8 +1302,9 @@ void Player::DebugDraw()
 		}
 		DrawFormatString(500, 300, GetColor(255, 0, 0), "%s", deathText);
 		DrawFormatString(500, 340, GetColor(255, 0, 0), "累計死亡回数: %d回", Master::gTotalDeathCounts[stageIndex]);
+		DrawFormatString(500, 380, GetColor(255, 0, 0), "前回死亡回数: %d回", Master::gOldDeathCount[stageIndex]);
 
-
+		DrawFormatString(0, 100, GetColor(255, 255, 0), "scatter:%d", (int)mScatterEffect.GetFragmentCount());
 	}
 
 
@@ -1407,47 +1359,19 @@ void Player::DeadProcess()
 		return;
 	}
 
-	// 飛び散り直後の画面揺れ
-	if (mpBlockMap != nullptr)
+	// 破片演出（SEは最初の1回だけ）
+	if (!mbSe)
 	{
-		if (deadTimer < 16)
-		{
-			const int amp = 16 - deadTimer;
-		}
+		mbSe = true;
+		Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_PLAYER_DEATH_FLASHBACK);
 	}
 
-	// 破片の物理（重力・ブロック衝突）。元の位置へは戻らない
-	for (auto& frag : mFragments)
-	{
-		if (!mbSe)
+	// ブロック判定を関数として渡す
+	mScatterEffect.Update([this](float x, float y, float w, float h)
 		{
-			mbSe = true;
-			Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_PLAYER_DEATH_FLASHBACK);
-		}
-
-		frag.vel.y += 0.45f;
-
-		frag.pos.x += frag.vel.x;
-		if (mpBlockMap &&
-			mCharacterPhysics.IsBlockCollision(*mpBlockMap, frag.pos.x, frag.pos.y,
-				static_cast<float>(frag.width), static_cast<float>(frag.height)))
-		{
-			frag.pos.x -= frag.vel.x;
-			frag.vel.x *= -0.6f;
-		}
-
-		frag.pos.y += frag.vel.y;
-		if (mpBlockMap &&
-			mCharacterPhysics.IsBlockCollision(*mpBlockMap, frag.pos.x, frag.pos.y,
-				static_cast<float>(frag.width), static_cast<float>(frag.height)))
-		{
-			frag.pos.y -= frag.vel.y;
-			frag.vel.y *= -0.4f;
-			frag.vel.x *= 0.9f;
-		}
-	}
+			return IsScatterBlocked(x, y, w, h);
+		});
 }
-
 
 // 復活した時に位置とHPを戻す処理
 void Player::Revive()
@@ -1773,6 +1697,17 @@ void Player::DrawGameOver()
 
 	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 }
+
+bool Player::IsScatterBlocked(float screenX, float screenY, float w, float h) const
+{
+	if (mpBlockMap == nullptr) return false;
+
+	const float worldX = screenX + static_cast<float>(mpBlockMap->GetScrollX());
+	const float worldY = screenY + static_cast<float>(mpBlockMap->GetScrollY());
+
+	return mCharacterPhysics.IsBlockCollision(*mpBlockMap, worldX, worldY, w, h);
+}
+
 
 void Player::WarpTo(float x, float y)
 {

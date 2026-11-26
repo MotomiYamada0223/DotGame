@@ -13,6 +13,7 @@
 #include "PlayerActionState.h"
 #include "EnemySlime.h"
 #include "EnemySkeleton.h"
+#include "DeathCountEffect.h"
 
 class Player : public Object2D, public UnitStatus
 {
@@ -116,7 +117,7 @@ public: // アクセサ
 	bool GetInHotSpring() const { return mbInHotSpring; }
 	void SetHotSpringHeat(float heat) { mHotSpringHeat = heat; }
 	float GetHotSpringHeat() const { return mHotSpringHeat; }
-
+	bool IsScatterBlocked(float screenX, float screenY, float w, float h) const;
 
 	bool IsCutInSaint() const { return mDeath.IsCutInActive(); }
 
@@ -279,4 +280,5 @@ private: // 復活処理関係
 	void UpdateGameOver();    // GAME OVER中の入力処理
 	void DrawGameOver();      // GAME OVER画面の描画
 	DeathController::AngelMotion GetAngelMotionForDeathType(DeathReason::DeathType type) const;
+	DeathCountEffect mScatterEffect;
 };
