@@ -12,7 +12,7 @@
 namespace
 {
 	constexpr int   kEnterAnimFrames = 60;     // 演出の長さ（フェードアウトと合わせる）
-	constexpr float kEnterRiseY = 30.0f;  // 最終的に上へずらす量（px）
+	constexpr float kEnterRiseY = 80.0f;  // 最終的に上へずらす量（px）
 	constexpr float kEnterMinScale = 0.80f;  // 最終的な拡大率
 }
 

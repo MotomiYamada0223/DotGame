@@ -200,6 +200,7 @@ namespace CsvPath
 	static const std::string TutorialText = "Resource/TutorialTexts/tutorialTextData.csv"; // 始まりの森で読み込むテキスト
 	static const std::string TutorialDeathText = "Resource/TutorialTexts/tutorialDeathTextData.csv"; // 死亡テキストのCSV
 	static const std::string TutorialCave = "Resource/TutorialTexts/tutorialCaveText.csv"; //洞窟ステージで読み込むテキスト
+	static const std::string TutorialCaveOpening = "Resource/TutorialTexts/tutorialCaveOpeningText.csv"; // 洞窟オープニング（穴に落ちる前）で読み込むテキスト
 }
 
 // よく使う色

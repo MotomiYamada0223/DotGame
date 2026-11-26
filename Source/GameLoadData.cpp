@@ -156,9 +156,10 @@ void GameLoadData::StageForest()
 
 void GameLoadData::StageCaveOpening()
 {
-	// オープニング中は天使は何も話さない（死亡時のテキストCSVのみ読み込んでおく）
-	mTutorialText.Initialize("", CsvPath::TutorialDeathText);
-	mTutorialText.Reset();
+	// オープニング中は穴に落ちる前専用のテキストCSVを読み込む
+	mTutorialText.Initialize(CsvPath::TutorialCaveOpening, CsvPath::TutorialDeathText);
+	// フェーズを「穴に落ちる前」に設定
+	mTutorialText.SetCaveFallPhase(TutorialTextManager::CaveFallPhase::BeforeFall);
 
 	mBlockMap.Unload();
 	if (!mBlockMap.Load(
@@ -202,6 +203,12 @@ void GameLoadData::StageCave()
 	// CSVのファイル読み込み
 	// チュートリアルテキストとブロックマップのタイル
 	mTutorialText.Initialize(CsvPath::TutorialCave, CsvPath::TutorialDeathText);
+	// フェーズを「穴に落ちた後（本編）」に設定
+	mTutorialText.SetCaveFallPhase(TutorialTextManager::CaveFallPhase::AfterFall);
+	// 洞窟本編開始時に最初のチュートリアルを表示する
+	mTutorialText.Reset();
+
+
 
 	mRollingBoulder.Initialize();
 
