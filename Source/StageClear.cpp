@@ -1386,7 +1386,8 @@ void StageClear::SpawnDoorSmoke(float x, float y)
 	mDoorSmoke.clear();
 	mDoorSmoke.reserve(32);
 
-	const float kPi = 3.14159265f;
+	const float kPi = DX_PI_F;
+
 	// 扉の足元と中央付近から四方八方に広がるモクモク煙
 	for (int i = 0; i < 30; i++)
 	{
