@@ -157,11 +157,11 @@ void GameScene::Initialize()
 // ゲームシーンの毎フレーム更新処理
 void GameScene::Update()
 {
-	// デバッグ機能：1キーでボスエリア直前の安全な足場にワープ
-	if (InputManager::CheckDownKey(KEY_INPUT_1) || InputManager::CheckDownKey(KEY_INPUT_NUMPAD1))
-	{
-		DebugWarpToBossArea();
-	}
+	//// デバッグ機能：1キーでボスエリア直前の安全な足場にワープ
+	//if (InputManager::CheckDownKey(KEY_INPUT_1) || InputManager::CheckDownKey(KEY_INPUT_NUMPAD1))
+	//{
+	//	DebugWarpToBossArea();
+	//}
 
 	// 円のフェード・オープニング切替フェード更新
 	mCircleFade.UpdateCircleFade();

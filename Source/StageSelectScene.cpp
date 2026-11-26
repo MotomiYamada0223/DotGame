@@ -171,13 +171,13 @@ void StageSelectScene::Update()
 {
 	mFade.Update();
 
-	// デバッグで解放している
-	if (InputManager::CheckDownKey(KEY_INPUT_8))
-	{
-		Master::gStageCleared[0] = true;
-		Master::gStageCleared[1] = true;
-		Master::gStageCleared[2] = true;
-	}
+	//// デバッグで解放している
+	//if (InputManager::CheckDownKey(KEY_INPUT_8))
+	//{
+	//	Master::gStageCleared[0] = true;
+	//	Master::gStageCleared[1] = true;
+	//	Master::gStageCleared[2] = true;
+	//}
 
 
 	// ステージ突入時の演出タイマー処理
