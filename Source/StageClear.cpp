@@ -253,7 +253,7 @@ void StageClear::TrackPlayerWithCracker(int crackerIdx, Player* player, BlockMap
 		return;
 	}
 
-	const float kPi = 3.14159265f;
+	const float kPi = DX_PI_F;
 	auto& c = mCrackers[crackerIdx];
 
 	float scrollX = (pBlockMap != nullptr) ? static_cast<float>(pBlockMap->GetScrollX()) : 0.0f;
@@ -695,7 +695,7 @@ void StageClear::UpdateLogo(Player* player, BlockMap* pBlockMap)
 		else
 		{
 			mLogoReboundOffset = 0.0f;
-	mpBlockMap = nullptr;
+			mpBlockMap = nullptr;
 		}
 	}
 }
@@ -1188,7 +1188,8 @@ void StageClear::Update(Player* player, BlockMap* pBlockMap)
 
 		if (player == nullptr || player->GetIsDead())
 		{
-			CompleteStageClear();
+			//CompleteStageClear();
+			mState = State::Inactive;
 			break;
 		}
 
@@ -1385,7 +1386,8 @@ void StageClear::SpawnDoorSmoke(float x, float y)
 	mDoorSmoke.clear();
 	mDoorSmoke.reserve(32);
 
-	const float kPi = 3.14159265f;
+	const float kPi = DX_PI_F;
+
 	// 扉の足元と中央付近から四方八方に広がるモクモク煙
 	for (int i = 0; i < 30; i++)
 	{
