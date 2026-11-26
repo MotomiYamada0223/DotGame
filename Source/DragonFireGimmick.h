@@ -93,6 +93,11 @@ public:
 	void SpawnDiveTrailSparks(float x, float y, float diveVx, float diveVy);
 	void SpawnDiveLandingSparks(float x, float facingDir);
 
+	// 4. 地上火炎ブレス＆地走り火炎波用：前方低空ストリーム＆単方向アーチ火炎波＋燃焼領域判定
+	void SpawnGroundBreathStream(float mouthX, float mouthY, float facingDir, float targetDist, float floorY = 1903.0f);
+	void SpawnGroundFlameWave(float mouthX, float mouthY, float facingDir, float speed, float archHeight, float floorY = 1903.0f);
+	bool IsGroundBurningAt(float worldX, float margin = 80.0f) const;
+
 	// 毎フレームの更新処理（移動・膨張・地面延焼・大爆発・アーチ波・プレイヤー当たり判定）
 	void Update(Player* player, BlockMap* blockMap, int attackDamage);
 
