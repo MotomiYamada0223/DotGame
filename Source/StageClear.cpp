@@ -253,7 +253,7 @@ void StageClear::TrackPlayerWithCracker(int crackerIdx, Player* player, BlockMap
 		return;
 	}
 
-	const float kPi = 3.14159265f;
+	const float kPi = DX_PI_F;
 	auto& c = mCrackers[crackerIdx];
 
 	float scrollX = (pBlockMap != nullptr) ? static_cast<float>(pBlockMap->GetScrollX()) : 0.0f;

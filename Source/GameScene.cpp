@@ -228,6 +228,12 @@ void GameScene::Update()
 					}
 				}
 			}
+			// ボス撃破後の地上で死亡したら、次の開始位置を本編の開始位置にする
+			if (mpPlayer->GetIsDead() && mCavePhase == CavePhase::PostBossSurface)
+			{
+				Master::gCavePostBossPhase = 0;
+				Master::gCaveOpeningCompleted = true;
+			}
 		}
 
 		SetTextUpdate();

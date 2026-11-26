@@ -28,7 +28,7 @@ public:
 		CaveAscentComplete,// 洞窟ステージ：ロープ登頂完了（オープニング右足場への遷移待ち）
 		Finished
 	};
-	// StageClear.h に追加
+
 	void DebugDrawLogoTip(const BlockMap* pBlockMap) const;
 	struct CrackerData
 	{
