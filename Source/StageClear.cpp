@@ -480,7 +480,7 @@ void StageClear::UpdateBullets(Player* player, BlockMap* pBlockMap)
 		{
 			auto clampVal = [](float val, float minV, float maxV) {
 				return (val < minV) ? minV : ((val > maxV) ? maxV : val);
-				};
+			};
 			float cx = clampVal(b.x, pScreenX - halfW, pScreenX + halfW);
 			float cy = clampVal(b.y, pScreenY - halfH, pScreenY + halfH);
 			float dx = b.x - cx;
@@ -1027,15 +1027,8 @@ void StageClear::Update(Player* player, BlockMap* pBlockMap)
 			}
 			else
 			{
-				// 扉の配置ワールドX座標を設定（洞窟では天井の穴の中心に置く）
-				if (IsCaveStage() && pBlockMap != nullptr && pBlockMap->IsCeilingBreakInitialized())
-				{
-					mDoorWorldX = pBlockMap->GetCeilingBreakCenterX();
-				}
-				else
-				{
-					mDoorWorldX = StageClearConstants::DoorSpawnScreenX + scrollX;
-				}
+				// 扉の配置ワールド座標を設定
+				mDoorWorldX = StageClearConstants::DoorSpawnScreenX + scrollX;
 				mDoorWorldY = FindGroundSurfaceY(pBlockMap, mDoorWorldX, scrollY, player);
 
 				mDoorAnimProgress = 0.0f;
@@ -1183,15 +1176,7 @@ void StageClear::Update(Player* player, BlockMap* pBlockMap)
 
 			if (enterKeyAtDoor)
 			{
-				// 洞窟では地上シーンへ、それ以外はステージクリアへ進む
-				if (IsCaveStage())
-				{
-					CompleteCaveAscent();
-				}
-				else
-				{
-					CompleteStageClear();
-				}
+				CompleteStageClear();
 			}
 		}
 	}
@@ -1203,7 +1188,8 @@ void StageClear::Update(Player* player, BlockMap* pBlockMap)
 
 		if (player == nullptr || player->GetIsDead())
 		{
-			CompleteStageClear();
+			//CompleteStageClear();
+			mState = State::Inactive;
 			break;
 		}
 
@@ -1585,13 +1571,6 @@ void StageClear::CompleteStageClear()
 	}
 }
 
-// 洞窟の扉に入ったとき、ConsumeCaveAscentComplete() で地上シーンへ移行させるため
-void StageClear::CompleteCaveAscent()
-{
-	mState = State::CaveAscentComplete;
-	mTimer = 0;
-}
-
 bool StageClear::ConsumeCaveAscentComplete()
 {
 	if (mState != State::CaveAscentComplete)
@@ -1640,7 +1619,7 @@ void StageClear::DrawRope(const BlockMap* pBlockMap) const
 		if (ratio < 0.0f) ratio = 0.0f;
 		if (ratio > 1.0f) ratio = 1.0f;
 		return baseScreenX + mRopeSwayOffsetX * std::pow(ratio, 1.6f);
-		};
+	};
 
 	float curBotY = bottomScreenY;
 	while (curBotY > 0.0f && curBotY > topAnchorScreenY)
