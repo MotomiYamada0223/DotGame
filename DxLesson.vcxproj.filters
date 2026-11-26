@@ -231,6 +231,9 @@
     <ClCompile Include="Source\DeathCountEffect.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="Source\SelectDeathDisplay.cpp">
+      <Filter>ソース ファイル\Controller系</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Collision.h">
@@ -433,6 +436,9 @@
     </ClInclude>
     <ClInclude Include="Source\DeathCountEffect.h">
       <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\SelectDeathDisplay.h">
+      <Filter>ソース ファイル\Controller系</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
