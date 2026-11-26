@@ -40,6 +40,7 @@ BossEnemyDragon::BossEnemyDragon(VECTOR initPos)
 	, mAnimTimer(0)
 	, mStateTimer(0)
 	, mAttackPhase(0)
+	, mAttackTurnDelay(0)
 	, mDivePhase(0)
 	, mCenterAttackPhase(0)
 	, mRetreatPhase(0)
@@ -50,6 +51,11 @@ BossEnemyDragon::BossEnemyDragon(VECTOR initPos)
 	, mDiveTargetX(8900.0f)
 	, mDiveTargetY(1803.0f)
 	, mAirAttackCycle(0)
+	, mLastGroundAction(GroundActionType::None)
+	, mLastAirAction(AirActionType::None)
+	, mGroundActionsSinceLanding(0)
+	, mIsAirRepositioning(false)
+	, mAirRepositionTargetX(8900.0f)
 	, mAttackCooldown(60)
 	, mFlightCooldown(130)
 	, mEntranceTimer(0)
@@ -87,6 +93,10 @@ void BossEnemyDragon::StartBattle()
 	// mPostEntranceTimer は「ドラゴン」文字のフェードアウト演出で使用中のためリセットしない
 	mAttackCooldown    = 60;
 	mFlightCooldown    = 0;  // 戦闘開始直後は即座に攻撃行動へ移行できるようにゼロにする
+	mLastGroundAction  = GroundActionType::None;
+	mLastAirAction     = AirActionType::None;
+	mGroundActionsSinceLanding = 0;
+	mIsAirRepositioning = false;
 }
 
 
@@ -100,6 +110,7 @@ BossEnemyDragon::~BossEnemyDragon()
 	for (int h : mAirAttackAnim) if (h != -1) DeleteGraph(h);
 	for (int h : mLandingAnim) if (h != -1) DeleteGraph(h);
 	for (int h : mRoarAnim) if (h != -1) DeleteGraph(h);
+	for (int h : mGroundBreathAnim) if (h != -1) DeleteGraph(h);
 }
 
 void BossEnemyDragon::LoadAnimations()
@@ -174,6 +185,15 @@ void BossEnemyDragon::LoadAnimations()
 		sprintf_s(path, "Resource/Enemy/Dragon/animation_dragon/new_roar/roar%d.png", i);
 		int h = LoadGraph(path);
 		if (h != -1) mRoarAnim.push_back(h);
+	}
+
+	// 9. 地上灼熱ブレス＆地走り火炎波アニメーション (7枚: sprite_groundBreath1.png ~ sprite_groundBreath7.png)
+	for (int i = 1; i <= 7; ++i)
+	{
+		char path[256];
+		sprintf_s(path, "Resource/Enemy/Dragon/animation_dragon/new_ground_breath/sprite_groundBreath%d.png", i);
+		int h = LoadGraph(path);
+		if (h != -1) mGroundBreathAnim.push_back(h);
 	}
 }
 
@@ -290,6 +310,24 @@ void BossEnemyDragon::GetAirAttackMouthWorldPos(float& outMouthX, float& outMout
 	outMouthY = spriteCenterWorldY + (localX * sinA + localY * cosA);
 }
 
+void BossEnemyDragon::GetGroundBreathMouthWorldPos(float& outMouthX, float& outMouthY) const
+{
+	// 400x400 キャンバス中心 (200, 200)、outFootOffset = 72.0f 基準での地上ブレス各フレーム口元オフセット
+	static const float kGroundMouthOffsetX[7] = { 102.0f, 104.0f, 105.0f, 106.0f, 108.0f, 88.0f, 82.0f };
+	static const float kGroundMouthOffsetY[7] = { -52.0f, -40.0f, -34.0f, -52.0f, -58.0f, -42.0f, -40.0f };
+
+	int idx = mAnimFrame;
+	if (idx < 0) idx = 0;
+	if (idx > 6) idx = 6;
+
+	float spriteCenterWorldX = mvPosition.x;
+	float feetWorldY = mvPosition.y + (mfEnemyHeight * 0.5f);
+	float spriteCenterWorldY = feetWorldY - (72.0f * mDrawScale);
+
+	outMouthX = spriteCenterWorldX + mFacingDirection * kGroundMouthOffsetX[idx] * mDrawScale;
+	outMouthY = spriteCenterWorldY + kGroundMouthOffsetY[idx] * mDrawScale;
+}
+
 void BossEnemyDragon::TriggerDefeatRetreat(GameScene* gameScene)
 {
 	mState = State::DefeatRetreat;
@@ -320,11 +358,6 @@ void BossEnemyDragon::TriggerDefeatRetreat(GameScene* gameScene)
 // =========================================================================
 void BossEnemyDragon::Update()
 {
-	// BossEnemyDragon::Update() の冒頭に追加（一時デバッグ用）
-	DrawFormatString(10, 100, GetColor(255, 255, 0),
-		"Dragon State=%d BattleActive=%d StateTimer=%d",
-		(int)mState, (int)mIsBattleActive, mStateTimer);
-
 	Enemy::Update();
 
 	// 戦闘開始フラグが立つまでは、位置やアニメーション以外のAI行動・クールタイムを進めない
@@ -401,13 +434,16 @@ void BossEnemyDragon::Update()
 	switch (mState)
 	{
 	case State::Idle:
-		UpdateIdle(player, dx, absDx);
+		UpdateIdle(player, dx, absDx, roomMinX, roomMaxX);
 		break;
 	case State::Move:
 		UpdateMove(player, dx, absDx, roomMinX, roomMaxX);
 		break;
 	case State::Attack:
-		UpdateGroundAttack(roomMinX, roomMaxX);
+		UpdateGroundAttack(player, roomMinX, roomMaxX);
+		break;
+	case State::GroundBreathAttack:
+		UpdateGroundBreathAttack(player, dx);
 		break;
 	case State::Takeoff:
 		UpdateTakeoff(player, dx);
@@ -639,7 +675,255 @@ void BossEnemyDragon::UpdateEntranceWait(Player* player)
 	}
 }
 
-void BossEnemyDragon::UpdateIdle(Player* player, float dx, float absDx)
+bool BossEnemyDragon::TrySelectGroundAction(Player* player, float dx, float absDx, float roomMinX, float roomMaxX)
+{
+	if (player == nullptr || player->GetIsDead()) return false;
+
+	const float arenaCenterX = (roomMinX + roomMaxX) * 0.5f;
+	const bool nearLeftWall = (mvPosition.x < roomMinX + 200.0f);
+	const bool nearRightWall = (mvPosition.x > roomMaxX - 200.0f);
+	const bool corneredByPlayer = ((nearLeftWall && dx > 0.0f) || (nearRightWall && dx < 0.0f)) && (absDx < 310.0f);
+
+	// 1. 壁際で詰められており、飛行準備が近い場合は離陸して中央〜反対側へ飛び越え脱出
+	if (corneredByPlayer && mFlightCooldown <= 25 && mStateTimer >= 20)
+	{
+		mState = State::Takeoff;
+		mStateTimer = 0;
+		mAnimFrame = 0;
+		mAnimTimer = 0;
+		mIsAirRepositioning = true;
+		mAirRepositionTargetX = arenaCenterX + (nearLeftWall ? 260.0f : -260.0f);
+		return true;
+	}
+
+	// 2. 地上行動を1回以上こなしており、飛行クールダウンが完了している場合の離陸判定
+	// （ただし近接圏内でまだ地上攻撃が1回だけ＆攻撃クールダウン完了時は地上戦をもう1手継続することがある）
+	if (mFlightCooldown <= 0 && mStateTimer >= 28 && mGroundActionsSinceLanding >= 1)
+	{
+		bool continueGroundPress = (mGroundActionsSinceLanding < 2 && mAttackCooldown <= 0 && absDx <= 480.0f && GetRand(99) < 40);
+		if (!continueGroundPress)
+		{
+			mState = State::Takeoff;
+			mStateTimer = 0;
+			mAnimFrame = 0;
+			mAnimTimer = 0;
+			mIsAirRepositioning = corneredByPlayer;
+			mAirRepositionTargetX = arenaCenterX;
+			return true;
+		}
+	}
+
+	// 3. 攻撃クールダウン完了時：距離・位置・燃焼状況・直前行動履歴から最適行動を重み付け選択
+	if (mAttackCooldown <= 0)
+	{
+		int scoreSlash = 0;
+		int scoreGroundBreath = 0;
+		int scoreEarlyTakeoff = 0;
+
+		if (absDx <= 330.0f)
+		{
+			// 近距離：2連ステップ斬撃が主力だが、直前が斬撃なら地上ブレスを織り交ぜて読み合いを作る
+			scoreSlash = 75;
+			scoreGroundBreath = (absDx >= 170.0f) ? 40 : 20;
+		}
+		else if (absDx <= 640.0f)
+		{
+			// 中距離：新モーション「地上灼熱ブレス＆地走り火炎波」の得意間合い！
+			scoreGroundBreath = 85;
+			scoreSlash = (absDx <= 410.0f) ? 45 : 0;
+		}
+		else
+		{
+			// 遠距離：歩くだけでなく、地走り火炎波で遠距離牽制するか早めに飛んで急降下を狙う
+			scoreGroundBreath = 70;
+			if (mFlightCooldown <= 45)
+			{
+				scoreEarlyTakeoff = 65;
+			}
+		}
+
+		// 直前に同じ地上攻撃を出していたら重みを下げ、別技への切り替えを促進（単調ループ防止）
+		if (mLastGroundAction == GroundActionType::MeleeSlash)
+		{
+			scoreSlash -= 35;
+			scoreGroundBreath += 30;
+		}
+		else if (mLastGroundAction == GroundActionType::GroundBreath)
+		{
+			scoreGroundBreath -= 45;
+			scoreSlash += 30;
+		}
+
+		// 前方の床がすでに激しく燃えている場合はブレス重ね撃ちを控え、斬撃または離陸を優先
+		float checkFrontX = mvPosition.x + mFacingDirection * 280.0f;
+		if (mFireGimmick.IsGroundBurningAt(checkFrontX, 90.0f))
+		{
+			scoreGroundBreath -= 35;
+			if (mFlightCooldown <= 35) scoreEarlyTakeoff += 35;
+		}
+
+		// プレイヤーがジャンプ中なら対空引っ掛けになりやすいステップ斬撃や離陸の重みを微増
+		if (!player->GetIsGrounded() && absDx <= 390.0f)
+		{
+			scoreSlash += 15;
+		}
+
+		if (scoreSlash < 0) scoreSlash = 0;
+		if (scoreGroundBreath < 0) scoreGroundBreath = 0;
+		if (scoreEarlyTakeoff < 0) scoreEarlyTakeoff = 0;
+
+		int totalScore = scoreSlash + scoreGroundBreath + scoreEarlyTakeoff;
+		if (totalScore > 0)
+		{
+			int roll = GetRand(totalScore - 1);
+			if (roll < scoreSlash)
+			{
+				mState = State::Attack;
+				mAttackPhase = 0;
+				mAttackTurnDelay = 0;
+				mStateTimer = 0;
+				mAnimFrame = 0;
+				mAnimTimer = 0;
+				mLastGroundAction = GroundActionType::MeleeSlash;
+				mGroundActionsSinceLanding++;
+				return true;
+			}
+			else if (roll < scoreSlash + scoreGroundBreath)
+			{
+				mState = State::GroundBreathAttack;
+				mStateTimer = 0;
+				mAnimFrame = 0;
+				mAnimTimer = 0;
+				mLastGroundAction = GroundActionType::GroundBreath;
+				mGroundActionsSinceLanding++;
+				return true;
+			}
+			else
+			{
+				mState = State::Takeoff;
+				mStateTimer = 0;
+				mAnimFrame = 0;
+				mAnimTimer = 0;
+				mIsAirRepositioning = false;
+				return true;
+			}
+		}
+	}
+
+	// 地上行動をまだ1回も行っておらず、長時間歩いても間合いに入れない場合の離陸フォールバック
+	if (mFlightCooldown <= 0 && mStateTimer >= 55)
+	{
+		mState = State::Takeoff;
+		mStateTimer = 0;
+		mAnimFrame = 0;
+		mAnimTimer = 0;
+		mIsAirRepositioning = corneredByPlayer;
+		mAirRepositionTargetX = arenaCenterX;
+		return true;
+	}
+
+	return false;
+}
+
+void BossEnemyDragon::SelectNextAirAction(Player* player, float dx, float absDx)
+{
+	mStateTimer = 0;
+	mAnimFrame = 0;
+	mAnimTimer = 0;
+	mIsAirRepositioning = false;
+
+	float px = mvPosition.x + mFacingDirection * 320.0f;
+	if (player != nullptr && !player->GetIsDead())
+	{
+		mFacingDirection = (dx >= 0.0f) ? 1.0f : -1.0f;
+		px = player->GetPosition().x;
+		mBreathTargetCenterX = px;
+	}
+	else
+	{
+		mBreathTargetCenterX = px;
+	}
+
+	// 3種の空中攻撃（空中掃射ブレス / ダイレクト急降下斬撃 / 中央巨大火球→急降下連携）を状況と履歴で重み付け選択
+	int scoreAirBreath = 55;
+	int scoreDirectDive = 45;
+	int scoreCenterFireball = 45;
+
+	// 1. プレイヤーとの横距離による適性評価
+	if (absDx >= 200.0f && absDx <= 520.0f)
+	{
+		scoreAirBreath += 30; // 斜め下へ掃射ブレスを浴びせやすい最適間合い
+	}
+	if (absDx > 440.0f)
+	{
+		scoreDirectDive += 35; // 遠くへ離れたプレイヤーに一気に急降下強襲で距離を詰める
+	}
+	if (std::fabs(px - 8900.0f) < 420.0f)
+	{
+		scoreCenterFireball += 25; // プレイヤーが部屋の中央付近にいるときは中央大爆発＋左右アーチ炎が有効
+	}
+
+	// 2. プレイヤー足元の燃焼状況を考慮（すでに燃えている場所へブレスを重ねるより急降下で追い詰める）
+	if (mFireGimmick.IsGroundBurningAt(px, 130.0f))
+	{
+		scoreAirBreath -= 35;
+		scoreDirectDive += 25;
+	}
+
+	// 3. HP50%以下（怒り状態）では大技と強襲の比重をアップ
+	if (IsEnraged())
+	{
+		scoreCenterFireball += 15;
+		scoreDirectDive += 15;
+	}
+
+	// 4. 直前の空中行動と同じ技の連続選択を強く抑制（固定ループ感をなくす）
+	if (mLastAirAction == AirActionType::AirBreath)
+	{
+		scoreAirBreath -= 55;
+	}
+	else if (mLastAirAction == AirActionType::DirectAirDive)
+	{
+		scoreDirectDive -= 55;
+	}
+	else if (mLastAirAction == AirActionType::CenterFireball)
+	{
+		scoreCenterFireball -= 65;
+	}
+
+	if (scoreAirBreath < 5) scoreAirBreath = 5;
+	if (scoreDirectDive < 5) scoreDirectDive = 5;
+	if (scoreCenterFireball < 5) scoreCenterFireball = 5;
+
+	int totalScore = scoreAirBreath + scoreDirectDive + scoreCenterFireball;
+	int roll = GetRand(totalScore - 1);
+
+	if (roll < scoreAirBreath)
+	{
+		mLastAirAction = AirActionType::AirBreath;
+		mAirAttackCycle = 0;
+		mState = State::AirAttack;
+	}
+	else if (roll < scoreAirBreath + scoreDirectDive)
+	{
+		mLastAirAction = AirActionType::DirectAirDive;
+		mState = State::AirDiveAttack;
+		mDivePhase = 0;
+		mDiveAngle = 0.0f;
+		mDiveVx = 0.0f;
+		mDiveVy = 0.0f;
+	}
+	else
+	{
+		mLastAirAction = AirActionType::CenterFireball;
+		mAirAttackCycle = 1;
+		mState = State::CenterFireballAttack;
+		mCenterAttackPhase = 0;
+		mDiveAngle = 0.0f;
+	}
+}
+
+void BossEnemyDragon::UpdateIdle(Player* player, float dx, float absDx, float roomMinX, float roomMaxX)
 {
 	mStateTimer++;
 	mAnimTimer++;
@@ -653,29 +937,14 @@ void BossEnemyDragon::UpdateIdle(Player* player, float dx, float absDx)
 	{
 		mFacingDirection = (dx >= 0.0f) ? 1.0f : -1.0f;
 
-		// 飛行クールダウン完了時は離陸アニメーションへ移行
-		if (mFlightCooldown <= 0 && mStateTimer >= 35)
+		if (TrySelectGroundAction(player, dx, absDx, roomMinX, roomMaxX))
 		{
-			mState = State::Takeoff;
-			mStateTimer = 0;
-			mAnimFrame = 0;
-			mAnimTimer = 0;
 			return;
 		}
 
-		// 通常アタックの間合いなら地上連続攻撃へ
-		if (absDx <= 360.0f && mAttackCooldown <= 0)
-		{
-			mState = State::Attack;
-			mAttackPhase = 0; // Phase 0: 頭上に「！」マーク表示
-			mStateTimer = 0;
-			mAnimFrame = 0;
-			mAnimTimer = 0;
-			return;
-		}
-
-		// 一定時間待機後に移動開始
-		if (mStateTimer >= 40)
+		// 一定時間待機後に移動開始（怒り時は反応が速くなる）
+		int waitLimit = IsEnraged() ? 24 : 34;
+		if (mStateTimer >= waitLimit)
 		{
 			mState = State::Move;
 			mStateTimer = 0;
@@ -689,7 +958,8 @@ void BossEnemyDragon::UpdateMove(Player* player, float dx, float absDx, float ro
 {
 	mStateTimer++;
 	mAnimTimer++;
-	if (mAnimTimer >= 8 && !mMoveAnim.empty())
+	int moveAnimInterval = (absDx > 460.0f || IsEnraged()) ? 6 : 8;
+	if (mAnimTimer >= moveAnimInterval && !mMoveAnim.empty())
 	{
 		mAnimTimer = 0;
 		mAnimFrame = (mAnimFrame + 1) % static_cast<int>(mMoveAnim.size());
@@ -699,34 +969,22 @@ void BossEnemyDragon::UpdateMove(Player* player, float dx, float absDx, float ro
 	{
 		mFacingDirection = (dx >= 0.0f) ? 1.0f : -1.0f;
 
-		// 飛行クールダウンが溜まったら離陸（Takeoff）へ
-		if (mFlightCooldown <= 0 && mStateTimer >= 35)
+		if (TrySelectGroundAction(player, dx, absDx, roomMinX, roomMaxX))
 		{
-			mState = State::Takeoff;
-			mStateTimer = 0;
-			mAnimFrame = 0;
-			mAnimTimer = 0;
-			return;
-		}
-
-		// 攻撃間合いに入ったら通常アタック（Attack）へ
-		if (absDx <= 350.0f && mAttackCooldown <= 0)
-		{
-			mState = State::Attack;
-			mAttackPhase = 0; // Phase 0: 頭上に「！」マーク表示
-			mStateTimer = 0;
-			mAnimFrame = 0;
-			mAnimTimer = 0;
 			return;
 		}
 	}
 
-	float walkSpeed = 4.2f;
+	// プレイヤーが遠い時やHP半減時は歩調を速めて間合いを詰める
+	float walkSpeed = 4.4f;
+	if (absDx > 480.0f) walkSpeed = 5.6f;
+	if (IsEnraged()) walkSpeed += 0.8f;
+
 	mvPosition.x += mFacingDirection * walkSpeed;
 	if (mvPosition.x < roomMinX) { mvPosition.x = roomMinX; mFacingDirection = 1.0f; }
 	if (mvPosition.x > roomMaxX) { mvPosition.x = roomMaxX; mFacingDirection = -1.0f; }
 
-	if (mStateTimer >= 110)
+	if (mStateTimer >= 95)
 	{
 		mState = State::Idle;
 		mStateTimer = 0;
@@ -735,13 +993,13 @@ void BossEnemyDragon::UpdateMove(Player* player, float dx, float absDx, float ro
 	}
 }
 
-void BossEnemyDragon::UpdateGroundAttack(float roomMinX, float roomMaxX)
+void BossEnemyDragon::UpdateGroundAttack(Player* player, float roomMinX, float roomMaxX)
 {
 	// 通常アタック:
 	// Phase 0: 頭の上に「！」マークを出して予備動作
 	// Phase 1: 俊足で前に少し前進（5フレームでスッと約75pxだけ前へ出る）
 	// Phase 2: 1回目の攻撃（その場で素早く斬りつける）
-	// Phase 3: 再び俊足で前に少し前進（5フレームでスッと約75pxだけ前へ出る）
+	// Phase 3: 再び俊足で前に少し前進（プレイヤーが背後へ回り込んでいた場合は振り向いて追撃）
 	// Phase 4: 2回目の攻撃
 	mStateTimer++;
 	mAnimTimer++;
@@ -754,7 +1012,8 @@ void BossEnemyDragon::UpdateGroundAttack(float roomMinX, float roomMaxX)
 			mAnimTimer = 0;
 			mAnimFrame = (mAnimFrame + 1) % static_cast<int>(mIdleAnim.size());
 		}
-		if (mStateTimer >= 32)
+		int telegraphFrames = IsEnraged() ? 26 : 32;
+		if (mStateTimer >= telegraphFrames)
 		{
 			mAttackPhase = 1;
 			mStateTimer = 0;
@@ -764,6 +1023,14 @@ void BossEnemyDragon::UpdateGroundAttack(float roomMinX, float roomMaxX)
 	}
 	else if (mAttackPhase == 1 || mAttackPhase == 3)
 	{
+		// 背後振り向き発生時は一瞬だけタメを入れてフェアな回避猶予を作る
+		if (mAttackPhase == 3 && mAttackTurnDelay > 0)
+		{
+			mAttackTurnDelay--;
+			mStateTimer = 0;
+			return;
+		}
+
 		// 俊足で前に少しだけ前進（15px × 5フレーム = 75px を一瞬でステップ）
 		if (mAnimTimer >= 2 && !mMoveAnim.empty())
 		{
@@ -782,7 +1049,6 @@ void BossEnemyDragon::UpdateGroundAttack(float roomMinX, float roomMaxX)
 			mAnimFrame = 2; // 溜めフレームを飛ばしてすぐ攻撃へ
 			mAnimTimer = 0;
 			PlayDragonSE(SoundManager::SE_STAGE2_DRAGON_NORMAL_ATTACK);
-
 		}
 	}
 	else if (mAttackPhase == 2 || mAttackPhase == 4)
@@ -799,17 +1065,112 @@ void BossEnemyDragon::UpdateGroundAttack(float roomMinX, float roomMaxX)
 				mStateTimer = 0;
 				if (mAttackPhase == 2)
 				{
-					// 1回目の攻撃完了 -> Phase 3（2回目の少し前進）へ
+					// 1回目の攻撃完了 -> プレイヤーが背後へ回り込んだか、または壁に突き当たったかを確認
+					mAttackTurnDelay = 0;
+					bool wallBlocked = (mFacingDirection < 0.0f && mvPosition.x <= roomMinX + 70.0f) ||
+						(mFacingDirection > 0.0f && mvPosition.x >= roomMaxX - 70.0f);
+					if (player != nullptr && !player->GetIsDead())
+					{
+						float pdx = player->GetPosition().x - mvPosition.x;
+						bool playerBehind = (pdx * mFacingDirection < -25.0f) && (std::fabs(pdx) <= 380.0f);
+						if (playerBehind || wallBlocked)
+						{
+							mFacingDirection = (pdx >= 0.0f) ? 1.0f : -1.0f;
+							mAttackTurnDelay = 8; // 振り向きを見てから反応できる8フレームの小休止
+						}
+					}
+					else if (wallBlocked)
+					{
+						mFacingDirection = -mFacingDirection;
+					}
 					mAttackPhase = 3;
 				}
 				else
 				{
 					// 2回目の攻撃完了 -> Idleへ戻る
 					mAttackPhase = 0;
+					mAttackTurnDelay = 0;
 					mState = State::Idle;
-					mAttackCooldown = 70;
+					mAttackCooldown = IsEnraged() ? 50 : 65;
 				}
 			}
+		}
+	}
+}
+
+void BossEnemyDragon::UpdateGroundBreathAttack(Player* player, float dx)
+{
+	// 地上攻撃2（new_ground_breath: sprite_groundBreath1 ~ 7）
+	// フレーム0〜2: 低く身を沈めながら口元に灼熱エネルギーをチャージ（予備動作）
+	// フレーム3〜4: 前方へ大口を開いて水平〜低空火炎ストリーム＆地走りアーチ火炎波を放射！
+	// フレーム5〜6: 顎を閉じて基本姿勢へ戻る
+	mStateTimer++;
+	mAnimTimer++;
+
+	float mouthX = 0.0f, mouthY = 0.0f;
+	GetGroundBreathMouthWorldPos(mouthX, mouthY);
+
+	if (mAnimFrame < 3)
+	{
+		// チャージ開始直後（フレーム0〜1前半）のみプレイヤーの向きを捕捉
+		if (mAnimFrame <= 1 && player != nullptr && !player->GetIsDead())
+		{
+			mFacingDirection = (dx >= 0.0f) ? 1.0f : -1.0f;
+		}
+		mFireGimmick.SpawnBreathInhaleSparks(mouthX, mouthY);
+		if (mAnimFrame == 2)
+		{
+			mFireGimmick.SpawnCenterChargeSparks(mouthX, mouthY);
+		}
+	}
+	else if (mAnimFrame == 3 || mAnimFrame == 4)
+	{
+		// 地上ブレス放射中：前方中距離（230px〜520px）の床を焦がす低空火炎ストリームを連続発射
+		float sweepRatio = std::sin(mStateTimer * 0.22f) * 0.5f + 0.5f; // 0.0 ~ 1.0
+		float targetDist = 230.0f + sweepRatio * 290.0f;
+		mFireGimmick.SpawnGroundBreathStream(mouthX, mouthY, mFacingDirection, targetDist, 1903.0f);
+	}
+
+	static constexpr int kGroundBreathFrameDurations[7] = { 9, 11, 13, 18, 16, 9, 9 };
+	int curIdx = (mAnimFrame < 0) ? 0 : ((mAnimFrame < 7) ? mAnimFrame : 6);
+	int frameDuration = kGroundBreathFrameDurations[curIdx];
+	if (IsEnraged() && curIdx < 3)
+	{
+		frameDuration -= 2; // 怒り状態では溜めが少し速くなる
+	}
+
+	if (mAnimTimer >= frameDuration)
+	{
+		mAnimTimer = 0;
+		mAnimFrame++;
+
+		if (mAnimFrame == 3)
+		{
+			// フレーム3（大口を開いた瞬間）：ブレスSE＋画面振動＋1波目の地走りアーチ火炎波を発射！
+			PlayDragonSE(SoundManager::SE_STAGE2_DRAGON_BREATH);
+			GetGroundBreathMouthWorldPos(mouthX, mouthY);
+			float waveSpeed = IsEnraged() ? 11.5f : 10.0f;
+			mFireGimmick.SpawnGroundFlameWave(mouthX, mouthY, mFacingDirection, waveSpeed, 64.0f, 1903.0f);
+			if (mpBlockMap != nullptr)
+			{
+				mpBlockMap->StartCameraShake(10.0f, 0.7f, 0.4f, 24);
+			}
+		}
+		else if (mAnimFrame == 4)
+		{
+			// フレーム4（上体を起こして火の粉を噴き上げる瞬間）：2波目の低い地走り火炎波を追撃発射！
+			GetGroundBreathMouthWorldPos(mouthX, mouthY);
+			float waveSpeed = IsEnraged() ? 11.0f : 9.5f;
+			mFireGimmick.SpawnGroundFlameWave(mouthX, mouthY, mFacingDirection, waveSpeed, 48.0f, 1903.0f);
+		}
+
+		if (mAnimFrame >= static_cast<int>(mGroundBreathAnim.size()))
+		{
+			mState = State::Idle;
+			mStateTimer = 0;
+			mAnimFrame = 0;
+			mAnimTimer = 0;
+			mAttackCooldown = IsEnraged() ? 55 : 72;
 		}
 	}
 }
@@ -856,53 +1217,62 @@ void BossEnemyDragon::UpdateFly(Player* player, float dx, float absDx, float roo
 		mAnimFrame = (mAnimFrame + 1) % static_cast<int>(mFlyAnim.size());
 	}
 
-	// ホバリング高度へ滑らかに維持しつつ、火を噴きやすい斜め上空の間合い（約280～420px）へ移動
+	// ホバリング高度へ滑らかに維持
 	float hoverWave = std::sin(mStateTimer * 0.1f) * 2.5f;
 	mvPosition.y += (mHoverTargetY - mvPosition.y) * 0.12f + hoverWave;
 
+	const float arenaCenterX = (roomMinX + roomMaxX) * 0.5f;
+
 	if (player && !player->GetIsDead())
 	{
-		mFacingDirection = (dx >= 0.0f) ? 1.0f : -1.0f;
-		if (absDx > 400.0f)
+		// 壁際でプレイヤーに詰められた場合、壁に向かって後退し続けず中央〜反対側へ飛び越えて位置取りをリセットする
+		bool backedNearLeftWall = (mvPosition.x < roomMinX + 230.0f && dx > 0.0f && absDx < 270.0f);
+		bool backedNearRightWall = (mvPosition.x > roomMaxX - 230.0f && dx < 0.0f && absDx < 270.0f);
+		if (!mIsAirRepositioning && (backedNearLeftWall || backedNearRightWall))
 		{
-			mvPosition.x += mFacingDirection * 6.0f;
+			mIsAirRepositioning = true;
+			mAirRepositionTargetX = arenaCenterX + (backedNearLeftWall ? 260.0f : -260.0f);
 		}
-		else if (absDx < 220.0f)
+
+		if (mIsAirRepositioning)
 		{
-			mvPosition.x -= mFacingDirection * 4.5f;
+			float repDx = mAirRepositionTargetX - mvPosition.x;
+			if (std::fabs(repDx) > 18.0f)
+			{
+				mFacingDirection = (repDx >= 0.0f) ? 1.0f : -1.0f;
+				mvPosition.x += mFacingDirection * 9.5f;
+			}
+			else
+			{
+				mIsAirRepositioning = false;
+				mFacingDirection = (dx >= 0.0f) ? 1.0f : -1.0f;
+			}
+		}
+		else
+		{
+			mFacingDirection = (dx >= 0.0f) ? 1.0f : -1.0f;
+			if (absDx > 400.0f)
+			{
+				mvPosition.x += mFacingDirection * 6.5f;
+			}
+			else if (absDx < 220.0f)
+			{
+				mvPosition.x -= mFacingDirection * 4.8f;
+			}
 		}
 	}
 	if (mvPosition.x < roomMinX) mvPosition.x = roomMinX;
 	if (mvPosition.x > roomMaxX) mvPosition.x = roomMaxX;
 
-	// 一定時間飛行した後に「中央火の玉大爆発（CenterFireballAttack → AirDiveAttack派生）」または「空中火炎ブレス（AirAttack）」へ移行
-	if (mStateTimer >= 55)
+	// 状況判断によって次の空中攻撃（空中ブレス / ダイレクト急降下 / 中央火球大爆発）を選択
+	int decisionTime = IsEnraged() ? 42 : 52;
+	if (!mIsAirRepositioning && mStateTimer >= decisionTime)
 	{
-		mStateTimer = 0;
-		mAnimFrame = 0;
-		mAnimTimer = 0;
-		if (player && !player->GetIsDead())
-		{
-			mFacingDirection = (dx >= 0.0f) ? 1.0f : -1.0f;
-			mBreathTargetCenterX = player->GetPosition().x;
-		}
-		else
-		{
-			mBreathTargetCenterX = mvPosition.x + mFacingDirection * 320.0f;
-		}
-
-		if (mAirAttackCycle == 0)
-		{
-			mAirAttackCycle = 1;
-			mState = State::CenterFireballAttack;
-			mCenterAttackPhase = 0;
-			mDiveAngle = 0.0f;
-		}
-		else
-		{
-			mAirAttackCycle = 0;
-			mState = State::AirAttack;
-		}
+		SelectNextAirAction(player, dx, absDx);
+	}
+	else if (mStateTimer >= decisionTime + 25)
+	{
+		SelectNextAirAction(player, dx, absDx);
 	}
 }
 
@@ -1090,8 +1460,9 @@ void BossEnemyDragon::UpdateAirDiveAttack(Player* player, float dx, float roomMi
 				mStateTimer = 0;
 				mAnimFrame = 0;
 				mAnimTimer = 0;
-				mFlightCooldown = 140;
-				mAttackCooldown = 55;
+				mGroundActionsSinceLanding = 0;
+				mFlightCooldown = IsEnraged() ? 120 : 155;
+				mAttackCooldown = IsEnraged() ? 45 : 55;
 			}
 		}
 	}
@@ -1251,8 +1622,9 @@ void BossEnemyDragon::UpdateLanding()
 				mStateTimer = 0;
 				mAnimFrame = 0;
 				mAnimTimer = 0;
-				mFlightCooldown = 150;
-				mAttackCooldown = 45;
+				mGroundActionsSinceLanding = 0;
+				mFlightCooldown = IsEnraged() ? 130 : 165;
+				mAttackCooldown = IsEnraged() ? 35 : 45;
 			}
 		}
 	}
@@ -1447,8 +1819,15 @@ void BossEnemyDragon::DrawDragon()
 
 	// 6. 火炎ブレス・延焼地面・中央巨大火球・大爆発・アーチ火炎波・火花の描画
 	float mouthWX = 0.0f, mouthWY = 0.0f;
-	GetAirAttackMouthWorldPos(mouthWX, mouthWY);
-	bool isAirBreath = (mState == State::AirAttack);
+	if (mState == State::GroundBreathAttack)
+	{
+		GetGroundBreathMouthWorldPos(mouthWX, mouthWY);
+	}
+	else
+	{
+		GetAirAttackMouthWorldPos(mouthWX, mouthWY);
+	}
+	bool isAirBreath = (mState == State::AirAttack || mState == State::GroundBreathAttack);
 	bool isCenterCharge = (mState == State::CenterFireballAttack && mCenterAttackPhase == 1);
 	mFireGimmick.Draw(mpBlockMap, isAirBreath, isCenterCharge, mAnimFrame, mouthWX, mouthWY);
 }
@@ -1541,6 +1920,17 @@ void BossEnemyDragon::SelectCurrentSprite(int& outHandle, float& outFootOffset) 
 		else
 		{
 			if (!mAttackAnim.empty()) outHandle = mAttackAnim[mAnimFrame % mAttackAnim.size()];
+		}
+		break;
+
+	case State::GroundBreathAttack:
+		if (!mGroundBreathAnim.empty())
+		{
+			int idx = mAnimFrame;
+			if (idx < 0) idx = 0;
+			if (idx >= static_cast<int>(mGroundBreathAnim.size())) idx = static_cast<int>(mGroundBreathAnim.size()) - 1;
+			outHandle = mGroundBreathAnim[idx];
+			outFootOffset = 72.0f; // 400x400キャンバス基準（sprite_groundBreath1~7）
 		}
 		break;
 
@@ -1688,7 +2078,7 @@ void BossEnemyDragon::DrawDiveLockOnSight() const
 
 void BossEnemyDragon::DrawAfterimages(int screenX, int screenY, int handle, bool reverse, double drawAngle) const
 {
-	if (mState == State::Attack && (mAttackPhase == 1 || mAttackPhase == 3))
+	if (mState == State::Attack && (mAttackPhase == 1 || (mAttackPhase == 3 && mAttackTurnDelay <= 0)))
 	{
 		int dirSign = (mFacingDirection > 0.0f) ? 1 : -1;
 		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 75);
@@ -1739,18 +2129,21 @@ void BossEnemyDragon::DrawDiveEyeFlare(int screenX, int screenY) const
 
 void BossEnemyDragon::DrawWarningExclamation() const
 {
-	if ((mState == State::Attack && mAttackPhase == 0) || (mState == State::AirDiveAttack && mDivePhase == 0))
+	if ((mState == State::Attack && mAttackPhase == 0) ||
+		(mState == State::GroundBreathAttack && mAnimFrame < 2) ||
+		(mState == State::AirDiveAttack && mDivePhase == 0))
 	{
 		int exX = static_cast<int>(ConvertToScreenX(mvPosition.x + mFacingDirection * 85.0f, mpBlockMap));
 		int exY = static_cast<int>(ConvertToScreenY(mvPosition.y - 165.0f, mpBlockMap));
 		bool blinkOff = (mStateTimer / 4) % 2 != 0;
 		if (!blinkOff)
 		{
-			// 黒縁取り＋赤色の「！」マーク
+			unsigned int fillCol = (mState == State::GroundBreathAttack) ? GetColor(255, 130, 20) : GetColor(255, 20, 20);
+			// 黒縁取り＋警告色の「！」マーク（地上ブレス時は炎色のオレンジで識別可能にする）
 			DrawBox(exX - 10, exY - 62, exX + 10, exY - 13, GetColor(0, 0, 0), TRUE);
 			DrawBox(exX - 10, exY - 7, exX + 10, exY + 12, GetColor(0, 0, 0), TRUE);
-			DrawBox(exX - 8, exY - 60, exX + 8, exY - 15, GetColor(255, 20, 20), TRUE);
-			DrawBox(exX - 8, exY - 5, exX + 8, exY + 10, GetColor(255, 20, 20), TRUE);
+			DrawBox(exX - 8, exY - 60, exX + 8, exY - 15, fillCol, TRUE);
+			DrawBox(exX - 8, exY - 5, exX + 8, exY + 10, fillCol, TRUE);
 		}
 	}
 }

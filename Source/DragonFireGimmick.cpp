@@ -1,4 +1,4 @@
-#include "DragonFireGimmick.h"
+ï»¿#include "DragonFireGimmick.h"
 #include "BlockMap.h"
 #include "Player.h"
 #include <cmath>
@@ -57,7 +57,7 @@ void DragonFireGimmick::SpawnBreathStream(float mouthX, float mouthY, float targ
 	float len = std::sqrt(fdx * fdx + fdy * fdy);
 	if (len < 1.0f) len = 1.0f;
 
-	// –ˆƒtƒŒ[ƒ€”Z–§‚È‰Î‰ŠƒXƒgƒŠ[ƒ€’e‚ğ”­ËiŒûŒ³‚Í×‚­A’n–Ê‚É‹ß‚Ã‚­‚Ù‚Ç‹‘å‚É–c’£‚·‚éj
+	// æ¯ãƒ•ãƒ¬ãƒ¼ãƒ æ¿ƒå¯†ãªç«ç‚ã‚¹ãƒˆãƒªãƒ¼ãƒ å¼¾ã‚’ç™ºå°„ï¼ˆå£å…ƒã¯ç´°ãã€åœ°é¢ã«è¿‘ã¥ãã»ã©å·¨å¤§ã«è†¨å¼µã™ã‚‹ï¼‰
 	float speed = 17.5f + static_cast<float>(GetRand(30)) * 0.1f;
 	FireProjectile fp;
 	fp.x = mouthX + (fdx / len) * 12.0f;
@@ -71,7 +71,7 @@ void DragonFireGimmick::SpawnBreathStream(float mouthX, float mouthY, float targ
 	fp.active = true;
 	mFireProjectiles.push_back(fp);
 
-	// ŒûŒ³‚©‚ç”ò‚ÑU‚é‰Î‚Ì•²ƒXƒp[ƒN
+	// å£å…ƒã‹ã‚‰é£›ã³æ•£ã‚‹ç«ã®ç²‰ã‚¹ãƒ‘ãƒ¼ã‚¯
 	for (int i = 0; i < 3; ++i)
 	{
 		FireSpark sp;
@@ -160,6 +160,87 @@ void DragonFireGimmick::SpawnDiveLandingSparks(float x, float facingDir)
 	}
 }
 
+void DragonFireGimmick::SpawnGroundBreathStream(float mouthX, float mouthY, float facingDir, float targetDist, float floorY)
+{
+	float targetX = mouthX + facingDir * targetDist;
+	float fdx = targetX - mouthX;
+	float fdy = floorY - mouthY;
+	if (fdy < 35.0f) fdy = 35.0f;
+	float len = std::sqrt(fdx * fdx + fdy * fdy);
+	if (len < 1.0f) len = 1.0f;
+
+	float speed = 18.5f + static_cast<float>(GetRand(25)) * 0.1f;
+	FireProjectile fp;
+	fp.x = mouthX + (fdx / len) * 14.0f;
+	fp.y = mouthY + (fdy / len) * 10.0f;
+	fp.vx = (fdx / len) * speed;
+	fp.vy = (fdy / len) * speed;
+	fp.radius = 14.0f;
+	fp.maxRadius = 42.0f + static_cast<float>(GetRand(10));
+	fp.swaySeed = static_cast<float>(GetRand(628)) * 0.01f;
+	fp.animTick = 0;
+	fp.active = true;
+	mFireProjectiles.push_back(fp);
+
+	for (int i = 0; i < 2; ++i)
+	{
+		FireSpark sp;
+		sp.x = mouthX;
+		sp.y = mouthY;
+		float spread = (static_cast<float>(GetRand(44) - 22) * 3.14159265f) / 180.0f;
+		float baseAng = std::atan2(fdy, fdx) + spread;
+		float spSpeed = 10.0f + static_cast<float>(GetRand(80)) * 0.1f;
+		sp.vx = std::cos(baseAng) * spSpeed;
+		sp.vy = std::sin(baseAng) * spSpeed;
+		sp.size = 3.0f + static_cast<float>(GetRand(4));
+		sp.life = 14 + GetRand(12);
+		sp.maxLife = sp.life;
+		sp.color = (i == 0) ? GetColor(255, 245, 150) : GetColor(255, 100, 20);
+		mFireSparks.push_back(sp);
+	}
+}
+
+void DragonFireGimmick::SpawnGroundFlameWave(float mouthX, float mouthY, float facingDir, float speed, float archHeight, float floorY)
+{
+	ArchFlameWave wave;
+	wave.startX = mouthX;
+	wave.x = mouthX + facingDir * 28.0f;
+	wave.y = floorY;
+	wave.dir = (facingDir >= 0.0f) ? 1.0f : -1.0f;
+	wave.speed = speed;
+	wave.archWidth = 175.0f;
+	wave.archHeight = archHeight;
+	wave.tick = 0;
+	wave.active = true;
+	mArchFlameWaves.push_back(wave);
+
+	for (int s = 0; s < 14; ++s)
+	{
+		FireSpark sp;
+		sp.x = mouthX + wave.dir * 20.0f;
+		sp.y = mouthY + static_cast<float>(GetRand(30) - 15);
+		sp.vx = wave.dir * (6.0f + static_cast<float>(GetRand(90)) * 0.1f);
+		sp.vy = -static_cast<float>(15 + GetRand(65)) * 0.1f;
+		sp.size = 4.0f + static_cast<float>(GetRand(4));
+		sp.life = 16 + GetRand(14);
+		sp.maxLife = sp.life;
+		sp.color = (s % 2 == 0) ? GetColor(255, 230, 90) : GetColor(255, 85, 15);
+		mFireSparks.push_back(sp);
+	}
+}
+
+bool DragonFireGimmick::IsGroundBurningAt(float worldX, float margin) const
+{
+	for (const auto& bg : mBurningGrounds)
+	{
+		if (bg.timer > 35 && std::fabs(worldX - bg.x) <= (bg.currentHalfWidth + margin))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 void DragonFireGimmick::Update(Player* player, BlockMap* blockMap, int attackDamage)
 {
 	const float floorY = 1903.0f;
@@ -171,7 +252,7 @@ void DragonFireGimmick::Update(Player* player, BlockMap* blockMap, int attackDam
 	UpdateArchFlameWaves(player, attackDamage, floorY);
 }
 
-// 1. ‹ó’†‚©‚ç•¬‚©‚ê‚½‰Î‰ŠƒuƒŒƒX’e‚ÌˆÚ“®E–c’£EƒvƒŒƒCƒ„[“–‚½‚è”»’èE’n–Ê’…’e”»’è
+// 1. ç©ºä¸­ã‹ã‚‰å™´ã‹ã‚ŒãŸç«ç‚ãƒ–ãƒ¬ã‚¹å¼¾ã®ç§»å‹•ãƒ»è†¨å¼µãƒ»ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼å½“ãŸã‚Šåˆ¤å®šãƒ»åœ°é¢ç€å¼¾åˆ¤å®š
 void DragonFireGimmick::UpdateFireProjectiles(Player* player, BlockMap* blockMap, int attackDamage, float floorY)
 {
 	for (auto& fp : mFireProjectiles)
@@ -182,14 +263,14 @@ void DragonFireGimmick::UpdateFireProjectiles(Player* player, BlockMap* blockMap
 		fp.y += fp.vy;
 		fp.animTick++;
 
-		// ŒûŒ³‚©‚ç—£‚ê‚é‚É‚Â‚ê‚Ä‰~ó‚É‘å‚«‚­‰QŠª‚«‚È‚ª‚ç–c’£‚·‚é
+		// å£å…ƒã‹ã‚‰é›¢ã‚Œã‚‹ã«ã¤ã‚Œã¦å††éŒçŠ¶ã«å¤§ããæ¸¦å·»ããªãŒã‚‰è†¨å¼µã™ã‚‹
 		if (fp.radius < fp.maxRadius)
 		{
 			fp.radius += 1.35f;
 			if (fp.radius > fp.maxRadius) fp.radius = fp.maxRadius;
 		}
 
-		// ƒvƒŒƒCƒ„[‚Ö‚Ì’¼Œ‚”»’è
+		// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã¸ã®ç›´æ’ƒåˆ¤å®š
 		if (player && !player->GetIsDead())
 		{
 			float px = player->GetPosition().x;
@@ -204,12 +285,12 @@ void DragonFireGimmick::UpdateFireProjectiles(Player* player, BlockMap* blockMap
 				fp.y + hitR > pTop && fp.y - hitR < pBot)
 			{
 				player->TakeDamage(attackDamage);
-				// ƒhƒ‰ƒSƒ“‚ÌƒuƒŒƒX
+				// ãƒ‰ãƒ©ã‚´ãƒ³ã®ãƒ–ãƒ¬ã‚¹
 				player->SetDeathReason(DeathReason::DeathType::DragonFireBreath);
 			}
 		}
 
-		// ’n–ÊiY >= 1903j‚Ü‚½‚ÍƒuƒƒbƒN‚É’…’e‚µ‚½‚çAŒƒ‚µ‚¢‰Î’Œ‚Æ‰Î‰Ô‚ğU‚ç‚µ‚Ä’n–Ê‚É”R‚¦L‚ª‚éI
+		// åœ°é¢ï¼ˆY >= 1903ï¼‰ã¾ãŸã¯ãƒ–ãƒ­ãƒƒã‚¯ã«ç€å¼¾ã—ãŸã‚‰ã€æ¿€ã—ã„ç«æŸ±ã¨ç«èŠ±ã‚’æ•£ã‚‰ã—ã¦åœ°é¢ã«ç‡ƒãˆåºƒãŒã‚‹ï¼
 		bool hitGround = (fp.y >= floorY - 6.0f);
 		if (!hitGround && blockMap != nullptr && fp.y >= 1750.0f)
 		{
@@ -226,7 +307,7 @@ void DragonFireGimmick::UpdateFireProjectiles(Player* player, BlockMap* blockMap
 			if (burnX < 8000.0f) burnX = 8000.0f;
 			if (burnX > 9780.0f) burnX = 9780.0f;
 
-			// ’…’e‚É¶‰E‚Ö”šU‚·‚é‰Î‰ÔƒXƒp[ƒN‚ğ¶¬
+			// ç€å¼¾æ™‚ã«å·¦å³ã¸çˆ†æ•£ã™ã‚‹ç«èŠ±ã‚¹ãƒ‘ãƒ¼ã‚¯ã‚’ç”Ÿæˆ
 			for (int s = 0; s < 5; ++s)
 			{
 				FireSpark sp;
@@ -241,14 +322,14 @@ void DragonFireGimmick::UpdateFireProjectiles(Player* player, BlockMap* blockMap
 				mFireSparks.push_back(sp);
 			}
 
-			// Šù‚É‹ß‚­i150pxˆÈ“àj‚É”RÄƒGƒŠƒA‚ª‚ ‚éê‡‚ÍA‰Š‚Ì¨‚¢iL‚ª‚è•j‚ğ‚³‚ç‚ÉŠg‘å‚µAƒ^ƒCƒ}[‚ğXV
+			// æ—¢ã«è¿‘ãï¼ˆ150pxä»¥å†…ï¼‰ã«ç‡ƒç„¼ã‚¨ãƒªã‚¢ãŒã‚ã‚‹å ´åˆã¯ã€ç‚ã®å‹¢ã„ï¼ˆåºƒãŒã‚Šå¹…ï¼‰ã‚’ã•ã‚‰ã«æ‹¡å¤§ã—ã€ã‚¿ã‚¤ãƒãƒ¼ã‚’æ›´æ–°
 			bool merged = false;
 			for (auto& bg : mBurningGrounds)
 			{
 				if (std::fabs(bg.x - burnX) < 150.0f)
 				{
-					bg.timer = 300; // 5•bŠÔ (60fps ~ 5s)
-					// ’…’e‚ª‘±‚­‚Ù‚Ç¶‰E‚Ö‚³‚ç‚ÉƒJƒbƒR‚æ‚­”R‚¦L‚ª‚éiÅ‘å”¼Œa 220px = ‘S• 440pxj
+					bg.timer = 300; // 5ç§’é–“ (60fps Ã— 5s)
+					// ç€å¼¾ãŒç¶šãã»ã©å·¦å³ã¸ã•ã‚‰ã«ã‚«ãƒƒã‚³ã‚ˆãç‡ƒãˆåºƒãŒã‚‹ï¼ˆæœ€å¤§åŠå¾„ 220px = å…¨å¹… 440pxï¼‰
 					if (bg.targetHalfWidth < 220.0f)
 					{
 						bg.targetHalfWidth += 10.0f;
@@ -264,9 +345,9 @@ void DragonFireGimmick::UpdateFireProjectiles(Player* player, BlockMap* blockMap
 				BurningGround bg;
 				bg.x = burnX;
 				bg.y = floorY;
-				bg.currentHalfWidth = 18.0f;  // Å‰‚Í’†S‚©‚çn‚Ü‚èA‚»‚±‚©‚ç¶‰E‚Ö‹}‘¬‚É”R‚¦L‚ª‚éI
-				bg.targetHalfWidth = 150.0f; // Šî–{‚ÌL‚ª‚è•i‘S• 300pxA˜A‘±’…’e‚ÅÅ‘å 440px ‚Ü‚ÅŠg‘åj
-				bg.timer = 300;               // 5•bŠÔ (60fps ~ 5s)
+				bg.currentHalfWidth = 18.0f;  // æœ€åˆã¯ä¸­å¿ƒã‹ã‚‰å§‹ã¾ã‚Šã€ãã“ã‹ã‚‰å·¦å³ã¸æ€¥é€Ÿã«ç‡ƒãˆåºƒãŒã‚‹ï¼
+				bg.targetHalfWidth = 150.0f; // åŸºæœ¬ã®åºƒãŒã‚Šå¹…ï¼ˆå…¨å¹… 300pxã€é€£ç¶šç€å¼¾ã§æœ€å¤§ 440px ã¾ã§æ‹¡å¤§ï¼‰
+				bg.timer = 300;               // 5ç§’é–“ (60fps Ã— 5s)
 				bg.maxTimer = 300;
 				bg.age = 0;
 				mBurningGrounds.push_back(bg);
@@ -278,7 +359,7 @@ void DragonFireGimmick::UpdateFireProjectiles(Player* player, BlockMap* blockMap
 		}
 	}
 
-	// –³Œø‰»‚³‚ê‚½‰Î‰Š’e‚ğíœ
+	// ç„¡åŠ¹åŒ–ã•ã‚ŒãŸç«ç‚å¼¾ã‚’å‰Šé™¤
 	for (auto it = mFireProjectiles.begin(); it != mFireProjectiles.end(); )
 	{
 		if (!it->active) it = mFireProjectiles.erase(it);
@@ -286,21 +367,21 @@ void DragonFireGimmick::UpdateFireProjectiles(Player* player, BlockMap* blockMap
 	}
 }
 
-// 2. ”ò‚ÑU‚é‰Î‰Ôƒp[ƒeƒBƒNƒ‹iFireSparkj‚ÌXV
+// 2. é£›ã³æ•£ã‚‹ç«èŠ±ãƒ‘ãƒ¼ãƒ†ã‚£ã‚¯ãƒ«ï¼ˆFireSparkï¼‰ã®æ›´æ–°
 void DragonFireGimmick::UpdateFireSparks()
 {
 	for (auto it = mFireSparks.begin(); it != mFireSparks.end(); )
 	{
 		it->x += it->vx;
 		it->y += it->vy;
-		it->vy += 0.22f; // Œy‚¢d—Í‚ÅŒÊ‚ğ•`‚­
+		it->vy += 0.22f; // è»½ã„é‡åŠ›ã§å¼§ã‚’æã
 		it->life--;
 		if (it->life <= 0) it = mFireSparks.erase(it);
 		else ++it;
 	}
 }
 
-// 3. ’n–Ê‚Ì”RÄƒGƒŠƒAi’…’e“_‚©‚ç¶‰E‚Öƒ_ƒCƒiƒ~ƒbƒN‚ÉL‚ª‚èAƒ_ƒ[ƒW”»’è‚ª‘±j‚ÌXV
+// 3. åœ°é¢ã®ç‡ƒç„¼ã‚¨ãƒªã‚¢ï¼ˆç€å¼¾ç‚¹ã‹ã‚‰å·¦å³ã¸ãƒ€ã‚¤ãƒŠãƒŸãƒƒã‚¯ã«åºƒãŒã‚Šã€ãƒ€ãƒ¡ãƒ¼ã‚¸åˆ¤å®šãŒæŒç¶šï¼‰ã®æ›´æ–°
 void DragonFireGimmick::UpdateBurningGrounds(Player* player, int attackDamage)
 {
 	for (auto it = mBurningGrounds.begin(); it != mBurningGrounds.end(); )
@@ -313,7 +394,7 @@ void DragonFireGimmick::UpdateBurningGrounds(Player* player, int attackDamage)
 			continue;
 		}
 
-		// ’…’e’¼ŒãA’†S‚©‚çŠO‘¤‚ÖŒü‚©‚Á‚Ä‰Š‚Ì”g‚ªƒJƒbƒR‚æ‚­‹}‘¬‚ÉL‚ª‚éI
+		// ç€å¼¾ç›´å¾Œã€ä¸­å¿ƒã‹ã‚‰å¤–å´ã¸å‘ã‹ã£ã¦ç‚ã®æ³¢ãŒã‚«ãƒƒã‚³ã‚ˆãæ€¥é€Ÿã«åºƒãŒã‚‹ï¼
 		if (it->currentHalfWidth < it->targetHalfWidth)
 		{
 			float expandSpeed = (it->targetHalfWidth - it->currentHalfWidth) * 0.16f + 3.5f;
@@ -323,7 +404,7 @@ void DragonFireGimmick::UpdateBurningGrounds(Player* player, int attackDamage)
 				it->currentHalfWidth = it->targetHalfWidth;
 			}
 
-			// ”R‚¦L‚ª‚éæ’[i¶‰E‚Ì‰Îæj‚©‚ç‰Î‰Ô‚ª’e‚¯‚é
+			// ç‡ƒãˆåºƒãŒã‚‹å…ˆç«¯ï¼ˆå·¦å³ã®ç«å…ˆï¼‰ã‹ã‚‰ç«èŠ±ãŒå¼¾ã‘ã‚‹
 			if (it->age % 2 == 0)
 			{
 				for (int side = -1; side <= 1; side += 2)
@@ -342,7 +423,7 @@ void DragonFireGimmick::UpdateBurningGrounds(Player* player, int attackDamage)
 			}
 		}
 
-		// ”R‚¦‚Ä‚¢‚é’n–Ê‚Ìƒ_ƒ[ƒW”»’èiŒ»İL‚ª‚Á‚Ä‚¢‚é‰Š‚Ì•‚É˜A“®j
+		// ç‡ƒãˆã¦ã„ã‚‹åœ°é¢ã®ãƒ€ãƒ¡ãƒ¼ã‚¸åˆ¤å®šï¼ˆç¾åœ¨åºƒãŒã£ã¦ã„ã‚‹ç‚ã®å¹…ã«é€£å‹•ï¼‰
 		if (player && !player->GetIsDead())
 		{
 			float px = player->GetPosition().x;
@@ -368,18 +449,18 @@ void DragonFireGimmick::UpdateBurningGrounds(Player* player, int attackDamage)
 	}
 }
 
-// 4. ’†‰›‚Ö“f‚«o‚³‚ê‚½‹‘å‰Î‚Ì‹Ê‚Ì—‰ºEü•Ó‘å”š”­EƒA[ƒ`ó‰Î‰Š”g‚Ì¶¬
+// 4. ä¸­å¤®ã¸åãå‡ºã•ã‚ŒãŸå·¨å¤§ç«ã®ç‰ã®è½ä¸‹ãƒ»å‘¨è¾ºå¤§çˆ†ç™ºãƒ»ã‚¢ãƒ¼ãƒçŠ¶ç«ç‚æ³¢ã®ç”Ÿæˆ
 void DragonFireGimmick::UpdateCenterFireball(Player* player, BlockMap* blockMap, int attackDamage, float floorY)
 {
 	if (!mCenterFireball.active) return;
 
 	if (!mCenterFireball.exploding)
 	{
-		// ŒûŒ³‚©‚ç’n–Ê‚Ì’†‰›i8900, 1903j‚ÖŒü‚©‚Á‚Ä—‰º
+		// å£å…ƒã‹ã‚‰åœ°é¢ã®ä¸­å¤®ï¼ˆ8900, 1903ï¼‰ã¸å‘ã‹ã£ã¦è½ä¸‹
 		mCenterFireball.x += mCenterFireball.vx;
 		mCenterFireball.y += mCenterFireball.vy;
 
-		// —‰º’†‚É‰Î‚Ì•²‚ğT‚«U‚ç‚·
+		// è½ä¸‹ä¸­ã«ç«ã®ç²‰ã‚’æ’’ãæ•£ã‚‰ã™
 		for (int i = 0; i < 2; ++i)
 		{
 			FireSpark sp;
@@ -394,7 +475,7 @@ void DragonFireGimmick::UpdateCenterFireball(Player* player, BlockMap* blockMap,
 			mFireSparks.push_back(sp);
 		}
 
-		// —‰º’†‚Ì‹‘å‰Î‚Ì‹Ê‚Ì’¼Œ‚”»’è
+		// è½ä¸‹ä¸­ã®å·¨å¤§ç«ã®ç‰ã®ç›´æ’ƒåˆ¤å®š
 		if (player && !player->GetIsDead())
 		{
 			float dx = player->GetPosition().x - mCenterFireball.x;
@@ -406,7 +487,7 @@ void DragonFireGimmick::UpdateCenterFireball(Player* player, BlockMap* blockMap,
 			}
 		}
 
-		// ’n–Ê‚É’…’e‚µ‚½‚çü•Ó‚ğ‘å”š”­‚³‚¹A¶‰E‚ÉƒA[ƒ`ó‚Å’n–Ê‚ğ‰ˆ‚¤‰Š‚ğ•ú‚Â
+		// åœ°é¢ã«ç€å¼¾ã—ãŸã‚‰å‘¨è¾ºã‚’å¤§çˆ†ç™ºã•ã›ã€å·¦å³ã«ã‚¢ãƒ¼ãƒçŠ¶ã§åœ°é¢ã‚’æ²¿ã†ç‚ã‚’æ”¾ã¤
 		if (mCenterFireball.y >= floorY - 10.0f)
 		{
 			mCenterFireball.y = floorY;
@@ -414,16 +495,16 @@ void DragonFireGimmick::UpdateCenterFireball(Player* player, BlockMap* blockMap,
 			mCenterFireball.explosionTimer = mCenterFireball.maxExplosionTimer;
 			mCenterFireball.explosionRadius = 40.0f;
 
-			// ’†‰›‰Î‹…‚Ì’…’eSE
+			// ä¸­å¤®ç«çƒã®ç€å¼¾SE
 			if (Master::mpGameManager && Master::mpGameManager->GetSoundManager())
 			{
 				Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_STAGE2_DRAGON_FIREBALL_LAND);
 			}
 
-			// ”š”­‚Ì‰Î‰Ô‚ğl•û”ª•û‚É‚«”ò‚Î‚·
+			// çˆ†ç™ºã®ç«èŠ±ã‚’å››æ–¹å…«æ–¹ã«å¹ãé£›ã°ã™
 			for (int s = 0; s < 40; ++s)
 			{
-				float ang = -(GetRand(180) * 3.14159265f) / 180.0f; // ã”¼‹…‚Ö”šU
+				float ang = -(GetRand(180) * 3.14159265f) / 180.0f; // ä¸ŠåŠçƒã¸çˆ†æ•£
 				float spd = 6.0f + static_cast<float>(GetRand(140)) * 0.1f;
 				FireSpark sp;
 				sp.x = mCenterFireball.x + static_cast<float>(GetRand(40) - 20);
@@ -437,7 +518,7 @@ void DragonFireGimmick::UpdateCenterFireball(Player* player, BlockMap* blockMap,
 				mFireSparks.push_back(sp);
 			}
 
-			// ’n–Ê‚ğ‰ˆ‚Á‚Ä’á‚¢ƒA[ƒ`ó‚Å¶‰Ei-1.0f ‚Æ +1.0fj‚ÉL‚ª‚é‰Š‚Ì”g‚ğ¶¬I
+			// åœ°é¢ã‚’æ²¿ã£ã¦ä½ã„ã‚¢ãƒ¼ãƒçŠ¶ã§å·¦å³ï¼ˆ-1.0f ã¨ +1.0fï¼‰ã«åºƒãŒã‚‹ç‚ã®æ³¢ã‚’ç”Ÿæˆï¼
 			for (int side = -1; side <= 1; side += 2)
 			{
 				ArchFlameWave wave;
@@ -446,8 +527,8 @@ void DragonFireGimmick::UpdateCenterFireball(Player* player, BlockMap* blockMap,
 				wave.y = floorY;
 				wave.dir = static_cast<float>(side);
 				wave.speed = 9.0f;
-				wave.archWidth = 185.0f;  // 1ƒA[ƒ`‚Ì‰¡•
-				wave.archHeight = 68.0f;  // ’á‚ß‚ÌƒA[ƒ`‚‚³i’nãƒvƒŒƒCƒ„[‚É‚µ‚Á‚©‚è“–‚½‚èAƒWƒƒƒ“ƒv‚Å”ò‚Ñ‰z‚¦‚ç‚ê‚é‚‚³j
+				wave.archWidth = 185.0f;  // 1ã‚¢ãƒ¼ãƒã®æ¨ªå¹…
+				wave.archHeight = 68.0f;  // ä½ã‚ã®ã‚¢ãƒ¼ãƒé«˜ã•ï¼ˆåœ°ä¸Šãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã«ã—ã£ã‹ã‚Šå½“ãŸã‚Šã€ã‚¸ãƒ£ãƒ³ãƒ—ã§é£›ã³è¶Šãˆã‚‰ã‚Œã‚‹é«˜ã•ï¼‰
 				wave.tick = 0;
 				wave.active = true;
 				mArchFlameWaves.push_back(wave);
@@ -456,13 +537,13 @@ void DragonFireGimmick::UpdateCenterFireball(Player* player, BlockMap* blockMap,
 	}
 	else
 	{
-		// ’†‰›‘å”š”­‚Ì–c’£•‰æ–Ê—h‚ê•ü•Óƒ_ƒ[ƒW”»’è
+		// ä¸­å¤®å¤§çˆ†ç™ºã®è†¨å¼µï¼†ç”»é¢æºã‚Œï¼†å‘¨è¾ºãƒ€ãƒ¡ãƒ¼ã‚¸åˆ¤å®š
 		mCenterFireball.explosionTimer--;
 		float progress = 1.0f - (static_cast<float>(mCenterFireball.explosionTimer) / static_cast<float>(mCenterFireball.maxExplosionTimer));
-		mCenterFireball.explosionRadius = 50.0f + progress * 200.0f; // Å‘å”¼Œa 250px ‚Ì‘å”š”­ƒh[ƒ€
+		mCenterFireball.explosionRadius = 50.0f + progress * 200.0f; // æœ€å¤§åŠå¾„ 250px ã®å¤§çˆ†ç™ºãƒ‰ãƒ¼ãƒ 
 
 
-		// 2”g–Ú‚ÌƒA[ƒ`‰Š‚ğ­‚µ’x‚ê‚Ä•ú‚¿A˜A‘±ƒA[ƒ`‚Ì”——Í‚ğo‚·
+		// 2æ³¢ç›®ã®ã‚¢ãƒ¼ãƒç‚ã‚’å°‘ã—é…ã‚Œã¦æ”¾ã¡ã€é€£ç¶šã‚¢ãƒ¼ãƒã®è¿«åŠ›ã‚’å‡ºã™
 		if (mCenterFireball.explosionTimer == mCenterFireball.maxExplosionTimer - 14)
 		{
 			for (int side = -1; side <= 1; side += 2)
@@ -481,7 +562,7 @@ void DragonFireGimmick::UpdateCenterFireball(Player* player, BlockMap* blockMap,
 			}
 		}
 
-		// ‘å”š”­‚Ì“–‚½‚è”»’èiƒvƒŒƒCƒ„[‚Ì‘Sg‹éŒ`‚Æ‚Ìd‚È‚è”»’èj
+		// å¤§çˆ†ç™ºã®å½“ãŸã‚Šåˆ¤å®šï¼ˆãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®å…¨èº«çŸ©å½¢ã¨ã®é‡ãªã‚Šåˆ¤å®šï¼‰
 		if (mCenterFireball.explosionTimer > 6 && player && !player->GetIsDead())
 		{
 			float px = player->GetPosition().x;
@@ -503,7 +584,7 @@ void DragonFireGimmick::UpdateCenterFireball(Player* player, BlockMap* blockMap,
 	}
 }
 
-// 5. ’n–Ê‚ğ‰ˆ‚Á‚ÄƒA[ƒ`ó‚Å¶‰E‚ÉL‚ª‚é‰Š‚Ì”giArchFlameWavej‚ÌXV
+// 5. åœ°é¢ã‚’æ²¿ã£ã¦ã‚¢ãƒ¼ãƒçŠ¶ã§å·¦å³ã«åºƒãŒã‚‹ç‚ã®æ³¢ï¼ˆArchFlameWaveï¼‰ã®æ›´æ–°
 void DragonFireGimmick::UpdateArchFlameWaves(Player* player, int attackDamage, float floorY)
 {
 	for (auto it = mArchFlameWaves.begin(); it != mArchFlameWaves.end(); )
@@ -517,13 +598,13 @@ void DragonFireGimmick::UpdateArchFlameWaves(Player* player, int attackDamage, f
 		it->tick++;
 		it->x += it->dir * it->speed;
 
-		// ƒXƒ^[ƒg’n“_‚©‚ç‚Ì‹——£‚É‰‚¶‚ÄA’n–ÊifloorYj‚ğ’µ‚Ë‚é•ú•¨üƒA[ƒ`‹O“¹‚ğŒvZ
+		// ã‚¹ã‚¿ãƒ¼ãƒˆåœ°ç‚¹ã‹ã‚‰ã®è·é›¢ã«å¿œã˜ã¦ã€åœ°é¢ï¼ˆfloorYï¼‰ã‚’è·³ã­ã‚‹æ”¾ç‰©ç·šã‚¢ãƒ¼ãƒè»Œé“ã‚’è¨ˆç®—
 		float dist = std::fabs(it->x - it->startX);
 		float phase = std::fmod(dist, it->archWidth) / it->archWidth; // 0.0 ~ 1.0
 		float archSin = std::sin(phase * 3.14159265f);
 		it->y = floorY - archSin * it->archHeight;
 
-		// ƒA[ƒ`‚ª’n–Ê‚ÉÚ’n‚·‚éuŠÔiƒoƒEƒ“ƒh“_j‚Å‰Î‰Ô‚ğU‚ç‚·
+		// ã‚¢ãƒ¼ãƒãŒåœ°é¢ã«æ¥åœ°ã™ã‚‹ç¬é–“ï¼ˆãƒã‚¦ãƒ³ãƒ‰ç‚¹ï¼‰ã§ç«èŠ±ã‚’æ•£ã‚‰ã™
 		if (phase < 0.08f || phase > 0.92f)
 		{
 			FireSpark sp;
@@ -538,7 +619,7 @@ void DragonFireGimmick::UpdateArchFlameWaves(Player* player, int attackDamage, f
 			mFireSparks.push_back(sp);
 		}
 
-		// ƒvƒŒƒCƒ„[‚Æ‚Ì“–‚½‚è”»’èi•`‰æ‚³‚ê‚Ä‚¢‚éƒA[ƒ`‰Š‚Ì‘Sƒm[ƒh‚ÆƒvƒŒƒCƒ„[‚Ì‘Sg‹éŒ`[•32~‚‚³100]‚ÅŠmÀ‚É”»’èj
+		// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã¨ã®å½“ãŸã‚Šåˆ¤å®šï¼ˆæç”»ã•ã‚Œã¦ã„ã‚‹ã‚¢ãƒ¼ãƒç‚ã®å…¨ãƒãƒ¼ãƒ‰ã¨ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®å…¨èº«çŸ©å½¢[å¹…32Ã—é«˜ã•100]ã§ç¢ºå®Ÿã«åˆ¤å®šï¼‰
 		if (player && !player->GetIsDead())
 		{
 			float px = player->GetPosition().x;
@@ -548,7 +629,7 @@ void DragonFireGimmick::UpdateArchFlameWaves(Player* player, int attackDamage, f
 			float pTop = py - 50.0f;
 			float pBot = py + 50.0f;
 
-			// •`‰æ‚Æ“¯‚¶12ƒm[ƒh•ª‚ÌƒA[ƒ`‘Ñ‚·‚×‚Ä‚É“–‚½‚è”»’è‚ğ‚½‚¹‚é
+			// æç”»ã¨åŒã˜12ãƒãƒ¼ãƒ‰åˆ†ã®ã‚¢ãƒ¼ãƒå¸¯ã™ã¹ã¦ã«å½“ãŸã‚Šåˆ¤å®šã‚’æŒãŸã›ã‚‹
 			for (int k = 0; k < 12; ++k)
 			{
 				float sampleDist = dist - k * 15.0f;
@@ -569,7 +650,7 @@ void DragonFireGimmick::UpdateArchFlameWaves(Player* player, int attackDamage, f
 			}
 		}
 
-		// ƒ{ƒX•”‰®‚Ì¶‰E‚Ì•Ç‚É“’B‚µ‚½‚çÁ–Å
+		// ãƒœã‚¹éƒ¨å±‹ã®å·¦å³ã®å£ã«åˆ°é”ã—ãŸã‚‰æ¶ˆæ»…
 		if (it->x < 7930.0f || it->x > 9860.0f)
 		{
 			it = mArchFlameWaves.erase(it);
@@ -588,7 +669,7 @@ void DragonFireGimmick::Draw(BlockMap* blockMap, bool isAirBreathState, bool isC
 	int now = GetNowCount();
 	const float floorY = 1903.0f;
 
-	// 1. ‹ó’†‰Î‰ŠƒuƒŒƒX‚ÌŒûŒ³ƒ`ƒƒ[ƒW•™ôšKƒ}ƒYƒ‹ƒtƒ‰ƒbƒVƒ…
+	// 1. ç©ºä¸­ç«ç‚ãƒ–ãƒ¬ã‚¹ã®å£å…ƒãƒãƒ£ãƒ¼ã‚¸ï¼†å’†å“®ãƒã‚ºãƒ«ãƒ•ãƒ©ãƒƒã‚·ãƒ¥
 	if (isAirBreathState)
 	{
 		DrawAirBreathMuzzle(blockMap, animFrame, mouthWX, mouthWY, now);
@@ -596,19 +677,19 @@ void DragonFireGimmick::Draw(BlockMap* blockMap, bool isAirBreathState, bool isC
 
 	SetDrawBlendMode(DX_BLENDMODE_ADD, 235);
 
-	// 2. ’…’e’n“_‚©‚ç¶‰E‚ÖƒJƒbƒR‚æ‚­”R‚¦L‚ª‚ég˜@‚Ì’n–Ê
+	// 2. ç€å¼¾åœ°ç‚¹ã‹ã‚‰å·¦å³ã¸ã‚«ãƒƒã‚³ã‚ˆãç‡ƒãˆåºƒãŒã‚‹ç´…è“®ã®åœ°é¢
 	DrawBurningGrounds(blockMap, now);
 
-	// 3. ‹ó’†‚©‚ç’n–Ê‚Ö“Ë‚«h‚³‚é‹‰õ‚È‰Î‰ŠƒuƒŒƒXƒXƒgƒŠ[ƒ€‚Ì•`‰æ
+	// 3. ç©ºä¸­ã‹ã‚‰åœ°é¢ã¸çªãåˆºã•ã‚‹è±ªå¿«ãªç«ç‚ãƒ–ãƒ¬ã‚¹ã‚¹ãƒˆãƒªãƒ¼ãƒ ã®æç”»
 	DrawFireProjectiles(blockMap);
 
-	// 4. ’†‰›‹‘å‰Î‚Ì‹Êiƒ`ƒƒ[ƒWE—‰ºEü•Ó‘å”š”­ƒh[ƒ€j‚Ì•`‰æ
+	// 4. ä¸­å¤®å·¨å¤§ç«ã®ç‰ï¼ˆãƒãƒ£ãƒ¼ã‚¸ãƒ»è½ä¸‹ãƒ»å‘¨è¾ºå¤§çˆ†ç™ºãƒ‰ãƒ¼ãƒ ï¼‰ã®æç”»
 	DrawCenterFireballAndCharge(blockMap, isCenterChargeState, animFrame, mouthWX, mouthWY, now);
 
-	// 5. ’n–Ê‚ğ‰ˆ‚Á‚ÄƒA[ƒ`ó‚Å¶‰E‚ÉL‚ª‚é‰Š‚Ì”giArchFlameWavej‚Ì•`‰æ
+	// 5. åœ°é¢ã‚’æ²¿ã£ã¦ã‚¢ãƒ¼ãƒçŠ¶ã§å·¦å³ã«åºƒãŒã‚‹ç‚ã®æ³¢ï¼ˆArchFlameWaveï¼‰ã®æç”»
 	DrawArchFlameWaves(blockMap, floorY, now);
 
-	// 6. ”ò‚ÑU‚é‰Î‰ÔƒXƒp[ƒNiFireSparkj‚Ì•`‰æ
+	// 6. é£›ã³æ•£ã‚‹ç«èŠ±ã‚¹ãƒ‘ãƒ¼ã‚¯ï¼ˆFireSparkï¼‰ã®æç”»
 	DrawFireSparks(blockMap);
 
 	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
@@ -623,7 +704,7 @@ void DragonFireGimmick::DrawAirBreathMuzzle(BlockMap* blockMap, int animFrame, f
 	SetDrawBlendMode(DX_BLENDMODE_ADD, 230);
 	if (animFrame < 3)
 	{
-		// ‘§‚ğ‹z‚¢‚ñ‚ÅŒûŒ³‚ÉÜ”M‚Ìû‘©ƒŠƒ“ƒO‚Æ‰Î‹…‚ªW‚Ü‚é—\’›
+		// æ¯ã‚’å¸ã„è¾¼ã‚“ã§å£å…ƒã«ç¼ç†±ã®åæŸãƒªãƒ³ã‚°ã¨ç«çƒãŒé›†ã¾ã‚‹äºˆå…†
 		int r = 14 + animFrame * 9 + (now / 30) % 6;
 		int ringR = 54 - animFrame * 14;
 		DrawCircle(mouthSX, mouthSY, ringR, GetColor(255, 90, 20), FALSE);
@@ -633,7 +714,7 @@ void DragonFireGimmick::DrawAirBreathMuzzle(BlockMap* blockMap, int animFrame, f
 	}
 	else if (animFrame >= 3 && animFrame <= 5)
 	{
-		// ‰Î‚ğ•¬‚¢‚Ä‚¢‚éŒûŒ³‚Ì”š”­“I‚È‰Î‰Šƒ}ƒYƒ‹ƒtƒ‰ƒbƒVƒ…
+		// ç«ã‚’å™´ã„ã¦ã„ã‚‹å£å…ƒã®çˆ†ç™ºçš„ãªç«ç‚ãƒã‚ºãƒ«ãƒ•ãƒ©ãƒƒã‚·ãƒ¥
 		int r = 42 + (now / 20) % 14;
 		DrawCircle(mouthSX, mouthSY, r + 14, GetColor(180, 25, 5), TRUE);
 		DrawCircle(mouthSX, mouthSY, r, GetColor(255, 65, 10), TRUE);
@@ -652,23 +733,23 @@ void DragonFireGimmick::DrawBurningGrounds(BlockMap* blockMap, int now) const
 		int hw = static_cast<int>(bg.currentHalfWidth);
 		if (hw < 6) hw = 6;
 
-		// c‚è1•bi60ƒtƒŒ[ƒ€–¢–j‚Å™X‚É‰Š‚ª¬‚³‚­‚È‚Á‚ÄÁ‚¦‚Ä‚¢‚­
+		// æ®‹ã‚Š1ç§’ï¼ˆ60ãƒ•ãƒ¬ãƒ¼ãƒ æœªæº€ï¼‰ã§å¾ã€…ã«ç‚ãŒå°ã•ããªã£ã¦æ¶ˆãˆã¦ã„ã
 		float fadeScale = (bg.timer < 60) ? (static_cast<float>(bg.timer) / 60.0f) : 1.0f;
 		if (fadeScale < 0.12f) fadeScale = 0.12f;
 
-		// (A) ’n–Ê‚ğÅ‚ª‚·ƒ}ƒOƒ}ó‚ÌÜ”MƒOƒƒEi°–Ê‚ª^‚ÁÔ`‰©‹àF‚É”­Œõj
+		// (A) åœ°é¢ã‚’ç„¦ãŒã™ãƒã‚°ãƒçŠ¶ã®ç¼ç†±ã‚°ãƒ­ã‚¦ï¼ˆåºŠé¢ãŒçœŸã£èµ¤ï½é»„é‡‘è‰²ã«ç™ºå…‰ï¼‰
 		DrawOval(cx, cy, hw + 22, static_cast<int>(18 * fadeScale) + 4, GetColor(160, 20, 5), TRUE);
 		DrawOval(cx, cy - 1, hw + 8, static_cast<int>(12 * fadeScale) + 3, GetColor(255, 70, 10), TRUE);
 		DrawOval(cx, cy - 2, static_cast<int>(hw * 0.85f), static_cast<int>(7 * fadeScale) + 2, GetColor(255, 190, 50), TRUE);
 
-		// (B) ’…’e’¼Œã‚É¶‰E‚ÖL‚ª‚éÕŒ‚”gƒŠƒ“ƒO‰‰o
+		// (B) ç€å¼¾ç›´å¾Œã«å·¦å³ã¸åºƒãŒã‚‹è¡æ’ƒæ³¢ãƒªãƒ³ã‚°æ¼”å‡º
 		if (bg.age < 24)
 		{
 			int waveH = static_cast<int>((24 - bg.age) * 1.8f);
 			DrawOval(cx, cy - 4, hw + 12, waveH, GetColor(255, 140, 30), FALSE);
 		}
 
-		// (C) ’†S‚©‚çŠO‘¤‚Ö”g‘Å‚Â‚æ‚¤‚É—§‚¿¸‚é‘½‘w\‘¢‚Ìg˜@‚Ì‰Î’Œ
+		// (C) ä¸­å¿ƒã‹ã‚‰å¤–å´ã¸æ³¢æ‰“ã¤ã‚ˆã†ã«ç«‹ã¡æ˜‡ã‚‹å¤šå±¤æ§‹é€ ã®ç´…è“®ã®ç«æŸ±
 		int numFlames = (hw / 9) + 5;
 		if (numFlames > 38) numFlames = 38;
 		for (int i = 0; i < numFlames; ++i)
@@ -679,44 +760,44 @@ void DragonFireGimmick::DrawBurningGrounds(BlockMap* blockMap, int now) const
 
 			int fx = cx + static_cast<int>(ratio * hw);
 
-			// ’†S‚Ù‚Ç‚‚­AŠO‘¤‚ÉŒü‚©‚Á‚Ä‚¤‚Ë‚è‚È‚ª‚çL‚ª‚éƒVƒ‹ƒGƒbƒg{is”gƒAƒjƒ[ƒVƒ‡ƒ“
+			// ä¸­å¿ƒã»ã©é«˜ãã€å¤–å´ã«å‘ã‹ã£ã¦ã†ã­ã‚ŠãªãŒã‚‰åºƒãŒã‚‹ã‚·ãƒ«ã‚¨ãƒƒãƒˆï¼‹é€²è¡Œæ³¢ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³
 			float distFactor = 1.0f - std::fabs(ratio) * 0.45f;
 			float wave1 = std::sin(now * 0.026f - std::fabs(ratio) * 5.0f + i * 1.3f);
 			float wave2 = std::cos(now * 0.034f + i * 2.1f);
-			// —¼’[i‰Îæj‚ª‚ß‚­‚êã‚ª‚é‚æ‚¤‚È”——Í‚ğ‚Â‚¯‚é
+			// ä¸¡ç«¯ï¼ˆç«å…ˆï¼‰ãŒã‚ãã‚Œä¸ŠãŒã‚‹ã‚ˆã†ãªè¿«åŠ›ã‚’ã¤ã‘ã‚‹
 			float edgeFlare = (std::fabs(ratio) > 0.78f) ? 1.28f : 1.0f;
 
 			int flameH = static_cast<int>((68.0f * distFactor * edgeFlare + 24.0f * wave1) * fadeScale);
 			if (flameH < 12) flameH = 12;
 			int flameW = static_cast<int>((22.0f * distFactor + 6.0f) * fadeScale) + 4;
 
-			// ‰Š‚Ìæ’[‚ª•—‚Æ”M‹C‚ÆL‚ª‚è•ûŒü‚Ö‚µ‚È‚â‚©‚É—h‚ê‚é
+			// ç‚ã®å…ˆç«¯ãŒé¢¨ã¨ç†±æ°—ã¨åºƒãŒã‚Šæ–¹å‘ã¸ã—ãªã‚„ã‹ã«æºã‚Œã‚‹
 			int outwardLean = static_cast<int>(ratio * 14.0f);
 			int tipX = fx + outwardLean + static_cast<int>(wave2 * 10.0f);
 			int midX = fx + outwardLean / 2 + static_cast<int>(wave1 * 5.0f);
 
-			// 1‘w–ÚF[g‚ÌŠO‰‹
+			// 1å±¤ç›®ï¼šæ·±ç´…ã®å¤–ç„”
 			DrawTriangle(
 				fx - flameW, cy + 2,
 				fx + flameW, cy + 2,
 				tipX, cy - flameH,
 				GetColor(220, 30, 5), TRUE
 			);
-			// 2‘w–ÚF‘N‚â‚©‚Èg˜@ƒIƒŒƒ“ƒW‚Ì’†‰‹
+			// 2å±¤ç›®ï¼šé®®ã‚„ã‹ãªç´…è“®ã‚ªãƒ¬ãƒ³ã‚¸ã®ä¸­ç„”
 			DrawTriangle(
 				fx - (flameW * 3) / 4, cy + 1,
 				fx + (flameW * 3) / 4, cy + 1,
 				tipX, cy - (flameH * 4) / 5,
 				GetColor(255, 95, 15), TRUE
 			);
-			// 3‘w–ÚF‰©‹àF‚Ì“à‰‹
+			// 3å±¤ç›®ï¼šé»„é‡‘è‰²ã®å†…ç„”
 			DrawTriangle(
 				fx - flameW / 2, cy,
 				fx + flameW / 2, cy,
 				midX, cy - (flameH * 3) / 5,
 				GetColor(255, 185, 35), TRUE
 			);
-			// 4‘w–ÚF”’”M‚·‚éƒRƒA‰‹
+			// 4å±¤ç›®ï¼šç™½ç†±ã™ã‚‹ã‚³ã‚¢ç„”
 			DrawTriangle(
 				fx - flameW / 4, cy,
 				fx + flameW / 4, cy,
@@ -725,7 +806,7 @@ void DragonFireGimmick::DrawBurningGrounds(BlockMap* blockMap, int now) const
 			);
 		}
 
-		// (D) ”RÄƒGƒŠƒA‚©‚ç‰Q‚ğŠª‚¢‚Ä•‘‚¢ã‚ª‚é–³”‚Ì‰Î‚Ì•²
+		// (D) ç‡ƒç„¼ã‚¨ãƒªã‚¢ã‹ã‚‰æ¸¦ã‚’å·»ã„ã¦èˆã„ä¸ŠãŒã‚‹ç„¡æ•°ã®ç«ã®ç²‰
 		int numEmbers = (hw / 18) + 4;
 		for (int p = 0; p < numEmbers; ++p)
 		{
@@ -747,7 +828,7 @@ void DragonFireGimmick::DrawFireProjectiles(BlockMap* blockMap) const
 	{
 		if (!fp.active) continue;
 
-		// ‰QŠª‚­‚æ‚¤‚È—h‚ç‚¬‚ğ‰Á‚¦‚Ä—¬‘Ì‚Ì‚æ‚¤‚È‰Î‰Š•úË‚ÉŒ©‚¹‚é
+		// æ¸¦å·»ãã‚ˆã†ãªæºã‚‰ãã‚’åŠ ãˆã¦æµä½“ã®ã‚ˆã†ãªç«ç‚æ”¾å°„ã«è¦‹ã›ã‚‹
 		float swirl = std::sin(fp.animTick * 0.45f + fp.swaySeed) * (fp.radius * 0.25f);
 		float perpX = -fp.vy;
 		float perpY = fp.vx;
@@ -758,18 +839,18 @@ void DragonFireGimmick::DrawFireProjectiles(BlockMap* blockMap) const
 		int sy = static_cast<int>(ToScreenY(fp.y + perpY * swirl, blockMap));
 		int r = static_cast<int>(fp.radius);
 
-		// is•ûŒü‹t‘¤‚Ö‚½‚È‚Ñ‚­‰Î‰Š‚Ì”ö
+		// é€²è¡Œæ–¹å‘é€†å´ã¸ãŸãªã³ãç«ç‚ã®å°¾
 		int tailX = static_cast<int>(ToScreenX(fp.x - fp.vx * 1.4f, blockMap));
 		int tailY = static_cast<int>(ToScreenY(fp.y - fp.vy * 1.4f, blockMap));
 
-		// ŠO‘¤‚ÌÜ”MƒI[ƒ‰i[gj
+		// å¤–å´ã®ç¼ç†±ã‚ªãƒ¼ãƒ©ï¼ˆæ·±ç´…ï¼‰
 		DrawCircle(tailX, tailY, static_cast<int>(r * 0.85f), GetColor(180, 25, 5), TRUE);
 		DrawCircle(sx, sy, r + 6, GetColor(180, 25, 5), TRUE);
-		// ’†ŠÔ‚Ìg˜@‰ŠiƒIƒŒƒ“ƒWj
+		// ä¸­é–“ã®ç´…è“®ç‚ï¼ˆã‚ªãƒ¬ãƒ³ã‚¸ï¼‰
 		DrawCircle(sx, sy, r, GetColor(255, 75, 10), TRUE);
-		// “à‘¤‚Ì‰©‹à‰ŠiƒCƒGƒ[j
+		// å†…å´ã®é»„é‡‘ç‚ï¼ˆã‚¤ã‚¨ãƒ­ãƒ¼ï¼‰
 		DrawCircle(sx, sy, static_cast<int>(r * 0.68f), GetColor(255, 180, 35), TRUE);
-		// ’†S‚Ì”’”MƒRƒA
+		// ä¸­å¿ƒã®ç™½ç†±ã‚³ã‚¢
 		DrawCircle(sx, sy, static_cast<int>(r * 0.36f), GetColor(255, 255, 200), TRUE);
 	}
 }
@@ -778,7 +859,7 @@ void DragonFireGimmick::DrawCenterFireballAndCharge(BlockMap* blockMap, bool isC
 {
 	if (isCenterChargeState && animFrame < 3)
 	{
-		// ŒûŒ³‚Å–c‚êã‚ª‚é‹‘å‰Î‚Ì‹Êƒ`ƒƒ[ƒW‰‰oiƒXƒvƒ‰ƒCƒg‚ÌŠeƒtƒŒ[ƒ€‚ÌŒûŒ³À•W‚ÉŠ®‘Sˆê’vj
+		// å£å…ƒã§è†¨ã‚Œä¸ŠãŒã‚‹å·¨å¤§ç«ã®ç‰ãƒãƒ£ãƒ¼ã‚¸æ¼”å‡ºï¼ˆã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã®å„ãƒ•ãƒ¬ãƒ¼ãƒ ã®å£å…ƒåº§æ¨™ã«å®Œå…¨ä¸€è‡´ï¼‰
 		int mouthSX = static_cast<int>(ToScreenX(mouthWX, blockMap));
 		int mouthSY = static_cast<int>(ToScreenY(mouthWY, blockMap));
 		int chargeR = 18 + animFrame * 16 + (now / 25) % 8;
@@ -795,7 +876,7 @@ void DragonFireGimmick::DrawCenterFireballAndCharge(BlockMap* blockMap, bool isC
 
 		if (!mCenterFireball.exploding)
 		{
-			// —‰º’†‚Ì‹‘å‰Î‹…i‘¾—z‚Ì‚æ‚¤‚ÈƒRƒƒi{”öj
+			// è½ä¸‹ä¸­ã®å·¨å¤§ç«çƒï¼ˆå¤ªé™½ã®ã‚ˆã†ãªã‚³ãƒ­ãƒŠï¼‹å°¾ï¼‰
 			int r = static_cast<int>(mCenterFireball.radius) + (now / 20) % 8;
 			DrawOval(cx, cy - 35, static_cast<int>(r * 0.75f), r + 30, GetColor(200, 30, 5), TRUE);
 			DrawCircle(cx, cy, r + 14, GetColor(190, 25, 5), TRUE);
@@ -805,20 +886,20 @@ void DragonFireGimmick::DrawCenterFireballAndCharge(BlockMap* blockMap, bool isC
 		}
 		else
 		{
-			// ’†‰›’…’e‚Ì‘å”š”­ƒh[ƒ€•ÕŒ‚”gƒŠƒ“ƒOI
+			// ä¸­å¤®ç€å¼¾æ™‚ã®å¤§çˆ†ç™ºãƒ‰ãƒ¼ãƒ ï¼†è¡æ’ƒæ³¢ãƒªãƒ³ã‚°ï¼
 			float alphaRatio = static_cast<float>(mCenterFireball.explosionTimer) / static_cast<float>(mCenterFireball.maxExplosionTimer);
 			int expAlpha = static_cast<int>(255 * alphaRatio);
 			SetDrawBlendMode(DX_BLENDMODE_ADD, expAlpha);
 
 			int er = static_cast<int>(mCenterFireball.explosionRadius);
-			// ŠO‘¤‚ÌÕŒ‚”gƒŠƒ“ƒO
+			// å¤–å´ã®è¡æ’ƒæ³¢ãƒªãƒ³ã‚°
 			for (int t = 0; t < 4; ++t)
 			{
 				DrawCircle(cx, cy - 20, er + 18 - t * 2, GetColor(255, 120, 30), FALSE);
 			}
-			// ’n–Ê‚É‰ˆ‚Á‚ÄL‚ª‚é”š•—ƒtƒŒƒA
+			// åœ°é¢ã«æ²¿ã£ã¦åºƒãŒã‚‹çˆ†é¢¨ãƒ•ãƒ¬ã‚¢
 			DrawOval(cx, cy - 6, er + 55, 32, GetColor(255, 70, 15), TRUE);
-			// ‹‘å”š”­‹…i‘½‘wƒOƒ‰ƒf[ƒVƒ‡ƒ“j
+			// å·¨å¤§çˆ†ç™ºçƒï¼ˆå¤šå±¤ã‚°ãƒ©ãƒ‡ãƒ¼ã‚·ãƒ§ãƒ³ï¼‰
 			DrawCircle(cx, cy - 25, er, GetColor(220, 35, 5), TRUE);
 			DrawCircle(cx, cy - 25, static_cast<int>(er * 0.78f), GetColor(255, 105, 20), TRUE);
 			DrawCircle(cx, cy - 25, static_cast<int>(er * 0.55f), GetColor(255, 205, 60), TRUE);
@@ -837,7 +918,7 @@ void DragonFireGimmick::DrawArchFlameWaves(BlockMap* blockMap, float floorY, int
 
 		float headDist = std::fabs(wave.x - wave.startX);
 
-		// æ’[‚©‚çŒã•û‚ÖŒü‚©‚Á‚ÄƒA[ƒ`‹O“¹ã‚É16ŒÂ‚Ì‰Šƒm[ƒh‚ğ˜A‚ËA”ü‚µ‚¢u‰Š‚ÌƒA[ƒ`v‚ğ•`‚­I
+		// å…ˆç«¯ã‹ã‚‰å¾Œæ–¹ã¸å‘ã‹ã£ã¦ã‚¢ãƒ¼ãƒè»Œé“ä¸Šã«16å€‹ã®ç‚ãƒãƒ¼ãƒ‰ã‚’é€£ã­ã€ç¾ã—ã„ã€Œç‚ã®ã‚¢ãƒ¼ãƒã€ã‚’æãï¼
 		const int numNodes = 16;
 		for (int i = numNodes - 1; i >= 0; --i)
 		{
@@ -851,20 +932,20 @@ void DragonFireGimmick::DrawArchFlameWaves(BlockMap* blockMap, float floorY, int
 			int sx = static_cast<int>(ToScreenX(wx, blockMap));
 			int sy = static_cast<int>(ToScreenY(wy, blockMap));
 
-			float ratio = 1.0f - (static_cast<float>(i) / static_cast<float>(numNodes)); // æ’[1.0 -> ”ö0.0
+			float ratio = 1.0f - (static_cast<float>(i) / static_cast<float>(numNodes)); // å…ˆç«¯1.0 -> å°¾0.0
 			int r = static_cast<int>(10.0f + 26.0f * ratio) + ((now / 25 + i) % 4);
 
-			// ŠO‰‹i[g`g˜@ƒIƒŒƒ“ƒWj
+			// å¤–ç„”ï¼ˆæ·±ç´…ï½ç´…è“®ã‚ªãƒ¬ãƒ³ã‚¸ï¼‰
 			DrawCircle(sx, sy, r + 4, GetColor(190, 25, 5), TRUE);
 			DrawCircle(sx, sy, r, GetColor(255, 80, 15), TRUE);
-			// “à‰‹i‰©‹àƒCƒGƒ[j
+			// å†…ç„”ï¼ˆé»„é‡‘ã‚¤ã‚¨ãƒ­ãƒ¼ï¼‰
 			DrawCircle(sx, sy, static_cast<int>(r * 0.65f), GetColor(255, 190, 40), TRUE);
-			// æ’[•t‹ß‚Í”’”MƒRƒA‚ÆãŒü‚«‚Ì‰Š‚Ìã‚ğ’Ç‰Á
+			// å…ˆç«¯ä»˜è¿‘ã¯ç™½ç†±ã‚³ã‚¢ã¨ä¸Šå‘ãã®ç‚ã®èˆŒã‚’è¿½åŠ 
 			if (i <= 4)
 			{
 				DrawCircle(sx, sy, static_cast<int>(r * 0.38f), GetColor(255, 255, 210), TRUE);
 			}
-			// Šeƒm[ƒh‚©‚ç—§‚¿¸‚é¬‚³‚È‰Š‚Ìæ’[
+			// å„ãƒãƒ¼ãƒ‰ã‹ã‚‰ç«‹ã¡æ˜‡ã‚‹å°ã•ãªç‚ã®å…ˆç«¯
 			int tongueH = static_cast<int>(r * 1.35f);
 			int swayX = static_cast<int>(std::sin(now * 0.03f + i) * 6.0f);
 			DrawTriangle(

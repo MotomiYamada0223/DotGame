@@ -21,7 +21,8 @@ public:
 		EntranceWait,         // 登場演出2: 着地砂煙 → 待機 → 離陸 → 空中ホバリングで戦闘開始
 		Idle,                 // 地上待機
 		Move,                 // 地上歩行移動
-		Attack,               // 地上通常攻撃（高速ステップ＋2連斬撃）
+		Attack,               // 地上攻撃1: 通常攻撃（高速ステップ＋2連斬撃）
+		GroundBreathAttack,   // 地上攻撃2: 地上灼熱ブレス＆地走り火炎波（new_ground_breath）
 		Takeoff,              // 地上から空中への離陸
 		Fly,                  // 空中ホバリング移動＆次攻撃への分岐
 		AirAttack,            // 空中攻撃1: 空中火炎ブレス放射＆地面延焼
@@ -71,14 +72,19 @@ private:
 	// --- 初期化・補助関数 ---
 	void LoadAnimations();
 	void GetAirAttackMouthWorldPos(float& outMouthX, float& outMouthY) const;
+	void GetGroundBreathMouthWorldPos(float& outMouthX, float& outMouthY) const;
 	void TriggerDefeatRetreat(GameScene* gameScene);
+	bool IsEnraged() const { return mHp <= (mMaxHp / 2); }
+	bool TrySelectGroundAction(Player* player, float dx, float absDx, float roomMinX, float roomMaxX);
+	void SelectNextAirAction(Player* player, float dx, float absDx);
 
 	// --- 状態別更新関数 (Update) ---
 	void UpdateEntranceDrop(Player* player, GameScene* gameScene);
 	void UpdateEntranceWait(Player* player);
-	void UpdateIdle(Player* player, float dx, float absDx);
+	void UpdateIdle(Player* player, float dx, float absDx, float roomMinX, float roomMaxX);
 	void UpdateMove(Player* player, float dx, float absDx, float roomMinX, float roomMaxX);
-	void UpdateGroundAttack(float roomMinX, float roomMaxX);
+	void UpdateGroundAttack(Player* player, float roomMinX, float roomMaxX);
+	void UpdateGroundBreathAttack(Player* player, float dx);
 	void UpdateTakeoff(Player* player, float dx);
 	void UpdateFly(Player* player, float dx, float absDx, float roomMinX, float roomMaxX);
 	void UpdateAirBreathAttack(Player* player, float dx);
@@ -103,9 +109,26 @@ private:
 	std::vector<int> mAirAttackAnim;
 	std::vector<int> mLandingAnim;
 	std::vector<int> mRoarAnim;
+	std::vector<int> mGroundBreathAnim;
 
 	// --- 炎・火球・大爆発・アーチ波・延焼地面ギミック管理 ---
 	DragonFireGimmick mFireGimmick;
+
+	// --- AI行動履歴・状況判断用定義 ---
+	enum class GroundActionType
+	{
+		None,
+		MeleeSlash,
+		GroundBreath
+	};
+
+	enum class AirActionType
+	{
+		None,
+		AirBreath,
+		CenterFireball,
+		DirectAirDive
+	};
 
 	// --- 状態・移動・攻撃制御パラメータ ---
 	State mState;
@@ -113,6 +136,7 @@ private:
 	int mAnimTimer;
 	int mStateTimer;
 	int mAttackPhase;
+	int mAttackTurnDelay;
 	int mDivePhase;
 	int mCenterAttackPhase;
 	int mRetreatPhase;
@@ -122,7 +146,12 @@ private:
 	float mDiveAngle;
 	float mDiveTargetX;
 	float mDiveTargetY;
-	int mAirAttackCycle; // 0: 中央火の玉大爆発＆アーチ炎（→急降下派生）, 1: 空中火炎ブレス＆地面延焼
+	int mAirAttackCycle; // 互換用（状況判断AIでは mLastAirAction 等を優先使用）
+	GroundActionType mLastGroundAction;
+	AirActionType mLastAirAction;
+	int mGroundActionsSinceLanding;
+	bool mIsAirRepositioning;
+	float mAirRepositionTargetX;
 	int mAttackCooldown;
 	int mFlightCooldown;
 
