@@ -974,7 +974,7 @@ void Player::BeginDeath()
 	const int stageIndex = Master::gCurrentStageIndex;
 	if (stageIndex >= 0 && stageIndex < Master::MaxStageCount)
 	{
-		Master::gDeathCounts[stageIndex]++;
+		Master::gDeathCounts[stageIndex] += 100;
 		Master::gTotalDeathCounts[stageIndex]++;
 	}
 
@@ -1022,11 +1022,15 @@ void Player::UpdateGameOver()
 {
 	if (mGameOverFadeTimer < kGameOverMenuFrames) return;
 
-	if (InputManager::CheckDownKey(KEY_INPUT_W) || InputManager::CheckDownKey(KEY_INPUT_A))
+	if (InputManager::CheckDownKey(KEY_INPUT_W) ||
+		InputManager::CheckDownKey(KEY_INPUT_UP) ||
+		InputManager::CheckDownKey(KEY_INPUT_A))
 	{
 		mGameOverMenuIndex = 0;
 	}
-	else if (InputManager::CheckDownKey(KEY_INPUT_S) || InputManager::CheckDownKey(KEY_INPUT_D))
+	else if (InputManager::CheckDownKey(KEY_INPUT_S) ||
+		InputManager::CheckDownKey(KEY_INPUT_DOWN) ||
+		InputManager::CheckDownKey(KEY_INPUT_D))
 	{
 		mGameOverMenuIndex = 1;
 	}

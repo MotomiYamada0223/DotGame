@@ -62,6 +62,11 @@ void StageSelectScene::Initialize()
 		playerGraphHandles
 	);
 
+	mDeathDisplay.SetTexture(playerGraphHandles[0], 0, 0,
+		PlayerAnimState::FRAME_WIDTH, PlayerAnimState::FRAME_HEIGHT);
+	mDeathDisplayNode = -1;
+
+
 	playerX = PlayerInitX;
 	playerY = PlayerY;
 	targetX = Stage1_X;
@@ -247,7 +252,7 @@ void StageSelectScene::Update()
 			mFade.StartFadeOut(60);
 		}
 	}
-
+	mDeathDisplay.Update();
 	Scene::Update();
 }
 
@@ -359,69 +364,81 @@ void StageSelectScene::DrawStageString()
 		stageDesc = locked ? "【解放条件】 Stage 1-2をクリアしよう" : "「ついにボス戦！ 準備はいいか？」";
 	}
 
+
 	if (stageName)
 	{
-		int px = (int)playerX;
-		int py = (int)playerY;
+		const int px = (int)playerX;
+		const int py = (int)playerY;
 
-		int boxW = 660;
-		int boxH = 180;
-		int boxX = px - boxW / 2;
-		int boxY = py - 500;
+		const int boxW = 660;
+		const int boxH = 180;
+		const int deathBoxH = 100;
+		const int gap = 10;   // 2つの枠の間隔
 
-		// 画面外にはみ出さないように描画位置を調整する
-		if (boxX < 30) boxX = 30;
-		if (boxX + boxW > Utility::SCREEN_WIDTH - 30) boxX = Utility::SCREEN_WIDTH - 30 - boxW;
-		if (boxY < 20) boxY = py + 100;
+		// 説明枠（従来の枠を80px上げた位置）
+		int infoY = py - 350 - 80;
+		if (infoY < 20) infoY = py + 100;
 
-		// 背景のBox
+		// 死亡回数枠（説明枠と同じ大きさ。説明枠の上に置く）
+
+		int infoX = TitleBoxPos;
+		int deathX = infoX;
+		int deathY = infoY - deathBoxH - gap;
+		if (deathY < 20) deathY = infoY + deathBoxH + gap;
+
+		// ---- 死亡回数枠 ----
 		mBackgroundBox.DrawBackgroundBox(
-			boxX,
-			boxY,
-			boxX + boxW,
-			boxY + boxH,
-			GetColor(0, 0, 0),
-			GetColor(255, 255, 255),
-			200,
-			1
-		);
+			deathX, deathY, deathX + boxW, deathY + deathBoxH,
+			GetColor(0, 0, 0), GetColor(255, 255, 255), 200, 1);
 
-		// ロック状態に応じて枠線の色を変化させる（ロック中：赤、アンロック：灰色）
+		if (nodeIndex != mDeathDisplayNode)
+		{
+			mDeathDisplay.Setup(Master::gOldDeathCount[nodeIndex], deathX, deathY, boxW, deathBoxH);
+			mDeathDisplayNode = nodeIndex;
+		}
+		mDeathDisplay.Draw();
+		DrawBox(deathX + 3, deathY + 3, deathX + boxW - 3, deathY + deathBoxH - 3, GetColor(200, 200, 200), FALSE);
+
+		// ---- 説明枠 ----
+		mBackgroundBox.DrawBackgroundBox(
+			infoX, infoY, infoX + boxW, infoY + boxH,
+			GetColor(0, 0, 0), GetColor(255, 255, 255), 200, 1);
+
 		unsigned int borderColor = locked ? GetColor(255, 50, 50) : GetColor(200, 200, 200);
-		DrawBox(boxX + 3, boxY + 3, boxX + boxW - 3, boxY + boxH - 3, borderColor, FALSE);
+		DrawBox(infoX + 3, infoY + 3, infoX + boxW - 3, infoY + boxH - 3, borderColor, FALSE);
 
 		FontManager* fontMgr = Master::mpGameManager->GetFontManager();
 
-		// 中央揃え用のヘルパー：ダイアログ中央に、指定サイズの文字列を描画する
+		// 中央揃え用のヘルパー
 		auto drawCentered = [&](int y, int fontSize, unsigned int color, const char* text)
 			{
 				int textW = fontMgr->GetDotStringWidth(fontSize, text);
-				int x = boxX + (boxW - textW) / 2;
+				int x = infoX + (boxW - textW) / 2;
 				fontMgr->DrawDotString(x, y, fontSize, color, text);
 			};
 
-		// ステージタイトル（中央揃え）
-		drawCentered(boxY + 15, 36, GetColor(255, 255, 0), stageName);
+		// ステージタイトル
+		drawCentered(infoY + 15, 36, GetColor(255, 255, 0), stageName);
 
-		// 死亡回数（中央揃え）
+		// 前回の死亡回数
 		char deathText[128];
 		sprintf_s(deathText, "前回の死亡回数: %d 回", Master::gOldDeathCount[nodeIndex]);
-		drawCentered(boxY + 60, 24, GetColor(255, 100, 100), deathText);
+		drawCentered(infoY + 60, 24, GetColor(255, 100, 100), deathText);
 
-		// ステージ説明文（中央揃え）
+		// ステージ説明文
 		unsigned int descColor = locked ? GetColor(255, 100, 100) : GetColor(255, 255, 255);
-		drawCentered(boxY + 95, 32, descColor, stageDesc);
+		drawCentered(infoY + 95, 32, descColor, stageDesc);
 
-		// エンターキーを促すプロンプト、またはロック状態の文字列（中央揃え）
+		// Enterを促すプロンプト、またはロック表示
 		if (!locked) {
 			unsigned int enterColor = GetColor(200, 200, 255);
 			if (mIsEnteringStage) {
 				enterColor = (mEnterTimer % 10 < 5) ? GetColor(255, 255, 0) : GetColor(150, 150, 0);
 			}
-			drawCentered(boxY + 125, 24, enterColor, "Press ENTER to Start");
+			drawCentered(infoY + 125, 24, enterColor, "Press ENTER to Start");
 		}
 		else {
-			drawCentered(boxY + 125, 24, GetColor(100, 100, 100), "LOCKED");
+			drawCentered(infoY + 125, 24, GetColor(100, 100, 100), "LOCKED");
 		}
 	}
 }

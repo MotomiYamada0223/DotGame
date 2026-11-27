@@ -282,3 +282,4 @@ private: // 復活処理関係
 	DeathController::AngelMotion GetAngelMotionForDeathType(DeathReason::DeathType type) const;
 	DeathCountEffect mScatterEffect;
 };
+

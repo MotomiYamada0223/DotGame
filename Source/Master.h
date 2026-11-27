@@ -1,17 +1,17 @@
-#pragma once
+ï»¿#pragma once
 
 #include "ObjectManager.h"
 #include "GameManager.h"
 
 
 //
-// ƒQ[ƒ€“à‚Å‚Ğ‚Æ‚Â‚¾‚¯‚µ‚©‘¶İ‚µ‚È‚¢‚à‚Ì‚ğŠÇ—‚·‚éƒNƒ‰ƒX
-// —á‚¦‚ÎA
-// SceneManager @@‚¾‚Á‚½‚èAiƒV[ƒ“ŠÇ—ƒNƒ‰ƒXj
-// SoundManager @@‚¾‚Á‚½‚èAiƒTƒEƒ“ƒhŠÇ—ƒNƒ‰ƒXj
-// ResourceManager  ‚¾‚Á‚½‚èAiƒŠƒ\[ƒXi‰æ‘œ‚âƒ‚ƒfƒ‹jŠÇ—ƒNƒ‰ƒXj
-// ‚ğA‚Ç‚±‚©‚ç‚Å‚àQÆ‚Å‚«‚é‚æ‚¤‚É‚µ‚Ä‚¨‚«‚½‚¢‚Ì‚Å
-// ‚±‚¤‚¢‚Á‚½ƒNƒ‰ƒX‚ğì‚é
+// ã‚²ãƒ¼ãƒ å†…ã§ã²ã¨ã¤ã ã‘ã—ã‹å­˜åœ¨ã—ãªã„ã‚‚ã®ã‚’ç®¡ç†ã™ã‚‹ã‚¯ãƒ©ã‚¹
+// ä¾‹ãˆã°ã€
+// SceneManager ã€€ã€€ã ã£ãŸã‚Šã€ï¼ˆã‚·ãƒ¼ãƒ³ç®¡ç†ã‚¯ãƒ©ã‚¹ï¼‰
+// SoundManager ã€€ã€€ã ã£ãŸã‚Šã€ï¼ˆã‚µã‚¦ãƒ³ãƒ‰ç®¡ç†ã‚¯ãƒ©ã‚¹ï¼‰
+// ResourceManager  ã ã£ãŸã‚Šã€ï¼ˆãƒªã‚½ãƒ¼ã‚¹ï¼ˆç”»åƒã‚„ãƒ¢ãƒ‡ãƒ«ï¼‰ç®¡ç†ã‚¯ãƒ©ã‚¹ï¼‰
+// ã‚’ã€ã©ã“ã‹ã‚‰ã§ã‚‚å‚ç…§ã§ãã‚‹ã‚ˆã†ã«ã—ã¦ãŠããŸã„ã®ã§
+// ã“ã†ã„ã£ãŸã‚¯ãƒ©ã‚¹ã‚’ä½œã‚‹
 // 
 
 struct SaveSlot {
@@ -26,7 +26,7 @@ class Master
 public:
 
 	static ObjectManager* mpObjectManager;
-	static GameManager* mpGameManager; // ƒQ[ƒ€ƒ}ƒl[ƒWƒƒ[‚Ìƒ|ƒCƒ“ƒ^
+	static GameManager* mpGameManager; // ã‚²ãƒ¼ãƒ ãƒãƒãƒ¼ã‚¸ãƒ£ãƒ¼ã®ãƒã‚¤ãƒ³ã‚¿
 
 	static const int MaxStageCount = 3;
 
@@ -34,7 +34,7 @@ public:
 	static bool gStageCleared[3];
 	static int gDeathCounts[3];
 	static int gTotalDeathCounts[3];
-	static int gOldDeathCount[3]; // ‘O‰ñ‚Ì’§í‚Å‚Ç‚ê‚®‚ç‚¢€–S‚µ‚½‚©
+	static int gOldDeathCount[3]; // å‰å›ã®æŒ‘æˆ¦ã§ã©ã‚Œãã‚‰ã„æ­»äº¡ã—ãŸã‹
 
 	static int gCurrentStageRunDeathCount;
 	static int gCurrentStageIndex;

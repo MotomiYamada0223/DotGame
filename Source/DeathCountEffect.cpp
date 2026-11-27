@@ -1,15 +1,15 @@
-#include "DeathCountEffect.h"
+ï»¿#include "DeathCountEffect.h"
 #include <cmath>
 #include "GameConstants.h"
 
 namespace
 {
-	// ”j•Ğ‚Ì•¨—ƒpƒ‰ƒ[ƒ^
-	const float kGravity = 0.50f;        // d—Í
-	const float kBounceX = -0.4f;        // ‰¡•ûŒü‚Ì”½”­ŒW”
-	const float kBounceY = -0.4f;        // c•ûŒü‚Ì”½”­ŒW”
-	const float kFriction = 0.9f;        // ÚG‚Ì‰¡•ûŒü–€C
-	const int   kFragmentLife = 150;     // ”j•Ğ‚Ìõ–½
+	// ç ´ç‰‡ã®ç‰©ç†ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿
+	const float kGravity = 0.50f;        // é‡åŠ›
+	const float kBounceX = -0.4f;        // æ¨ªæ–¹å‘ã®åç™ºä¿‚æ•°
+	const float kBounceY = -0.4f;        // ç¸¦æ–¹å‘ã®åç™ºä¿‚æ•°
+	const float kFriction = 0.9f;        // æ¥è§¦æ™‚ã®æ¨ªæ–¹å‘æ‘©æ“¦
+	const int   kFragmentLife = 150;     // ç ´ç‰‡ã®å¯¿å‘½
 }
 
 DeathCountEffect::DeathCountEffect()
@@ -20,28 +20,36 @@ DeathCountEffect::~DeathCountEffect()
 {
 }
 
-// ‰æ‘œ‚ğ”j•Ğ‚É•ªŠ„‚µ‚ÄA’†SˆÊ’u‚©‚ç”ò‚ÑU‚ç‚¹‚é
-void DeathCountEffect::StartShatter(const PlayerSpriteSource& src, float centerX, float centerY, int fragSize)
+// ç ´ç‰‡ã‚’ä½œã‚Šç›´ã™ï¼ˆæ—¢å­˜ã®ç ´ç‰‡ã¯æ¶ˆãˆã‚‹ï¼‰
+void DeathCountEffect::StartShatter(const PlayerSpriteSource& src, float centerX, float centerY, int fragSize, float scale)
 {
 	mFragments.clear();
+	AppendShatter(src, centerX, centerY, fragSize, scale);
+}
 
-	// ‰æ‘œ‚Ì¶ãÀ•W
-	const float topLeftX = centerX - src.width / 2.0f;
-	const float topLeftY = centerY - src.height / 2.0f;
+// ç ´ç‰‡ã‚’è¿½åŠ ã™ã‚‹ï¼ˆæ—¢å­˜ã®ç ´ç‰‡ã¯æ®‹ã™ï¼‰
+void DeathCountEffect::AppendShatter(const PlayerSpriteSource& src, float centerX, float centerY, int fragSize, float scale)
+{
+	// è¡¨ç¤ºä¸Šã®å…¨ä½“ã‚µã‚¤ã‚ºã‹ã‚‰å·¦ä¸Šã‚’æ±‚ã‚ã‚‹
+	const float dispW = src.width * scale;
+	const float dispH = src.height * scale;
+	const float topLeftX = centerX - dispW / 2.0f;
+	const float topLeftY = centerY - dispH / 2.0f;
 
 	for (int y = 0; y < src.height; y += fragSize)
 	{
 		for (int x = 0; x < src.width; x += fragSize)
 		{
 			Fragment frag;
-			frag.x = topLeftX + x;
-			frag.y = topLeftY + y;
+			frag.x = topLeftX + x * scale;
+			frag.y = topLeftY + y * scale;
 			frag.vx = (static_cast<float>(GetRand(100)) / 100.0f * 14.0f) - 7.0f;
 			frag.vy = (static_cast<float>(GetRand(100)) / 100.0f * -14.0f) - 4.0f;
 			frag.srcX = src.srcX + x;
 			frag.srcY = src.srcY + y;
 			frag.width = fragSize;
 			frag.height = fragSize;
+			frag.scale = scale;
 			frag.graphHandle = src.graphHandle;
 			frag.isActive = true;
 			frag.timer = 0;
@@ -51,6 +59,13 @@ void DeathCountEffect::StartShatter(const PlayerSpriteSource& src, float centerX
 	}
 }
 
+// å…¨ã¦ã®ç ´ç‰‡ã‚’æ¶ˆã™
+void DeathCountEffect::Clear()
+{
+	mFragments.clear();
+}
+
+// ç ´ç‰‡ã®ç§»å‹•ãƒ»è¡çªãƒ»å¯¿å‘½ã‚’æ›´æ–°ã™ã‚‹
 void DeathCountEffect::Update(const BlockHitFunc& isBlocked)
 {
 	for (auto& frag : mFragments)
@@ -64,19 +79,23 @@ void DeathCountEffect::Update(const BlockHitFunc& isBlocked)
 			continue;
 		}
 
+		// è¡¨ç¤ºä¸Šã®ã‚µã‚¤ã‚ºã§è¡çªã‚’åˆ¤å®šã™ã‚‹
+		const float w = frag.width * frag.scale;
+		const float h = frag.height * frag.scale;
+
 		frag.vy += kGravity;
 
-		// X•ûŒü‚ÌˆÚ“®‚ÆÕ“Ë
+		// Xæ–¹å‘ã®ç§»å‹•ã¨è¡çª
 		frag.x += frag.vx;
-		if (isBlocked && isBlocked(frag.x, frag.y, (float)frag.width, (float)frag.height))
+		if (isBlocked && isBlocked(frag.x, frag.y, w, h))
 		{
-			frag.x -= frag.vx;     // Œ³‚É–ß‚·
-			frag.vx *= kBounceX;   // ”½”­
+			frag.x -= frag.vx;
+			frag.vx *= kBounceX;
 		}
 
-		// Y•ûŒü‚ÌˆÚ“®‚ÆÕ“Ë
+		// Yæ–¹å‘ã®ç§»å‹•ã¨è¡çª
 		frag.y += frag.vy;
-		if (isBlocked && isBlocked(frag.x, frag.y, (float)frag.width, (float)frag.height))
+		if (isBlocked && isBlocked(frag.x, frag.y, w, h))
 		{
 			frag.y -= frag.vy;
 			frag.vy *= kBounceY;
@@ -84,7 +103,8 @@ void DeathCountEffect::Update(const BlockHitFunc& isBlocked)
 		}
 	}
 }
-// —LŒø‚È”j•Ğ‚ğ•`‰æ‚·‚é
+
+// æœ‰åŠ¹ãªç ´ç‰‡ã‚’æç”»ã™ã‚‹ï¼ˆscale ã«å¿œã˜ã¦ç¸®å°ã—ã¦æç”»ï¼‰
 void DeathCountEffect::Draw()
 {
 	for (const auto& frag : mFragments)
@@ -92,9 +112,11 @@ void DeathCountEffect::Draw()
 		if (!frag.isActive) continue;
 		if (frag.graphHandle == -1) continue;
 
-		DrawRectGraph(
+		DrawRectExtendGraph(
 			static_cast<int>(frag.x),
 			static_cast<int>(frag.y),
+			static_cast<int>(frag.x + frag.width * frag.scale),
+			static_cast<int>(frag.y + frag.height * frag.scale),
 			frag.srcX,
 			frag.srcY,
 			frag.width,
@@ -105,7 +127,7 @@ void DeathCountEffect::Draw()
 	}
 }
 
-// ‘S‚Ä‚Ì”j•Ğ‚ªÁ‚¦‚½‚©
+// å…¨ã¦ã®ç ´ç‰‡ãŒæ¶ˆãˆãŸã‹
 bool DeathCountEffect::IsFinished() const
 {
 	for (const auto& frag : mFragments)

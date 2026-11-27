@@ -3,6 +3,9 @@
 #include <string>
 #include "BackgroundBox.h"
 #include "FadeController.h"
+#include "SelectDeathDisplay.h"
+#include "PlayerAnimState.h"
+
 
 class StageSelectScene : public Scene
 {
@@ -41,6 +44,7 @@ private:
 	// 背景のBox描画のクラス
 	BackgroundBox mBackgroundBox;
 	FadeController mFade;
+	SelectDeathDisplay mDeathDisplay;
 
 	int mapGraphHandle;
 
@@ -66,4 +70,5 @@ private:
 	bool mIsReturningTitle;
 	int mReturnTimer;
 	
+	int mDeathDisplayNode = -1;   // 前回 Setup したステージ番号
 };
