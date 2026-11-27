@@ -45,7 +45,7 @@ void GameLoadData::LoadInitialize(int stageNumber)
 	}
 	else
 	{
-		StageCave();
+		StageForest();
 	}
 }
 
