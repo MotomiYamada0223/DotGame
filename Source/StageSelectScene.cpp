@@ -93,8 +93,16 @@ void StageSelectScene::Initialize()
 	{
 		Master::gOldDeathCount[i] = Master::gDeathCounts[i];
 	}
-
 	mFade.StartFadeIn(30);
+
+
+	SoundManager* soundManager =
+		Master::mpGameManager->GetSoundManager();
+	if (soundManager == nullptr)
+	{
+		return;
+	}
+	soundManager->PlayBGM(SoundManager::BGM_TITLE);
 }
 
 // 移動処理：プレイヤーの移動アニメーションや自動ルート分岐、キー入力による移動先の設定を行う

@@ -20,6 +20,7 @@ public:   // enum, struct などの定義
 		BGM_STAGE3,        // ステージ3のBGM
 		BGM_STAGE3_BOSS,   // ステージ3 ボス戦のBGM
 		BGM_ANGEL_BATTLE,  // 3Dバトル（天使戦）のBGM
+		BGM_ANGEL,         // 天使のBGM
 	};
 
 	enum SOUND_SE  // SEの種類
@@ -61,6 +62,9 @@ public:   // enum, struct などの定義
 		
 		SE_SKELETON_IDEL, // 骸骨待機 3秒に一回鳴らす
 		SE_SKELETON_DEATH, //　骸骨死亡
+
+		SE_DOOR_OPEN,
+		SE_SMOKE,
 	};
 
 	// 遅延再生用の構造体

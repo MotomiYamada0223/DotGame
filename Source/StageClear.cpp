@@ -1169,6 +1169,13 @@ void StageClear::Update(Player* player, BlockMap* pBlockMap)
 			int frame = static_cast<int>(mDoorAnimProgress);
 			if (frame < 0) frame = 0;
 			if (frame > 3) frame = 3;
+
+			// ドアが閉じた状態から開き始めた瞬間にSE再生
+			if (mDoorCurrentFrame == 0 && frame > 0)
+			{
+				PlayStageSE(SoundManager::SE_DOOR_OPEN);
+			}
+
 			mDoorCurrentFrame = frame;
 
 			// 扉へのインタラクト：プレイヤーが扉範囲内にいて、Enterキーが押された時のみ遷移（上キーや範囲外でのEnterは無効）
@@ -1383,6 +1390,7 @@ void StageClear::DrawConfetti() const
 
 void StageClear::SpawnDoorSmoke(float x, float y)
 {
+	PlayStageSE(SoundManager::SE_SMOKE); // 煙が発生する音
 	mDoorSmoke.clear();
 	mDoorSmoke.reserve(32);
 
