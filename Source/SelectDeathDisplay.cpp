@@ -11,7 +11,7 @@ namespace
 	const int   kIconGap = 8;              // アイコン同士の間隔
 	const int   kIconDrawSize = 52;        // 表示するアイコンの一辺
 	const int   kFragSrcSize = 16;         // 破片の切り出し単位（元画像上のpx）
-	const int   kHoldFrames = 120;          // 全員出た後、割れ始めるまでの待ち時間
+	const int   kHoldFrames = 0;          // 全員出た後、割れ始めるまでの待ち時間
 	const int   kBaseSpawnInterval = 12;   // 出現間隔の基準（フレーム）
 	const int   kBaseShatterInterval = 10; // 割れる間隔の基準（フレーム）
 	const float kScrollLerp = 0.15f;       // スクロールの追従割合（毎フレーム）

@@ -974,7 +974,7 @@ void Player::BeginDeath()
 	const int stageIndex = Master::gCurrentStageIndex;
 	if (stageIndex >= 0 && stageIndex < Master::MaxStageCount)
 	{
-		Master::gDeathCounts[stageIndex] += 100;
+		Master::gDeathCounts[stageIndex] += 50;
 		Master::gTotalDeathCounts[stageIndex]++;
 	}
 
