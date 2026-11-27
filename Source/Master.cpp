@@ -8,6 +8,7 @@
 bool Master::gStageCleared[3] = {};
 int Master::gDeathCounts[3] = {};
 int Master::gTotalDeathCounts[3] = {};
+int Master::gOldDeathCount[3] = {};
 
 int Master::gCurrentStageIndex = 0;
 int Master::gCurrentStageRunDeathCount = 0;

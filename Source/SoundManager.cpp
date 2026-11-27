@@ -29,6 +29,7 @@ void SoundManager::Initialize()
 	LoadBGM(SOUND_BGM::BGM_STAGE3, "Resource/BGM/Stage_BGM.mp3");
 	LoadBGM(SOUND_BGM::BGM_STAGE3_BOSS, "Resource/BGM/Stage3_Boss.mp3");
 	LoadBGM(SOUND_BGM::BGM_ANGEL_BATTLE, "Resource/BGM/Angel_Boss.mp3");
+	LoadBGM(SOUND_BGM::BGM_ANGEL, "Resource/BGM/Angel_Sound.mp3");
 
 	// SE の読み込み
 	LoadSE(SOUND_SE::SE_DECIDE, "Resource/SE/System/Dicide.mp3");
@@ -72,6 +73,10 @@ void SoundManager::Initialize()
 	LoadSE(SOUND_SE::SE_SLIME_DEATH, "Resource/SE/Enemy/Slime_Kill.mp3");
 	LoadSE(SOUND_SE::SE_SKELETON_IDEL, "Resource/SE/Enemy/Skeleton_idle.mp3");
 	LoadSE(SOUND_SE::SE_SKELETON_DEATH, "Resource/SE/Enemy/Skeluton_Kill.mp3");
+
+
+	LoadSE(SOUND_SE::SE_DOOR_OPEN, "Resource/SE/System/door_open.mp3");
+	LoadSE(SOUND_SE::SE_SMOKE, "Resource/SE/System/door_smoke.mp3");
 
 	LoadVolume();
 }

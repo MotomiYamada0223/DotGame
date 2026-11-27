@@ -35,10 +35,10 @@ void UnitStatus::UpdateStatusByProgress(GameProgress progress)
 // 敵との判定で使用するダメージ処理
 void UnitStatus::TakeDamage(int damage)
 {
-    if (CheckHitKey(KEY_INPUT_6))
+   /* if (CheckHitKey(KEY_INPUT_6))
     {
         return;
-    }
+    }*/
 
     mHp -= damage;
     if (mHp < 0) mHp = 0;

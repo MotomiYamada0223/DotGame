@@ -18,11 +18,13 @@ WinResultScene::~WinResultScene()
 
 void WinResultScene::Initialize()
 {
-
-	if (Master::mpGameManager && Master::mpGameManager->GetSoundManager())
+	SoundManager* soundManager =
+		Master::mpGameManager->GetSoundManager();
+	if (soundManager == nullptr)
 	{
-		Master::mpGameManager->GetSoundManager()->PlayBGM(SoundManager::BGM_TITLE, true);
+		return;
 	}
+	soundManager->PlayBGM(SoundManager::BGM_ANGEL);
 
 
 	// 天使のセッターとテキストのゲッターの紐づけをする

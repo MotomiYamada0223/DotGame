@@ -157,11 +157,11 @@ void GameScene::Initialize()
 // ゲームシーンの毎フレーム更新処理
 void GameScene::Update()
 {
-	// デバッグ機能：1キーでボスエリア直前の安全な足場にワープ
-	if (InputManager::CheckDownKey(KEY_INPUT_1) || InputManager::CheckDownKey(KEY_INPUT_NUMPAD1))
-	{
-		DebugWarpToBossArea();
-	}
+	//// デバッグ機能：1キーでボスエリア直前の安全な足場にワープ
+	//if (InputManager::CheckDownKey(KEY_INPUT_1) || InputManager::CheckDownKey(KEY_INPUT_NUMPAD1))
+	//{
+	//	DebugWarpToBossArea();
+	//}
 
 	// 円のフェード・オープニング切替フェード更新
 	mCircleFade.UpdateCircleFade();
@@ -439,13 +439,13 @@ void GameScene::Draw()
 			mStageClear.Draw();
 		}
 
-		// デバッグ系
-		mpPlayer->DebugDraw(); // ブロックデバッグ
-		mBlockMap.DebugDraw(); // ブロックマップデバッグ表示
-		mTutorialText.DebugDraw(); // テキスト
+		//// デバッグ系
+		//mpPlayer->DebugDraw(); // ブロックデバッグ
+		//mBlockMap.DebugDraw(); // ブロックマップデバッグ表示
+		//mTutorialText.DebugDraw(); // テキスト
 
 		// デバッグ用ワープキーのガイド表示
-		DrawFormatString(DebugWarpConstants::GuideTextX, DebugWarpConstants::GuideTextY, GetColor(0, 255, 0), "[1]: Warp to Boss Area");
+		//DrawFormatString(DebugWarpConstants::GuideTextX, DebugWarpConstants::GuideTextY, GetColor(0, 255, 0), "[1]: Warp to Boss Area");
 
 
 		// 天使・ハート・テキストの描画
