@@ -61,6 +61,9 @@ public:
 	// プレイヤー死亡時
 	void OnPlayerDead(DeathReason::DeathType reason);
 
+	// ボス撃破時
+	void OnBossDefeated();
+
 	// 現在のステップを返す
 	const StepData* GetCurrentStep() const;
 

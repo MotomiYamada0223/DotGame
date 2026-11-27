@@ -185,6 +185,10 @@ namespace BlockMapGraphPath
 	// 1-2ステージ 洞窟オープニング
 	static const char* CaveOpening = "Resource/Map/Cave_Opening.png";
 	static const char* CaveOpeningCollision = "Resource/Map/Cave_OpeningCollision.png";
+
+	// 1-3ステージ ステージ3
+	static const char* Stage3Background = "Resource/Stage3/Stage3_Map.png";
+	static const char* Stage3Collision = "Resource/Stage3/Stage3_Collision.png";
 }
 
 // スクロール背景のパス

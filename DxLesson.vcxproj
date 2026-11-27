@@ -76,12 +76,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\DxLib_VC\プロジェクトに追加すべきファイル_VC用;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <AdditionalIncludeDirectories>$(ProjectDir)プロジェクトに追加すべきファイル_VC用;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\DxLib_VC\プロジェクトに追加すべきファイル_VC用;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)プロジェクトに追加すべきファイル_VC用;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -92,12 +94,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\DxLib_VC\プロジェクトに追加すべきファイル_VC用;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalIncludeDirectories>$(ProjectDir)プロジェクトに追加すべきファイル_VC用;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\DxLib_VC\プロジェクトに追加すべきファイル_VC用;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)プロジェクトに追加すべきファイル_VC用;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -106,12 +110,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\DxLib_VC\プロジェクトに追加すべきファイル_VC用;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <AdditionalIncludeDirectories>$(ProjectDir)プロジェクトに追加すべきファイル_VC用;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\DxLib_VC\プロジェクトに追加すべきファイル_VC用;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)プロジェクトに追加すべきファイル_VC用;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -122,12 +128,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\DxLib_VC\プロジェクトに追加すべきファイル_VC用;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalIncludeDirectories>$(ProjectDir)プロジェクトに追加すべきファイル_VC用;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\DxLib_VC\プロジェクトに追加すべきファイル_VC用;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)プロジェクトに追加すべきファイル_VC用;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -194,6 +202,22 @@
     <ClCompile Include="Source\FloorSpawner.cpp" />
     <ClCompile Include="Source\StageClear.cpp" />
     <ClCompile Include="Source\BlockEffect.cpp" />
+    <ClCompile Include="Source\Stage3BossCamera.cpp" />
+    <ClCompile Include="Source\Stage3BossMovie.cpp" />
+    <ClCompile Include="Source\Stage3Controller.cpp" />
+    <ClCompile Include="Source\Stage3Gimmick.cpp" />
+    <ClCompile Include="Source\Effekseer2DManager.cpp" />
+    <ClCompile Include="Source\Stage3BossDragon.cpp" />
+    <ClCompile Include="Source\Stage3DragonAirDashComboAttack.cpp" />
+    <ClCompile Include="Source\Stage3DragonBounceFireballAttack.cpp" />
+    <ClCompile Include="Source\Stage3DragonCloneDashAttack.cpp" />
+    <ClCompile Include="Source\Stage3DragonCloneMeteorDashAttack.cpp" />
+    <ClCompile Include="Source\Stage3DragonCloneWindRoarAttack.cpp" />
+    <ClCompile Include="Source\Stage3DragonMagmaFireballAttack.cpp" />
+    <ClCompile Include="Source\Stage3DragonRoarAttack.cpp" />
+    <ClCompile Include="Source\Stage3DragonUltimateWindSlamAttack.cpp" />
+    <ClCompile Include="Source\Stage3EffectManager.cpp" />
+    <ClCompile Include="Source\Stage3Magma.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Background.h" />
@@ -262,6 +286,22 @@
     <ClInclude Include="Source\WinResultScene.h" />
     <ClInclude Include="Source\FloorSpawner.h" />
     <ClInclude Include="Source\StageClear.h" />
+    <ClInclude Include="Source\Stage3BossCamera.h" />
+    <ClInclude Include="Source\Stage3BossMovie.h" />
+    <ClInclude Include="Source\Stage3Controller.h" />
+    <ClInclude Include="Source\Stage3Gimmick.h" />
+    <ClInclude Include="Source\Effekseer2DManager.h" />
+    <ClInclude Include="Source\Stage3BossDragon.h" />
+    <ClInclude Include="Source\Stage3DragonAirDashComboAttack.h" />
+    <ClInclude Include="Source\Stage3DragonBounceFireballAttack.h" />
+    <ClInclude Include="Source\Stage3DragonCloneDashAttack.h" />
+    <ClInclude Include="Source\Stage3DragonCloneMeteorDashAttack.h" />
+    <ClInclude Include="Source\Stage3DragonCloneWindRoarAttack.h" />
+    <ClInclude Include="Source\Stage3DragonMagmaFireballAttack.h" />
+    <ClInclude Include="Source\Stage3DragonRoarAttack.h" />
+    <ClInclude Include="Source\Stage3DragonUltimateWindSlamAttack.h" />
+    <ClInclude Include="Source\Stage3EffectManager.h" />
+    <ClInclude Include="Source\Stage3Magma.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

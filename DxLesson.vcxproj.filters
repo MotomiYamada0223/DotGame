@@ -228,6 +228,54 @@
     <ClCompile Include="Source\FadeController.cpp">
       <Filter>ソース ファイル\Controller系</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Stage3BossCamera.cpp">
+      <Filter>ソース ファイル\Controller系</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Stage3BossMovie.cpp">
+      <Filter>ソース ファイル\Controller系</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Stage3Controller.cpp">
+      <Filter>ソース ファイル\Controller系</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Stage3Gimmick.cpp">
+      <Filter>ソース ファイル\Gimmick系</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Effekseer2DManager.cpp">
+      <Filter>ソース ファイル\Manager系</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Stage3BossDragon.cpp">
+      <Filter>ソース ファイル\Enemy系</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Stage3DragonAirDashComboAttack.cpp">
+      <Filter>ソース ファイル\Enemy系</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Stage3DragonBounceFireballAttack.cpp">
+      <Filter>ソース ファイル\Enemy系</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Stage3DragonCloneDashAttack.cpp">
+      <Filter>ソース ファイル\Enemy系</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Stage3DragonCloneMeteorDashAttack.cpp">
+      <Filter>ソース ファイル\Enemy系</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Stage3DragonCloneWindRoarAttack.cpp">
+      <Filter>ソース ファイル\Enemy系</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Stage3DragonMagmaFireballAttack.cpp">
+      <Filter>ソース ファイル\Enemy系</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Stage3DragonRoarAttack.cpp">
+      <Filter>ソース ファイル\Enemy系</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Stage3DragonUltimateWindSlamAttack.cpp">
+      <Filter>ソース ファイル\Enemy系</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Stage3EffectManager.cpp">
+      <Filter>ソース ファイル\Manager系</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Stage3Magma.cpp">
+      <Filter>ソース ファイル\Gimmick系</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Collision.h">
@@ -426,6 +474,54 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\FadeController.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Stage3BossCamera.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Stage3BossMovie.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Stage3Controller.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Stage3Gimmick.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Effekseer2DManager.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Stage3BossDragon.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Stage3DragonAirDashComboAttack.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Stage3DragonBounceFireballAttack.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Stage3DragonCloneDashAttack.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Stage3DragonCloneMeteorDashAttack.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Stage3DragonCloneWindRoarAttack.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Stage3DragonMagmaFireballAttack.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Stage3DragonRoarAttack.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Stage3DragonUltimateWindSlamAttack.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Stage3EffectManager.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Stage3Magma.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

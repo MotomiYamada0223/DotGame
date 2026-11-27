@@ -575,6 +575,12 @@ void TutorialTextManager::Reset()
 	mbInterruptedLastX = false;
 }
 
+void TutorialTextManager::OnBossDefeated()
+{
+	Reset();
+	mbIsTextCompleted = true;
+}
+
 
 // ステップを変更する/次のステップに進める処理
 void TutorialTextManager::ChangeStep(int nextID)

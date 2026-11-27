@@ -96,8 +96,12 @@ void BlockMap::Unload()
     mCamera.SetScrollX(0);
     mCamera.SetScrollY(0);
     mCamera.SetLocked(false);
+    mCamera.SetVerticalLocked(false);
     mCamera.SetRightScrollExtra(0);
     mCamera.ResetScrollInit();
+    mDebris.clear();
+    mShakeX = 0;
+    mShakeY = 0;
 }
 
 void BlockMap::SetAllowScrollPastRight(bool allow)
@@ -379,10 +383,15 @@ void BlockMap::Draw()
 {
     if (!mbIsLoaded) { return; }
 
-    const int sx = mCamera.GetDrawScrollX();
-    const int sy = mCamera.GetDrawScrollY();
-    const int sw = ScreenSize::ScrrenWidth;
-    const int sh = ScreenSize::ScrrenHeight;
+    const int sx = GetDrawScrollX();
+    const int sy = GetDrawScrollY();
+    int sw = ScreenSize::ScrrenWidth;
+    int sh = ScreenSize::ScrrenHeight;
+    const int curScreen = GetDrawScreen();
+    if (curScreen > 0)
+    {
+        GetGraphSize(curScreen, &sw, &sh);
+    }
     const int drawSw = (std::max)(0, (std::min)(sw, mnBackgroundWidth - sx));
 
     if (drawSw > 0)
@@ -465,6 +474,24 @@ void BlockMap::Draw()
     {
         wall->Draw(sx, sy);
     }
+
+    // ギミック破片パーティクルの描画
+    if (!mDebris.empty())
+    {
+        for (const auto& d : mDebris)
+        {
+            if (d.life <= 0) continue;
+            int alpha = (d.maxLife > 0) ? (255 * d.life) / d.maxLife : 255;
+            if (alpha < 0) alpha = 0;
+            if (alpha > 255) alpha = 255;
+            SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
+            int dx = static_cast<int>(d.x) - sx;
+            int dy = static_cast<int>(d.y) - sy;
+            int half = d.size / 2;
+            DrawBox(dx - half, dy - half, dx + half, dy + half, d.color, TRUE);
+        }
+        SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+    }
 }
 
 // デバッグ描画まとめ
@@ -528,6 +555,22 @@ void BlockMap::Move(int playerScreenX, float playerMapY, float moveDirection, fl
     {
         wall->Update();
     }
+
+    for (auto it = mDebris.begin(); it != mDebris.end(); )
+    {
+        it->x += it->vx;
+        it->y += it->vy;
+        it->vy += 0.35f;
+        it->life--;
+        if (it->life <= 0)
+        {
+            it = mDebris.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
+    }
 }
 
 
@@ -576,12 +619,32 @@ void BlockMap::SetCollisionBlock(int startX, int startY, int width, int height, 
     }
 }
 
+void BlockMap::ClearCollisionArea(int minX, int minY, int maxX, int maxY)
+{
+    if (maxX >= minX && maxY >= minY)
+    {
+        SetCollisionBlock(minX, minY, maxX - minX + 1, maxY - minY + 1, CollisionType::None);
+    }
+}
+
+void BlockMap::FillCollisionArea(int minX, int minY, int maxX, int maxY, CollisionType type)
+{
+    if (maxX >= minX && maxY >= minY)
+    {
+        SetCollisionBlock(minX, minY, maxX - minX + 1, maxY - minY + 1, type);
+    }
+}
+
 void BlockMap::ResetScroll()
 {
     mCamera.SetScrollX(0);
     mCamera.SetScrollY(0);
     mCamera.SetLocked(false);
+    mCamera.SetVerticalLocked(false);
     mCamera.ResetScrollInit();
+    mDebris.clear();
+    mShakeX = 0;
+    mShakeY = 0;
     ResetCeilingBreak();
 }
 

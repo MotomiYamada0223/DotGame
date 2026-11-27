@@ -34,6 +34,8 @@ public:
 	virtual bool HasCustomDeath() const { return false; }
 	// プレイヤーとの本体接触判定・被攻撃判定が有効か
 	virtual bool IsActiveTarget() const { return true; }
+	// プレイヤーとの本体接触時にダメージを与えるか
+	virtual bool CanDealContactDamage() const { return IsActiveTarget(); }
 
 
 	// 攻撃判定 (派生クラス用)

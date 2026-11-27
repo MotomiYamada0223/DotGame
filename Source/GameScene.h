@@ -13,6 +13,7 @@
 #include "RollingBoulder.h"
 #include "Minecart.h"
 #include "HotSpring.h"
+#include "Stage3Controller.h"
 
 // 前方宣言
 class Player;
@@ -41,6 +42,9 @@ public:
 	Player* GetPlayer() { return mpPlayer; }
 	BlockMap& GetBlockMap() { return mBlockMap; }
 	TutorialTextManager& GetTutorialText() { return mTutorialText; }
+	Stage3Controller& GetStage3Controller() { return mStage3Controller; }
+
+	void TriggerStageClearFade();
 
 	void DrawBossOrder();
 
@@ -84,6 +88,7 @@ private:
 	RollingBoulder mRollingBoulder;
 	Minecart mCart;
 	HotSpring mHotSpring;
+	Stage3Controller mStage3Controller;
 
 	bool mbIsLoaded = false; // マップがロードされたかどうかのフラグ
 	bool mbWasPlayerDead = false; // 前フレームのプレイヤーの死亡状態を保持するフラグ
@@ -91,5 +96,6 @@ private:
 	// 円の描画
 	bool mbCircleFlag;
 	bool mbBossBgmStarted = false;   // ボスBGMに切り替え済みか
+	bool mbStage3ClearFading = false; // ステージ3クリア時の暗転フェード中フラグ
 	CavePhase mCavePhase = CavePhase::None;
 };

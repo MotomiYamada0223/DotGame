@@ -98,8 +98,27 @@ void GameScene::Initialize()
 	});
 
 	const bool isCave = (Master::gCurrentStageIndex == GameLoadDataConstants::StageIndexCave);
+	const bool isStage3 = (Master::gCurrentStageIndex == 2);
 	const int postBossPhase = isCave ? Master::gCavePostBossPhase : 0;
 	const bool runCaveOpening = (isCave && postBossPhase == 0 && !Master::gCaveOpeningCompleted);
+
+	if (isStage3)
+	{
+		mCavePhase = CavePhase::None;
+		mbStage3ClearFading = false;
+		mTutorialText.Initialize("", CsvPath::TutorialDeathText);
+		mTutorialText.Reset();
+		mStage3Controller.Initialize(mBlockMap);
+		VECTOR spawnPos = mStage3Controller.GetInitialSpawnPosition(mBlockMap);
+		mpPlayer = new Player(spawnPos);
+		mpPlayer->SetStage3Gimmick(&mStage3Controller.GetGimmick());
+		mStage3Controller.SetupInitialCamera(mBlockMap, mpPlayer);
+		mHotSpring.Initialize();
+		mStageClear.Reset();
+		MovingFloor::s_IsReverseAndDashTriggered = false;
+		mbIsLoaded = true;
+		return;
+	}
 
 	// プレイヤーの生成（各ステージ・進行状態に応じた開始座標を設定）
 	VECTOR spawnPos = VGet(GameLoadDataConstants::ForestPlayerSpawnX, GameLoadDataConstants::ForestPlayerSpawnY, 0.0f);
@@ -158,6 +177,48 @@ void GameScene::Update()
 	// 円のフェード・オープニング切替フェード更新
 	mCircleFade.UpdateCircleFade();
 	mOpeningFade.Update();
+
+	if (Master::gCurrentStageIndex == 2)
+	{
+		if (mbStage3ClearFading)
+		{
+			if (mpPlayer != nullptr)
+			{
+				mpPlayer->SetInputDisabled(true);
+			}
+			if (mOpeningFade.IsFadeOutFinished())
+			{
+				Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_WINRESULT);
+				return;
+			}
+		}
+
+		mStage3Controller.UpdateBeforePlayerMove(mpPlayer);
+		if (mpPlayer != nullptr)
+		{
+			mpPlayer->PlayerMove(mBlockMap);
+		}
+		mStage3Controller.Update(mBlockMap, mpPlayer);
+		SetTextUpdate();
+		mSaint.Update();
+
+		ObjectManager* objManager = GetObjectManager();
+		if (objManager != nullptr)
+		{
+			std::vector<Object2D*> enemyList = objManager->GetObject2DListByTag(Object2D::Enemy2D);
+			for (Object2D* obj : enemyList)
+			{
+				Enemy* enemy = dynamic_cast<Enemy*>(obj);
+				if (enemy != nullptr)
+				{
+					enemy->EnemyMove(mBlockMap);
+				}
+			}
+		}
+
+		Scene::Update();
+		return;
+	}
 
 	if (IsOpeningMapPhase())
 	{
@@ -380,75 +441,118 @@ void GameScene::Draw()
 
 	if (mbCircleFlag)
 	{
-		const bool isOpeningPhase = IsOpeningMapPhase();
-		const bool isBossReturnMode = (mCavePhase == CavePhase::MainCave && Master::gCavePostBossPhase == 2);
-
-		// オブジェクトの描画
-		mBackground.Draw(mBlockMap.GetShakeOffsetX(), mBlockMap.GetShakeOffsetY()); // スクロール背景
-
-		if (!isOpeningPhase)
+		if (Master::gCurrentStageIndex == 2)
 		{
-			// ステージクリア扉（プレイヤーの背面、背景の手前に描画）
-			mStageClear.DrawDoor(&mBlockMap);
-		}
-
-		Scene::Draw();
-
-		if (!isOpeningPhase)
-		{
-			// ステージ（ブロックマップ）の背面に突き刺さるタイトルロゴを描画
-			mStageClear.DrawBehindStage(&mBlockMap);
-		}
-
-		DrawBossOrder(); // ボスとブロックマップの描画をしている
-
-		// Sキー（表側落下時）：プレイヤーをマップの手前側に描画
-		if (mpPlayer != nullptr)
-		{
-			mpPlayer->DrawFront();
-		}
-
-		if (!isOpeningPhase && !isBossReturnMode)
-		{
-			mLeaf.LeafDraw(mBlockMap);
-			mRollingBoulder.Draw(mBlockMap.GetScrollX(), mBlockMap.GetScrollY());
-			mCart.Draw(mBlockMap.GetScrollX(), mBlockMap.GetScrollY());
-			mHotSpring.Draw(mBlockMap.GetScrollX(), mBlockMap.GetScrollY());
-		}
-
-		// 一番手前に描画したいもの
-		mpPlayer->DrawFallDeath();
-		if (!isOpeningPhase)
-		{
-			// ボス演出の黒帯
-			mBossIntro.Draw();
-			mStageClear.Draw();
-		}
-
-		// デバッグ系
-		mpPlayer->DebugDraw(); // ブロックデバッグ
-		mBlockMap.DebugDraw(); // ブロックマップデバッグ表示
-		mTutorialText.DebugDraw(); // テキスト
-
-		// デバッグ用ワープキーのガイド表示
-		DrawFormatString(DebugWarpConstants::GuideTextX, DebugWarpConstants::GuideTextY, GetColor(0, 255, 0), "[1]: Warp to Boss Area");
-
-
-		// 天使・ハート・テキストの描画
-		bool isDeathPhase1 = mpPlayer->IsCutInSaint();
-		bool showAngelUI = !mpPlayer->GetIsDead() || isDeathPhase1;
-		if (showAngelUI)
-		{
-			if (mpPlayer->IsCutInSaint())
+			mStage3Controller.BeginBossCameraDraw();
+			mStage3Controller.DrawBackground(mBlockMap);
+			Scene::Draw();
+			mBlockMap.Draw();
+			if (mpPlayer != nullptr)
 			{
-				mTutorialText.Draw(TutorialTextManager::TEXT_DOWN); // 死亡時の天使場面用位置
+				mpPlayer->DrawFront();
 			}
-			else
+			mStage3Controller.DrawForeground(mBlockMap, mpPlayer);
+			mStage3Controller.DrawEffects(mBlockMap);
+			mStage3Controller.EndBossCameraDraw();
+
+			mStage3Controller.DrawUI(mBlockMap, mpPlayer);
+			if (mpPlayer != nullptr)
 			{
-				mDrawFrame.Draw(); // フレーム描画
-				mSaint.Draw();
-				mpPlayer->DrawLife();
-				mTutorialText.Draw(TutorialTextManager::TEXT_UP);   // 通常時の位置
+				mpPlayer->DrawFallDeath();
+				mpPlayer->DebugDraw(mStage3Controller.GetBossCameraScaleX(), mStage3Controller.GetBossCameraScaleY());
+			}
+			mBlockMap.DebugDraw();
+			mTutorialText.DebugDraw();
+
+			bool isDeathPhase1 = (mpPlayer != nullptr) && mpPlayer->IsCutInSaint();
+			bool showAngelUI = (mpPlayer != nullptr) && (!mpPlayer->GetIsDead() || isDeathPhase1);
+			if (showAngelUI)
+			{
+				if (mpPlayer->IsCutInSaint())
+				{
+					mTutorialText.Draw(TutorialTextManager::TEXT_DOWN);
+				}
+				else
+				{
+					mDrawFrame.Draw();
+					mSaint.Draw();
+					mpPlayer->DrawLife();
+					mTutorialText.Draw(TutorialTextManager::TEXT_UP);
+				}
+			}
+		}
+		else
+		{
+			const bool isOpeningPhase = IsOpeningMapPhase();
+			const bool isBossReturnMode = (mCavePhase == CavePhase::MainCave && Master::gCavePostBossPhase == 2);
+
+			// オブジェクトの描画
+			mBackground.Draw(mBlockMap.GetShakeOffsetX(), mBlockMap.GetShakeOffsetY()); // スクロール背景
+
+			if (!isOpeningPhase)
+			{
+				// ステージクリア扉（プレイヤーの背面、背景の手前に描画）
+				mStageClear.DrawDoor(&mBlockMap);
+			}
+
+			Scene::Draw();
+
+			if (!isOpeningPhase)
+			{
+				// ステージ（ブロックマップ）の背面に突き刺さるタイトルロゴを描画
+				mStageClear.DrawBehindStage(&mBlockMap);
+			}
+
+			DrawBossOrder(); // ボスとブロックマップの描画をしている
+
+			// Sキー（表側落下時）：プレイヤーをマップの手前側に描画
+			if (mpPlayer != nullptr)
+			{
+				mpPlayer->DrawFront();
+			}
+
+			if (!isOpeningPhase && !isBossReturnMode)
+			{
+				mLeaf.LeafDraw(mBlockMap);
+				mRollingBoulder.Draw(mBlockMap.GetScrollX(), mBlockMap.GetScrollY());
+				mCart.Draw(mBlockMap.GetScrollX(), mBlockMap.GetScrollY());
+				mHotSpring.Draw(mBlockMap.GetScrollX(), mBlockMap.GetScrollY());
+			}
+
+			// 一番手前に描画したいもの
+			mpPlayer->DrawFallDeath();
+			if (!isOpeningPhase)
+			{
+				// ボス演出の黒帯
+				mBossIntro.Draw();
+				mStageClear.Draw();
+			}
+
+			// デバッグ系
+			mpPlayer->DebugDraw(); // ブロックデバッグ
+			mBlockMap.DebugDraw(); // ブロックマップデバッグ表示
+			mTutorialText.DebugDraw(); // テキスト
+
+			// デバッグ用ワープキーのガイド表示
+			DrawFormatString(DebugWarpConstants::GuideTextX, DebugWarpConstants::GuideTextY, GetColor(0, 255, 0), "[1]: Warp to Boss Area");
+
+
+			// 天使・ハート・テキストの描画
+			bool isDeathPhase1 = mpPlayer->IsCutInSaint();
+			bool showAngelUI = !mpPlayer->GetIsDead() || isDeathPhase1;
+			if (showAngelUI)
+			{
+				if (mpPlayer->IsCutInSaint())
+				{
+					mTutorialText.Draw(TutorialTextManager::TEXT_DOWN); // 死亡時の天使場面用位置
+				}
+				else
+				{
+					mDrawFrame.Draw(); // フレーム描画
+					mSaint.Draw();
+					mpPlayer->DrawLife();
+					mTutorialText.Draw(TutorialTextManager::TEXT_UP);   // 通常時の位置
+				}
 			}
 		}
 	}
@@ -463,7 +567,10 @@ void GameScene::Draw()
 
 void GameScene::Finalize()
 {
-
+	if (Master::gCurrentStageIndex == 2)
+	{
+		mStage3Controller.Finalize();
+	}
 }
 
 void GameScene::DrawBossOrder()
@@ -498,8 +605,9 @@ bool GameScene::IsOpeningMapPhase() const
 
 bool GameScene::IsSilentAngelPhase() const
 {
-	// ボス撃破後の帰還モード（MainCave + postBossPhase==2）は無言
-	return (mCavePhase == CavePhase::MainCave && Master::gCavePostBossPhase == 2);
+	// ボス撃破後の帰還モード（MainCave + postBossPhase==2）およびStage3は無言
+	return (mCavePhase == CavePhase::MainCave && Master::gCavePostBossPhase == 2) ||
+		(Master::gCurrentStageIndex == 2);
 }
 
 void GameScene::CleanupNonPlayerObjects()
@@ -664,4 +772,20 @@ void GameScene::DebugWarpToBossArea()
 
 	// カメラをプレイヤーがスクロール領域内（画面中央800px付近）に収まるようにスナップ
 	mBlockMap.SnapCameraToPosition(warpX, warpY);
+}
+
+void GameScene::TriggerStageClearFade()
+{
+	if (mbStage3ClearFading) return;
+	mbStage3ClearFading = true;
+
+	if (Master::gCurrentStageIndex >= 0 && Master::gCurrentStageIndex < Master::MaxStageCount)
+	{
+		Master::gStageCleared[Master::gCurrentStageIndex] = true;
+	}
+	if (Master::mpGameManager && Master::mpGameManager->GetSoundManager())
+	{
+		Master::mpGameManager->GetSoundManager()->StopBGM();
+	}
+	mOpeningFade.StartFadeOut(60);
 }

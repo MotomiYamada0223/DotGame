@@ -14,6 +14,8 @@
 #include "EnemySlime.h"
 #include "EnemySkeleton.h"
 
+class Stage3Gimmick;
+
 class Player : public Object2D, public UnitStatus
 {
 public:
@@ -25,7 +27,7 @@ public:
 	virtual void Draw() override;
 	virtual void UpdateStatusByProgress(GameProgress progress) override;
 
-	void DebugDraw(); // デバッグ用の描画関数
+	void DebugDraw(float cameraScaleX = 1.0f, float cameraScaleY = 1.0f); // デバッグ用の描画関数
 
 	void PlayerMove(BlockMap& blockMap); // Mapを受け取って位置を更新する処理
 
@@ -83,6 +85,8 @@ public: // アクセサ
 	bool IsCinematicEvading() const { return mbIsEvading; }
 	float GetPlayerWidth() const { return mfPlayerWidth; }
 	float GetPlayerHeight() const { return mfPlayerHeight; }
+	using UnitStatus::TakeDamage;
+	void TakeDamage(int damage, DeathReason::DeathType deathReason);
 	void SetDeathReason(DeathReason::DeathType type) { mDeathReason = type; }
 	void TakeBulletDamage(int damage);
 	void ResetBossIntroState();
@@ -98,11 +102,27 @@ public: // アクセサ
 
 	// 洞窟オープニング〜本編遷移用制御
 	void SetSpawnPos(const VECTOR& spawnPos) { mSpawnPos = spawnPos; }
+	void SetSpawnPosition(const VECTOR& spawnPos) { mSpawnPos = spawnPos; }
 	void ForceStartFall(float initialVy = 1.5f);
 	void StartAirDrop(float x, float y, float initialVy);
 	void SetSuppressFallDeath(bool suppress) { mbSuppressFallDeath = suppress; }
 	void SetAllowExitRight(bool allow) { mbAllowExitRight = allow; }
 	void SetFacingRight(bool right) { isFacingRight = right; }
+
+	// ステージ3ギミック・ムービー制御用
+	void SetIsGrounded(bool grounded) { isGrounded = grounded; }
+	void SetInputDisabled(bool disabled)
+	{
+		mbInputDisabled = disabled;
+		if (disabled)
+		{
+			mfMoveDirection = 0.0f;
+		}
+	}
+	bool IsInputDisabled() const { return mbInputDisabled; }
+	void SetWindFloatMode(bool enable) { mbWindFloatMode = enable; }
+	bool IsWindFloatMode() const { return mbWindFloatMode; }
+	void SetStage3Gimmick(Stage3Gimmick* gimmick) { mpStage3Gimmick = gimmick; }
 
 	// デバッグ用ワープ
 	void WarpTo(float x, float y);
@@ -266,6 +286,9 @@ private: // 復活処理関係
 	bool mbSpaceWasPressed = false;
 	bool mbSuppressFallDeath = false;
 	bool mbAllowExitRight = false;
+	bool mbInputDisabled = false;
+	bool mbWindFloatMode = false;
+	Stage3Gimmick* mpStage3Gimmick = nullptr;
 
 	// 3段階ジャンプ（小・中・大）用
 	PlayerConstants::JumpType mCurrentJumpType = PlayerConstants::JumpType::None;
@@ -279,4 +302,31 @@ private: // 復活処理関係
 	void UpdateGameOver();    // GAME OVER中の入力処理
 	void DrawGameOver();      // GAME OVER画面の描画
 	DeathController::AngelMotion GetAngelMotionForDeathType(DeathReason::DeathType type) const;
+
+	// 魔法攻撃（Eキー・Stage3空中咆哮妨害等）
+	struct MagicProjectile
+	{
+		float x = 0.0f;
+		float y = 0.0f;
+		float vx = 0.0f;
+		float vy = 0.0f;
+		float radius = 26.0f;
+		int life = 0;
+		int maxLife = 120;
+		bool active = false;
+	};
+	static constexpr int MAGIC_ANIM_COUNT = 7;
+	int mMagicAnimHandles[MAGIC_ANIM_COUNT];
+	bool mbIsMagicCasting = false;
+	int mMagicAnimFrame = 0;
+	int mMagicAnimTimer = 0;
+	bool mbMagicShotFired = false;
+	int mMagicCooldownTimer = 0;
+	bool mbEKeyWasDown = false;
+	std::vector<MagicProjectile> mMagicProjectiles;
+
+	void SpawnMagicProjectile();
+	void UpdateMagicProjectiles();
+	void DrawMagicProjectiles() const;
+	void ResetMagicAndWindState();
 };

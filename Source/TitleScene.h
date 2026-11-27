@@ -1,5 +1,5 @@
-#pragma once
-#include "Scene.h" // ƒV[ƒ“Œp³‚µ‚½‚¢‚©‚çƒCƒ“ƒNƒ‹[ƒh
+ï»¿#pragma once
+#include "Scene.h" // ã‚·ãƒ¼ãƒ³ç¶™æ‰¿ã—ãŸã„ã‹ã‚‰ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰
 #include "TitleLogo.h"
 #include "FadeController.h"
 
@@ -11,13 +11,13 @@ public:
 	TitleScene();
 	virtual ~TitleScene();
 
-	// ‰Šú‰»
+	// åˆæœŸåŒ–
 	virtual void Initialize() override;
-	// XV
+	// æ›´æ–°
 	virtual void Update() override;
-	// •`‰æ
+	// æç”»
 	virtual void Draw() override;
-	// I—¹ˆ—
+	// çµ‚äº†å‡¦ç†
 	virtual void Finalize() override;
 
 	void DrawSelectString();
@@ -30,5 +30,6 @@ private:
 	int mnSelectIndex;
 	const int MAX_SELECT = 2;
 	bool mbSceneChangeRequested;
+	bool mbDirectStage3Requested = false;
 };
 

@@ -1,0 +1,71 @@
+ï»¿#pragma once
+#include "DxLib.h"
+
+class BlockMap;
+class Player;
+class Stage3BossDragon;
+
+// =========================================================================
+// Stage 3iƒXƒe[ƒW3jê—pƒ{ƒX“oê•‘æ2Œ`‘ÔŠoÁƒJƒƒ‰ƒ€[ƒr[ƒNƒ‰ƒXiStage3BossMoviej
+// 1. •Â‚¶‚ß•Ç‚ª~‚è‚Ä‚«‚½’¼Œã‚Ì‰“oêƒ€[ƒr[iStartMoviej
+// 2. ‘æ1Œ`‘ÔŒ‚”j‚Ì‘æ2Œ`‘ÔuƒAƒ‹ƒeƒBƒƒbƒgƒhƒ‰ƒSƒ“v‰©‹àŠoÁƒ€[ƒr[iStartAwakeningMoviej
+// =========================================================================
+class Stage3BossMovie
+{
+public:
+	Stage3BossMovie();
+	~Stage3BossMovie();
+
+	void Initialize();
+	void Reset();
+
+	// •Â‚¶‚ß•Ç‚ª•Â‚Ü‚è‚«‚Á‚½uŠÔ‚É‰“oêƒ€[ƒr[‚ğŠJn‚·‚é
+	void StartMovie(BlockMap& blockMap, Player* player, Stage3BossDragon* boss);
+
+	// ‘æ1Œ`‘ÔHP‚ª0‚É‚È‚Á‚½uŠÔ‚ÉuƒAƒ‹ƒeƒBƒƒbƒgƒhƒ‰ƒSƒ“v‰©‹àŠoÁƒ€[ƒr[‚ğŠJn‚·‚é
+	void StartAwakeningMovie(BlockMap& blockMap, Player* player, Stage3BossDragon* boss);
+
+	// –ˆƒtƒŒ[ƒ€‚Ìƒ€[ƒr[ƒJƒƒ‰•‰‰oXViPlayerMove‚ÌŒã‚ÉŒÄ‚Ô‚±‚Æ‚ÅƒJƒƒ‰ˆÊ’u‚ğã‘‚«§Œäj
+	void Update(BlockMap& blockMap, Player* player, Stage3BossDragon* boss);
+
+	// ƒ€[ƒr[‰‰o‚Ì•`‰æiã‰º‚ÌƒVƒlƒ}•‘ÑEƒhƒ‰ƒSƒ“Ğ‰îƒeƒƒbƒvEŠoÁƒtƒ‰ƒbƒVƒ…j
+	void Draw(const BlockMap& blockMap, Stage3BossDragon* boss) const;
+
+	bool IsPlaying() const { return mPhase != Phase::None && mPhase != Phase::Finished; }
+	bool HasFinished() const { return mPhase == Phase::Finished; }
+
+private:
+	enum class Phase
+	{
+		None,                    // –¢ŠJn
+		WaitAfterGate,           // •Ç‚ª•Â‚Ü‚Á‚½’¼Œã‚Ì¬‹x~i25ƒtƒŒ[ƒ€j
+		PanToBoss,               // ƒvƒŒƒCƒ„[‹“_ ¨ ‰œ‚Ì‘«ê‚Ìƒhƒ‰ƒSƒ“‚ÖƒJƒƒ‰‚ğŠñ‚¹‚éi85ƒtƒŒ[ƒ€j
+		FocusOnBoss,             // ƒhƒ‰ƒSƒ“‚ğ‰f‚µ‚Ä™ôšK•ƒl[ƒ€•\¦i110ƒtƒŒ[ƒ€j
+		PanBackToPlayer,         // ƒhƒ‰ƒSƒ“ ¨ Œ³‚ÌƒvƒŒƒCƒ„[‹“_‚ÖƒJƒƒ‰‚ğ–ß‚·i75ƒtƒŒ[ƒ€j
+		AwakenMoveToCenter,      // ‘æ2Œ`‘ÔŠoÁFƒhƒ‰ƒSƒ“‚ª’†‰›‚ÖˆÚ“®•ƒJƒƒ‰‚ª’†‰›‚ÖŠñ‚éi70ƒtƒŒ[ƒ€j
+		AwakenFocusAndTransform, // ‘æ2Œ`‘ÔŠoÁF’†‰›‚Å‰©‹à‰»‚µ‚Ä™ôšK•uƒAƒ‹ƒeƒBƒƒbƒgƒhƒ‰ƒSƒ“v•\¦i150ƒtƒŒ[ƒ€j
+		AwakenReturnToBattle,    // ‘æ2Œ`‘ÔŠoÁF’èˆÊ’u‚Ö’…’n‚µƒJƒƒ‰•œ‹A•‘æ2Œ`‘Ôƒoƒgƒ‹ŠJni65ƒtƒŒ[ƒ€j
+		Finished                 // ƒ€[ƒr[Š®—¹iƒvƒŒƒCƒ„[‘€ìÄŠJj
+	};
+
+	Phase mPhase;
+	int   mTimer;
+	bool  mbIsAwakeningMovie;
+
+	float mSavedPlayerScrollX; // ƒ€[ƒr[ŠJn‚ÌƒvƒŒƒCƒ„[ƒJƒƒ‰ScrollX
+	float mSavedPlayerScrollY; // ƒ€[ƒr[ŠJn‚ÌƒvƒŒƒCƒ„[ƒJƒƒ‰ScrollY
+	float mTargetBossScrollX;  // ƒhƒ‰ƒSƒ“‚ğ‰f‚·‚Æ‚«‚Ì–Ú•WScrollX
+	float mTargetBossScrollY;  // ƒhƒ‰ƒSƒ“‚ğ‰f‚·‚Æ‚«‚Ì–Ú•WScrollY
+	float mCurrentScrollX;     // ƒ€[ƒr[’†‚ÌŒ»İScrollX
+	float mCurrentScrollY;     // ƒ€[ƒr[’†‚ÌŒ»İScrollY
+	float mLetterboxHeight;    // ã‰º‚ÌƒVƒlƒ}•‘Ñ‚ÌŒ»İ‚Ì‚‚³i0 .. 90pxj
+
+	float mBossStartX;         // ŠoÁƒ€[ƒr[ŠJn‚Ìƒhƒ‰ƒSƒ“X
+	float mBossStartY;         // ŠoÁƒ€[ƒr[ŠJn‚Ìƒhƒ‰ƒSƒ“Y
+
+	// yStage3.png 5724x1692Šg‘å”Å ‘Î‰zŠoÁƒ€[ƒr[‚Ì’†‰›À•W‚ğ5724x1692ƒ{ƒX•”‰®’†‰›‚Ö’²®
+	static constexpr float AWAKEN_CENTER_X = 4353.0f;
+	static constexpr float AWAKEN_CENTER_Y = 860.0f;
+
+	static float SmoothStep(float t);
+};

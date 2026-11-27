@@ -53,6 +53,8 @@ public:
     // カメラスクロールの固定（ロック）制御
     void SetLocked(bool locked) { mIsLocked = locked; }
     bool IsLocked() const { return mIsLocked; }
+    void SetVerticalLocked(bool locked) { mIsVerticalLocked = locked; }
+    bool IsVerticalLocked() const { return mIsVerticalLocked; }
 
     // 初回フレームでカメラ高さを即座に合わせる
     void ResetScrollInit() { mNeedScrollInit = true; }
@@ -84,6 +86,7 @@ private:
     int mScrollY;
     bool mIsScrolling;
     bool mIsLocked;
+    bool mIsVerticalLocked = false;
 
     // 最大スクロール量（Update で毎回更新）
     int mMaxScrollX = 0;

@@ -44,6 +44,8 @@ public:
 	CollisionType GetCollisionType(int x, int y) const;
 	// 指定した矩形範囲の当たり判定を一括で上書きする（隠しブロック等用）
 	void SetCollisionBlock(int startX, int startY, int width, int height, CollisionType type);
+    void ClearCollisionArea(int minX, int minY, int maxX, int maxY);
+    void FillCollisionArea(int minX, int minY, int maxX, int maxY, CollisionType type);
     int ScreenToMapX(int screenX, int scrollX) const { return screenX + scrollX; }
 
     // 位置のゲッターセッター
@@ -51,10 +53,12 @@ public:
     int ScreenToMapY(int screenY) const;
     int GetScrollX() const { return mCamera.GetScrollX(); }
     int GetScrollY() const { return mCamera.GetScrollY(); }
-    int GetDrawScrollX() const { return mCamera.GetDrawScrollX(); }
-    int GetDrawScrollY() const { return mCamera.GetDrawScrollY(); }
-    int GetShakeOffsetX() const { return mCamera.GetShakeOffsetX(); }
-    int GetShakeOffsetY() const { return mCamera.GetShakeOffsetY(); }
+    void SetScrollX(int scrollX) { mCamera.SetScrollX(scrollX); }
+    void SetScrollY(int scrollY) { mCamera.SetScrollY(scrollY); }
+    int GetDrawScrollX() const { return mCamera.GetDrawScrollX() + mShakeX; }
+    int GetDrawScrollY() const { return mCamera.GetDrawScrollY() + mShakeY; }
+    int GetShakeOffsetX() const { return mCamera.GetShakeOffsetX() + mShakeX; }
+    int GetShakeOffsetY() const { return mCamera.GetShakeOffsetY() + mShakeY; }
 
     void StartCameraShake(float power, float ratioX, float ratioY, int durationFrames)
     {
@@ -63,11 +67,31 @@ public:
     }
 
     void SetCameraLocked(bool locked) { mCamera.SetLocked(locked); }
+    void LockScroll(bool locked) { mCamera.SetLocked(locked); }
     bool IsCameraLocked() const { return mCamera.IsLocked(); }
+    void SetVerticalScrollLocked(bool locked) { mCamera.SetVerticalLocked(locked); }
     void SetAllowScrollPastRight(bool allow);
+    void SetAllowRightEdgeFall(bool allow) { SetAllowScrollPastRight(allow); }
 
     // 背景画像の元の長さを取得する プレイヤーの移動領域のため
     int GetCurrentWidth() const { return mnBackgroundWidth; }
+    int GetCurrentHeight() const { return mnBackgroundHeight; }
+
+    // ステージ3ギミック等の画面揺れ＆破片パーティクル用
+    struct DebrisParticle
+    {
+        float x = 0.0f;
+        float y = 0.0f;
+        float vx = 0.0f;
+        float vy = 0.0f;
+        int size = 4;
+        int life = 20;
+        int maxLife = 20;
+        unsigned int color = 0;
+    };
+    std::vector<DebrisParticle> mDebris;
+    int mShakeX = 0;
+    int mShakeY = 0;
 
     // スクロール中かの判断
     bool GetIsScrolling() const { return mCamera.GetIsScroll(); }

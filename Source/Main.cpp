@@ -1,4 +1,5 @@
 ﻿#include "DxLib.h"
+#include "EffekseerForDXLib.h"
 #include "Texture.h"
 #include "TextureAnimation.h"
 #include "Collision.h"
@@ -33,11 +34,22 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	// サイズを合わせる
 	SetGraphMode(Utility::SCREEN_WIDTH, Utility::SCREEN_HEIGHT, 0);  // モニター解像度に合わせる
 
+	// EffekseerForDXLib のため Direct3D 11 を使用
+	SetUseDirect3DVersion(DX_DIRECT3D_11);
+
 	// DXライブラリ初期化
 	if(DxLib_Init() == -1)
 	{
 		return -1;
 	}
+
+	// Effekseer 初期化とデバイスロストコールバック登録
+	if (Effekseer_Init(8000) == -1)
+	{
+		DxLib_End();
+		return -1;
+	}
+	Effekseer_SetGraphicsDeviceLostCallbackFunctions();
 
 	// Manager関係の初期化
 	//Master::mpGameManager->Initialize();
@@ -94,6 +106,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	delete Master::mpGameManager;
 	Master::mpGameManager = nullptr;
 
+	// Effekseer の終了処理
+	Effekseer_End();
 
 	// DXライブラリ使用の終了
 	DxLib_End();

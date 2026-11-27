@@ -65,19 +65,21 @@ void Camera::Update(
     mScrollX = LimitValue(static_cast<int>(std::round(mScrollXf)), 0, mMaxScrollX);
 
     // 縦スクロール（補間も小数精度のまま追従して最終値のみ丸める）
-    const float targetScrollYf = LimitValue(playerMapY - 720.0f, 0.0f, static_cast<float>(mMaxScrollY));
-
-
-    if (mNeedScrollInit)
+    if (!mIsVerticalLocked)
     {
-        mScrollYf = targetScrollYf;
-        mNeedScrollInit = false;
+        const float targetScrollYf = LimitValue(playerMapY - 720.0f, 0.0f, static_cast<float>(mMaxScrollY));
+
+        if (mNeedScrollInit)
+        {
+            mScrollYf = targetScrollYf;
+            mNeedScrollInit = false;
+        }
+        else
+        {
+            mScrollYf += (targetScrollYf - mScrollYf) * 0.15f;
+        }
+        mScrollY = LimitValue(static_cast<int>(std::round(mScrollYf)), 0, mMaxScrollY);
     }
-    else
-    {
-        mScrollYf += (targetScrollYf - mScrollYf) * 0.15f;
-    }
-    mScrollY = LimitValue(static_cast<int>(std::round(mScrollYf)), 0, mMaxScrollY);
 
 
     mIsScrolling = (oldScrollPos != mScrollX);

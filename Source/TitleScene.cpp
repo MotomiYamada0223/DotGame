@@ -1,15 +1,16 @@
-#include "TitleScene.h"
-#include "Utility.h" // ŒÄ‚Ño‚·‚ÆASCREEN_WIDTH‚Æ‚©‚ğg‚¦‚é
+ï»¿#include "TitleScene.h"
+#include "Utility.h" // å‘¼ã³å‡ºã™ã¨ã€SCREEN_WIDTHã¨ã‹ã‚’ä½¿ãˆã‚‹
 #include "DxLib.h"
 #include "Master.h"
 #include "inputManager.h"
 
 
 TitleScene::TitleScene()
-	: Scene()     // Šî’êƒNƒ‰ƒX‚ÌƒRƒ“ƒXƒgƒ‰ƒNƒ^‚ğŒÄ‚Ño‚µ‚Ä‚¨‚­
+	: Scene()     // åŸºåº•ã‚¯ãƒ©ã‚¹ã®ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ã‚’å‘¼ã³å‡ºã—ã¦ãŠã
 	, mTitleLogo()
 	, mnSelectIndex(0)
 	, mbSceneChangeRequested(false)
+	, mbDirectStage3Requested(false)
 {
 }
 
@@ -41,13 +42,27 @@ void TitleScene::Update()
 {
 	UpdateSelectString();
 
-	// Enter‚ÅƒQ[ƒ€‰æ–Ê‚Ö
+	// 6ã‚­ãƒ¼ã§ç›´æ¥Stage3ã¸é·ç§»
+	if ((InputManager::CheckDownKey(KEY_INPUT_6) || InputManager::CheckDownKey(KEY_INPUT_NUMPAD6)) && mFade.IsIdle())
+	{
+		mbDirectStage3Requested = true;
+		Master::gCurrentStageIndex = 2;
+		Master::gPlayerLive = PlayerConstants::MaxLive;
+		Master::gCurrentStageRunDeathCount = 0;
+		Master::gCaveOpeningCompleted = false;
+		Master::gCavePostBossPhase = 0;
+		mFade.StartFadeOut(30);
+		Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_DECIDE, SoundSetting::DecideVolume);
+	}
+
+	// Enterã§ã‚²ãƒ¼ãƒ ç”»é¢ã¸
 	if (InputManager::CheckDownKey(KEY_INPUT_RETURN) && mFade.IsIdle())
 	{
 		switch (mnSelectIndex)
 		{
 		case 0:
-			mFade.StartFadeOut(30);   // 30ƒtƒŒ[ƒ€‚ÅˆÃ“]
+			mbDirectStage3Requested = false;
+			mFade.StartFadeOut(30);   // 30ãƒ•ãƒ¬ãƒ¼ãƒ ã§æš—è»¢
 			Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_DECIDE, SoundSetting::DecideVolume);
 			break;
 
@@ -64,18 +79,25 @@ void TitleScene::Update()
 	if (mFade.IsFadeOutFinished() && !mbSceneChangeRequested)
 	{
 		mbSceneChangeRequested = true;
-		Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_TYPE::SCENE_STAGESELECT);
+		if (mbDirectStage3Requested)
+		{
+			Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_TYPE::SCENE_GAME);
+		}
+		else
+		{
+			Master::mpGameManager->GetSceneManager()->SetNextScene(SceneManager::SCENE_TYPE::SCENE_STAGESELECT);
+		}
 	}
 
 	mTitleLogo.Update();
 	mFade.Update();
 
-	// Šî’êƒNƒ‰ƒX‚ÌXVˆ—‚ğŒÄ‚Ñ‚¾‚·
+	// åŸºåº•ã‚¯ãƒ©ã‚¹ã®æ›´æ–°å‡¦ç†ã‚’å‘¼ã³ã ã™
 	Scene::Update();
 }
 
 
-// ƒL[“ü—Í‚Å‘I‘ğ
+// ã‚­ãƒ¼å…¥åŠ›ã§é¸æŠ
 void TitleScene::UpdateSelectString()
 {
 	int oldIndex = mnSelectIndex;
@@ -111,18 +133,18 @@ void TitleScene::DrawSelectString()
 		"Exit"
 	};
 
-	// Ql‰‰Zq‚Å‘I‘ğ’†‚Ì‚ğŒ©‚â‚·‚­•\¦
+	// å‚è€ƒæ¼”ç®—å­ã§é¸æŠä¸­ã®ã‚’è¦‹ã‚„ã™ãè¡¨ç¤º
 	int stringX = ScreenSize::CenterX - 50;
 	int stringY = ScreenSize::CenterY + 200;
-	int lineSpacing = 80; // €–Ú‚²‚Æ‚ÌŠÔŠu
+	int lineSpacing = 80; // é …ç›®ã”ã¨ã®é–“éš”
 	int fontSize = 70;
 
 	int SelectNow = mnSelectIndex; 
-	for (int i = 0; i < MAX_SELECT; i++) // •\¦‚·‚é‚½‚ß
+	for (int i = 0; i < MAX_SELECT; i++) // è¡¨ç¤ºã™ã‚‹ãŸã‚
 	{
 		int posY = stringY + (i - 1) * lineSpacing;
 
-		// ‘I‘ğ’†‚©A‚»‚êˆÈŠO‚©‚Ìˆ—‚ğO€‰‰Zq‚Å‚â‚Á‚Ä‚é
+		// é¸æŠä¸­ã‹ã€ãã‚Œä»¥å¤–ã‹ã®å‡¦ç†ã‚’ä¸‰é …æ¼”ç®—å­ã§ã‚„ã£ã¦ã‚‹
 		int Color = (i == SelectNow) ? GetColor(255, 255, 100) : GetColor(200, 50, 50);
 		Master::mpGameManager->GetFontManager()->DrawDotString(
 			stringX, posY, fontSize,
@@ -146,23 +168,23 @@ void TitleScene::Draw()
 		500,
 		100,
 		GetColor(255, 255, 255),
-		"ƒ^ƒCƒgƒ‹@Ë”\‚ÌŒ´Î\n\n Enter‚ÅƒQ[ƒ€ƒV[ƒ“"
+		"ã‚¿ã‚¤ãƒˆãƒ«ã€€æ‰èƒ½ã®åŸçŸ³\n\n Enterã§ã‚²ãƒ¼ãƒ ã‚·ãƒ¼ãƒ³"
 	);
 
 	mTitleLogo.Draw();
 
 	DrawSelectString();
 
-	// Šî’êƒNƒ‰ƒX‚ÌXVˆ—‚ğŒÄ‚Ñ‚¾‚·
+	// åŸºåº•ã‚¯ãƒ©ã‚¹ã®æ›´æ–°å‡¦ç†ã‚’å‘¼ã³ã ã™
 	Scene::Draw();
 
-	// ’Êí‚Ì•`‰æˆ—
+	// é€šå¸¸ã®æç”»å‡¦ç†
 	mFade.Draw();
 }
 
 
 void TitleScene::Finalize()
 {
-	// BGM’â~
+	// BGMåœæ­¢
 	//Master::mpSoundManager->StopBGM();
 }

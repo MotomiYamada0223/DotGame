@@ -1,0 +1,111 @@
+ï»¿#pragma once
+#include "DxLib.h"
+
+class BlockMap;
+class Player;
+
+// =========================================================================
+// Stage 3iƒXƒe[ƒW3jê—pƒMƒ~ƒbƒNƒNƒ‰ƒX
+// 1. ƒ{ƒX•”‰®‚É“ü‚Á‚½‚É“Vˆä‚©‚ç~‚è‚Ä‚«‚ÄŒã‚ë‚Ö‹A‚ê‚È‚­‚·‚é•ÇƒMƒ~ƒbƒN
+// 2. ƒ{ƒX•”‰®‚É‚ ‚é4‚Â‚Ì•‚—V‘äiã‰º‚É‚Ó‚æ‚Ó‚æ•‚—V‚µAæ‚é‚Æk‚¦‚Ä1.5•b‚Å—‰º‚µA
+//    —‰º’†‚àƒvƒŒƒCƒ„[‚ª‘«ê‚É‚µ‚Á‚©‚èÚ’n‚µ‚½‚Ü‚Üˆê‚É—‚¿A10•bŒã‚É•œŠˆ‚·‚éj
+// =========================================================================
+class Stage3Gimmick
+{
+public:
+	Stage3Gimmick();
+	~Stage3Gimmick();
+
+	// ƒMƒ~ƒbƒN‰æ‘œ‚Ì“Ç‚İ‚İ‚Æó‘Ô‚Ì‰Šú‰»
+	void Initialize(BlockMap& blockMap);
+
+	// ƒvƒŒƒCƒ„[•¨—ˆÚ“®‚Ì‘O‚É‘ä‚ÌYÀ•Wiã‰º‚Ó‚æ‚Ó‚æE—‰ºˆÚ“®j‚ğXV
+	void UpdatePlatformsBeforePlayerMove(Player* player);
+
+	// Player::PlayerMove “à‚ÅŒÄ‚Î‚ê‚éA4‚Â‚Ì•‚—V‘ä‚ÆƒvƒŒƒCƒ„[‚Ì’…’nE’Ç]”»’è
+	void HandlePlayerPlatformCollision(Player& player, VECTOR& position, float& velocityY, bool& isGrounded, bool& mbIsJumping, bool& hasJumped);
+
+	// –ˆƒtƒŒ[ƒ€‚ÌƒMƒ~ƒbƒNXVˆ—i•Ç‚Ì~‰ºE•‚—V‘ä‚Ì—h‚ê‚Æ—‰ºŠJnE10•bŒã•œŠˆj
+	void Update(BlockMap& blockMap, Player* player);
+
+	// ƒMƒ~ƒbƒNi~‚è‚Ä‚­‚é•ÇE4‚Â‚Ì•‚—V‘äj‚Ì•`‰æ
+	void Draw(const BlockMap& blockMap, Player* player);
+
+	// ƒvƒŒƒCƒ„[€–SƒŠƒgƒ‰ƒC‚ÌƒMƒ~ƒbƒNƒŠƒZƒbƒg
+	void Reset(BlockMap& blockMap);
+
+	// ƒŠƒ\[ƒX‰ğ•ú
+	void Finalize();
+
+	// ƒhƒ‰ƒSƒ“‚Ì™ôšKI—¹‚È‚Ç‚Éƒ‰ƒ“ƒ_ƒ€‚È‘ä‚ğ”j‰ó‚µA10•bŒã‚É•œŠˆ‚³‚¹‚é
+	void DestroyRandomPlatform(BlockMap& blockMap, Player* player);
+	void DestroyRandomPlatforms(BlockMap& blockMap, Player* player, int count);
+	// ÅŒã‚Ì‘å‹Z‚È‚Ç‚Å‘S‚Ä‚Ì•‚—V‘ä‚ğ“¯‚É•²Ó‚·‚é
+	void DestroyAllPlatforms(BlockMap& blockMap, Player* player);
+	void RestoreAllPlatforms();
+
+	// ‚«”ò‚Î‚µUŒ‚‚ğó‚¯‚½Û‚È‚Ç‚É•‚—V‘ä‚Ö‚Ì’Ç]ó‘Ô‚ğ‹­§‰ğœ‚·‚é
+	void ForceDetachPlayer(Player* player);
+
+	bool IsGateClosed() const { return mbGateClosed; }
+	bool IsGateTriggered() const { return mbGateTriggered; }
+
+private:
+	// ---------------------------------------------------------------------
+	// ƒMƒ~ƒbƒN1: •”‰®‚É“ü‚Á‚½‚Æ‚«‚É“Vˆä‚©‚ç~‚è‚Ä‚«‚Ä‘Ş˜H‚ğÇ‚®•Ç
+	// ---------------------------------------------------------------------
+	int   mGateWallGraphHandle;   // ~‚è‚Ä‚­‚é•Ç‚Ì‰æ‘œƒnƒ“ƒhƒ‹ (Stage3_GateWall.png: 36x432)
+	bool  mbGateTriggered;        // ƒvƒŒƒCƒ„[‚ª’Ê‰ß‚µ‚Ä•Ç‚ª~‚èn‚ß‚½‚©
+	bool  mbGateClosed;           // •Ç‚ªŠ®‘S‚É•Â‚Ü‚è‚«‚Á‚½‚©
+	float mGateCurrentBottomY;    // •Ç‚Ì‰º’[‚ÌŒ»İYÀ•W (684.0f ¨ 1116.0f)
+	float mGateDropSpeed;         // •Ç‚Ì—‰º‘¬“x
+	int   mGateShakeTimer;        // ’…’n‚Ì‰æ–Ê—h‚êƒ^ƒCƒ}[
+
+	// yStage3.png 5724x1692Šg‘å”Å ‘Î‰zƒ{ƒX•”‰®“üŒû(X=3016, ’Ê˜HY=940..1262)‚É‡‚í‚¹‚ÄƒQ[ƒgÀ•W‚ğ’²®
+	static constexpr int   GATE_MIN_X     = 2982;
+	static constexpr int   GATE_MAX_X     = 3015;
+	static constexpr int   GATE_TOP_Y     = 940;
+	static constexpr int   GATE_BOTTOM_Y  = 1262;
+	static constexpr int   GATE_HEIGHT    = GATE_BOTTOM_Y - GATE_TOP_Y; // 322px
+	static constexpr float GATE_TRIGGER_X = 3090.0f; // ‚±‚ÌXÀ•W‚ğ’´‚¦‚½‚ç•Ç‚ª~‚è‚Ä‚­‚é
+
+	// ---------------------------------------------------------------------
+	// yStage3.png 5724x1692Šg‘å”Å ‘Î‰zƒMƒ~ƒbƒN2: 5‚Â‚Ì•‚—V‘ä
+	// ---------------------------------------------------------------------
+	static constexpr int PLATFORM_COUNT        = 5;
+	static constexpr int PLATFORM_FALL_FRAMES  = 90;  // 1.5•bi60fps ~ 1.5 = 90ƒtƒŒ[ƒ€jæ‚Á‚Ä‚¢‚é‚Æ—‰º
+	static constexpr int PLATFORM_RESPAWN_TIME = 600; // 10•bi60fps ~ 10 = 600ƒtƒŒ[ƒ€jŒo‰ß‚Å•œŠˆ
+
+	enum class PlatformState
+	{
+		Active,     // ’Êíó‘Ôiã‰º‚É‚Ó‚æ‚Ó‚æ•‚—VEæ‚é‚Æƒuƒ‹ƒuƒ‹k‚¦‚éj
+		Falling,    // 1.5•bŒo‰ß‚µ‚Ä‰º‚Ö—‰º’†iæ‚Á‚Ä‚¢‚éƒvƒŒƒCƒ„[‚àˆê‚ÉÚ’n‚µ‚½‚Ü‚Ü—‚¿‚éj
+		Waiting     // —‰ºŒãA•œŠˆ‚Ü‚Å‚Ì10•bƒJƒEƒ“ƒgƒ_ƒEƒ“’†
+	};
+
+	struct CrumblingPlatform
+	{
+		int           minX, minY, maxX, maxY; // ƒ}ƒbƒvã‚ÌŠî€‹éŒ`À•W
+		int           graphHandle;            // ‘ä‚Ì‰æ‘œƒnƒ“ƒhƒ‹
+		PlatformState state;                  // Œ»İ‚Ìó‘Ô
+		int           standTimer;             // ƒvƒŒƒCƒ„[‚ªæ‚Á‚Ä‚¢‚éƒtƒŒ[ƒ€”i0 .. 90j
+		int           respawnTimer;           // —‰º‚µ‚Ä‚©‚ç‚ÌŒo‰ßƒtƒŒ[ƒ€”i0 .. 600j
+		float         floatPhase;             // ã‰º‚Ó‚æ‚Ó‚æ•‚—V‚ÌˆÊ‘Š
+		float         floatOffsetY;           // ã‰º‚Ó‚æ‚Ó‚æ•‚—V‚ÌYƒIƒtƒZƒbƒg
+		float         fallOffsetY;            // —‰º’†‚ÌYƒIƒtƒZƒbƒg
+		float         fallSpeedY;             // —‰º‘¬“x
+		float         currentTopY;            // Œ»İƒtƒŒ[ƒ€‚Ì‘ä‚Ìã–ÊYÀ•W
+		float         prevTopY;               // ‘OƒtƒŒ[ƒ€‚Ì‘ä‚Ìã–ÊYÀ•W
+		float         deltaY;                 // ‚±‚ÌƒtƒŒ[ƒ€‚Å‚Ìã‰ºˆÚ“®—Ê
+		float         shakeOffsetX;           // æ‚Á‚Ä‚¢‚é‚Æ‚«‚Ì‰¡—h‚êƒIƒtƒZƒbƒgi•`‰æ—pj
+		float         shakeOffsetY;           // æ‚Á‚Ä‚¢‚é‚Æ‚«‚Ìc—h‚êƒIƒtƒZƒbƒgi•`‰æ—pj
+		bool          isPlayerRiding;         // Œ»İƒvƒŒƒCƒ„[‚ª‚±‚Ì‘ä‚Éæ‚Á‚Ä‚¢‚é‚©
+		int           fadeAlpha;              // —‰ºE•œŠˆ‚ÌƒAƒ‹ƒtƒ@’li0 .. 255j
+	};
+
+	CrumblingPlatform mPlatforms[PLATFORM_COUNT];
+	int               mRidingPlatformIndex; // ƒvƒŒƒCƒ„[‚ªŒ»İæ‚Á‚Ä‚¢‚é‘ä‚ÌƒCƒ“ƒfƒbƒNƒXi-1: æ‚Á‚Ä‚¢‚È‚¢j
+
+	void SetupPlatformDefinitions();
+	void ApplyInitialCollision(BlockMap& blockMap);
+};

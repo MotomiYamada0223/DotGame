@@ -1,4 +1,6 @@
 ﻿#include "Player.h"
+#include "Stage3Gimmick.h"
+#include "Stage3BossDragon.h"
 #include "NeedleTrap.h"
 #include "CrumbleFloor.h"
 #include "DxLib.h"
@@ -17,6 +19,7 @@
 #include "SoundManager.h"
 #include <algorithm>
 #include <cmath>
+#include <cstdio>
 
 namespace
 {
@@ -70,6 +73,14 @@ Player::Player(VECTOR initPos)
 	mHeartEmptyGraph = LoadGraph(CharacterGraphPath::HeartEmpty.c_str());
 	if (mHeartEmptyGraph == -1) { printfDx("体力0の画像がない。"); }
 
+	// 魔法攻撃アニメーション画像の読み込み
+	for (int i = 0; i < MAGIC_ANIM_COUNT; ++i)
+	{
+		char path[256];
+		sprintf_s(path, "Resource/Hero_picture/MajicAnimation_hero/newAnimation_hero/texture_%d.png", i + 1);
+		mMagicAnimHandles[i] = LoadGraph(path);
+	}
+
 
 	// プレイヤー当たり判定サイズ
 	// Width...幅
@@ -83,6 +94,14 @@ Player::~Player()
 	DeleteGraph(mHeartFullGraph);
 	DeleteGraph(mHeartHalfGraph);
 	DeleteGraph(mHeartEmptyGraph);
+	for (int i = 0; i < MAGIC_ANIM_COUNT; ++i)
+	{
+		if (mMagicAnimHandles[i] != -1)
+		{
+			DeleteGraph(mMagicAnimHandles[i]);
+			mMagicAnimHandles[i] = -1;
+		}
+	}
 }
 
 void Player::UpdateStatusByProgress(GameProgress progress)
@@ -153,7 +172,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 
 
 	// Wキー/Sキー長押しによるステージ裏・表落下処理の判定
-	if (mFallMode == StageFallMode::None && !isDead && !mbAutoWalking && !mbAutoWalkArrived && !mbIsEvading)
+	if (mFallMode == StageFallMode::None && !isDead && !mbAutoWalking && !mbAutoWalkArrived && !mbIsEvading && !mbInputDisabled && !mbWindFloatMode)
 	{
 		if (mvPosition.x <= 8000)
 		{
@@ -285,7 +304,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 			}
 		}
 	}
-	else if (!mbAutoWalkArrived)
+	else if (!mbAutoWalkArrived && !mbInputDisabled)
 	{
 		if (CheckHitKey(KEY_INPUT_A) == 1)
 		{
@@ -366,6 +385,18 @@ void Player::PlayerMove(BlockMap& blockMap)
 		mbIsVariableJump = false;
 	}
 
+	if (mbWindFloatMode)
+	{
+		currentGravity = 0.0f;
+		velocityY = 0.0f;
+		isGrounded = false;
+		mbIsJumping = true;
+		mCurrentJumpType = PlayerConstants::JumpType::None;
+		mbJumpDetermined = false;
+		mJumpHoldFrames = 0;
+		mbIsVariableJump = false;
+	}
+
 	if (isBlinking)
 	{
 		currentSpeed = blinkSpeed;
@@ -394,6 +425,13 @@ void Player::PlayerMove(BlockMap& blockMap)
 			currentSpeed,
 			mfMoveDirection
 		);
+
+	// ステージ3の浮遊台ギミックとの着地・上下追従判定
+	if (mpStage3Gimmick != nullptr && !mbWindFloatMode)
+	{
+		bool dummyHasJumped = mbIsJumping;
+		mpStage3Gimmick->HandlePlayerPlatformCollision(*this, mvPosition, velocityY, isGrounded, mbIsJumping, dummyHasJumped);
+	}
 
 	// ボスエリア接触判定の更新
 	mbTouchingBossArea = (collisionType == BlockMap::CollisionType::BossArea);
@@ -484,7 +522,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 	// Blink (shiftキー)
 	static bool eKeyWasDown = false;
 	bool eKeyIsDown = ((CheckHitKey(KEY_INPUT_LSHIFT) == 1) || (CheckHitKey(KEY_INPUT_RSHIFT) == 1));
-	if (!mbAutoWalking && !mbAutoWalkArrived && eKeyIsDown && !eKeyWasDown && !isBlinking && blinkCooldownTimer <= 0 && mfMoveDirection != 0.0f)
+	if (!mbAutoWalking && !mbAutoWalkArrived && !mbInputDisabled && eKeyIsDown && !eKeyWasDown && !isBlinking && blinkCooldownTimer <= 0 && mfMoveDirection != 0.0f)
 	{
 		Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_PLAYER_BLINK);
 
@@ -505,7 +543,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 	mbSpaceWasPressed = spaceKeyIsDown;
 
 	//SEを鳴らす
-	if (!mbAutoWalking && !mbAutoWalkArrived && !mbIsEvading && spaceKeyIsDown && !mbIsJumping)
+	if (!mbAutoWalking && !mbAutoWalkArrived && !mbIsEvading && !mbInputDisabled && spaceKeyIsDown && !mbIsJumping)
 	{
 		Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_PLAYER_JUMP, 40);
 	}
@@ -518,7 +556,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 		// 1回のジャンプではぬめりで上がれず、重い湯に引きずり込まれる
 		// スペースキーを連打（足掻き）すると少しずつ浮上・脱出可能
 
-		if (spacePressed)
+		if (spacePressed && !mbInputDisabled)
 		{
 			mbIsJumping = true;
 			isGrounded = false;
@@ -539,7 +577,7 @@ void Player::PlayerMove(BlockMap& blockMap)
 	else
 	{
 		// 通常時のジャンプ開始（着地後の再入力が必要なようにトリガー判定化）
-		if (!mbAutoWalking && !mbAutoWalkArrived && !mbIsEvading && spacePressed && isGrounded)
+		if (!mbAutoWalking && !mbAutoWalkArrived && !mbIsEvading && !mbInputDisabled && spacePressed && isGrounded)
 		{
 			mActionState.jump = true;
 			mbIsJumping = true;
@@ -557,8 +595,8 @@ void Player::PlayerMove(BlockMap& blockMap)
 
 
 	// 攻撃 F
-	if (!mbAutoWalking && !mbAutoWalkArrived && CheckHitKey(KEY_INPUT_F) == 1 &&
-		!isAttacking)
+	if (!mbAutoWalking && !mbAutoWalkArrived && !mbInputDisabled && CheckHitKey(KEY_INPUT_F) == 1 &&
+		!isAttacking && !mbIsMagicCasting)
 	{
 		Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_PLAYER_SWORD);
 
@@ -567,6 +605,42 @@ void Player::PlayerMove(BlockMap& blockMap)
 		attackTimer = attackDuration;
 		mPlayerState.SetAttack();
 		mHitEnemies.clear();
+	}
+
+	// 魔法攻撃 E
+	bool magicKeyIsDown = (CheckHitKey(KEY_INPUT_E) == 1);
+	if (!mbAutoWalking && !mbAutoWalkArrived && !mbInputDisabled && !isBlinking &&
+		!isAttacking && !mbIsMagicCasting && mMagicCooldownTimer <= 0 &&
+		magicKeyIsDown && !mbEKeyWasDown)
+	{
+		Master::mpGameManager->GetSoundManager()->PlaySE(SoundManager::SE_PLAYER_MAGIC);
+		mbIsMagicCasting = true;
+		mMagicAnimFrame = 0;
+		mMagicAnimTimer = 0;
+		mbMagicShotFired = false;
+		mMagicCooldownTimer = 28;
+	}
+	mbEKeyWasDown = magicKeyIsDown;
+
+	if (mbIsMagicCasting)
+	{
+		mMagicAnimTimer++;
+		if (mMagicAnimTimer >= 3)
+		{
+			mMagicAnimTimer = 0;
+			if (!mbMagicShotFired && mMagicAnimFrame == 5)
+			{
+				mbMagicShotFired = true;
+				SpawnMagicProjectile();
+			}
+			mMagicAnimFrame++;
+			if (mMagicAnimFrame >= MAGIC_ANIM_COUNT)
+			{
+				mbIsMagicCasting = false;
+				mMagicAnimFrame = 0;
+				mMagicAnimTimer = 0;
+			}
+		}
 	}
 
 	
@@ -702,6 +776,8 @@ void Player::Update()
 	isHitDamage = false;
 	if (mInvincibleTimer > 0) mInvincibleTimer--;
 	if (blinkCooldownTimer > 0) blinkCooldownTimer--;
+	if (mMagicCooldownTimer > 0) mMagicCooldownTimer--;
+	UpdateMagicProjectiles();
 
 	// ブリンクと残像の更新
 	for (auto it = mAfterimages.begin(); it != mAfterimages.end(); )
@@ -848,7 +924,7 @@ void Player::Update()
 		);
 
 		//  プレイヤー自身と敵の衝突判定 (ダメージで赤くする)
-		bool canHitBody = enemy->IsActiveTarget();
+		bool canHitBody = enemy->CanDealContactDamage();
 		if ((canHitBody && Collision::CheckRectToRect(myPos, mySize, enePos, eneSize)) ||
 			enemy->CheckAttackCollision(myPos, mySize))
 		{
@@ -896,6 +972,10 @@ void Player::Update()
 							else if (dynamic_cast<EnemySkeleton*>(enemy) != nullptr)
 							{
 								mDeathReason = DeathReason::DeathType::EnemySkeleton;
+							}
+							else if (dynamic_cast<Stage3BossDragon*>(enemy) != nullptr)
+							{
+								mDeathReason = DeathReason::DeathType::DragonNormalAttack;
 							}
 							else
 							{
@@ -950,6 +1030,33 @@ void Player::Update()
 	}
 
 	Object2D::Update();
+}
+
+void Player::TakeDamage(int damage, DeathReason::DeathType deathReason)
+{
+	if (isDead || mDeadState != 0)
+	{
+		return;
+	}
+
+	const bool isInstantKill = (damage >= 9999);
+	if (!isInstantKill && (isBlinking || mInvincibleTimer > 0))
+	{
+		return;
+	}
+
+	if (!isInstantKill)
+	{
+		mInvincibleTimer = 60;
+	}
+	isHitDamage = true;
+
+	UnitStatus::TakeDamage(damage);
+	if (mHp <= 0 && !isDead)
+	{
+		mDeathReason = deathReason;
+		BeginDeath();
+	}
 }
 
 void Player::TakeBulletDamage(int damage)
@@ -1212,17 +1319,37 @@ void Player::DrawPlayerModel()
 		const int screenY = static_cast<int>(std::round(ConvertToScreenY(mvPosition.y + mSlopeVisualOffsetY, mpBlockMap))) - PlayerAnimState::FRAME_HEIGHT / 2;
 		const bool flipX = !isFacingRight;
 
-		DrawRectGraph(
-			screenX,
-			screenY,
-			srcX,
-			srcY,
-			PlayerAnimState::FRAME_WIDTH,
-			PlayerAnimState::FRAME_HEIGHT,
-			mpTexture->GetHandle(),
-			TRUE,
-			flipX
-		);
+		if (mbIsMagicCasting &&
+			mMagicAnimFrame >= 0 &&
+			mMagicAnimFrame < MAGIC_ANIM_COUNT &&
+			mMagicAnimHandles[mMagicAnimFrame] != -1)
+		{
+			const int centerX = static_cast<int>(std::round(ConvertToScreenX(mvPosition.x, mpBlockMap)));
+			const int centerY = static_cast<int>(std::round(ConvertToScreenY(mvPosition.y + mSlopeVisualOffsetY, mpBlockMap)));
+			DrawRotaGraph(
+				centerX,
+				centerY - 1,
+				0.62,
+				0.0,
+				mMagicAnimHandles[mMagicAnimFrame],
+				TRUE,
+				flipX
+			);
+		}
+		else
+		{
+			DrawRectGraph(
+				screenX,
+				screenY,
+				srcX,
+				srcY,
+				PlayerAnimState::FRAME_WIDTH,
+				PlayerAnimState::FRAME_HEIGHT,
+				mpTexture->GetHandle(),
+				TRUE,
+				flipX
+			);
+		}
 
 		// 色を元に戻す（以降の描画に影響しないように必ず初期値へ）
 		SetDrawBright(255, 255, 255);
@@ -1231,6 +1358,8 @@ void Player::DrawPlayerModel()
 	{
 		Object2D::Draw();
 	}
+
+	DrawMagicProjectiles();
 
 	// 攻撃エフェクトの描画
 	if (isAttacking)
@@ -1308,13 +1437,13 @@ void Player::DrawLife()
 
 // デバッグ表示をしている関数
 // GameSceneで呼び出している
-void Player::DebugDraw()
+void Player::DebugDraw(float cameraScaleX, float cameraScaleY)
 {
-	// プレイヤーの当たり判定デバッグ表示（共通関数を使ってスクロール位置を正しく反映）
-	const int playerLeft = static_cast<int>(ConvertToScreenX(mvPosition.x - mfPlayerWidth / 2.0f, mpBlockMap));
-	const int playerTop = static_cast<int>(ConvertToScreenY(mvPosition.y - mfPlayerHeight / 2.0f, mpBlockMap));
-	const int playerRight = static_cast<int>(ConvertToScreenX(mvPosition.x + mfPlayerWidth / 2.0f, mpBlockMap));
-	const int playerBottom = static_cast<int>(ConvertToScreenY(mvPosition.y + mfPlayerHeight / 2.0f, mpBlockMap));
+	// プレイヤーの当たり判定デバッグ表示（共通関数＋引きカメラ縮小率を反映）
+	const int playerLeft = static_cast<int>(std::round(ConvertToScreenX(mvPosition.x - mfPlayerWidth / 2.0f, mpBlockMap) * cameraScaleX));
+	const int playerTop = static_cast<int>(std::round(ConvertToScreenY(mvPosition.y - mfPlayerHeight / 2.0f, mpBlockMap) * cameraScaleY));
+	const int playerRight = static_cast<int>(std::round(ConvertToScreenX(mvPosition.x + mfPlayerWidth / 2.0f, mpBlockMap) * cameraScaleX));
+	const int playerBottom = static_cast<int>(std::round(ConvertToScreenY(mvPosition.y + mfPlayerHeight / 2.0f, mpBlockMap) * cameraScaleY));
 	DrawBox(
 		playerLeft,
 		playerTop,
@@ -1325,7 +1454,7 @@ void Player::DebugDraw()
 	);
 
 
-	int playerY = static_cast<int>(ConvertToScreenY(mvPosition.y, mpBlockMap));
+	int playerY = static_cast<int>(std::round(ConvertToScreenY(mvPosition.y, mpBlockMap) * cameraScaleY));
 	// HPのデバッグ
 	DrawFormatString(playerLeft, playerY + 10, ColorOption::White, "HP: %d\n残機: %d\nSP: %f", mHp, mlives, mfCurrentSpeed);
 	DrawFormatString(0, 600, ColorOption::White, "X:%2f, Y:%2f\n L:%d", mvPosition.x, mvPosition.y, playerLeft);
@@ -1377,11 +1506,11 @@ void Player::DebugDraw()
 
 			float eneOffsetY = enemy->GetCollisionOffsetY();
 
-			// 敵のデバッグ描画でも共通関数を利用してスクロールを正確に合わせる
-			int eneLeft = static_cast<int>(ConvertToScreenX(enemy->GetPosition().x - enemyWidth / divide, mpBlockMap));
-			int eneTop = static_cast<int>(ConvertToScreenY(enemy->GetPosition().y + eneOffsetY - enemyHeight / divide, mpBlockMap));
-			int eneRight = static_cast<int>(ConvertToScreenX(enemy->GetPosition().x + enemyWidth / divide, mpBlockMap));
-			int eneBottom = static_cast<int>(ConvertToScreenY(enemy->GetPosition().y + eneOffsetY + enemyHeight / divide, mpBlockMap));
+			// 敵のデバッグ描画でも共通関数＋引きカメラ縮小率でスクロールを正確に合わせる
+			int eneLeft = static_cast<int>(std::round(ConvertToScreenX(enemy->GetPosition().x - enemyWidth / divide, mpBlockMap) * cameraScaleX));
+			int eneTop = static_cast<int>(std::round(ConvertToScreenY(enemy->GetPosition().y + eneOffsetY - enemyHeight / divide, mpBlockMap) * cameraScaleY));
+			int eneRight = static_cast<int>(std::round(ConvertToScreenX(enemy->GetPosition().x + enemyWidth / divide, mpBlockMap) * cameraScaleX));
+			int eneBottom = static_cast<int>(std::round(ConvertToScreenY(enemy->GetPosition().y + eneOffsetY + enemyHeight / divide, mpBlockMap) * cameraScaleY));
 
 			DrawBox(
 				eneLeft,
@@ -1534,6 +1663,7 @@ void Player::Revive()
 
 	// 崩落床のリセット
 	CrumbleFloor::ResetAll();
+	ResetMagicAndWindState();
 
 	isDead = false;
 	mbDeath = false;
@@ -1615,6 +1745,7 @@ void Player::StartRopeClimb()
 	mbIsEvading = false;
 	isBlinking = false;
 	isAttacking = false;
+	ResetMagicAndWindState();
 	velocityY = 0.0f;
 	mfMoveDirection = 0.0f;
 	mSlopeVisualOffsetY = 0.0f;
@@ -1678,6 +1809,7 @@ void Player::StartAirDrop(float x, float y, float initialVy)
 	mbSwordReadyStance = false;
 	isAttacking = false;
 	attackTimer = 0;
+	ResetMagicAndWindState();
 	mPlayerState.SetJump();
 }
 
@@ -1798,4 +1930,166 @@ void Player::WarpTo(float x, float y)
 	mbSwordReadyStance = false;
 	isAttacking = false;
 	attackTimer = 0;
+	ResetMagicAndWindState();
+}
+
+void Player::ResetMagicAndWindState()
+{
+	mbWindFloatMode = false;
+	mbIsMagicCasting = false;
+	mMagicAnimFrame = 0;
+	mMagicAnimTimer = 0;
+	mbMagicShotFired = false;
+	mMagicCooldownTimer = 0;
+	mbEKeyWasDown = false;
+	mMagicProjectiles.clear();
+}
+
+void Player::SpawnMagicProjectile()
+{
+	const float dir = isFacingRight ? 1.0f : -1.0f;
+	const float startX = mvPosition.x + dir * 24.0f;
+	const float startY = mvPosition.y - 36.0f;
+
+	float vx = dir * 20.0f;
+	float vy = 0.0f;
+
+	ObjectManager* objManager = nullptr;
+	if (Master::mpGameManager && Master::mpGameManager->GetSceneManager() &&
+		Master::mpGameManager->GetSceneManager()->GetCurrentScene())
+	{
+		objManager = Master::mpGameManager->GetSceneManager()->GetCurrentScene()->GetObjectManager();
+	}
+
+	if (objManager != nullptr)
+	{
+		Enemy* bestTarget = nullptr;
+		float bestDistSq = 2400.0f * 2400.0f;
+		std::vector<Object2D*> enemyList = objManager->GetObject2DListByTag(Object2D::Enemy2D);
+		for (Object2D* obj : enemyList)
+		{
+			Enemy* enemy = dynamic_cast<Enemy*>(obj);
+			if (enemy == nullptr || !enemy->IsActiveTarget()) continue;
+
+			const float dx = enemy->GetPosition().x - startX;
+			const float dy = enemy->GetPosition().y - startY;
+			if (dx * dir < -80.0f) continue;
+
+			const float distSq = dx * dx + dy * dy;
+			if (distSq < bestDistSq)
+			{
+				bestDistSq = distSq;
+				bestTarget = enemy;
+			}
+		}
+
+		if (bestTarget != nullptr && bestDistSq > 1.0f)
+		{
+			const float dx = bestTarget->GetPosition().x - startX;
+			const float dy = bestTarget->GetPosition().y - startY;
+			const float dist = std::sqrt(dx * dx + dy * dy);
+			vx = (dx / dist) * 20.0f;
+			vy = (dy / dist) * 20.0f;
+		}
+	}
+
+	MagicProjectile proj;
+	proj.x = startX;
+	proj.y = startY;
+	proj.vx = vx;
+	proj.vy = vy;
+	proj.radius = 26.0f;
+	proj.life = 0;
+	proj.maxLife = 120;
+	proj.active = true;
+	mMagicProjectiles.push_back(proj);
+}
+
+void Player::UpdateMagicProjectiles()
+{
+	if (mMagicProjectiles.empty()) return;
+
+	ObjectManager* objManager = nullptr;
+	if (Master::mpGameManager && Master::mpGameManager->GetSceneManager() &&
+		Master::mpGameManager->GetSceneManager()->GetCurrentScene())
+	{
+		objManager = Master::mpGameManager->GetSceneManager()->GetCurrentScene()->GetObjectManager();
+	}
+
+	std::vector<Object2D*> enemyList;
+	if (objManager != nullptr)
+	{
+		enemyList = objManager->GetObject2DListByTag(Object2D::Enemy2D);
+	}
+
+	for (auto it = mMagicProjectiles.begin(); it != mMagicProjectiles.end(); )
+	{
+		it->x += it->vx;
+		it->y += it->vy;
+		it->life++;
+
+		bool hit = false;
+		for (Object2D* obj : enemyList)
+		{
+			Enemy* enemy = dynamic_cast<Enemy*>(obj);
+			if (enemy == nullptr || !enemy->IsActiveTarget()) continue;
+
+			const float eHalfW = enemy->GetCollisionWidth() * 0.5f;
+			const float eHalfH = enemy->GetCollisionHeight() * 0.5f;
+			const float eCenterX = enemy->GetPosition().x;
+			const float eCenterY = enemy->GetPosition().y + enemy->GetCollisionOffsetY();
+
+			if (it->x + it->radius > eCenterX - eHalfW && it->x - it->radius < eCenterX + eHalfW &&
+				it->y + it->radius > eCenterY - eHalfH && it->y - it->radius < eCenterY + eHalfH)
+			{
+				enemy->OnDamaged();
+				if (Stage3BossDragon* s3Dragon = dynamic_cast<Stage3BossDragon*>(enemy))
+				{
+					s3Dragon->TakeMagicDamage(mMagic);
+				}
+				else if (UnitStatus* enemyStatus = dynamic_cast<UnitStatus*>(enemy))
+				{
+					enemyStatus->TakeDamage(mMagic);
+					if (enemyStatus->mHp <= 0 && !enemy->HasCustomDeath())
+					{
+						enemy->SetDeleteFlag(true);
+					}
+				}
+				hit = true;
+				break;
+			}
+		}
+
+		const bool outOfBounds = (mpBlockMap != nullptr) &&
+			(it->x < -100.0f || it->x > static_cast<float>(mpBlockMap->GetCurrentWidth()) + 100.0f ||
+			 it->y < -200.0f || it->y > static_cast<float>(mpBlockMap->GetCurrentHeight()) + 200.0f);
+
+		if (hit || outOfBounds || it->life >= it->maxLife)
+		{
+			it = mMagicProjectiles.erase(it);
+		}
+		else
+		{
+			++it;
+		}
+	}
+}
+
+void Player::DrawMagicProjectiles() const
+{
+	for (const auto& proj : mMagicProjectiles)
+	{
+		if (!proj.active) continue;
+		const int sx = static_cast<int>(std::round(ConvertToScreenX(proj.x, mpBlockMap)));
+		const int sy = static_cast<int>(std::round(ConvertToScreenY(proj.y, mpBlockMap)));
+		const int r = static_cast<int>(proj.radius);
+
+		SetDrawBlendMode(DX_BLENDMODE_ADD, 180);
+		DrawCircle(sx, sy, r + 10, GetColor(40, 170, 255), TRUE);
+		DrawCircle(sx, sy, r, GetColor(120, 230, 255), TRUE);
+		DrawCircle(sx, sy, r / 2, GetColor(240, 255, 255), TRUE);
+		DrawLine(sx - r - 12, sy, sx + r + 12, sy, GetColor(180, 245, 255), 3);
+		DrawLine(sx, sy - r - 12, sx, sy + r + 12, GetColor(180, 245, 255), 3);
+		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+	}
 }
