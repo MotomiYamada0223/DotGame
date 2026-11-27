@@ -35,6 +35,9 @@ public:
 	DeathCountEffect();
 	~DeathCountEffect();
 
+	// 寿命で消えるかどうか（既定では消える。選択画面では消えないようにする）
+	void SetLifeEnabled(bool enabled) { mLifeEnabled = enabled; }
+
 	// 破片を作り直す（既存の破片は消える）
 	// scale は表示時の倍率（1.0 で元サイズ）
 	void StartShatter(const PlayerSpriteSource& src, float centerX, float centerY, int fragSize, float scale = 1.0f);
@@ -59,4 +62,5 @@ public:
 
 private:
 	std::vector<Fragment> mFragments;
+	bool mLifeEnabled = true;
 };

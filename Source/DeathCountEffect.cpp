@@ -72,12 +72,12 @@ void DeathCountEffect::Update(const BlockHitFunc& isBlocked)
 	{
 		if (!frag.isActive) continue;
 
-		frag.timer++;
-		if (frag.timer >= kFragmentLife)
-		{
-			frag.isActive = false;
-			continue;
-		}
+	frag.timer++;
+if (mLifeEnabled && frag.timer >= kFragmentLife)
+{
+	frag.isActive = false;
+	continue;
+}
 
 		// 表示上のサイズで衝突を判定する
 		const float w = frag.width * frag.scale;

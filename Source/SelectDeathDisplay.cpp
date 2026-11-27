@@ -11,13 +11,11 @@ namespace
 	const int   kIconGap = 8;              // アイコン同士の間隔
 	const int   kIconDrawSize = 52;        // 表示するアイコンの一辺
 	const int   kFragSrcSize = 16;         // 破片の切り出し単位（元画像上のpx）
-	const int   kHoldFrames = 60;          // 全員出た後、割れ始めるまでの待ち時間
+	const int   kHoldFrames = 120;          // 全員出た後、割れ始めるまでの待ち時間
 	const int   kBaseSpawnInterval = 12;   // 出現間隔の基準（フレーム）
 	const int   kBaseShatterInterval = 10; // 割れる間隔の基準（フレーム）
 	const float kScrollLerp = 0.15f;       // スクロールの追従割合（毎フレーム）
-
-	// ブロック判定なし（選択画面の破片は枠の中だけで動けばよい）
-	const BlockHitFunc kNoBlock = [](float, float, float, float) { return false; };
+	const int   kVerticalInset = 2;        // プレイヤー描画・可動範囲の上下を狭めるpx数
 
 	// 死亡回数が多いほど間隔を短くする（10回で約半分、30回で約4分の1）
 	int CalcInterval(int baseInterval, int count)
@@ -30,6 +28,7 @@ namespace
 // 初期状態にする
 SelectDeathDisplay::SelectDeathDisplay()
 {
+	mEffect.SetLifeEnabled(false);
 }
 
 // 後始末（画像は借りているだけなので何もしない）
@@ -97,9 +96,6 @@ void SelectDeathDisplay::SetTexture(int graphHandle, int srcX, int srcY, int src
 // 出現・割れる演出・スクロールを更新する
 void SelectDeathDisplay::Update()
 {
-	// 破片の移動を更新する
-	mEffect.Update(kNoBlock);
-
 	switch (mState)
 	{
 	case State::Appear:
@@ -126,6 +122,12 @@ void SelectDeathDisplay::Update()
 		{
 			mState = State::Shatter;
 			mTimer = 0;
+
+			// 最初の割る対象行へ早めにスクロールを開始し、枠外生成を防ぐ
+			if (mShatterIndex < mDeathCount)
+			{
+				ScrollToRow(RowOf(mShatterOrder[mShatterIndex]));
+			}
 		}
 		break;
 
@@ -135,9 +137,9 @@ void SelectDeathDisplay::Update()
 		if (mTimer >= CalcInterval(kBaseShatterInterval, mDeathCount))
 		{
 			mTimer = 0;
-			const int idx = mShatterOrder[mShatterIndex];
-			ScrollToRow(RowOf(idx));
-			ShatterIcon(idx);
+			const int iconIndex = mShatterOrder[mShatterIndex];
+			ScrollToRow(RowOf(iconIndex));
+			ShatterIcon(iconIndex);
 			++mShatterIndex;
 
 			if (mShatterIndex >= mDeathCount)
@@ -151,8 +153,18 @@ void SelectDeathDisplay::Update()
 		break;
 	}
 
-	// スクロール量を目標へ滑らかに近づける
+	// 破片の座標計算前にスクロール量を反映し、初期数体のズレを抑える
 	mScrollY += (mScrollTarget - mScrollY) * kScrollLerp;
+
+	mEffect.Update([this](float x, float y, float w, float h)
+		{
+			// 上下を2pxずつ狭めた枠の範囲で左右と下端を判定し、上端の突っかかりを防ぐ
+			const float left = static_cast<float>(mBoxX + kPadding);
+			const float right = static_cast<float>(mBoxX + mBoxW - kPadding);
+			const float bottom = static_cast<float>(mBoxY + mBoxH - kPadding - kVerticalInset);
+
+			return x < left || (x + w) > right || (y + h) > bottom;
+		});
 }
 
 // 枠の中だけに描画する（0回のときは「死亡回数なし」を中央に表示）
@@ -165,16 +177,21 @@ void SelectDeathDisplay::Draw()
 	if (mDeathCount <= 0)
 	{
 		// 死亡0回：枠の中央に「死亡回数なし」を表示する
-		FontManager* fontMgr = Master::mpGameManager->GetFontManager();
+		FontManager* fontManager = Master::mpGameManager->GetFontManager();
 		const char* text = "死亡回数なし";
 		const int fontSize = 36;
-		const int textW = fontMgr->GetDotStringWidth(fontSize, text);
-		const int x = mBoxX + (mBoxW - textW) / 2;
+		const int textWidth = fontManager->GetDotStringWidth(fontSize, text);
+		const int x = mBoxX + (mBoxW - textWidth) / 2;
 		const int y = mBoxY + (mBoxH - fontSize) / 2;
-		fontMgr->DrawDotString(x, y, fontSize, GetColor(255, 255, 255), text);
+		fontManager->DrawDotString(x, y, fontSize, GetColor(255, 255, 255), text);
 	}
 	else
 	{
+		// プレイヤー表示領域の上下を2pxずつ狭めてクリップする
+		const int drawTop = mBoxY + kVerticalInset;
+		const int drawBottom = mBoxY + mBoxH - kVerticalInset;
+		SetDrawArea(mBoxX, drawTop, mBoxX + mBoxW, drawBottom);
+
 		if (mTextureHandle != -1)
 		{
 			for (int i = 0; i < mSpawnedCount; ++i)
@@ -258,7 +275,7 @@ void SelectDeathDisplay::ShatterIcon(int idx)
 	if (mShattered[idx]) return;
 	mShattered[idx] = true;
 
-	DeathCountEffect::PlayerSpriteSource src{ mTextureHandle, mSrcX, mSrcY, mSrcW, mSrcH };
+	DeathCountEffect::PlayerSpriteSource spriteSource{ mTextureHandle, mSrcX, mSrcY, mSrcW, mSrcH };
 
 	// 元画像の幅に対する表示サイズの倍率（128px → 48px なら 0.375）
 	const float scale = static_cast<float>(kIconDrawSize) / static_cast<float>((std::max)(1, mSrcW));
@@ -266,5 +283,5 @@ void SelectDeathDisplay::ShatterIcon(int idx)
 	// 表示上のアイコンの中心から破片を飛び散らせる
 	const float centerX = IconScreenLeft(idx) + kIconDrawSize / 2.0f;
 	const float centerY = IconScreenTop(idx) + kIconDrawSize / 2.0f;
-	mEffect.AppendShatter(src, centerX, centerY, kFragSrcSize, scale);
+	mEffect.AppendShatter(spriteSource, centerX, centerY, kFragSrcSize, scale);
 }
